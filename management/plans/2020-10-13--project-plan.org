@@ -28,8 +28,70 @@
    the same capabilities of the .NET implementation and that we can compare its
    performance in a repeatable way.
 
-*** Benchmarking setup
+   Reference languages:
+   - Java
+   - Lua
+   - R
+   - Perl
+   - PgSQL
+   - Python
+   - TCL
+   - sh
+   - Javascript
 
-*** Migration of Existing .NET Functions
+   Roadmap:
+   1. Setup all available languages;
+   2. Start benchmarking setup;
+   3. Migrate Python and Javascript test cases;
+   4. Execute first benchmarking run and verify results;
+   5. Improve benchmarking tool;
+   6. Migrate more test cases;
+   7. Execute another benchmarking run and verify results.
 
-*** Migration of .NET Test Cases
+*** DONE Languages Setup
+
+    Aims to make sure that every language is working in a local setup and that
+    we can run ~add(a,b)~ on it.
+
+**** Results
+
+| language        | status           | have language source | language loaded in pgsql | had add(a,b) working |
+|-----------------+------------------+----------------------+--------------------------+----------------------|
+| Java            | Check            | Check                | Check                    | Check                |
+| lua             | Check            | Check                | Check                    | Check                |
+| R               | Check            | Check                | Check                    | Check                |
+| perl            | Check            | Check                | Check                    | Check                |
+| PgSQL           | Check            | Check                | Check(native)            | Check                |
+| Python          | Check            | Check                | Check                    | Check                |
+| Tcl             | Check            | Check                | Check                    | Check                |
+| PHP             | **Discontinued** |                      |                          |                      |
+| Ruby            | **Discontinued** |                      |                          |                      |
+| Scheme          | **Discontinued** |                      |                          |                      |
+| sh              | Check            | Check                | Check                    | Check                |
+| Javascript (V8) | Check            | Check                | Check                    | Check                |
+
+*** TODO Benchmarking setup
+
+    Aims to define and create the infrastructure that will measure the
+    performance of each operation.
+
+    At this point, it is very important that the benchmarking infrastructure has
+    small impact in the measurements and that the measurements are easily
+    reproducible.
+
+    Expected Metrics:
+    - Time to perform each operation;
+    - Resources usage;
+      - CPU, Memory, DB Memory.
+    -
+    - Standard deviation of measurements;
+
+*** TODO Migration of .NET Test Cases
+
+    Aims to unify the functions that are being verified/benchmarked across the
+    languages.
+
+    To be done by reproducing the .NET test cases on every language presented
+    above.
+
+    For now, we will start with Python/Javascript.
