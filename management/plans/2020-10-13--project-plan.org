@@ -1,0 +1,27 @@
+
+
+  Here I present you the project plan for the PG.NET efforts.
+
+  The goal of this project is to make Brick Abode a leading Postgres + .NET
+  shop.
+
+  To do so, the plan is to:
+  - Run .NET languages in Postgres;
+  - Compare .NET performance against other Postgres languages;
+
+  Thanks to that, we will be able to:
+  -
+  -
+
+  Best Regards,
+
+
+* Project plan
+
+** PG.NET
+
+*** F#
+
+** Other Languages
+
+*** V8
