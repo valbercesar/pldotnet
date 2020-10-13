@@ -24,4 +24,12 @@
 
 ** Other Languages
 
-*** V8
+   The purpose of this group of tasks is to make sure that every language has
+   the same capabilities of the .NET implementation and that we can compare its
+   performance in a repeatable way.
+
+*** Benchmarking setup
+
+*** Migration of Existing .NET Functions
+
+*** Migration of .NET Test Cases
