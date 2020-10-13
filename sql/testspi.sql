@@ -81,5 +81,6 @@ foreach (var user in exp)
 }
 return res;
 $$ LANGUAGE plcsharp;
+
 SELECT getUserDescription(123456789) = varchar 'Homer Simpson, Social security Number 123456789, has 2304.55 account balance.';
 SELECT getUserDescription(987654321) = varchar 'Charles Montgomery Burns, Social security Number 987654321, has 3000000.8 account balance.';
