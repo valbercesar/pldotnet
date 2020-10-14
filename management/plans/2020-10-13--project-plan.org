@@ -15,7 +15,6 @@
 
   Best Regards,
 
-
 * Project plan
 
 ** PG.NET
@@ -41,12 +40,19 @@
 
    Roadmap:
    1. Setup all available languages;
+      - Estimate: ~1 man-day~.
    2. Start benchmarking setup;
+      - Estimate: ~2 man-days~.
    3. Migrate Python and Javascript test cases;
+      - Estimate: ~3 man-days~.
    4. Execute first benchmarking run and verify results;
+      - Estimate: ~2 man-days~.
    5. Improve benchmarking tool;
-   6. Migrate more test cases;
+      - Estimate: ~2 man-days~.
+   6. Migrate more test cases (PgSQL, Lua, Perl, Java);
+      - Estimate: ~6 man-days~.
    7. Execute another benchmarking run and verify results.
+      - Estimate: ~2 man-day~.
 
 *** DONE Languages Setup
 
@@ -83,8 +89,8 @@
     - Time to perform each operation;
     - Resources usage;
       - CPU, Memory, DB Memory.
-    -
     - Standard deviation of measurements;
+    - Correctness.
 
 *** TODO Migration of .NET Test Cases
 
