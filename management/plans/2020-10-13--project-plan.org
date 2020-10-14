@@ -19,7 +19,27 @@
 
 ** PG.NET
 
-*** F#
+   The purpose of this project is to add support to the .NET languages (C# and
+   F#) to Postgres.
+
+   For now, several capabilities were already added, such as:
+   -
+   -
+
+   However, there are still some capabilities missing, such as:
+   -
+   -
+   -
+
+    So, the plan for this section of the project is to add such capabilities and
+    prepare the .NET extension for the benchmarks described below.
+
+*** F# Missing Features
+
+    Aims to
+
+*** Compiler Updates
+
 
 ** Other Languages
 
