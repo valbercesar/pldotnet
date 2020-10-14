@@ -114,8 +114,29 @@ typedef struct pldotnet_ArgsSource
     int func_oid;
 }pldotnet_ArgsSource;
 
+typedef struct pldotnet_PathConfig
+{
+    char config_path[MAXPGPATH];
+    char library_path[MAXPGPATH];
+    char src_lib_path[MAXPGPATH];
+
+} pldotnet_PathConfig;
+
+typedef struct MemoryContextWrapper
+{
+    MemoryContext prev;
+    MemoryContext curr;
+} MemoryContextWrapper;
+
+void pldotnet_BuildPaths(const char lang[], pldotnet_PathConfig *path_config);
+
+void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config);
+void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
+void pldotnet_LoadHostFxrIfNeeded(void);
+
 bool pldotnet_TypeSupported(Oid type);
 const char * pldotnet_GetNetTypeName(Oid id, bool hastypeconversion);
+const char * pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp);
 int pldotnet_GetTypeSize(Oid id);
 const char * pldotnet_GetUnmanagedTypeName(Oid type);
 int pldotnet_SetScalarValue(char * argp, Datum datum, FunctionCallInfo fcinfo,

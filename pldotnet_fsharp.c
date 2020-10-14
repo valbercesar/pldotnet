@@ -36,9 +36,9 @@ static char   *plfsharp_BuildBlockArgsDecl(Form_pg_proc procst);
 static char   *plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst,
                                                HeapTuple proc);
 static char   *plfsharp_BuildBlockCallFuncCall(Form_pg_proc procst);
-static char   *plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo,
+static int8_t *plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo,
                                                            Form_pg_proc procst);
-static Datum  plfsharp_GetNetResult(char * libargs, Oid rettype,
+static Datum  plfsharp_GetNetResult(int8_t * libargs, Oid rettype,
                                                        FunctionCallInfo fcinfo);
 static bool   plfsharp_TypeSupported(Oid type);
 
@@ -71,7 +71,7 @@ static char fs_block_footer[] = "\n\
 static bool
 plfsharp_TypeSupported(Oid type)
 {
-    return type == INT4OID;
+    return pldotnet_IsSimpleType(type);
 }
 
 static char *
@@ -102,11 +102,12 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
         }
 
         totalsize += strlen(val) + strlen(argname) + strlen(colon)
-                        + strlen(pldotnet_GetNetTypeName(argtype[i], true));
+                        + strlen(pldotnet_GetCompatibleNetTypeName(argtype[i], true, false))
+                        + strlen("\n");
     }
 
     totalsize += strlen(val) + strlen(result) + strlen(colon)
-                    + strlen(pldotnet_GetNetTypeName(rettype, true)) + 1;
+                    + strlen(pldotnet_GetCompatibleNetTypeName(rettype, true, false)) + 1;
 
     block2str = (char *) palloc0(totalsize);
 
@@ -117,7 +118,7 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
         str_ptr = (char *)(block2str + cursize);
         SNPRINTF(str_ptr,totalsize - cursize, "%s%s%s%s\n",
                    val, argname, colon,
-                   pldotnet_GetNetTypeName(argtype[i], true) );
+                   pldotnet_GetCompatibleNetTypeName(argtype[i], true, false) );
         cursize += strlen(str_ptr);
     }
 
@@ -125,7 +126,7 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
 
     SNPRINTF(str_ptr, totalsize - cursize, "%s%s%s%s",
                 val, result, colon,
-                pldotnet_GetNetTypeName(rettype, true));
+                pldotnet_GetCompatibleNetTypeName(rettype, true, false));
 
     return block2str;
 }
@@ -277,13 +278,13 @@ plfsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
     return block2str;
 }
 
-static char *
+static int8_t*
 plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
 {
     int i;
     int cursize = 0;
-    char *libargs_ptr = NULL;
-    char *cur_arg = NULL;
+    int8_t *libargs_ptr = NULL;
+    int8_t *cur_arg = NULL;
     Oid *argtype = procst->proargtypes.values;
     Oid rettype = procst->prorettype;
     Oid type;
@@ -298,7 +299,7 @@ plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
 
     func_inout_info.typesize_result = pldotnet_GetTypeSize(rettype);
 
-    libargs_ptr = (char *) palloc0(func_inout_info.typesize_args +
+    libargs_ptr = (int8_t *) palloc0(func_inout_info.typesize_args +
                                   func_inout_info.typesize_result);
 
     cur_arg = libargs_ptr;
@@ -313,8 +314,14 @@ plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
 #endif
         switch (type)
         {
+            case INT2OID:
+                *(int16_t *)cur_arg = DatumGetInt16(argdatum);
+                break;
             case INT4OID:
-                *(int *)cur_arg = DatumGetInt32(argdatum);
+                *(int32_t *)cur_arg = DatumGetInt32(argdatum);
+                break;
+            case INT8OID:
+                *(int64_t *)cur_arg = DatumGetInt64(argdatum);
                 break;
         }
         cursize += pldotnet_GetTypeSize(argtype[i]);
@@ -325,17 +332,21 @@ plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
 }
 
 static Datum
-plfsharp_GetNetResult(char * libargs, Oid rettype, FunctionCallInfo fcinfo)
+plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
 {
-    Datum retval = 0;
-    char * resultP = libargs
-                    + func_inout_info.typesize_args;
+    Datum retval;
+    int8_t *resultP;
+    retval = 0;
+    resultP = libargs + func_inout_info.typesize_args;
 
     switch (rettype)
     {
+        case INT2OID:
+            return Int16GetDatum ( *(int16_t *)(resultP) );
         case INT4OID:
-            /* Recover flag for null result */
-            return  Int32GetDatum ( *(int *)(resultP) );
+            return Int32GetDatum ( *(int32_t *)(resultP) );
+        case INT8OID:
+            return Int64GetDatum ( *(int64_t *)(resultP) );
     }
     return retval;
 }
@@ -349,7 +360,7 @@ Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
          *fs_block_args_decl,
          *fs_block_userfunc_decl,
          *fs_block_callfunc_call;
-    char *libargs;
+    int8_t *libargs;
     int source_code_size;
     HeapTuple proc;
     Form_pg_proc procst;
@@ -489,7 +500,7 @@ Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
         fsharp_method(libargs, func_inout_info.typesize_nullflags +
                                func_inout_info.typesize_args +
                                func_inout_info.typesize_result);
-        retval = plfsharp_GetNetResult( libargs, rettype, fcinfo );
+        retval = plfsharp_GetNetResult(libargs, rettype, fcinfo);
         if (libargs != NULL)
             pfree(libargs);
         pfree(source_code);

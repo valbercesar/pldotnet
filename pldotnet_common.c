@@ -31,8 +31,78 @@
 char *root_path = NULL;
 char *dnldir = STR(PLNET_ENGINE_DIR);
 
+void 
+pldotnet_BuildPaths(const char lang[], pldotnet_PathConfig *paths)
+{
+    char prefix[MAXPGPATH];
+    const char json_path_suffix[] = "/PlDotNET.runtimeconfig.json";
+    const char src_path_suffix[] = "/Lib.cs";
+    const char dll_path_suffix[] = "/PlDotNET.dll";
+
+    static bool path_defined = false;
+
+    if (nullptr == paths) return;
+
+    if (!path_defined)
+    {
+        SNPRINTF(prefix, MAXPGPATH, "%s%s%s", root_path, "/src/", lang);
+        SNPRINTF(paths->config_path, MAXPGPATH, "%s%s", prefix, json_path_suffix);
+        SNPRINTF(paths->library_path, MAXPGPATH, "%s%s", prefix, dll_path_suffix);
+        SNPRINTF(paths->src_lib_path, MAXPGPATH, "%s%s", prefix, src_path_suffix);
+        path_defined = true;
+    }
+}
+
+void 
+pldotnet_StartNewMemoryContext(MemoryContextWrapper *config)
+{
+    config->prev = CurrentMemoryContext;
+    config->curr = AllocSetContextCreate(TopMemoryContext,
+                                    "PL/NET func_exec_ctx",
+                                    ALLOCSET_SMALL_SIZES);
+
+    if (nullptr == config->curr) 
+    {
+        elog(ERROR, "Could not create a new memory context");
+    }
+
+    MemoryContextSwitchTo(config->curr);
+}
+
+void
+pldotnet_ResetMemoryContext(MemoryContextWrapper *config)
+{
+    if (nullptr == config) return;
+
+    if (config->prev)
+        MemoryContextSwitchTo(config->prev);
+
+    if (config->curr)
+        MemoryContextDelete(config->curr);
+}
+
+void
+pldotnet_LoadHostFxrIfNeeded(void)
+{
+    static bool hostfxr_loaded = false;
+
+    if (!hostfxr_loaded)
+    {
+        if (!pldotnet_LoadHostfxr())
+        {
+            elog(ERROR, "Failure: pldotnet_LoadHostfxr()");
+        }
+        hostfxr_loaded = true;
+    }
+}
+
 const char *
-pldotnet_GetNetTypeName(Oid id, bool hastypeconversion)
+pldotnet_GetNetTypeName(Oid id, bool hastypeconversion) {
+    return pldotnet_GetCompatibleNetTypeName(id, hastypeconversion, true);
+}
+
+const char *
+pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp)
 {
     Form_pg_type typeinfo;
     HeapTuple typ;
@@ -45,11 +115,11 @@ pldotnet_GetNetTypeName(Oid id, bool hastypeconversion)
         case INT4OID:
             return "int";    /* System.Int32 */
         case INT8OID:
-            return "long";   /* System.Int64 */
+            return is_csharp ? "long" : "int64";   /* System.Int64 */
         case INT2OID:
-            return "short";  /* System.Int16 */
+            return is_csharp ? "short" : "int16";  /* System.Int16 */
         case FLOAT4OID:
-            return "float";  /* System.Single */
+            return is_csharp ? "float" : "float32";  /* System.Single */
         case FLOAT8OID:
             return "double"; /* System.Double */
         case NUMERICOID:     /* System.Decimal */
@@ -87,11 +157,11 @@ pldotnet_GetTypeSize(Oid id)
         case BOOLOID:
             return sizeof(bool);
         case INT4OID:
-            return sizeof(int);
+            return sizeof(int32_t);
         case INT8OID:
-            return sizeof(long);
+            return sizeof(int64_t);
         case INT2OID:
-            return sizeof(short);
+            return sizeof(int16_t);
         case FLOAT4OID:
             return sizeof(float);
         case FLOAT8OID:

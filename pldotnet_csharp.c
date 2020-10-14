@@ -52,17 +52,14 @@ static Datum pldotnet_GetNetResult(char * libargs, Oid rettype,
 static int   GetSizeArgsNullArray(int nargs);
 static int   pldotnet_PublicDeclSize(Oid type);
 static const char * pldotnet_GetNullableTypeName(Oid id);
-static inline void plcsharp_BuildPaths(void);
 bool pldotnet_CheckArgIsArray(Datum datum, Oid oid, int narg);
 
 load_assembly_and_get_function_pointer_fn
                                          load_assembly_and_get_function_pointer;
 
-char csharp_config_path[MAXPGPATH];
-char csharp_lib_path[MAXPGPATH];
-char csharp_srclib_path[MAXPGPATH];
 bool hostfxr_loaded = false;
 bool paths_defined = false;
+pldotnet_PathConfig paths;
 
 #if PG_VERSION_NUM >= 90000
 #define CODEBLOCK \
@@ -1001,6 +998,7 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
     int source_code_size;
     HeapTuple proc;
     Form_pg_proc procst;
+    MemoryContextWrapper memory_context;
     Datum retval = 0;
     Oid rettype;
     char cs_block_composite_decl[256];
@@ -1018,29 +1016,15 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
     PG_TRY();
     {
         /* STEP 0: Creates an execution memory context for the function */
-        MemoryContext oldcontext = CurrentMemoryContext;
-        MemoryContext func_cxt = NULL;
-        func_cxt = AllocSetContextCreate(TopMemoryContext,
-                                    "PL/NET func_exec_ctx",
-                                    ALLOCSET_SMALL_SIZES);
-        MemoryContextSwitchTo(func_cxt);
+        pldotnet_StartNewMemoryContext(&memory_context);
 
         /*
          * STEP 1: Load HostFxr and get exported hosting functions
          */
-        if (!hostfxr_loaded)
-        {
-            if (!pldotnet_LoadHostfxr())
-                assert(0 && "Failure: pldotnet_LoadHostfxr()");
-            hostfxr_loaded = true;
-        }
+        pldotnet_LoadHostFxrIfNeeded();
 
         /* STEP 2: Build paths C# project / compiler and runner paths */
-        if (!paths_defined)
-        {
-            plcsharp_BuildPaths();
-            paths_defined = true;
-        }
+        pldotnet_BuildPaths("csharp", &paths);
 
         /* STEP 3: Generate the function C# code from the template
          * TODO: Check if template needs to be filled again */
@@ -1093,14 +1077,14 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
         /* STEP 6: Loads the generated Aseembly
          * TODO: Review why we need to GetNetLoadAssembly on each call */
         load_assembly_and_get_function_pointer =
-                                         GetNetLoadAssembly(csharp_config_path);
+                                         GetNetLoadAssembly(paths.config_path);
          assert(load_assembly_and_get_function_pointer != nullptr &&
                                                "Failure: GetNetLoadAssembly()");
 #else
         /* STEP 5: Loads the pldotnet Roslyn compiler and runner
          * TODO: Review why we need to GetNetLoadAssembly on each call */
         load_assembly_and_get_function_pointer =
-                                         GetNetLoadAssembly(csharp_config_path);
+                                         GetNetLoadAssembly(paths.config_path);
          assert(load_assembly_and_get_function_pointer != nullptr &&
                                                "Failure: GetNetLoadAssembly()");
         /* STEP 6: Compiles the C# code  */
@@ -1118,9 +1102,7 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
          * All palloced memory is freed by the PG memory manager.
          *
          */
-        MemoryContextSwitchTo(oldcontext);
-        if (func_cxt)
-            MemoryContextDelete(func_cxt);
+        pldotnet_ResetMemoryContext(&memory_context);
     }
     PG_CATCH();
     {
@@ -1186,11 +1168,7 @@ Datum plcsharp_inline_handler(PG_FUNCTION_ARGS)
         }
 
         /* STEP 2: Build paths C# project paths */
-        if (!paths_defined)
-        {
-            plcsharp_BuildPaths();
-            paths_defined = true;
-        }
+        pldotnet_BuildPaths("csharp", &paths);
 
         /* STEP 4: Generate the function C# code from the template
          * TODO: Check if template needs to be filled again */
@@ -1211,14 +1189,14 @@ Datum plcsharp_inline_handler(PG_FUNCTION_ARGS)
         /* STEP 6: Loads the User code Assembly
          * TODO: Review why we need to GetNetLoadAssembly on each call */
         load_assembly_and_get_function_pointer =
-                                        GetNetLoadAssembly(csharp_config_path);
+                                        GetNetLoadAssembly(paths.config_path);
         assert(load_assembly_and_get_function_pointer != nullptr &&
                                                "Failure: GetNetLoadAssembly()");
 #else
         /* STEP 5: Loads the pldotnet Roslyn compiler and runner
          * TODO: Review why we need to GetNetLoadAssembly on each call */
         load_assembly_and_get_function_pointer =
-                                        GetNetLoadAssembly(csharp_config_path);
+                                        GetNetLoadAssembly(paths.config_path);
         assert(load_assembly_and_get_function_pointer != nullptr &&
                                                "Failure: GetNetLoadAssembly()");
         /* STEP 6: Compiles the C# code  */
@@ -1249,32 +1227,21 @@ Datum plcsharp_inline_handler(PG_FUNCTION_ARGS)
     PG_RETURN_VOID();
 }
 
-static inline void
-plcsharp_BuildPaths(void)
-{
-    const char json_path_suffix[] = "/src/csharp/PlDotNET.runtimeconfig.json";
-    const char src_path_suffix[] = "/src/csharp/Lib.cs";
-    const char dll_path_suffix[] = "/src/csharp/PlDotNET.dll";
-    SNPRINTF(csharp_config_path,MAXPGPATH, "%s%s", root_path, json_path_suffix);
-    SNPRINTF(csharp_lib_path, MAXPGPATH, "%s%s", root_path, dll_path_suffix);
-    SNPRINTF(csharp_srclib_path, MAXPGPATH, "%s%s", dnldir, src_path_suffix);
-}
-
 int 
 plcsharp_CompileFunctionNetBuild(char * source_code)
 {
     FILE *output_file;
     int compile_resp;
     char *cmd;
-    output_file = fopen(csharp_srclib_path, "w");
+    output_file = fopen(paths.src_lib_path, "w");
     if (!output_file)
     {
-        fprintf(stderr, "Cannot open file: '%s'\n", csharp_srclib_path);
+        fprintf(stderr, "Cannot open file: '%s'\n", paths.src_lib_path);
         exit(-1);
     }
     if (fputs(source_code, output_file) == EOF)
     {
-        fprintf(stderr, "Cannot write to file: '%s'\n", csharp_srclib_path);
+        fprintf(stderr, "Cannot write to file: '%s'\n", paths.src_lib_path);
         exit(-1);
     }
     fclose(output_file);
@@ -1339,7 +1306,7 @@ plcsharp_Run(char * dotnet_type, char * dotnet_type_method, char * libargs,
 
     /* Function pointer to managed delegate */
     rc = load_assembly_and_get_function_pointer(
-        csharp_lib_path,
+        paths.library_path,
         dotnet_type,
         dotnet_type_method,
         nullptr /* delegate_type_name */,
