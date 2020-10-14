@@ -26,16 +26,20 @@
    - Simple data types (int, float, boolean) support for C#;
    - String and unicode characters support for C#;
    - Integer (32-bits) support for F#;
-   - 
-   -
 
    However, there are still some capabilities missing, such as:
-   -
-   -
-   -
+   - Composite types for F# and C#;
+   - Containers for F# (e.g. SQL Arrays);
+   - Trigger support for C# and F#
+   - Extend simple data type support and string for F#;
+   - Fixes into debian package configuration;
 
     So, the plan for this section of the project is to add such capabilities and
     prepare the .NET extension for the benchmarks described below.
+
+    Here is the Roadmap:
+    1. Compiler Updates
+    2.
 
 *** F# Missing Features
 
