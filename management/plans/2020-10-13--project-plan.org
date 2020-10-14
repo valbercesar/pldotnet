@@ -23,7 +23,10 @@
    F#) to Postgres.
 
    For now, several capabilities were already added, such as:
-   -
+   - Simple data types (int, float, boolean) support for C#;
+   - String and unicode characters support for C#;
+   - Integer (32-bits) support for F#;
+   - 
    -
 
    However, there are still some capabilities missing, such as:
