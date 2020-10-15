@@ -38,15 +38,23 @@
     prepare the .NET extension for the benchmarks described below.
 
     Here is the Roadmap:
-    1. Compiler Updates
-    2.
+    1. F# Compiler Updates;
+       - Estimate: ~1 man-day~. To be done by <2020-10-15 Thu>;
 
-*** F# Missing Features
+    2. Add more supported types to F# (ints);
+       - Estimate: ~3 man-days~. To be done by <2020-10-19 Thu>;
 
-    Aims to
+    3. Add more supported types to F# (floats and boolean);
+       - Estimate: ~7 man-days~. To be done by <2020-10-23 Fri>;
 
-*** Compiler Updates
+    4. Add more supported types to F# (string);
+       - Estimate: ~5 man-days~. To be done by <2020-10-28 Wed>;
 
+    5. Translate all tests to pl.fsharp;
+       - Estimate: ~1 man-day~. To be done by <2020-10-29 Thu>;
+
+    6. Add more advanced features to pldonet;
+       - Requires more discussion;
 
 ** Other Languages
 
