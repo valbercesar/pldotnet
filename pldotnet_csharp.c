@@ -54,8 +54,16 @@ static int   pldotnet_PublicDeclSize(Oid type);
 static const char * pldotnet_GetNullableTypeName(Oid id);
 bool pldotnet_CheckArgIsArray(Datum datum, Oid oid, int narg);
 
-load_assembly_and_get_function_pointer_fn
-                                         load_assembly_and_get_function_pointer;
+static bool plcsharp_CreateStructLibargs( const FunctionCallInfo fcinfo, const Form_pg_proc procst, pldotnet_FunctionDecl *function_decl);
+char* plcsharp_GetInlineSourceCode(FunctionCallInfo fcinfo);
+char* plcsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst);
+bool plcsharp_GetSourceCode( FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst, bool is_inline, pldotnet_ArgsSource *source);
+bool plcsharp_BuildFunctionDecl( FunctionCallInfo fcinfo, pldotnet_FunctionDecl *function_decl, bool is_inline);
+Datum plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline);
+
+Datum plcsharp_generic_handler(FunctionCallInfo fcinfo, bool is_inline);
+
+dotnet_loader load_assembly_and_get_function_pointer;
 
 bool hostfxr_loaded = false;
 bool paths_defined = false;
@@ -290,7 +298,6 @@ plcsharp_BuildBlockComposites(char * composite_decls, FunctionCallInfo fcinfo,
     }
     return 0;
 }
-
 
 static char *
 plcsharp_BuildBlockArgsDecl(FunctionCallInfo fcinfo, Form_pg_proc procst)
@@ -988,8 +995,240 @@ pldotnet_GetNetResult(char * libargs, Oid rettype, FunctionCallInfo fcinfo)
           pldotnet_GetScalarValue(result_ptr, resultnull_ptr, fcinfo, rettype);
 }
 
+static bool
+plcsharp_CreateStructLibargs(
+    const FunctionCallInfo fcinfo,
+    const Form_pg_proc procst,
+    pldotnet_FunctionDecl *function_decl
+)
+{
+    function_decl->args = (int8_t*) pldotnet_CreateCStructLibargs(fcinfo, procst);
+    function_decl->args_length = func_inout_info.typesize_nullflags +
+                                 func_inout_info.typesize_args +
+                                 func_inout_info.typesize_result;
+
+    return nullptr != function_decl->args && function_decl->args;
+}
+
+char*
+plcsharp_GetInlineSourceCode(FunctionCallInfo fcinfo)
+{
+    size_t source_code_size;
+    char *source_code = nullptr;
+    char *block_inline_usercode = CODEBLOCK;
+    
+    source_code_size = strlen(block_inline_header)
+                        + strlen(block_inline_callfunc)
+                        + strlen(block_inline_usercode)
+                        + strlen(block_inline_footer) + 1;
+    
+    source_code = (char*) palloc0(source_code_size);
+    
+    SNPRINTF(source_code, 
+                source_code_size, 
+                "%s%s%s%s",
+                block_inline_header,
+                block_inline_callfunc,
+                block_inline_usercode,
+                block_inline_footer);
+    return source_code;
+}
+
+char*
+plcsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst)
+{
+    size_t source_code_size;
+    char *cs_block_args_decl;
+    char *cs_block_userfunc_decl;
+    char *cs_block_callfunc_call;
+    char cs_block_composite_decl[256];
+    char *source_code = nullptr;
+    cs_block_composite_decl[0] = 0;
+
+    plcsharp_BuildBlockComposites(cs_block_composite_decl, fcinfo, procst);
+    
+    cs_block_args_decl = plcsharp_BuildBlockArgsDecl( fcinfo, procst );
+    cs_block_callfunc_call = plcsharp_BuildBlockCallFuncCall( procst );
+    cs_block_userfunc_decl = plcsharp_BuildBlockUserFuncDecl(procst, proc);
+
+    source_code_size = strlen(cs_block_header)
+                     + strlen(cs_block_composite_decl)
+                     + strlen(cs_block_args_header)
+                     + strlen(cs_block_args_decl)
+                     + strlen(cs_block_callfunc_header)
+                     + strlen(cs_block_callfunc_call)
+                     + strlen(cs_block_userfunc_decl)
+                     + strlen(cs_block_footer) + 1;       
+                     
+    source_code = palloc0(source_code_size);
+    SNPRINTF(source_code, 
+            source_code_size, 
+            "%s%s%s%s%s%s%s%s",
+            cs_block_header,
+            cs_block_composite_decl,
+            cs_block_args_header,
+            cs_block_args_decl,
+            cs_block_callfunc_header,
+            cs_block_callfunc_call,
+            cs_block_userfunc_decl,
+            cs_block_footer
+    );
+    return source_code;
+}
+
+bool
+plcsharp_GetSourceCode(
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst,
+    bool is_inline,
+    pldotnet_ArgsSource *source)
+{
+    if (nullptr == source)
+    {
+        elog(ERROR, "[pldotnet]: Invalid argument: source is null");
+        return false;
+    }
+
+    if (nullptr != source->source_code)
+    {
+        elog(ERROR, "[pldotnet]: ArgSouce.source code should be null at this point: \n%s", source->source_code);
+        return false;
+    }
+
+    if (is_inline)
+        source->source_code = plcsharp_GetInlineSourceCode(fcinfo);
+    else
+    {
+        source->source_code = plcsharp_GetUserSourceCode(fcinfo, proc, procst);
+    }
+
+    return source->source_code != nullptr;
+}
+
+bool
+plcsharp_BuildFunctionDecl(
+    FunctionCallInfo fcinfo,
+    pldotnet_FunctionDecl *function_decl,
+    bool is_inline)
+{
+    HeapTuple proc;
+    Form_pg_proc procst;
+    bool result = true;
+
+    if (nullptr == function_decl)
+    {
+        elog(ERROR, "[pldotnet]: Invalid argument, function decl is null");
+        return result;
+    }
+
+    /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END IF PROC != nullptr */
+    proc = pldotnet_GetPostgresHeapTuple(fcinfo);
+    if (nullptr == proc)
+        return result;
+
+    procst = (Form_pg_proc) GETSTRUCT(proc);
+
+    function_decl->ret_type = procst->prorettype;
+
+    if (!plcsharp_GetSourceCode(fcinfo, proc, procst, is_inline, &(function_decl->source)))
+    {
+        result = false;
+    } 
+    else if (!is_inline && !plcsharp_CreateStructLibargs(fcinfo, procst, function_decl))
+    {
+        result = false;
+    }
+
+    pldotnet_ReleasePostgresHeapTuple(proc);
+
+    return result;
+}
+
+Datum
+plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline)
+{
+    dotnet_loader loader;
+    static pldotnet_PathConfig paths;
+    pldotnet_FunctionDecl function_decl;
+
+    function_decl.source.source_code = nullptr;
+    function_decl.source.func_oid = -1;
+    function_decl.source.result = 1;
+    function_decl.args = nullptr;
+    function_decl.args_length = 0;
+    function_decl.ret_type = InvalidOid;
+
+    if (!pldotnet_BuildPaths(true, &paths))
+        return (Datum) 0;
+
+    if (!plcsharp_BuildFunctionDecl(fcinfo, &function_decl, is_inline))
+        return (Datum) 0;
+
+    if (nullptr == (loader = GetNetLoadAssembly(paths.config_path)))
+    {
+        elog(ERROR, "[pldotnet]: Could not obtain .NET Loader");
+        return (Datum) 0;
+    }
+
+    if ((Datum) 0 != pldotnet_CompileUserFunction(loader, fcinfo, &paths, &(function_decl.source)))
+        return (Datum) 0;
+
+    if (0 != pldotnet_RunUserFunction(loader, &paths, function_decl.args, function_decl.args_length))
+        return (Datum) 0;
+
+    return pldotnet_GetNetResult((char *)function_decl.args, function_decl.ret_type, fcinfo);
+}
+
+Datum plcsharp_generic_handler(FunctionCallInfo fcinfo, bool is_inline)
+{
+    MemoryContextWrapper memory_context;
+    Datum retval = 0;
+
+    if (!pldotnet_SPIReady())
+        return retval;
+
+    if (pldotnet_TriggerNotSupported(fcinfo))
+    {
+        pldotnet_SPIFinish();
+        return retval;
+    }
+
+    PG_TRY();
+    {
+        /* START NEW MEM CONTEXT */
+        pldotnet_StartNewMemoryContext(&memory_context);
+
+        pldotnet_LoadHostFxrIfNeeded();
+
+        retval = plcsharp_CompileAndRunUserFunction(fcinfo, is_inline);
+
+        /* REVERT PREV MEM CONTEXT */
+        pldotnet_ResetMemoryContext(&memory_context);
+
+    }
+    PG_CATCH();
+    {
+        elog(WARNING, "[pldotnet]: Exception on PG context");
+        PG_RE_THROW();
+    }
+    
+    PG_END_TRY();
+
+    pldotnet_SPIFinish();
+
+    return retval;
+}
+
 PG_FUNCTION_INFO_V1(plcsharp_call_handler);
+Datum plcsharp_call_handler1(PG_FUNCTION_ARGS);
 Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
+{
+    return plcsharp_generic_handler(fcinfo, false);
+}
+
+Datum 
+plcsharp_call_handler1(PG_FUNCTION_ARGS)
 {
     bool istrigger;
     char *source_code, *cs_block_args_decl, *cs_block_callfunc_call,
@@ -1004,6 +1243,11 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
     char cs_block_composite_decl[256];
     cs_block_composite_decl[0] = 0;
 
+    if (!pldotnet_BuildPaths(true, &paths))
+    {
+        return retval;        
+    }
+
     if (SPI_connect() != SPI_OK_CONNECT)
         elog(ERROR, "[pldotnet]: could not connect to SPI manager");
     istrigger = CALLED_AS_TRIGGER(fcinfo);
@@ -1015,6 +1259,7 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
     }
     PG_TRY();
     {
+
         /* STEP 0: Creates an execution memory context for the function */
         pldotnet_StartNewMemoryContext(&memory_context);
 
@@ -1022,9 +1267,6 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
          * STEP 1: Load HostFxr and get exported hosting functions
          */
         pldotnet_LoadHostFxrIfNeeded();
-
-        /* STEP 2: Build paths C# project / compiler and runner paths */
-        pldotnet_BuildPaths("csharp", &paths);
 
         /* STEP 3: Generate the function C# code from the template
          * TODO: Check if template needs to be filled again */
@@ -1113,6 +1355,7 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
     PG_END_TRY();
     if (SPI_finish() != SPI_OK_FINISH)
         elog(ERROR, "[pldotnet]: could not disconnect from SPI manager");
+
     return retval;
 }
 
@@ -1132,18 +1375,24 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS)
         PG_RE_THROW();
     }
     PG_END_TRY();
+    
     if (SPI_finish() != SPI_OK_FINISH)
         elog(ERROR, "[pldotnet]: could not disconnect from SPI manager");
     return 0; /* VOID */
 }
 
-
 PG_FUNCTION_INFO_V1(plcsharp_inline_handler);
-Datum plcsharp_inline_handler(PG_FUNCTION_ARGS)
+Datum
+plcsharp_inline_handler(PG_FUNCTION_ARGS)
 {
-    int source_code_size;
+    size_t source_code_size;
     char* block_inline_usercode;
     char* source_code;
+
+    if (!pldotnet_BuildPaths(true, &paths))
+    {
+        return (Datum) 0;
+    }
 
     if (SPI_connect() != SPI_OK_CONNECT)
         elog(ERROR, "[plldotnet]: could not connect to SPI manager");
@@ -1167,10 +1416,7 @@ Datum plcsharp_inline_handler(PG_FUNCTION_ARGS)
             hostfxr_loaded = true;
         }
 
-        /* STEP 2: Build paths C# project paths */
-        pldotnet_BuildPaths("csharp", &paths);
-
-        /* STEP 4: Generate the function C# code from the template
+        /* STEP 2: Generate the function C# code from the template
          * TODO: Check if template needs to be filled again */
         block_inline_usercode = CODEBLOCK;
         source_code_size = strlen(block_inline_header)
@@ -1178,34 +1424,34 @@ Datum plcsharp_inline_handler(PG_FUNCTION_ARGS)
                          + strlen(block_inline_usercode)
                          + strlen(block_inline_footer) + 1;
         source_code = (char*) palloc0(source_code_size);
-	    SNPRINTF(source_code, source_code_size, "%s%s%s%s",
+        SNPRINTF(source_code, source_code_size, "%s%s%s%s",             
                                                 block_inline_header,
                                                 block_inline_callfunc,
                                                 block_inline_usercode,
                                                 block_inline_footer);
 #ifdef USE_DOTNETBUILD
-        /* STEP 5: Compiles the C# code  */
+        /* STEP 3: Compiles the C# code  */
         plcsharp_CompileFunctionNetBuild(source_code);
-        /* STEP 6: Loads the User code Assembly
+        /* STEP 4: Loads the User code Assembly
          * TODO: Review why we need to GetNetLoadAssembly on each call */
         load_assembly_and_get_function_pointer =
                                         GetNetLoadAssembly(paths.config_path);
         assert(load_assembly_and_get_function_pointer != nullptr &&
                                                "Failure: GetNetLoadAssembly()");
 #else
-        /* STEP 5: Loads the pldotnet Roslyn compiler and runner
+        /* STEP 3: Loads the pldotnet Roslyn compiler and runner
          * TODO: Review why we need to GetNetLoadAssembly on each call */
         load_assembly_and_get_function_pointer =
                                         GetNetLoadAssembly(paths.config_path);
         assert(load_assembly_and_get_function_pointer != nullptr &&
                                                "Failure: GetNetLoadAssembly()");
-        /* STEP 6: Compiles the C# code  */
+        /* STEP 4: Compiles the C# code  */
         plcsharp_CompileFunction(source_code, fcinfo);
 #endif
-        /* STEP 6: runs the inline code */
+        /* STEP 5: runs the inline code */
         plcsharp_RunFunction(NULL, NULL);
 
-        /* STEP 7: previous Memory context is restored
+        /* STEP 6: previous Memory context is restored
          *
          * All palloced memory is freed by the PG memory manager.
          *
@@ -1253,8 +1499,8 @@ plcsharp_CompileFunctionNetBuild(char * source_code)
                   "dotnet build %s/src/csharp > null", dnldir);
     compile_resp = system(cmd);
     assert(compile_resp != -1 && "Failure: Cannot compile C# source code");
-    return 0;
-}
+    return 0; /* VOID */
+ }
 
 int 
 plcsharp_CompileFunction(char * src, FunctionCallInfo fcinfo)
@@ -1267,8 +1513,11 @@ plcsharp_CompileFunction(char * src, FunctionCallInfo fcinfo)
     args.func_oid = (int) fcinfo->flinfo->fn_oid;
     args.result = 1;
 
-    return plcsharp_Run(dotnet_type, dotnet_type_method, (char *)&args,
-                                                 sizeof(pldotnet_ArgsSource));
+    return plcsharp_Run(
+        dotnet_type, dotnet_type_method, 
+        (char *)&args,
+        sizeof(pldotnet_ArgsSource)
+    );
 }
 
 Datum 
@@ -1317,7 +1566,5 @@ plcsharp_Run(char * dotnet_type, char * dotnet_type_method, char * libargs,
             "Failure: load_assembly_and_get_function_pointer()");
 
     return csharp_method(libargs, args_size);
-
 }
-
 #endif

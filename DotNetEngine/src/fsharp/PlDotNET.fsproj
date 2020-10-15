@@ -6,7 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Engine.fs" />
+    <Compile Include="VirtualFileSystem.fs" />
+    <Compile Include="AssemblyCache.fs" />
+    <Compile Include="FSharpEngine.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Compiler.Service" Version="37.0.0" />
   </ItemGroup>
 
   <Target Name="SetupForDemo"

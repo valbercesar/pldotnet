@@ -114,6 +114,14 @@ typedef struct pldotnet_ArgsSource
     int func_oid;
 }pldotnet_ArgsSource;
 
+typedef struct pldotnet_FunctionDecl
+{
+    pldotnet_ArgsSource source;
+    int8_t *args;
+    size_t args_length;
+    Oid ret_type;
+} pldotnet_FunctionDecl;
+
 typedef struct pldotnet_PathConfig
 {
     char config_path[MAXPGPATH];
@@ -128,11 +136,15 @@ typedef struct MemoryContextWrapper
     MemoryContext curr;
 } MemoryContextWrapper;
 
-void pldotnet_BuildPaths(const char lang[], pldotnet_PathConfig *path_config);
+bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *args);
+
+bool pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl);
+
+bool pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths);
+bool pldotnet_ValidPaths(const pldotnet_PathConfig *paths);
 
 void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config);
 void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
-void pldotnet_LoadHostFxrIfNeeded(void);
 
 bool pldotnet_TypeSupported(Oid type);
 const char * pldotnet_GetNetTypeName(Oid id, bool hastypeconversion);
@@ -146,6 +158,39 @@ Datum pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
 bool pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info);
 bool pldotnet_IsSimpleType(Oid type);
 bool pldotnet_IsTextType(Oid type);
+
+bool pldotnet_SPIReady(void);
+void pldotnet_SPIFinish(void);
+bool pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo);
+
+
+HeapTuple pldotnet_GetPostgresHeapTuple(FunctionCallInfo fcinfo);
+void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc);
+
+Datum
+pldotnet_Run(
+    dotnet_loader loader,
+    const char *dotnet_type, 
+    const char *dotnet_type_method, 
+    const pldotnet_PathConfig *paths,
+    int8_t *libargs,
+    size_t args_length);
+
+Datum 
+pldotnet_CompileUserFunction(
+    dotnet_loader loader,
+    const FunctionCallInfo fcinfo,
+    const pldotnet_PathConfig *paths,
+    pldotnet_ArgsSource *source
+);
+
+Datum 
+pldotnet_RunUserFunction(
+    dotnet_loader loader,
+    const pldotnet_PathConfig *paths,
+    int8_t *libargs,
+    size_t args_length
+);
 
 /*
  * Directories where C#/F# projects for user code are built when

@@ -103,3 +103,15 @@ GetNetLoadAssembly(const char_t *config_path)
     return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
 }
 
+bool
+pldotnet_LoadHostFxrIfNeeded(void)
+{
+    static bool hostfxr_loaded = false;
+
+    if (!hostfxr_loaded)
+    {
+        hostfxr_loaded = pldotnet_LoadHostfxr();
+    }
+
+    return hostfxr_loaded;
+}

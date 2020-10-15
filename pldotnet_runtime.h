@@ -1,4 +1,4 @@
-/* 
+#/* 
  * PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as 
  *                      procedural languages (PL)
  * 
@@ -20,12 +20,27 @@
  * pldotnet_fsharp.h
  *
  */
-#ifndef PLFSHARP_H
-#define PLFSHARP_H
+#ifndef PLDOTNETRUNTIME_H
+#define PLDOTNETRUNTIME_H
 
-#include "pldotnet_runtime.h"
+#include "pldotnet_common.h"
+#include "pldotnet_hostfxr.h"
 
-bool plfsharp_BuildFunctionDecl(FunctionCallInfo fcinfo, pldotnet_FunctionDecl *function_decl);
+Datum 
+pldotnet_CompileUserFunction(
+    dotnet_loader loader,
+    const FunctionCallInfo fcinfo,
+    const pldotnet_PathConfig *paths,
+    pldotnet_ArgsSource *source
+);
 
-#endif  /* PLFSHARP_H */
+Datum 
+pldotnet_RunUserFunction(
+    dotnet_loader loader,
+    const pldotnet_PathConfig *paths,
+    int8_t *libargs,
+    size_t args_length
+);
+
+#endif /* PLDOTNETRUNTIME_H */
 

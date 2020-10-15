@@ -46,7 +46,7 @@ OBJS = \
 	pldotnet_csharp.o \
 	pldotnet_fsharp.o \
 	pldotnet_spi.o \
-	pldotnet_composites.o
+	pldotnet_composites.o \
 	#pldotnet_debug.o \
 
 PG_CPPFLAGS = -I$(DOTNET_INCHOSTDIR) \

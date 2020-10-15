@@ -36,8 +36,11 @@ static char   *plfsharp_BuildBlockArgsDecl(Form_pg_proc procst);
 static char   *plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst,
                                                HeapTuple proc);
 static char   *plfsharp_BuildBlockCallFuncCall(Form_pg_proc procst);
-static int8_t *plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo,
-                                                           Form_pg_proc procst);
+
+static int8_t *plfsharp_CreateCStructLibargs(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst);
+
 static Datum  plfsharp_GetNetResult(int8_t * libargs, Oid rettype,
                                                        FunctionCallInfo fcinfo);
 static bool   plfsharp_TypeSupported(Oid type);
@@ -292,7 +295,9 @@ plfsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
 }
 
 static int8_t*
-plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
+plfsharp_CreateCStructLibargs(
+    FunctionCallInfo fcinfo, 
+    Form_pg_proc procst)
 {
     int i;
     int cursize = 0;
@@ -380,7 +385,203 @@ plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
     return retval;
 }
 
+bool
+plfsharp_GetSourceCode(
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst,
+    pldotnet_ArgsSource *source);
+
+bool
+plfsharp_GetSourceCode(
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst,
+    pldotnet_ArgsSource *source)
+{
+    size_t source_code_size;
+    char *fs_block_args_decl;
+    char *fs_block_userfunc_decl;
+    char *fs_block_callfunc_call;
+    
+    if (nullptr == source)
+    {
+        elog(ERROR, "[pldotnet]: Invalid argument: source is null");
+        return false;
+    }
+
+    if (nullptr != source->source_code)
+    {
+        elog(WARNING, "[pldotnet]: ArgSouce.source code should be null at this point: \n%s", source->source_code);
+        return false;
+    }
+
+    fs_block_args_decl = plfsharp_BuildBlockArgsDecl(procst);
+    fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(procst, proc);
+    fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(procst);
+
+    source_code_size = strlen(fs_block_header)
+                     + strlen(fs_block_args_decl)
+                     + strlen(fs_block_userclass_header)
+                     + strlen(fs_block_userfunc_decl)
+                     + strlen(fs_block_callfunc)
+                     + strlen(fs_block_callfunc_call)
+                     + strlen(fs_block_footer) + 1;
+
+    source->source_code = palloc0(source_code_size);
+    SNPRINTF(source->source_code, source_code_size, "%s%s%s%s%s%s%s",
+                                            fs_block_header,
+                                            fs_block_args_decl,
+                                            fs_block_userclass_header,
+                                            fs_block_userfunc_decl,
+                                            fs_block_callfunc,
+                                            fs_block_callfunc_call,
+                                            fs_block_footer);
+
+    return source->source_code != nullptr;
+}
+
+static bool
+plfsharp_CreateStructLibargs(
+    const FunctionCallInfo fcinfo,
+    const Form_pg_proc procst,
+    pldotnet_FunctionDecl *function_decl
+);
+
+static bool
+plfsharp_CreateStructLibargs(
+    const FunctionCallInfo fcinfo,
+    const Form_pg_proc procst,
+    pldotnet_FunctionDecl *function_decl
+)
+{
+    function_decl->args = plfsharp_CreateCStructLibargs(fcinfo, procst);
+    function_decl->args_length = func_inout_info.typesize_nullflags +
+                                 func_inout_info.typesize_args +
+                                 func_inout_info.typesize_result;
+
+    return nullptr != function_decl->args && function_decl->args_length > 0;
+}
+
+bool
+plfsharp_BuildFunctionDecl(
+    FunctionCallInfo fcinfo,
+    pldotnet_FunctionDecl *function_decl);
+
+bool
+plfsharp_BuildFunctionDecl(
+    FunctionCallInfo fcinfo,
+    pldotnet_FunctionDecl *function_decl)
+{
+    HeapTuple proc;
+    Form_pg_proc procst;
+    bool result = true;
+
+    if (nullptr == function_decl)
+    {
+        elog(ERROR, "[pldotnet]: Invalid argument, function decl is null");
+        return result;
+    }
+
+    /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END IF PROC != nullptr */
+    proc = pldotnet_GetPostgresHeapTuple(fcinfo);
+    if (nullptr == proc)
+        return result;
+
+    procst = (Form_pg_proc) GETSTRUCT(proc);
+
+    function_decl->ret_type = procst->prorettype;
+    
+    if (!plfsharp_GetSourceCode(fcinfo, proc, procst, &(function_decl->source)))
+    {
+        result = false;
+    } 
+    else if (!plfsharp_CreateStructLibargs(fcinfo, procst, function_decl))
+    {
+        result = false;
+    }
+
+    pldotnet_ReleasePostgresHeapTuple(proc);
+
+    return result;
+}
+
+Datum
+plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo);
+
+Datum
+plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo)
+{
+    dotnet_loader loader;
+    pldotnet_PathConfig paths;
+    pldotnet_FunctionDecl function_decl;
+
+    function_decl.source.source_code = nullptr;
+    function_decl.source.func_oid = -1;
+    function_decl.source.result = 1;
+    function_decl.args = nullptr;
+    function_decl.args_length = 0;
+    function_decl.ret_type = InvalidOid;
+
+    if (!pldotnet_BuildPaths(false, &paths))
+        return (Datum) 0;
+
+    if (!plfsharp_BuildFunctionDecl(fcinfo, &function_decl))
+        return (Datum) 0;
+
+    if (nullptr == (loader = GetNetLoadAssembly(paths.config_path)))
+    {
+        elog(ERROR, "[pldotnet]: Could not obtain .NET Loader");
+        return (Datum) 0;
+    }
+
+    if (!pldotnet_CompileUserFunction(loader, fcinfo, &paths, &(function_decl.source)))
+        return (Datum) 0;
+
+    return pldotnet_RunUserFunction(loader, &paths, function_decl.args, function_decl.args_length);
+}
+
 /****** FSharp handlers ******/
+Datum plfsharp_call_handler2(PG_FUNCTION_ARGS);
+Datum plfsharp_call_handler2(PG_FUNCTION_ARGS)
+{
+    MemoryContextWrapper memory_context;
+    Datum retval = 0;
+
+    if (!pldotnet_SPIReady())
+        return retval;
+
+    if (pldotnet_TriggerNotSupported(fcinfo))
+    {
+        pldotnet_SPIFinish();
+        return retval;
+    }
+
+    PG_TRY();
+    {
+        /* START NEW MEM CONTEXT */
+        pldotnet_StartNewMemoryContext(&memory_context);
+
+        pldotnet_LoadHostFxrIfNeeded();
+
+        retval = plfsharp_CompileAndRunUserFunction(fcinfo);
+
+        /* REVERT PREV MEM CONTEXT */
+        pldotnet_ResetMemoryContext(&memory_context);
+
+    }
+    PG_CATCH();
+    {
+        elog(WARNING, "Exception on PG context");
+        PG_RE_THROW();
+    }
+    PG_END_TRY();
+
+    pldotnet_SPIFinish();
+
+    return retval;
+}
+
 PG_FUNCTION_INFO_V1(plfsharp_call_handler);
 Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
 {

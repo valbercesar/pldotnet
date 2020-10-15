@@ -20,9 +20,13 @@
 #include <coreclr_delegates.h>
 #include <hostfxr.h>
 
+typedef load_assembly_and_get_function_pointer_fn dotnet_loader;
+
 int pldotnet_LoadHostfxr(void);
 load_assembly_and_get_function_pointer_fn GetNetLoadAssembly(const char_t *assembly);
 /* loaded host placeholder variable */
 void *nethost_lib;
+
+bool pldotnet_LoadHostFxrIfNeeded(void);
 
 #endif  /* PLNETHOST_H */

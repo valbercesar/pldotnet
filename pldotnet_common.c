@@ -31,26 +31,91 @@
 char *root_path = NULL;
 char *dnldir = STR(PLNET_ENGINE_DIR);
 
-void 
-pldotnet_BuildPaths(const char lang[], pldotnet_PathConfig *paths)
+bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
+{
+    if (nullptr == source)
+    {
+        elog(ERROR, "[pldotnet]: Invalid argument, args is null");
+        return false;
+    }
+
+    if (nullptr == source->source_code)
+    {
+        elog(ERROR, "[pldotnet]: Invalid args source, source code is null");
+        return false;
+    }
+
+    if (0 > source->func_oid)
+    {
+        elog(ERROR, "[plodtnet]: Invalid function_decl, wrong function oid");
+        return false;
+    }
+
+    /* TODO
+     * Verify the case when the user function returns void
+     */
+
+    return true;
+}
+
+bool
+pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl)
+{
+    if (nullptr == function_decl)
+    {
+        elog(ERROR, "[pldotnet]: Invalid argument, function_decl is null");
+        return false;
+    }
+
+    if (nullptr == function_decl->args && function_decl->args_length > 0)
+    {
+        elog(ERROR, "[plodtnet]: Invalid function_decl, args is null");
+        return false;
+    }
+
+    return pldotnet_ValidArgsSource(&(function_decl->source));
+}
+
+bool
+pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
 {
     char prefix[MAXPGPATH];
     const char json_path_suffix[] = "/PlDotNET.runtimeconfig.json";
     const char src_path_suffix[] = "/Lib.cs";
     const char dll_path_suffix[] = "/PlDotNET.dll";
+    char lang[] = "csharp";
 
     static bool path_defined = false;
 
-    if (nullptr == paths) return;
-
-    if (!path_defined)
+    if (nullptr == paths)
     {
+        elog(ERROR, "[pldotnet]:[pldotnet_BuildPaths] Argument 'paths' is null");
+    }
+    else if (!path_defined)
+    {
+        if (!is_csharp)
+            lang[0] = 'f';
+
         SNPRINTF(prefix, MAXPGPATH, "%s%s%s", root_path, "/src/", lang);
         SNPRINTF(paths->config_path, MAXPGPATH, "%s%s", prefix, json_path_suffix);
         SNPRINTF(paths->library_path, MAXPGPATH, "%s%s", prefix, dll_path_suffix);
         SNPRINTF(paths->src_lib_path, MAXPGPATH, "%s%s", prefix, src_path_suffix);
         path_defined = true;
     }
+
+    return path_defined;
+}
+
+bool
+pldotnet_ValidPaths(const pldotnet_PathConfig *paths)
+{
+    if (nullptr == paths)
+    {
+        elog(ERROR, "[pldotnet]:[pldotnet_ValidPaths] Argument 'paths' is null");
+        return false;
+    }
+
+    return true;
 }
 
 void 
@@ -79,21 +144,6 @@ pldotnet_ResetMemoryContext(MemoryContextWrapper *config)
 
     if (config->curr)
         MemoryContextDelete(config->curr);
-}
-
-void
-pldotnet_LoadHostFxrIfNeeded(void)
-{
-    static bool hostfxr_loaded = false;
-
-    if (!hostfxr_loaded)
-    {
-        if (!pldotnet_LoadHostfxr())
-        {
-            elog(ERROR, "Failure: pldotnet_LoadHostfxr()");
-        }
-        hostfxr_loaded = true;
-    }
 }
 
 const char *
@@ -396,3 +446,149 @@ pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info)
     return (funinout_info->arrayinfo[narg].ixarray == narg);
 }
 
+bool
+pldotnet_SPIReady(void)
+{
+    if (SPI_connect() != SPI_OK_CONNECT)
+    {
+        elog(ERROR, "[pldotnet]: could not connect to SPI manager");
+        return false; 
+    }
+
+    return true;
+}
+
+void
+pldotnet_SPIFinish(void)
+{
+    if (SPI_finish() != SPI_OK_FINISH)
+        elog(ERROR, "[pldotnet]: could not disconnect from SPI manager");
+}
+
+bool
+pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo)
+{
+    if (CALLED_AS_TRIGGER(fcinfo))
+    {
+        elog(ERROR, "[pldotnet]: dotnet trigger not supported");
+        return true;
+    }
+    return false;
+}
+
+HeapTuple
+pldotnet_GetPostgresHeapTuple(FunctionCallInfo fcinfo)
+{
+    Oid oid = fcinfo->flinfo->fn_oid;
+
+    HeapTuple proc = SearchSysCache(PROCOID, ObjectIdGetDatum(oid), 0, 0, 0);
+    if (!HeapTupleIsValid(proc))
+    {
+        elog(ERROR, "[pldotnet]: Cache lookup failed for function %u", oid);
+        return nullptr;
+    }
+
+    return proc;
+}
+
+inline void
+pldotnet_ReleasePostgresHeapTuple(HeapTuple proc)
+{
+    ReleaseSysCache(proc);
+} 
+
+Datum
+pldotnet_Run(
+    dotnet_loader loader,
+    const char *dotnet_type, 
+    const char *dotnet_type_method, 
+    const pldotnet_PathConfig *paths,
+    int8_t *libargs,
+    size_t args_length)
+{
+    Datum retval;
+    int rc;
+    component_entry_point_fn dotnet_method = nullptr;
+
+    /* Function pointer to managed delegate */
+    rc = loader(
+        paths->library_path,
+        dotnet_type,
+        dotnet_type_method,
+        nullptr,
+        nullptr,
+        (void**) &dotnet_method
+    );
+
+    assert(rc == 0 && dotnet_method != nullptr && \
+        "Failure: load_assembly_and_get_function_pointer()");
+
+    retval = (Datum) dotnet_method(libargs, args_length);
+
+    return  retval;
+}
+
+Datum 
+pldotnet_CompileUserFunction(
+    dotnet_loader loader,
+    const FunctionCallInfo fcinfo,
+    const pldotnet_PathConfig *paths,
+    pldotnet_ArgsSource *source
+)
+{
+    char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
+    char dotnet_type_method[64] = "Compile";
+
+    if (nullptr == loader) 
+        return (Datum) 0;
+
+    if (!pldotnet_ValidPaths(paths))
+        return (Datum) 0;
+
+    return pldotnet_Run(
+        loader,
+        dotnet_type,
+        dotnet_type_method,
+        paths,
+        (int8_t*) source,
+        sizeof(pldotnet_ArgsSource)
+    );
+}
+
+Datum 
+pldotnet_RunUserFunction(
+    dotnet_loader loader,
+    const pldotnet_PathConfig *paths,
+    int8_t *libargs, 
+    size_t args_length)
+{
+    char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
+    char dotnet_type_method[64] = "Run";
+
+    if (nullptr == loader) 
+        return (Datum) 0;
+    
+    if (!pldotnet_ValidPaths(paths))
+        return (Datum) 0;
+
+    if (nullptr != libargs)
+    {
+        return pldotnet_Run(
+            loader,
+            dotnet_type, 
+            dotnet_type_method, 
+            paths,
+            libargs,
+            args_length
+        );
+    }
+    
+    return pldotnet_Run(
+        loader,
+        dotnet_type, 
+        dotnet_type_method, 
+        paths,
+        nullptr,
+        0
+    );
+}
