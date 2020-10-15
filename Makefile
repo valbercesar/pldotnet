@@ -1,7 +1,8 @@
 # Makefile for PL/.NET
 
 # General
-DOTNET_VER ?= 3.1.0
+# Get installed dotnet host host
+DOTNET_VER = $(shell dotnet --info | grep 'Host' -A 3 | sed -n 's/Version: \(.*\)/\1/p' | xargs)
 DOTNET_HOSTDIR ?= /usr/share/dotnet/shared/Microsoft.NETCore.App/$(DOTNET_VER)/
 # TODO: Arch review. There is only .NET x64 flavours for Ubuntu/Debian Dec/2019
 DOTNET_LIBDIR ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/$(DOTNET_VER)/runtimes/linux-x64/native/
