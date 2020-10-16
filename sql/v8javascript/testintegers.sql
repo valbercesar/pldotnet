@@ -28,10 +28,10 @@ return a+b;
 $$ LANGUAGE plv8;
 SELECT sum2BigIntV8(9223372036854775707, 100) = bigint '9223372036854775807';
 
-CREATE OR REPLACE FUNCTION mixedBigIntV8(a integer, b integer, c bigint) RETURNS bigint AS $$
+CREATE OR REPLACE FUNCTION mixedBigIntV8(a integer, b bigint, c bigint) RETURNS bigint AS $$
 return a+b+c;
 $$ LANGUAGE plv8;
-SELECT mixedBigIntV8(32767,  2147483647, 100) = bigint '2147516514';
+SELECT mixedBigIntV8(32767,  CAST(2147483647 as bigint), CAST(100 as bigint)) = bigint '2147516514';
 
 CREATE OR REPLACE FUNCTION mixedIntV8(a smallint, b smallint, c integer) RETURNS integer AS $$
 return a+b+c;

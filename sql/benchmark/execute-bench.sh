@@ -6,7 +6,7 @@ FILENAME=$1
 echo "Test Case;pldotnet;plv8;plpython" >> $FILENAME
 
 # Create the content
-for file in sql/benchmark/*.sql
+for file in sql/benchmark/bench-*.sql
 do
     echo $file
     psql -f "$file" | grep "|" | grep -v "column" | sed "s/|/;/g" | sed s/'\s'//g  >> $FILENAME
