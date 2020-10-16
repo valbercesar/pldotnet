@@ -12,7 +12,7 @@ SELECT
     plbench('SELECT returnNullBoolPython()', 200) as plpython;
 
 SELECT
-    'SELECT BooleanNullAnd(true, null)',
+    'BooleanNullAnd(true, null)',
     plbench('SELECT BooleanNullAnd(true, null)', 200) as pldotnet,
     plbench('SELECT BooleanNullAndV8(true, null)', 200) as plv8,
     plbench('SELECT BooleanNullAndPython(true, null)', 200) as plpython;
@@ -72,7 +72,7 @@ SELECT
     plbench('SELECT BooleanNullOrPython(null, null)', 200) as plpython;
 
 SELECT
-    'SELECT BooleanNullXor(true, null)',
+    'BooleanNullXor(true, null)',
     plbench('SELECT BooleanNullXor(true, null)', 200) as pldotnet,
     plbench('SELECT BooleanNullXorV8(true, null)', 200) as plv8,
     plbench('SELECT BooleanNullXorPython(true, null)', 200) as plpython;
