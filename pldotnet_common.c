@@ -163,9 +163,9 @@ pldotnet_GetTypeSize(Oid id)
         case INT2OID:
             return sizeof(int16_t);
         case FLOAT4OID:
-            return sizeof(float);
+            return sizeof(float4);
         case FLOAT8OID:
-            return sizeof(double);
+            return sizeof(float8);
         case NUMERICOID:
         case BPCHAROID:
         case TEXTOID:

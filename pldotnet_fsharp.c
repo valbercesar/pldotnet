@@ -81,7 +81,11 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
     Oid *argtype = procst->proargtypes.values; /* Indicates the args type */
     Oid rettype = procst->prorettype; /* Indicates the return type */
     int nargs = procst->pronargs;
+    const char boolVal[]  = "\
+        [<MarshalAs(UnmanagedType.U1)>]\n\
+        val mutable";
     const char val[] = "        val mutable";
+    const char *currval = nullptr;
     const char colon[] = ":";
     char argname[] = " argN";
     char result[] = " resu"; /* have to be same size argN */
@@ -101,12 +105,16 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
             return 0;
         }
 
-        totalsize += strlen(val) + strlen(argname) + strlen(colon)
+        currval = BOOLOID == argtype[i] ? &boolVal[0] : &val[0];
+
+        totalsize += strlen(currval) + strlen(argname) + strlen(colon)
                         + strlen(pldotnet_GetCompatibleNetTypeName(argtype[i], true, false))
                         + strlen("\n");
     }
 
-    totalsize += strlen(val) + strlen(result) + strlen(colon)
+    currval = BOOLOID == rettype ? &boolVal[0] : &val[0];
+
+    totalsize += strlen(currval) + strlen(result) + strlen(colon)
                     + strlen(pldotnet_GetCompatibleNetTypeName(rettype, true, false)) + 1;
 
     block2str = (char *) palloc0(totalsize);
@@ -116,16 +124,21 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
         /* Review for nargs > 9 */
         SNPRINTF(argname, strlen(argname)+1, " arg%d", i);
         str_ptr = (char *)(block2str + cursize);
+
+        currval = BOOLOID == argtype[i] ? &boolVal[0] : &val[0];
+
         SNPRINTF(str_ptr,totalsize - cursize, "%s%s%s%s\n",
-                   val, argname, colon,
+                   currval, argname, colon,
                    pldotnet_GetCompatibleNetTypeName(argtype[i], true, false) );
         cursize += strlen(str_ptr);
     }
 
     str_ptr = (char *)(block2str + cursize);
 
+    currval = BOOLOID == rettype ? &boolVal[0] : &val[0];
+
     SNPRINTF(str_ptr, totalsize - cursize, "%s%s%s%s",
-                val, result, colon,
+                currval, result, colon,
                 pldotnet_GetCompatibleNetTypeName(rettype, true, false));
 
     return block2str;
@@ -314,6 +327,9 @@ plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
 #endif
         switch (type)
         {
+            case BOOLOID:
+                *(bool *)(cur_arg) = DatumGetBool(argdatum);
+                break;
             case INT2OID:
                 *(int16_t *)cur_arg = DatumGetInt16(argdatum);
                 break;
@@ -323,6 +339,13 @@ plfsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
             case INT8OID:
                 *(int64_t *)cur_arg = DatumGetInt64(argdatum);
                 break;
+            case FLOAT4OID:
+                *(float4 *)(cur_arg) = DatumGetFloat4(argdatum);
+                break;
+            case FLOAT8OID:
+                *(float8 *)(cur_arg) = DatumGetFloat8(argdatum);
+                break;
+            
         }
         cursize += pldotnet_GetTypeSize(argtype[i]);
         cur_arg = libargs_ptr + cursize;
@@ -341,12 +364,18 @@ plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
 
     switch (rettype)
     {
+        case BOOLOID:
+            return BoolGetDatum ( *(bool *)(resultP) );
         case INT2OID:
             return Int16GetDatum ( *(int16_t *)(resultP) );
         case INT4OID:
             return Int32GetDatum ( *(int32_t *)(resultP) );
         case INT8OID:
             return Int64GetDatum ( *(int64_t *)(resultP) );
+        case FLOAT4OID:
+            return Float4GetDatum ( *(float4 *)(resultP) );
+        case FLOAT8OID:
+            return Float8GetDatum ( *(float8 *)(resultP) );
     }
     return retval;
 }
@@ -500,6 +529,7 @@ Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
         fsharp_method(libargs, func_inout_info.typesize_nullflags +
                                func_inout_info.typesize_args +
                                func_inout_info.typesize_result);
+        
         retval = plfsharp_GetNetResult(libargs, rettype, fcinfo);
         if (libargs != NULL)
             pfree(libargs);
