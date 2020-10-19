@@ -1,14 +1,14 @@
-CREATE OR REPLACE FUNCTION sumArrayInt(a integer[]) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION sumArrayIntV8(a integer[]) RETURNS integer AS $$
 return a[0] + a[1] + a[2];
 $$ LANGUAGE plv8;
-SELECT sumArrayInt( ARRAY[4,1,5] ) = integer '10';
+SELECT sumArrayIntV8( ARRAY[4,1,5] ) = integer '10';
 
-CREATE OR REPLACE FUNCTION sumArrayNum(a numeric[]) RETURNS numeric AS $$
+CREATE OR REPLACE FUNCTION sumArrayNumV8(a numeric[]) RETURNS numeric AS $$
 return a[0] + a[1] + a[2];
 $$ LANGUAGE plv8;
-SELECT sumArrayNum( ARRAY[1.00002, 1.00003, 1.00004] ) = numeric '3.00009';
+SELECT sumArrayNumV8( ARRAY[1.00002, 1.00003, 1.00004] ) = numeric '3.00009';
 
-CREATE OR REPLACE FUNCTION sumArrayText(a text[]) RETURNS text AS $$
+CREATE OR REPLACE FUNCTION sumArrayTextV8(a text[]) RETURNS text AS $$
 return a[0] + a[1] + a[2] + a[3];
 $$ LANGUAGE plv8;
-SELECT sumArrayText( ARRAY['Rodrigo', ' Silva', ' Lima', ' Bahia'] ) = varchar 'Rodrigo Silva Lima Bahia';
+SELECT sumArrayTextV8( ARRAY['Rodrigo', ' Silva', ' Lima', ' Bahia'] ) = varchar 'Rodrigo Silva Lima Bahia';

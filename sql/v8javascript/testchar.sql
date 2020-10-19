@@ -1,50 +1,50 @@
-CREATE OR REPLACE FUNCTION retVarChar(fname varchar) RETURNS varchar AS $$
+CREATE OR REPLACE FUNCTION retVarCharV8(fname varchar) RETURNS varchar AS $$
 return fname + " Lima";
 $$ LANGUAGE plv8;
-SELECT retVarChar('Rodrigo') = varchar 'Rodrigo Lima';
+SELECT retVarCharV8('Rodrigo') = varchar 'Rodrigo Lima';
 
-CREATE OR REPLACE FUNCTION retConcatVarChar(fname varchar, lname varchar) RETURNS varchar AS $$
+CREATE OR REPLACE FUNCTION retConcatVarCharV8(fname varchar, lname varchar) RETURNS varchar AS $$
 return fname + lname;
 $$ LANGUAGE plv8;
-SELECT retConcatVarChar('João ', 'da Silva') = varchar 'João da Silva';
+SELECT retConcatVarCharV8('João ', 'da Silva') = varchar 'João da Silva';
 
-CREATE OR REPLACE FUNCTION retConcatText(fname text, lname text) RETURNS text AS $$
+CREATE OR REPLACE FUNCTION retConcatTextV8(fname text, lname text) RETURNS text AS $$
 return "Hello " + fname + lname + "!";
 $$ LANGUAGE plv8;
-SELECT retConcatText('João ', 'da Silva') =  varchar 'Hello João da Silva!';
+SELECT retConcatTextV8('João ', 'da Silva') =  varchar 'Hello João da Silva!';
 
-CREATE OR REPLACE FUNCTION retVarCharText(fname varchar, lname varchar) RETURNS text AS $$
+CREATE OR REPLACE FUNCTION retVarCharTextV8(fname varchar, lname varchar) RETURNS text AS $$
 return "Hello " + fname + lname + "!";
 $$ LANGUAGE plv8;
-SELECT retVarCharText('Homer Jay ', 'Simpson') = varchar 'Hello Homer Jay Simpson!';
+SELECT retVarCharTextV8('Homer Jay ', 'Simpson') = varchar 'Hello Homer Jay Simpson!';
 
-CREATE OR REPLACE FUNCTION retChar(argchar character) RETURNS character AS $$
+CREATE OR REPLACE FUNCTION retCharV8(argchar character) RETURNS character AS $$
 return argchar;
 $$ LANGUAGE plv8;
-SELECT retChar('R') =  character 'R';
+SELECT retCharV8('R') =  character 'R';
 
-CREATE OR REPLACE FUNCTION retConcatLetters(a character, b character) RETURNS varchar AS $$
+CREATE OR REPLACE FUNCTION retConcatLettersV8(a character, b character) RETURNS varchar AS $$
 return a + b;
 $$ LANGUAGE plv8;
-SELECT retConcatLetters('R', 'C') = varchar 'RC';
+SELECT retConcatLettersV8('R', 'C') = varchar 'RC';
 
 -- Problem here it is neither padding and truncating
-CREATE OR REPLACE FUNCTION retConcatChars(a char(5), b char(7)) RETURNS char(5) AS $$
+CREATE OR REPLACE FUNCTION retConcatCharsV8(a char(5), b char(7)) RETURNS char(5) AS $$
 return a + b;
 $$ LANGUAGE plv8;
-SELECT retConcatChars('H.', 'Simpson') = 'H.Simpson';
+SELECT retConcatCharsV8('H.', 'Simpson') = 'H.Simpson';
 
-CREATE OR REPLACE FUNCTION retConcatVarChars(a varchar(5), b varchar(7)) RETURNS varchar(5) AS $$
+CREATE OR REPLACE FUNCTION retConcatVarCharsV8(a varchar(5), b varchar(7)) RETURNS varchar(5) AS $$
 return a + b;
 $$ LANGUAGE plv8;
-SELECT retConcatVarChars('H.', 'Simpson') = 'H.Simpson';
-SELECT retConcatVarChars('H. あ', 'Simpson') = 'H. あSimpson';
+SELECT retConcatVarCharsV8('H.', 'Simpson') = 'H.Simpson';
+SELECT retConcatVarCharsV8('H. あ', 'Simpson') = 'H. あSimpson';
 
-CREATE OR REPLACE FUNCTION retNonRegularEncoding(a varchar) RETURNS varchar AS $$
+CREATE OR REPLACE FUNCTION retNonRegularEncodingV8(a varchar) RETURNS varchar AS $$
 return a;
 $$ LANGUAGE plv8;
-SELECT retNonRegularEncoding('漢字') = varchar '漢字';
-SELECT retNonRegularEncoding('ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ') = varchar 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ';
-SELECT retNonRegularEncoding('ŁĄŻĘĆŃŚŹ') = varchar 'ŁĄŻĘĆŃŚŹ';
-SELECT retNonRegularEncoding('Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.')
+SELECT retNonRegularEncodingV8('漢字') = varchar '漢字';
+SELECT retNonRegularEncodingV8('ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ') = varchar 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ';
+SELECT retNonRegularEncodingV8('ŁĄŻĘĆŃŚŹ') = varchar 'ŁĄŻĘĆŃŚŹ';
+SELECT retNonRegularEncodingV8('Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.')
     = varchar 'Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.';

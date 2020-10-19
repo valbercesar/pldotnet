@@ -1,19 +1,19 @@
-CREATE OR REPLACE FUNCTION returnBool() RETURNS boolean AS $$
+CREATE OR REPLACE FUNCTION returnBoolV8() RETURNS boolean AS $$
 return false;
 $$ LANGUAGE plv8;
-SELECT returnBool() is false;
+SELECT returnBoolV8() is false;
 
-CREATE OR REPLACE FUNCTION BooleanAnd(a boolean, b boolean) RETURNS boolean AS $$
+CREATE OR REPLACE FUNCTION BooleanAndV8(a boolean, b boolean) RETURNS boolean AS $$
 return a&b;
 $$ LANGUAGE plv8;
-SELECT BooleanAnd(true, true) is true;
+SELECT BooleanAndV8(true, true) is true;
 
-CREATE OR REPLACE FUNCTION BooleanOr(a boolean, b boolean) RETURNS boolean AS $$
+CREATE OR REPLACE FUNCTION BooleanOrV8(a boolean, b boolean) RETURNS boolean AS $$
 return a||b;
 $$ LANGUAGE plv8;
-SELECT BooleanOr(false, false) is false;
+SELECT BooleanOrV8(false, false) is false;
 
-CREATE OR REPLACE FUNCTION BooleanXor(a boolean, b boolean) RETURNS boolean AS $$
+CREATE OR REPLACE FUNCTION BooleanXorV8(a boolean, b boolean) RETURNS boolean AS $$
 return a^b;
 $$ LANGUAGE plv8;
-SELECT BooleanXor(false, false) is false;
+SELECT BooleanXorV8(false, false) is false;
