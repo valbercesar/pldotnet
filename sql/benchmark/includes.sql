@@ -7,7 +7,7 @@ BEGIN
     for i in 1 .. n loop
         execute query;
     end loop;
-    e = extract(microseconds from (clock_timestamp() - t0));
+    e := extract(microseconds from (clock_timestamp() - t0));
     return e / 1000000;
 END;
 $$ language plpgsql;
