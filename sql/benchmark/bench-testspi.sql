@@ -8,28 +8,33 @@ SELECT
     'returnCompositeSum',
     plbench('SELECT returnCompositeSum()', 100) as pldotnet,
     plbench('SELECT returnCompositeSumV8()', 100) as plv8,
-    plbench('SELECT returnCompositeSumPython()', 100) as plpython;
+    plbench('SELECT returnCompositeSumPython()', 100) as plpython,
+    plbench('SELECT returnCompositeSumPg()', 100) as plpgsql;
 
 SELECT
     'checkTypes',
     plbench('SELECT checkTypes()', 100) as pldotnet,
     plbench('SELECT checkTypesV8()', 100) as plv8,
-    plbench('SELECT checkTypesPython()', 100) as plpython;
+    plbench('SELECT checkTypesPython()', 100) as plpython,
+    plbench('SELECT checkTypesPg()', 100) as plpgsql;
 
 SELECT
     'getUsersWithBalance',
     plbench('SELECT getUsersWithBalance(2304.55)', 100) as pldotnet,
     plbench('SELECT getUsersWithBalanceV8(2304.55)', 100) as plv8,
-    plbench('SELECT getUsersWithBalancePython(2304.55)', 100) as plpython;
+    plbench('SELECT getUsersWithBalancePython(2304.55)', 100) as plpython,
+    plbench('SELECT getUsersWithBalancePg(2304.55)', 100) as plpgsql;
 
 SELECT
     'getUserDescription(123456789)',
     plbench('SELECT getUserDescription(123456789)', 100) as pldotnet,
     plbench('SELECT getUserDescriptionV8(123456789)', 100) as plv8,
-    plbench('SELECT getUserDescriptionPython(123456789)', 100) as plpython;
+    plbench('SELECT getUserDescriptionPython(123456789)', 100) as plpython,
+    plbench('SELECT getUserDescriptionPg(123456789)', 100) as plpgsql;
 
 SELECT
     'getUserDescriptionV8(987654321)',
     plbench('SELECT getUserDescription(987654321)', 100) as pldotnet,
     plbench('SELECT getUserDescriptionV8(987654321)', 100) as plv8,
-    plbench('SELECT getUserDescriptionPython(987654321)', 100) as plpython;
+    plbench('SELECT getUserDescriptionPython(987654321)', 100) as plpython,
+    plbench('SELECT getUserDescriptionPg(987654321)', 100) as plpgsql;
