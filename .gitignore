@@ -68,8 +68,8 @@ dkms.conf
 .kate-swp
 
 # ouput from dotnet engine
-DotNetEngine/src/csharp/obj/
-DotNetEngine/src/fsharp/obj/
+DotNetEngine/src/*/obj/
+DotNetEngine/src/*/bin/
 
 # cache extensions
 *.cache

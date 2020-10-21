@@ -1153,7 +1153,7 @@ plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline
     pldotnet_FunctionDecl function_decl;
 
     function_decl.source.source_code = nullptr;
-    function_decl.source.func_oid = -1;
+    function_decl.source.func_oid = (int) fcinfo->flinfo->fn_oid;
     function_decl.source.result = 1;
     function_decl.args = nullptr;
     function_decl.args_length = 0;

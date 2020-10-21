@@ -21,6 +21,7 @@
  *
  */
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -30,6 +31,11 @@ using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using System.Net.Http;
+using System.Threading.Tasks;
+using Google.Protobuf;
+using Grpc.Net.Client;
 
 namespace PlDotNET
 {
@@ -47,9 +53,10 @@ namespace PlDotNET
         static Assembly compiledAssembly;
         static IDictionary<int, (string, MemoryStream)> funcBuiltCodeDict;
 
+        static Storage.StorageClient client;
+
         public static int Compile(IntPtr arg, int argLength)
         {
-
             string spiSrc = @"
                 public static class SPI
 {
@@ -130,6 +137,7 @@ namespace PlDotNET
 }";
             LibArgs libArgs = Marshal.PtrToStructure<LibArgs>(arg);
             string sourceCode = Marshal.PtrToStringAuto(libArgs.SourceCode);
+
             if (Engine.funcBuiltCodeDict == null)
                 Engine.funcBuiltCodeDict = new Dictionary<int, (string, MemoryStream)>();
             else {
@@ -142,6 +150,11 @@ namespace PlDotNET
                         return 0;
                     }
                 }catch{}
+            }
+
+            if (Engine.RetrieveFromRemoteStorage(sourceCode, libArgs.FuncOid))
+            {
+                return 0;
             }
 
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
@@ -199,6 +212,8 @@ namespace PlDotNET
 
             funcBuiltCodeDict[libArgs.FuncOid] = (sourceCode, Engine.memStream);
 
+            Engine.SendToRemoteStorage(sourceCode, libArgs.FuncOid);
+
             return 0;
         }
 
@@ -220,8 +235,76 @@ namespace PlDotNET
             Type procClassType = Engine.compiledAssembly.GetType("PlDotNETUserSpace.UserClass");
             MethodInfo procMethod = procClassType.GetMethod("CallFunction");
             procMethod.Invoke(null, new object[] {arg, argLength});
-
             return 0;
+        }
+
+        static private void SendToRemoteStorage(string sourceCode, int functionId)
+        {
+            try
+            {
+                AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
+                // The port number(5000) must match the port of the gRPC server.
+                if (Engine.client == null)
+                {
+                    var channel = GrpcChannel.ForAddress("http://localhost:5000");
+                    Engine.client =  new Storage.StorageClient(channel);
+                }
+                var reply = Engine.client.Save(
+                            new StorageRequest {
+                                Procedure = new ProcedureInfo {
+                                    FunctionId = functionId,
+                                    Source = sourceCode
+                                },
+                                Content = new StreamContent {
+                                    Asm = ByteString.CopyFrom(Engine.memStream.GetBuffer())
+                                }
+                            }
+                );
+            }
+            catch
+            {
+            }
+        }
+
+        static private bool RetrieveFromRemoteStorage(string sourceCode, int functionId)
+        {
+            try
+            {
+                AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
+                // The port number(5000) must match the port of the gRPC server.
+                if (Engine.client == null)
+                {
+                    var channel = GrpcChannel.ForAddress("http://localhost:5000");
+                    Engine.client =  new Storage.StorageClient(channel);
+                }
+                var reply = Engine.client.Retrieve(
+                                new ProcedureInfo {
+                                    FunctionId = functionId,
+                                    Source =sourceCode
+                                }
+                );
+                if (reply.Asm.Length > 0) {
+                    var buffer = reply.Asm.ToByteArray();
+                    if (buffer.Length > 500)
+                    {
+                        Engine.memStream = new MemoryStream();
+                        Engine.memStream.Write(buffer, 0, buffer.Length);
+                        if (Engine.funcBuiltCodeDict == null)
+                        {
+                            Engine.funcBuiltCodeDict = new Dictionary<int, (string, MemoryStream)>();
+                        }
+                        Engine.funcBuiltCodeDict[functionId] = (sourceCode, Engine.memStream);
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
         }
     }
 }
