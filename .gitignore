@@ -73,3 +73,10 @@ DotNetEngine/src/fsharp/obj/
 
 # cache extensions
 *.cache
+
+# Java
+*.class
+*.ddr
+*.jar
+*.lst
+pom.properties
