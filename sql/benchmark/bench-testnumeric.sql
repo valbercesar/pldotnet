@@ -7,6 +7,7 @@
 \i sql/pgsql/testnumeric.sql
 \i sql/java/testnumeric.sql
 \i sql/perl/testnumeric.sql
+\i sql/lua/testnumeric.sql
 
 SELECT
     'get_sum(1.3333333, 10)',
@@ -42,7 +43,8 @@ SELECT
     plbench('SELECT getbigNumPython(999999999999999999991.9999991)', 500) as plpython,
     plbench('SELECT getbigNumPg(999999999999999999991.9999991)', 500) as plpgsql,
     plbench('SELECT getbigNumJava(999999999999999999991.9999991)', 500) as pljava,
-    plbench('SELECT getbigNumPerl(999999999999999999991.9999991)', 500) as plperl;
+    plbench('SELECT getbigNumPerl(999999999999999999991.9999991)', 500) as plperl,
+    plbench('SELECT getbigNumLua(999999999999999999991.9999991)', 500) as pllua;
 
 SELECT
     'getbigNum(999999999999999999991.99999999)',
@@ -51,4 +53,5 @@ SELECT
     plbench('SELECT getbigNumPython(999999999999999999991.99999999)', 500) as plpython,
     plbench('SELECT getbigNumPg(999999999999999999991.99999999)', 500) as plpgsql,
     plbench('SELECT getbigNumJava(999999999999999999991.99999999)', 500) as pljava,
-    plbench('SELECT getbigNumPerl(999999999999999999991.99999999)', 500) as plperl;
+    plbench('SELECT getbigNumPerl(999999999999999999991.99999999)', 500) as plperl,
+    plbench('SELECT getbigNumLua(999999999999999999991.99999999)', 500) as pllua;

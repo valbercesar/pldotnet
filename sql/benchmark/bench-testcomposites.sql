@@ -6,6 +6,7 @@
 \i sql/pgsql/testcomposites.sql
 \i sql/java/testcomposites.sql
 \i sql/perl/testcomposites.sql
+\i sql/lua/testcomposites.sql
 
 SELECT
     'helloPersonAge',
@@ -14,7 +15,8 @@ SELECT
     plbench('SELECT helloPersonAgePython((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plpython,
     plbench('SELECT helloPersonAgePg((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plpgsql,
     plbench('SELECT helloPersonAgeJava((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pljava,
-    plbench('SELECT helloPersonAgePerl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plperl;
+    plbench('SELECT helloPersonAgePerl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plperl,
+    plbench('SELECT helloPersonAgeLua((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pllua;
 
 
 SELECT
@@ -24,4 +26,5 @@ SELECT
     plbench('SELECT helloPersonPython((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plpython,
     plbench('SELECT helloPersonPg((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plpgsql,
     plbench('SELECT helloPersonJava((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pljava,
-    plbench('SELECT helloPersonPerl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plperl;
+    plbench('SELECT helloPersonPerl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plperl,
+    plbench('SELECT helloPersonLua((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pllua;

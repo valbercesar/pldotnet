@@ -6,6 +6,7 @@
 \i sql/pgsql/testbool.sql
 \i sql/java/testbool.sql
 \i sql/perl/testbool.sql
+\i sql/lua/testbool.sql
 
 SELECT
     'returnBool',
@@ -14,7 +15,8 @@ SELECT
     plbench('SELECT returnBoolPython()', 1000) as plpython,
     plbench('SELECT returnBoolPg()', 1000) as plpgsql,
     plbench('SELECT returnBoolJava()', 1000) as pljava,
-    plbench('SELECT returnBoolPerl()', 1000) as plperl;
+    plbench('SELECT returnBoolPerl()', 1000) as plperl,
+    plbench('SELECT returnBoolLua()', 1000) as pllua;
 
 SELECT
     'BooleanAnd',
@@ -23,7 +25,8 @@ SELECT
     plbench('SELECT BooleanAndPython(true, true)', 1000) as plpython,
     plbench('SELECT BooleanAndPg(true, true)', 1000) as plpgsql,
     plbench('SELECT BooleanAndJava(true, true)', 1000) as pljava,
-    plbench('SELECT BooleanAndPerl(true, true)', 1000) as plperl;
+    plbench('SELECT BooleanAndPerl(true, true)', 1000) as plperl,
+    plbench('SELECT BooleanAndLua(true, true)', 1000) as pllua;
 
 SELECT
     'BooleanOr',
@@ -32,7 +35,8 @@ SELECT
     plbench('SELECT BooleanOrPython(false, false)', 1000) as plpython,
     plbench('SELECT BooleanOrPg(false, false)', 1000) as plpgsql,
     plbench('SELECT BooleanOrJava(false, false)', 1000) as pljava,
-    plbench('SELECT BooleanOrPerl(false, false)', 1000) as plperl;
+    plbench('SELECT BooleanOrPerl(false, false)', 1000) as plperl,
+    plbench('SELECT BooleanOrLua(false, false)', 1000) as pllua;
 
 SELECT
     'BooleanXor',
@@ -41,4 +45,5 @@ SELECT
     plbench('SELECT BooleanXorPython(false, false)', 100) as plpython,
     plbench('SELECT BooleanXorPg(false, false)', 100) as plpgsql,
     plbench('SELECT BooleanXorJava(false, false)', 100) as pljava,
-    plbench('SELECT BooleanXorPerl(false, false)', 1000) as plperl;
+    plbench('SELECT BooleanXorPerl(false, false)', 1000) as plperl,
+    plbench('SELECT BooleanXorLua(false, false)', 1000) as pllua;

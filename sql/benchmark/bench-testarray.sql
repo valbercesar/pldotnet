@@ -6,6 +6,9 @@
 \i sql/pgsql/testarray.sql
 \i sql/java/testarray.sql
 \i sql/perl/testarray.sql
+\i sql/lua/testarray.sql
+
+
 
 SELECT
     'sumArrayInt',
@@ -14,7 +17,8 @@ SELECT
     plbench('SELECT sumArrayIntPython( ARRAY[4,1,5] )', 1000) as plpython,
     plbench('SELECT sumArrayIntPg( ARRAY[4,1,5] )', 1000) as plpgsql,
     plbench('SELECT sumArrayIntJava( ARRAY[4,1,5] )', 1000) as pljava,
-    plbench('SELECT sumArrayIntPerl( ARRAY[4,1,5] )', 1000) as plperl;
+    plbench('SELECT sumArrayIntPerl( ARRAY[4,1,5] )', 1000) as plperl,
+    plbench('SELECT sumArrayIntLua( ARRAY[4,1,5] )', 1000) as pllua;
 
 SELECT
     'sumArrayNum',
@@ -24,6 +28,8 @@ SELECT
     plbench('SELECT sumArrayNumPg( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as plpgsql,
     plbench('SELECT sumArrayNumJava( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as pljava,
     plbench('SELECT sumArrayNumPerl( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as plperl;
+    /* FIXME: Not working:
+    plbench('SELECT sumArrayNumLua( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as pllua;*/
 
 SELECT
     'sumArrayText',
@@ -32,4 +38,5 @@ SELECT
     plbench('SELECT sumArrayTextPython( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''])', 1000) as plpython,
     plbench('SELECT sumArrayTextPg( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''])', 1000) as plpgsql,
     plbench('SELECT sumArrayTextJava( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as pljava,
-    plbench('SELECT sumArrayTextPerl( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as plperl;
+    plbench('SELECT sumArrayTextPerl( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as plperl,
+    plbench('SELECT sumArrayTextLua( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as pllua;
