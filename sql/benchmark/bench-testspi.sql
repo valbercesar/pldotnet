@@ -12,7 +12,8 @@ SELECT
     plbench('SELECT returnCompositeSumV8()', 100) as plv8,
     plbench('SELECT returnCompositeSumPython()', 100) as plpython,
     plbench('SELECT returnCompositeSumPg()', 100) as plpgsql,
-    plbench('SELECT returnCompositeSumJava()', 100) as pljava;
+    plbench('SELECT returnCompositeSumJava()', 100) as pljava,
+    plbench('SELECT returnCompositeSumPerl()', 100) as plperl;
 
 SELECT
     'checkTypes',
@@ -28,7 +29,8 @@ SELECT
     plbench('SELECT getUsersWithBalanceV8(2304.55)', 100) as plv8,
     plbench('SELECT getUsersWithBalancePython(2304.55)', 100) as plpython,
     plbench('SELECT getUsersWithBalancePg(2304.55)', 100) as plpgsql,
-    plbench('SELECT getUsersWithBalanceJava(2304.55)', 100) as pljava;
+    plbench('SELECT getUsersWithBalanceJava(2304.55)', 100) as pljava,
+    plbench('SELECT getUsersWithBalancePerl(2304.55)', 100) as plperl;
 
 SELECT
     'getUserDescription(123456789)',
@@ -36,7 +38,8 @@ SELECT
     plbench('SELECT getUserDescriptionV8(123456789)', 100) as plv8,
     plbench('SELECT getUserDescriptionPython(123456789)', 100) as plpython,
     plbench('SELECT getUserDescriptionPg(123456789)', 100) as plpgsql,
-    plbench('SELECT getUserDescriptionJava(123456789)', 100) as pljava;
+    plbench('SELECT getUserDescriptionJava(123456789)', 100) as pljava,
+    plbench('SELECT getUserDescriptionPerl(123456789)', 100) as plperl;
 
 SELECT
     'getUserDescriptionV8(987654321)',
@@ -44,4 +47,5 @@ SELECT
     plbench('SELECT getUserDescriptionV8(987654321)', 100) as plv8,
     plbench('SELECT getUserDescriptionPython(987654321)', 100) as plpython,
     plbench('SELECT getUserDescriptionPg(987654321)', 100) as plpgsql,
-    plbench('SELECT getUserDescriptionJava(987654321)', 100) as pljava;
+    plbench('SELECT getUserDescriptionJava(987654321)', 100) as pljava,
+    plbench('SELECT getUserDescriptionPerl(987654321)', 100) as plperl;

@@ -6,6 +6,7 @@
 \i sql/python/testnumeric.sql
 \i sql/pgsql/testnumeric.sql
 \i sql/java/testnumeric.sql
+\i sql/perl/testnumeric.sql
 
 SELECT
     'get_sum(1.3333333, 10)',
@@ -13,7 +14,8 @@ SELECT
     plbench('SELECT get_sumV8(1.3333333, 10)', 500) as plv8,
     plbench('SELECT get_sumPython(1.3333333, 10)', 500) as plpython,
     plbench('SELECT get_sumPg(1.3333333, 10)', 500) as plpgsql,
-    plbench('SELECT get_sumJava(1.3333333, 10)', 500) as pljava;
+    plbench('SELECT get_sumJava(1.3333333, 10)', 500) as pljava,
+    plbench('SELECT get_sumPerl(1.3333333, 10)', 500) as plperl;
 
 SELECT
     'get_sum(1.33333333, -10.99999999)',
@@ -21,7 +23,8 @@ SELECT
     plbench('SELECT get_sumV8(1.33333333, -10.99999999)', 500) as plv8,
     plbench('SELECT get_sumPython(1.33333333, -10.99999999)', 500) as plpython,
     plbench('SELECT get_sumPg(1.33333333, -10.99999999)', 500) as plpgsql,
-    plbench('SELECT get_sumJava(1.33333333, -10.99999999)', 500) as pljava;
+    plbench('SELECT get_sumJava(1.33333333, -10.99999999)', 500) as pljava,
+    plbench('SELECT get_sumPerl(1.33333333, -10.99999999)', 500) as plperl;
 
 SELECT
     'get_sum(1999999999999.555555555555555, -10.99999999)',
@@ -29,7 +32,8 @@ SELECT
     plbench('SELECT get_sumV8(1999999999999.555555555555555, -10.99999999)', 500) as plv8,
     plbench('SELECT get_sumPython(1999999999999.555555555555555, -10.99999999)', 500) as plpython,
     plbench('SELECT get_sumPg(1999999999999.555555555555555, -10.99999999)', 500) as plpgsql,
-    plbench('SELECT get_sumJava(1999999999999.555555555555555, -10.99999999)', 500) as pljava;
+    plbench('SELECT get_sumJava(1999999999999.555555555555555, -10.99999999)', 500) as pljava,
+    plbench('SELECT get_sumPerl(1999999999999.555555555555555, -10.99999999)', 500) as plperl;
 
 SELECT
     'getbigNum(999999999999999999991.9999991)',
@@ -37,7 +41,8 @@ SELECT
     plbench('SELECT getbigNumV8(999999999999999999991.9999991)', 500) as plv8,
     plbench('SELECT getbigNumPython(999999999999999999991.9999991)', 500) as plpython,
     plbench('SELECT getbigNumPg(999999999999999999991.9999991)', 500) as plpgsql,
-    plbench('SELECT getbigNumJava(999999999999999999991.9999991)', 500) as pljava;
+    plbench('SELECT getbigNumJava(999999999999999999991.9999991)', 500) as pljava,
+    plbench('SELECT getbigNumPerl(999999999999999999991.9999991)', 500) as plperl;
 
 SELECT
     'getbigNum(999999999999999999991.99999999)',
@@ -45,4 +50,5 @@ SELECT
     plbench('SELECT getbigNumV8(999999999999999999991.99999999)', 500) as plv8,
     plbench('SELECT getbigNumPython(999999999999999999991.99999999)', 500) as plpython,
     plbench('SELECT getbigNumPg(999999999999999999991.99999999)', 500) as plpgsql,
-    plbench('SELECT getbigNumJava(999999999999999999991.99999999)', 500) as pljava;
+    plbench('SELECT getbigNumJava(999999999999999999991.99999999)', 500) as pljava,
+    plbench('SELECT getbigNumPerl(999999999999999999991.99999999)', 500) as plperl;

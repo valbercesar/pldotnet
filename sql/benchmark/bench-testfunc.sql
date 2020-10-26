@@ -5,6 +5,7 @@
 \i sql/python/testfunc.sql
 \i sql/pgsql/testfunc.sql
 \i sql/java/testfunc.sql
+\i sql/perl/testfunc.sql
 
 SELECT
     'returnX',
@@ -12,7 +13,8 @@ SELECT
     plbench('SELECT returnXV8()', 300) as plv8,
     plbench('SELECT returnXPython()', 300) as plpython,
     plbench('SELECT returnXPg()', 300) as plpgsql,
-    plbench('SELECT returnXJava()', 300) as pljava;
+    plbench('SELECT returnXJava()', 300) as pljava,
+    plbench('SELECT returnXPerl()', 300) as plperl;
 
 SELECT
     'inc2',
@@ -20,7 +22,8 @@ SELECT
     plbench('SELECT inc2V8(8)', 300) as plv8,
     plbench('SELECT inc2Python(8)', 300) as plpython,
     plbench('SELECT inc2Pg(8)', 300) as plpgsql,
-    plbench('SELECT inc2Java(8)', 300) as pljava;
+    plbench('SELECT inc2Java(8)', 300) as pljava,
+    plbench('SELECT inc2Perl(8)', 300) as plperl;
 
 SELECT
     'sum2',
@@ -28,7 +31,8 @@ SELECT
     plbench('SELECT sum2V8(3,2)', 300) as plv8,
     plbench('SELECT sum2Python(3,2)', 300) as plpython,
     plbench('SELECT sum2Pg(3,2)', 300) as plpgsql,
-    plbench('SELECT sum2Java(3,2)', 300) as pljava;
+    plbench('SELECT sum2Java(3,2)', 300) as pljava,
+    plbench('SELECT sum2Perl(3,2)', 300) as plperl;
 
 SELECT
     'sum3',
@@ -36,7 +40,8 @@ SELECT
     plbench('SELECT sum3V8(3,2,1)', 300) as plv8,
     plbench('SELECT sum3Python(3,2,1)', 300) as plpython,
     plbench('SELECT sum3Pg(3,2,1)', 300) as plpgsql,
-    plbench('SELECT sum3Java(3,2,1)', 300) as pljava;
+    plbench('SELECT sum3Java(3,2,1)', 300) as pljava,
+    plbench('SELECT sum3Perl(3,2,1)', 300) as plperl;
 
 SELECT
     'sum4',
@@ -44,4 +49,5 @@ SELECT
     plbench('SELECT sum4V8(4,3,2,1)', 300) as plv8,
     plbench('SELECT sum4Python(4,3,2,1)', 300) as plpython,
     plbench('SELECT sum4Pg(4,3,2,1)', 300) as plpgsql,
-    plbench('SELECT sum4Java(4,3,2,1)', 300) as pljava;
+    plbench('SELECT sum4Java(4,3,2,1)', 300) as pljava,
+    plbench('SELECT sum4Perl(4,3,2,1)', 300) as plperl;

@@ -6,6 +6,7 @@
 \i sql/python/testnullbool.sql
 \i sql/pgsql/testnullbool.sql
 \i sql/java/testnullbool.sql
+\i sql/perl/testnullbool.sql
 
 SELECT
     'returnNullBool',
@@ -13,7 +14,8 @@ SELECT
     plbench('SELECT returnNullBoolV8()', 200) as plv8,
     plbench('SELECT returnNullBoolPython()', 200) as plpython,
     plbench('SELECT returnNullBoolPg()', 200) as plpgsql,
-    plbench('SELECT returnNullBoolJava()', 200) as pljava;
+    plbench('SELECT returnNullBoolJava()', 200) as pljava,
+    plbench('SELECT returnNullBoolPerl()', 200) as plperl;
 
 SELECT
     'BooleanNullAnd(true, null)',
@@ -21,7 +23,8 @@ SELECT
     plbench('SELECT BooleanNullAndV8(true, null)', 200) as plv8,
     plbench('SELECT BooleanNullAndPython(true, null)', 200) as plpython,
     plbench('SELECT BooleanNullAndPg(true, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullAndJava(true, null)', 200) as pljava;
+    plbench('SELECT BooleanNullAndJava(true, null)', 200) as pljava,
+    plbench('SELECT BooleanNullAndPerl(true, null)', 200) as plperl;
 
 SELECT
     'BooleanNullAnd(null, true)',
@@ -29,7 +32,8 @@ SELECT
     plbench('SELECT BooleanNullAndV8(null, true)', 200) as plv8,
     plbench('SELECT BooleanNullAndPython(null, true)', 200) as plpython,
     plbench('SELECT BooleanNullAndPg(null, true)', 200) as plpgsql,
-    plbench('SELECT BooleanNullAndJava(null, true)', 200) as pljava;
+    plbench('SELECT BooleanNullAndJava(null, true)', 200) as pljava,
+    plbench('SELECT BooleanNullAndPerl(null, true)', 200) as plperl;
 
 SELECT
     'BooleanNullAnd(false, null)',
@@ -37,7 +41,8 @@ SELECT
     plbench('SELECT BooleanNullAndV8(false, null)', 200) as plv8,
     plbench('SELECT BooleanNullAndPython(false, null)', 200) as plpython,
     plbench('SELECT BooleanNullAndPg(false, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullAndJava(false, null)', 200) as pljava;
+    plbench('SELECT BooleanNullAndJava(false, null)', 200) as pljava,
+    plbench('SELECT BooleanNullAndPerl(false, null)', 200) as plperl;
 
 SELECT
     'BooleanNullAnd(null, false)',
@@ -45,7 +50,8 @@ SELECT
     plbench('SELECT BooleanNullAndV8(null, false)', 200) as plv8,
     plbench('SELECT BooleanNullAndPython(null, false)', 200) as plpython,
     plbench('SELECT BooleanNullAndPg(null, false)', 200) as plpgsql,
-    plbench('SELECT BooleanNullAndJava(null, false)', 200) as pljava;
+    plbench('SELECT BooleanNullAndJava(null, false)', 200) as pljava,
+    plbench('SELECT BooleanNullAndPerl(null, false)', 200) as plperl;
 
 SELECT
     'BooleanNullAnd(null, null)',
@@ -53,7 +59,8 @@ SELECT
     plbench('SELECT BooleanNullAndV8(null, null)', 200) as plv8,
     plbench('SELECT BooleanNullAndPython(null, null)', 200) as plpython,
     plbench('SELECT BooleanNullAndPg(null, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullAndJava(null, null)', 200) as pljava;
+    plbench('SELECT BooleanNullAndJava(null, null)', 200) as pljava,
+    plbench('SELECT BooleanNullAndPerl(null, null)', 200) as plperl;
 
 SELECT
     'BooleanNullOr(true, null)',
@@ -61,7 +68,8 @@ SELECT
     plbench('SELECT BooleanNullOrV8(true, null)', 200) as plv8,
     plbench('SELECT BooleanNullOrPython(true, null)', 200) as plpython,
     plbench('SELECT BooleanNullOrPg(true, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullOrJava(true, null)', 200) as pljava;
+    plbench('SELECT BooleanNullOrJava(true, null)', 200) as pljava,
+    plbench('SELECT BooleanNullOrPerl(true, null)', 200) as plperl;
 
 SELECT
     'retuBooleanNullOr(null, true)rnBool',
@@ -69,7 +77,8 @@ SELECT
     plbench('SELECT BooleanNullOrV8(null, true)', 200) as plv8,
     plbench('SELECT BooleanNullOrPython(null, true)', 200) as plpython,
     plbench('SELECT BooleanNullOrPg(null, true)', 200) as plpgsql,
-    plbench('SELECT BooleanNullOrJava(null, true)', 200) as pljava;
+    plbench('SELECT BooleanNullOrJava(null, true)', 200) as pljava,
+    plbench('SELECT BooleanNullOrPerl(null, true)', 200) as plperl;
 
 SELECT
     'BooleanNullOr(false, null)',
@@ -77,7 +86,8 @@ SELECT
     plbench('SELECT BooleanNullOrV8(false, null)', 200) as plv8,
     plbench('SELECT BooleanNullOrPython(false, null)', 200) as plpython,
     plbench('SELECT BooleanNullOrPg(false, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullOrJava(false, null)', 200) as pljava;
+    plbench('SELECT BooleanNullOrJava(false, null)', 200) as pljava,
+    plbench('SELECT BooleanNullOrPerl(false, null)', 200) as plperl;
 
 SELECT
     'BooleanNullOr(null, false)',
@@ -85,7 +95,8 @@ SELECT
     plbench('SELECT BooleanNullOrV8(null, false)', 200) as plv8,
     plbench('SELECT BooleanNullOrPython(null, false)', 200) as plpython,
     plbench('SELECT BooleanNullOrPg(null, false)', 200) as plpgsql,
-    plbench('SELECT BooleanNullOrJava(null, false)', 200) as pljava;
+    plbench('SELECT BooleanNullOrJava(null, false)', 200) as pljava,
+    plbench('SELECT BooleanNullOrPerl(null, false)', 200) as plperl;
 
 SELECT
     'BooleanNullOr(null, null)',
@@ -93,7 +104,8 @@ SELECT
     plbench('SELECT BooleanNullOrV8(null, null)', 200) as plv8,
     plbench('SELECT BooleanNullOrPython(null, null)', 200) as plpython,
     plbench('SELECT BooleanNullOrPg(null, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullOrJava(null, null)', 200) as pljava;
+    plbench('SELECT BooleanNullOrJava(null, null)', 200) as pljava,
+    plbench('SELECT BooleanNullOrPerl(null, null)', 200) as plperl;
 
 SELECT
     'BooleanNullXor(true, null)',
@@ -101,7 +113,8 @@ SELECT
     plbench('SELECT BooleanNullXorV8(true, null)', 200) as plv8,
     plbench('SELECT BooleanNullXorPython(true, null)', 200) as plpython,
     plbench('SELECT BooleanNullXorPg(true, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullXorJava(true, null)', 200) as pljava;
+    plbench('SELECT BooleanNullXorJava(true, null)', 200) as pljava,
+    plbench('SELECT BooleanNullXorPerl(true, null)', 200) as plperl;
 
 SELECT
     'BooleanNullXor(null, true)',
@@ -109,7 +122,8 @@ SELECT
     plbench('SELECT BooleanNullXorV8(null, true)', 200) as plv8,
     plbench('SELECT BooleanNullXorPython(null, true)', 200) as plpython,
     plbench('SELECT BooleanNullXorPg(null, true)', 200) as plpgsql,
-    plbench('SELECT BooleanNullXorJava(null, true)', 200) as pljava;
+    plbench('SELECT BooleanNullXorJava(null, true)', 200) as pljava,
+    plbench('SELECT BooleanNullXorPerl(null, true)', 200) as plperl;
 
 SELECT
     'BooleanNullXor(false, null)',
@@ -117,7 +131,8 @@ SELECT
     plbench('SELECT BooleanNullXorV8(false, null)', 200) as plv8,
     plbench('SELECT BooleanNullXorPython(false, null)', 200) as plpython,
     plbench('SELECT BooleanNullXorPg(false, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullXorJava(false, null)', 200) as pljava;
+    plbench('SELECT BooleanNullXorJava(false, null)', 200) as pljava,
+    plbench('SELECT BooleanNullXorPerl(false, null)', 200) as plperl;
 
 SELECT
     'BooleanNullXor(null, false)',
@@ -125,7 +140,8 @@ SELECT
     plbench('SELECT BooleanNullXorV8(null, false)', 200) as plv8,
     plbench('SELECT BooleanNullXorPython(null, false)', 200) as plpython,
     plbench('SELECT BooleanNullXorPg(null, false)', 200) as plpgsql,
-    plbench('SELECT BooleanNullXorJava(null, false)', 200) as pljava;
+    plbench('SELECT BooleanNullXorJava(null, false)', 200) as pljava,
+    plbench('SELECT BooleanNullXorPerl(null, false)', 200) as plperl;
 
 SELECT
     'BooleanNullXor(null, null)',
@@ -133,4 +149,5 @@ SELECT
     plbench('SELECT BooleanNullXorV8(null, null)', 200) as plv8,
     plbench('SELECT BooleanNullXorPython(null, null)', 200) as plpython,
     plbench('SELECT BooleanNullXorPg(null, null)', 200) as plpgsql,
-    plbench('SELECT BooleanNullXorJava(null, null)', 200) as pljava;
+    plbench('SELECT BooleanNullXorJava(null, null)', 200) as pljava,
+    plbench('SELECT BooleanNullXorPerl(null, null)', 200) as plperl;

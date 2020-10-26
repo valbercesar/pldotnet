@@ -5,6 +5,7 @@
 \i sql/python/testfloats.sql
 \i sql/pgsql/testfloats.sql
 \i sql/java/testfloats.sql
+\i sql/perl/testfloats.sql
 
 SELECT
     'returnReal',
@@ -12,7 +13,8 @@ SELECT
     plbench('SELECT returnRealV8()', 500) as plv8,
     plbench('SELECT returnRealPython()', 500) as plpython,
     plbench('SELECT returnRealPg()', 500) as plpgsql,
-    plbench('SELECT returnRealJava()', 500) as pljava;
+    plbench('SELECT returnRealJava()', 500) as pljava,
+    plbench('SELECT returnRealPerl()', 500) as plperl;
 
 SELECT
     'sumReal',
@@ -20,7 +22,8 @@ SELECT
     plbench('SELECT sumRealV8(1.50055, 1.50054)', 500) as plv8,
     plbench('SELECT sumRealPython(1.50055, 1.50054)', 500) as plpython,
     plbench('SELECT sumRealPg(1.50055, 1.50054)', 500) as plpgsql,
-    plbench('SELECT sumRealJava(1.50055, 1.50054)', 500) as pljava;
+    plbench('SELECT sumRealJava(1.50055, 1.50054)', 500) as pljava,
+    plbench('SELECT sumRealPerl(1.50055, 1.50054)', 500) as plperl;
 
 SELECT
     'returnDouble',
@@ -28,7 +31,8 @@ SELECT
     plbench('SELECT returnDoubleV8()', 500) as plv8,
     plbench('SELECT returnDoublePython()', 500) as plpython,
     plbench('SELECT returnDoublePg()', 500) as plpgsql,
-    plbench('SELECT returnDoubleJava()', 500) as pljava;
+    plbench('SELECT returnDoubleJava()', 500) as pljava,
+    plbench('SELECT returnDoublePerl()', 500) as plperl;
 
 SELECT
     'sumDouble',
@@ -36,4 +40,5 @@ SELECT
     plbench('SELECT sumDoubleV8(10.5000000000055, 10.5000000000054)', 500) as plv8,
     plbench('SELECT sumDoublePython(10.5000000000055, 10.5000000000054)', 500) as plpython,
     plbench('SELECT sumDoublePg(10.5000000000055, 10.5000000000054)', 500) as plpgsql,
-    plbench('SELECT sumDoubleJava(10.5000000000055, 10.5000000000054)', 500) as pljava;
+    plbench('SELECT sumDoubleJava(10.5000000000055, 10.5000000000054)', 500) as pljava,
+    plbench('SELECT sumDoublePerl(10.5000000000055, 10.5000000000054)', 500) as plperl;

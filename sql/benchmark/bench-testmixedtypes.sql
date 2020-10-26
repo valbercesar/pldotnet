@@ -5,6 +5,7 @@
 \i sql/python/testmixedtypes.sql
 \i sql/pgsql/testmixedtypes.sql
 \i sql/java/testmixedtypes.sql
+\i sql/perl/testmixedtypes.sql
 
 SELECT
     'ageTest(Billy)',
@@ -12,7 +13,8 @@ SELECT
     plbench('SELECT ageTestV8(''Billy'', 10, ''The KID'')', 1000) as plv8,
     plbench('SELECT ageTestPython(''Billy'', 10, ''The KID'')', 1000) as plpython,
     plbench('SELECT ageTestPg(''Billy'', 10, ''The KID'')', 1000) as plpgsql,
-    plbench('SELECT ageTestJava(''Billy'', 10, ''The KID'')', 1000) as pljava;
+    plbench('SELECT ageTestJava(''Billy'', 10, ''The KID'')', 1000) as pljava,
+    plbench('SELECT ageTestPerl(''Billy'', 10, ''The KID'')', 1000) as plperl;
 
 SELECT
     'ageTest(John)',
@@ -20,7 +22,8 @@ SELECT
     plbench('SELECT ageTestV8(''John'', 33, ''Smith'')', 1000) as plv8,
     plbench('SELECT ageTestPython(''John'', 33, ''Smith'')', 1000) as plpython,
     plbench('SELECT ageTestPg(''John'', 33, ''Smith'')', 1000) as plpgsql,
-    plbench('SELECT ageTestJava(''John'', 33, ''Smith'')', 1000) as pljava;
+    plbench('SELECT ageTestJava(''John'', 33, ''Smith'')', 1000) as pljava,
+    plbench('SELECT ageTestPerl(''John'', 33, ''Smith'')', 1000) as plperl;
 
 SELECT
     'ageTest(Robson)',
@@ -28,4 +31,5 @@ SELECT
     plbench('SELECT ageTestV8(''Robson'', 41, ''Cruzoe'')', 1000) as plv8,
     plbench('SELECT ageTestPython(''Robson'', 41, ''Cruzoe'')', 1000) as plpython,
     plbench('SELECT ageTestPg(''Robson'', 41, ''Cruzoe'')', 1000) as plpgsql,
-    plbench('SELECT ageTestJava(''Robson'', 41, ''Cruzoe'')', 1000) as pljava;
+    plbench('SELECT ageTestJava(''Robson'', 41, ''Cruzoe'')', 1000) as pljava,
+    plbench('SELECT ageTestPerl(''Robson'', 41, ''Cruzoe'')', 1000) as plperl;
