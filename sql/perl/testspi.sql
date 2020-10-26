@@ -21,19 +21,19 @@ CREATE OR REPLACE FUNCTION getUsersWithBalancePerl(searchbalance real) RETURNS v
 my $rv = spi_exec_query("SELECT * from usersavings", 1);
 my $nrows = $rv->{processed};
 
-my $searchbalance = @_;
+my ($searchbalance, ) = @_;
 
-my $res = "User(s) found with {$searchbalance} account balance";
+my $res = "User(s) found with " . $searchbalance . " account balance";
 
 foreach my $rn (0 .. $nrows - 1) {
-        $res = "$res $rv->{rows}[$rn]->{name} $rv->{rows}[$rn]->{sname}";
+        $res = "$res, $rv->{rows}[$rn]->{name} $rv->{rows}[$rn]->{sname} (Social Security Number $rv->{rows}[$rn]->{ssnum})";
 }
-return $res + ".";
+return "$res.";
 $$ LANGUAGE plperl;
 
-SELECT getUsersWithBalance(2304.55) = varchar 'User(s) found with 2304.55 account balance, Homer Simpson (Social Security Number 123456789).';
+SELECT getUsersWithBalancePerl(2304.55) = varchar 'User(s) found with 2304.55 account balance, Homer Simpson (Social Security Number 123456789).';
 
-CREATE OR REPLACE FUNCTION getUserDescriptionPython(ssnum bigint) RETURNS varchar AS $$
+CREATE OR REPLACE FUNCTION getUserDescriptionPerl(ssnum bigint) RETURNS varchar AS $$
 my ($ssnum, ) = @_;
 my $rv = spi_exec_query("SELECT * from usersavings", 2);
 my $nrows = $rv->{processed};
@@ -48,6 +48,6 @@ foreach my $rn (0 .. $nrows - 1) {
 return $res
 $$ LANGUAGE plperl;
 
-SELECT getUserDescriptionPython(123456789) = varchar 'Homer Simpson, Social security Number 123456789, has 2304.55 account balance.';
+SELECT getUserDescriptionPerl(123456789) = varchar 'Homer Simpson, Social security Number 123456789, has 2304.55 account balance.';
 
-SELECT getUserDescriptionPython(987654321) = varchar 'Charles Montgomery Burns, Social security Number 987654321, has 3e+06 account balance.';
+SELECT getUserDescriptionPerl(987654321) = varchar 'Charles Montgomery Burns, Social security Number 987654321, has 3e+06 account balance.';
