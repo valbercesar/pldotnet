@@ -192,6 +192,7 @@ pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
         SNPRINTF(paths->config_path, MAXPGPATH, "%s%s", prefix, json_path_suffix);
         SNPRINTF(paths->library_path, MAXPGPATH, "%s%s", prefix, dll_path_suffix);
         SNPRINTF(paths->src_lib_path, MAXPGPATH, "%s%s", prefix, src_path_suffix);
+        spi_paths = paths;
         path_defined = true;
     }
 

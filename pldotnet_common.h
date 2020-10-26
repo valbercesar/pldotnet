@@ -214,4 +214,7 @@ pldotnet_RunUserFunction(
 char *root_path;
 char *dnldir;
 
+pldotnet_PathConfig *spi_paths;
+dotnet_loader assembly_loader;
+
 #endif /* PLDOTNETCOMMON_H */

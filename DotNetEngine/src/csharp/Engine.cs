@@ -49,21 +49,34 @@ namespace PlDotNET
             public uint FuncOid;
         }
 
+        public struct CachedFunction
+        {
+            public string SourceCode;
+            public Func<IntPtr, int, int> CallFunction;
+            public Action<IntPtr, int> AddProperty;
+            public Action ResetFuncExpandDo;
+
+            public bool needsReset;
+        }
+
         static uint funcOid;
 
         static MemoryStream memStream;
         static Assembly compiledAssembly;
 
-        static IDictionary<uint, (string, Func<IntPtr, int, int>)> funcBuiltCodeDict;
-
+        static IDictionary<uint, CachedFunction> funcBuiltCodeDict;
         static Storage.StorageClient client;
 
+        static CachedFunction cachedFunction;
+
         static Func<IntPtr, int, int> userFunction;
+
+        static bool needsReset = true;
 
         public static int Compile(IntPtr arg, int argLength)
         {
             string spiSrc = @"
-                public static class SPI
+public static class SPI
 {
     static List<dynamic> funcExpandDo = new List<dynamic>();
 
@@ -84,6 +97,12 @@ namespace PlDotNET
         SPI.pldotnet_SPIExecute(cmd, limit);
         return SPI.funcExpandDo;
     }
+
+    public static void ResetFuncExpandDo()
+    {
+        SPI.funcExpandDo = new List<dynamic>();
+    }
+
     public static T ReadValue<T>(IntPtr handle)
     {
         if (typeof(T) == typeof(string))
@@ -144,15 +163,15 @@ namespace PlDotNET
             string sourceCode = Marshal.PtrToStringAuto(libArgs.SourceCode);
 
             if (Engine.funcBuiltCodeDict == null)
-                Engine.funcBuiltCodeDict = new Dictionary<uint, (string, Func<IntPtr, int, int>)>();
+                Engine.funcBuiltCodeDict = new Dictionary<uint, CachedFunction>();
             else {
                 // Code has not changed then it is not needed to build it
                 try {
-                    Engine.funcBuiltCodeDict.TryGetValue(libArgs.FuncOid,
-                    out (string src, Func<IntPtr, int, int> builtCode) pair);
-                    if  (pair.src == sourceCode) {
+                    Engine.funcBuiltCodeDict.TryGetValue(libArgs.FuncOid, out CachedFunction cached);
+                    if  (cached.SourceCode == sourceCode) {
                         Engine.funcOid = libArgs.FuncOid;
-                        Engine.userFunction = pair.builtCode;
+                        Engine.cachedFunction = cached;
+                        Engine.userFunction = Engine.cachedFunction.CallFunction;
                         return 0;
                     }
                 }catch{}
@@ -220,24 +239,23 @@ namespace PlDotNET
                 return 0;
             }
 
-            Engine.SetDelegate(Engine.memStream);
+            Engine.SetDelegate(Engine.memStream, sourceCode, libArgs.FuncOid);
 
             Engine.SendToRemoteStorage(sourceCode, libArgs.FuncOid);
 
-            Engine.funcBuiltCodeDict[libArgs.FuncOid] = (sourceCode, Engine.userFunction);
+            Engine.funcBuiltCodeDict[libArgs.FuncOid] = Engine.cachedFunction;
 
             return 0;
         }
 
         public static int InvokeAddProperty(IntPtr arg, int argLength)
         {
-            if(Engine.compiledAssembly == null)
+            if (needsReset)
             {
-                Engine.compiledAssembly = Assembly.Load(Engine.memStream.GetBuffer());
+                Engine.cachedFunction.ResetFuncExpandDo();
+                needsReset = false;
             }
-            Type procClassType = Engine.compiledAssembly.GetType("PlDotNETUserSpace.SPI");
-            MethodInfo procMethod = procClassType.GetMethod("AddProperty");
-            procMethod.Invoke(null, new object[] {arg, argLength});
+            Engine.cachedFunction.AddProperty(arg, argLength);
             return 0;
         }
 
@@ -249,12 +267,13 @@ namespace PlDotNET
             if (functionId != Engine.funcOid)
             {
                 try {
-                    if (Engine.funcBuiltCodeDict.TryGetValue(functionId,
-                        out (string src, Func<IntPtr, int, int> builtCode) pair2))
+                    if (Engine.funcBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
                     {
                         Engine.funcOid = functionId;
-                        Engine.userFunction = pair2.builtCode;
-                        Engine.userFunction(arg, argLength);
+                        Engine.userFunction = cached.CallFunction;
+                        Engine.cachedFunction = cached;
+                        Engine.needsReset = true;
+                        cached.CallFunction(arg, argLength);
                         return 0;
                     }
                     else
@@ -267,6 +286,7 @@ namespace PlDotNET
                 }
             }
 
+            Engine.needsReset = true;
             Engine.userFunction(arg, argLength);
             return 0;
         }
@@ -326,10 +346,10 @@ namespace PlDotNET
                         Engine.memStream.Write(buffer, 0, buffer.Length);
                         if (Engine.funcBuiltCodeDict == null)
                         {
-                            Engine.funcBuiltCodeDict = new Dictionary<uint, (string, Func<IntPtr, int, int>)>();
+                            Engine.funcBuiltCodeDict = new Dictionary<uint, CachedFunction>();
                         }
-                        Engine.SetDelegate(Engine.memStream);
-                        Engine.funcBuiltCodeDict[functionId] = (sourceCode, Engine.userFunction);
+                        Engine.SetDelegate(Engine.memStream, sourceCode, functionId);
+                        Engine.funcBuiltCodeDict[functionId] = Engine.cachedFunction;
                         return true;
                     }
                 }
@@ -341,17 +361,37 @@ namespace PlDotNET
             return false;
         }
 
-        public static void SetDelegate(MemoryStream memoryStream)
+        public static void SetDelegate(MemoryStream memoryStream, string sourceCode, uint functionId)
         {
             Engine.compiledAssembly = Assembly.Load(memStream.GetBuffer());
+
             Type procClassType = Engine.compiledAssembly.GetType("PlDotNETUserSpace.UserClass");
             MethodInfo procMethod = procClassType.GetMethod("CallFunction");
+            Type procClassType2 = Engine.compiledAssembly.GetType("PlDotNETUserSpace.SPI");
+            MethodInfo procMethod2 = procClassType2.GetMethod("AddProperty");
+            MethodInfo procMethod3 = procClassType2.GetMethod("ResetFuncExpandDo");
 
-            Engine.userFunction = (Func<IntPtr, int, int>) Delegate.CreateDelegate(
-                typeof(Func<IntPtr, int, int>),
-                null,
-                procMethod
-            );
+            Engine.cachedFunction = new CachedFunction() {
+                SourceCode = sourceCode,
+                CallFunction = (Func<IntPtr, int, int>) Delegate.CreateDelegate(
+                    typeof(Func<IntPtr, int, int>),
+                    null,
+                    procMethod
+                ),
+                AddProperty = (Action<IntPtr, int>) Delegate.CreateDelegate(
+                    typeof(Action<IntPtr, int>),
+                    null,
+                    procMethod2
+                ),
+                ResetFuncExpandDo = (Action) Delegate.CreateDelegate(
+                    typeof(Action),
+                    null,
+                    procMethod3
+                ),
+            };
+        
+            Engine.userFunction = cachedFunction.CallFunction;
+            Engine.funcOid = functionId;
         }
     }
 }

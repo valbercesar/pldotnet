@@ -1233,6 +1233,8 @@ plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline
             return (Datum) 0;
         }
 
+        if (nullptr == assembly_loader) assembly_loader = loader;
+
         if (!pldotnet_CompileUserFunction(loader, fcinfo, &paths, &(function_decl.source)))
             return (Datum) 0;
         if (!pldotnet_RunUserFunction(loader, &paths, function_decl.args, function_decl.args_length))

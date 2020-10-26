@@ -130,10 +130,11 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
                                                        PG_UTF8);
                         break;
                 }
-                plcsharp_Run(dotnet_type,
+                pldotnet_Run(assembly_loader, 
+                             dotnet_type, 
                              dotnet_type_method,
-                             (char *)&val,
-                             sizeof(PropertyValue));
+                             spi_paths,
+                             (int8_t*) &val, sizeof(PropertyValue));
             }
         }
     }

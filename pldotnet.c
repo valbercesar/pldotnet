@@ -50,6 +50,9 @@ Datum _PG_init(PG_FUNCTION_ARGS)
 
     /* starts a new hash table */
     procedures = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
+
+    assembly_loader = nullptr;
+
     PG_RETURN_VOID();
 }
 
