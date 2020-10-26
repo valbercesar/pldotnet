@@ -23,9 +23,7 @@
 #ifndef PLFSHARP_H
 #define PLFSHARP_H
 
-#include "pldotnet_runtime.h"
-
-bool plfsharp_BuildFunctionDecl(FunctionCallInfo fcinfo, pldotnet_FunctionDecl *function_decl);
+#include "pldotnet_common.h"
 
 #endif  /* PLFSHARP_H */
 

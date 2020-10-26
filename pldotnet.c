@@ -48,6 +48,8 @@ Datum _PG_init(PG_FUNCTION_ARGS)
     if (root_path[strlen(root_path) - 1] == DIR_SEPARATOR)
         root_path[strlen(root_path) - 1] = 0;
 
+    /* starts a new hash table */
+    procedures = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
     PG_RETURN_VOID();
 }
 
@@ -57,6 +59,9 @@ Datum _PG_fini(PG_FUNCTION_ARGS)
     /* Deinitialize variable/structs here
      * Close dotnet runtime here ?
      */
+
+    /* destroys the global hash table */
+    g_hash_table_destroy(procedures);
 
     dlclose(nethost_lib);
     PG_RETURN_VOID();

@@ -34,22 +34,13 @@ char *dnldir = STR(PLNET_ENGINE_DIR);
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
 {
     if (nullptr == source)
-    {
-        elog(ERROR, "[pldotnet]: Invalid argument, args is null");
         return false;
-    }
 
     if (nullptr == source->source_code)
-    {
-        elog(ERROR, "[pldotnet]: Invalid args source, source code is null");
         return false;
-    }
 
     if (0 > source->func_oid)
-    {
-        elog(ERROR, "[plodtnet]: Invalid function_decl, wrong function oid");
         return false;
-    }
 
     /* TODO
      * Verify the case when the user function returns void
@@ -58,22 +49,123 @@ bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
     return true;
 }
 
+void
+pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl)
+{
+    if (nullptr == function_decl)
+        return;
+    function_decl->source.source_code = nullptr;
+    function_decl->source.func_oid = 0;
+    function_decl->source.result = 1;
+    function_decl->args = nullptr;
+    function_decl->args_length = 0;
+    function_decl->ret_type = InvalidOid;
+    function_decl->dotnet_method = nullptr;
+}
+
 bool
 pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl)
 {
     if (nullptr == function_decl)
-    {
-        elog(ERROR, "[pldotnet]: Invalid argument, function_decl is null");
         return false;
-    }
 
     if (nullptr == function_decl->args && function_decl->args_length > 0)
-    {
-        elog(ERROR, "[plodtnet]: Invalid function_decl, args is null");
         return false;
-    }
 
     return pldotnet_ValidArgsSource(&(function_decl->source));
+}
+
+bool
+pldotnet_ValidCachedFunction(
+    pldotnet_FunctionDecl *reference,
+    pldotnet_FunctionDecl *candidate)
+{
+    if (nullptr == reference || nullptr == candidate)
+        return false;
+    if (reference->source.func_oid != candidate->source.func_oid)
+        return false;
+    if (reference->ret_type != candidate->ret_type)
+        return false;
+    if (reference->args_length != candidate->args_length)
+        return false;
+    if (nullptr == reference->source.source_code || nullptr == candidate->source.source_code)
+        return false;
+    if (0 != strcmp(reference->source.source_code, candidate->source.source_code))
+        return false;
+    if (nullptr == candidate->dotnet_method)
+        return false;
+
+    return true;
+}
+
+pldotnet_FunctionDecl*
+pldotnet_FindFunctionDecl(int function_id)
+{
+    gpointer key, value;
+    key = (gpointer) &function_id;
+    value = g_hash_table_lookup(procedures, key);
+
+    if (nullptr != value)
+    {
+        return (pldotnet_FunctionDecl*) value;
+    }
+
+    return nullptr;
+}
+
+void
+pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl)
+{
+    gpointer key, value;
+    pldotnet_FunctionDecl *decl;
+
+    decl = pldotnet_CopyFunctionDecl(function_decl);
+
+    key = (gpointer) &function_decl->source.func_oid;
+    value = (gpointer) decl;
+
+    g_hash_table_insert(procedures, key, value);
+}
+
+pldotnet_FunctionDecl*
+pldotnet_CopyFunctionDecl(pldotnet_FunctionDecl *function_decl)
+{
+    pldotnet_FunctionDecl *decl;
+
+    decl = (pldotnet_FunctionDecl*) SPI_palloc(sizeof(pldotnet_FunctionDecl));
+
+    decl->ret_type = function_decl->ret_type;
+
+    decl->args_length = function_decl->args_length;
+
+    decl->source.func_oid = function_decl->source.func_oid;
+    decl->source.result = function_decl->source.result;
+    decl->source.source_code = (char*) SPI_palloc(sizeof(char) * strlen(function_decl->source.source_code));
+    strcpy(decl->source.source_code, function_decl->source.source_code);
+
+    decl->dotnet_method = function_decl->dotnet_method;
+
+    return decl;
+}
+
+void
+pldotnet_SaveFunctionDecl(
+    dotnet_loader loader,
+    pldotnet_PathConfig *paths,
+    pldotnet_FunctionDecl *function_decl)
+{
+    pldotnet_FunctionDecl *decl;
+
+    if (nullptr == function_decl)
+        return;
+
+    decl = pldotnet_FindFunctionDecl(function_decl->source.func_oid);
+
+    if (!pldotnet_ValidCachedFunction(function_decl, decl))
+    {
+        function_decl->dotnet_method = pldotnet_GetUserMethod(loader, paths);
+        pldotnet_InsertFunctionDecl(function_decl);
+    }
 }
 
 bool
@@ -81,8 +173,8 @@ pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
 {
     char prefix[MAXPGPATH];
     const char json_path_suffix[] = "/PlDotNET.runtimeconfig.json";
-    const char src_path_suffix[] = "/Lib.cs";
-    const char dll_path_suffix[] = "/PlDotNET.dll";
+    const char src_path_suffix[]  = "/Lib.cs";
+    const char dll_path_suffix[]  = "/PlDotNET.dll";
     char lang[] = "csharp";
 
     static bool path_defined = false;
@@ -183,8 +275,7 @@ pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp
                                   ObjectIdGetDatum(id), 0, 0, 0);
             if (!HeapTupleIsValid(typ))
             {
-                elog(ERROR, "[pldotnet]: cache lookup failed for type %u",
-                                                                         id);
+                elog(ERROR, "[pldotnet]: cache lookup failed for type %u", id);
             }
             typeinfo = (Form_pg_type) GETSTRUCT(typ);
             if (typeinfo->typtype == TYPTYPE_COMPOSITE)
@@ -495,9 +586,33 @@ inline void
 pldotnet_ReleasePostgresHeapTuple(HeapTuple proc)
 {
     ReleaseSysCache(proc);
-} 
+}
 
-Datum
+component_entry_point_fn
+pldotnet_GetUserMethod(dotnet_loader loader, pldotnet_PathConfig *paths)
+{
+    int rc;
+    component_entry_point_fn dotnet_method = nullptr;
+
+    char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
+    char dotnet_type_method[64] = "Run";
+
+    rc = loader(
+        paths->library_path,
+        dotnet_type,
+        dotnet_type_method,
+        nullptr,
+        nullptr,
+        (void**) &dotnet_method
+    );
+
+    assert(rc == 0 && dotnet_method != nullptr && \
+        "Failure: load_assembly_and_get_function_pointer()");
+
+    return dotnet_method;
+}
+
+bool
 pldotnet_Run(
     dotnet_loader loader,
     const char *dotnet_type, 
@@ -525,10 +640,10 @@ pldotnet_Run(
 
     retval = (Datum) dotnet_method(libargs, args_length);
 
-    return  retval;
+    return 0 == retval;
 }
 
-Datum 
+bool 
 pldotnet_CompileUserFunction(
     dotnet_loader loader,
     const FunctionCallInfo fcinfo,
@@ -540,10 +655,10 @@ pldotnet_CompileUserFunction(
     char dotnet_type_method[64] = "Compile";
 
     if (nullptr == loader) 
-        return (Datum) 0;
+        return false;
 
     if (!pldotnet_ValidPaths(paths))
-        return (Datum) 0;
+        return false;
 
     return pldotnet_Run(
         loader,
@@ -555,7 +670,7 @@ pldotnet_CompileUserFunction(
     );
 }
 
-Datum 
+bool 
 pldotnet_RunUserFunction(
     dotnet_loader loader,
     const pldotnet_PathConfig *paths,
@@ -566,10 +681,11 @@ pldotnet_RunUserFunction(
     char dotnet_type_method[64] = "Run";
 
     if (nullptr == loader) 
-        return (Datum) 0;
-    
+        return (Datum) 1;
+
     if (!pldotnet_ValidPaths(paths))
-        return (Datum) 0;
+        return (Datum) 1;
+
 
     if (nullptr != libargs)
     {
@@ -582,7 +698,7 @@ pldotnet_RunUserFunction(
             args_length
         );
     }
-    
+
     return pldotnet_Run(
         loader,
         dotnet_type, 

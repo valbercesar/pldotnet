@@ -11,7 +11,7 @@ service Storage {
 }
 
 message ProcedureInfo {
-  int32 functionId = 1;
+  uint32 functionId = 1;
   string source = 2;
 }
 

@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="VirtualFileSystem.fs" />
-    <Compile Include="AssemblyCache.fs" />
-    <Compile Include="FSharpEngine.fs" />
+    <!-- <Compile Include="VirtualFileSystem.fs" /> -->
+    <!-- <Compile Include="FunctionCache.fs" /> -->
+    <!-- <Compile Include="FSharpEngine.fs" /> -->
+    <Compile Include="Engine.fs" />
   </ItemGroup>
 
   <ItemGroup>

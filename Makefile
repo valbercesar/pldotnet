@@ -8,6 +8,7 @@ DOTNET_HOSTDIR ?= /usr/share/dotnet/shared/Microsoft.NETCore.App/$(DOTNET_VER)/
 DOTNET_LIBDIR ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/$(DOTNET_VER)/runtimes/linux-x64/native/
 DOTNET_INCHOSTDIR ?= $(DOTNET_HOSTDIR) $(shell env > /tmp/pgdotnet-make-env)
 DOTNET_HOSTLIB ?= -L$(DOTNET_LIBDIR) -lnethost
+GLIB_INC := `pkg-config --cflags --libs glib-2.0`
 PLNET_ENGINE_ROOT ?= /var/lib
 PLNET_ENGINE_DIR := -D PLNET_ENGINE_DIR=$(PLNET_ENGINE_ROOT)/DotNetEngine
 
@@ -50,9 +51,10 @@ OBJS = \
 	#pldotnet_debug.o \
 
 PG_CPPFLAGS = -I$(DOTNET_INCHOSTDIR) \
-			  -Iinc -D LINUX $(DEFINE_DOTNET_BUILD) $(PLNET_ENGINE_DIR)
+			  -Iinc -D LINUX $(DEFINE_DOTNET_BUILD) $(PLNET_ENGINE_DIR) \
+			  $(GLIB_INC)
 
-SHLIB_LINK = $(DOTNET_HOSTLIB)
+SHLIB_LINK = $(DOTNET_HOSTLIB) $(GLIB_INC)
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 

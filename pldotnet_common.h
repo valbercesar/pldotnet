@@ -55,7 +55,10 @@
 
 #include <dlfcn.h>
 #include <limits.h>
+#include <glib.h>
+#include <glib/ghash.h>
 
+GHashTable *procedures;
 
 #if PG_VERSION_NUM < 110000
     #define TupleDescAttr(tupdesc, i) ((tupdesc)->attrs[(i)])
@@ -111,7 +114,7 @@ typedef struct pldotnet_ArgsSource
 {
     char* source_code;
     int result;
-    int func_oid;
+    uint32 func_oid;
 }pldotnet_ArgsSource;
 
 typedef struct pldotnet_FunctionDecl
@@ -120,6 +123,7 @@ typedef struct pldotnet_FunctionDecl
     int8_t *args;
     size_t args_length;
     Oid ret_type;
+    component_entry_point_fn dotnet_method;
 } pldotnet_FunctionDecl;
 
 typedef struct pldotnet_PathConfig
@@ -137,8 +141,16 @@ typedef struct MemoryContextWrapper
 } MemoryContextWrapper;
 
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *args);
-
+void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl);
 bool pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl);
+bool pldotnet_ValidCachedFunction( pldotnet_FunctionDecl *reference, pldotnet_FunctionDecl *candidate);
+pldotnet_FunctionDecl* pldotnet_FindFunctionDecl(int function_id);
+void pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl);
+pldotnet_FunctionDecl* pldotnet_CopyFunctionDecl(pldotnet_FunctionDecl *function_decl);
+void pldotnet_SaveFunctionDecl(
+    dotnet_loader loader,
+    pldotnet_PathConfig *paths,
+    pldotnet_FunctionDecl *function_decl);
 
 bool pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths);
 bool pldotnet_ValidPaths(const pldotnet_PathConfig *paths);
@@ -167,7 +179,9 @@ bool pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo);
 HeapTuple pldotnet_GetPostgresHeapTuple(FunctionCallInfo fcinfo);
 void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc);
 
-Datum
+component_entry_point_fn pldotnet_GetUserMethod( dotnet_loader loader, pldotnet_PathConfig *paths);
+
+bool
 pldotnet_Run(
     dotnet_loader loader,
     const char *dotnet_type, 
@@ -176,7 +190,7 @@ pldotnet_Run(
     int8_t *libargs,
     size_t args_length);
 
-Datum 
+bool
 pldotnet_CompileUserFunction(
     dotnet_loader loader,
     const FunctionCallInfo fcinfo,
@@ -184,7 +198,7 @@ pldotnet_CompileUserFunction(
     pldotnet_ArgsSource *source
 );
 
-Datum 
+bool
 pldotnet_RunUserFunction(
     dotnet_loader loader,
     const pldotnet_PathConfig *paths,

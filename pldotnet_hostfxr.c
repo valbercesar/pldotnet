@@ -82,9 +82,15 @@ load_assembly_and_get_function_pointer_fn
 GetNetLoadAssembly(const char_t *config_path)
 {
     /* Load .NET Core */
-    void *load_assembly_and_get_function_pointer = nullptr;
+    int rc;
+    static void *load_assembly_and_get_function_pointer = nullptr;
     hostfxr_handle cxt = nullptr;
-    int rc = init_fptr(config_path, nullptr, &cxt);
+
+    if (load_assembly_and_get_function_pointer != nullptr)
+        return load_assembly_and_get_function_pointer;
+
+    rc = init_fptr(config_path, nullptr, &cxt);
+
     if (rc > 1 || rc < 0 || cxt == nullptr)
     {
         fprintf(stderr, "Init failed: %x\n", rc);

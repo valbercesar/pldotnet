@@ -9,8 +9,9 @@ open FSharp.Compiler.AbstractIL.Internal.Library
 
 module VirtualFileSystem =
 
+    let mutable defaultFileSystem : IFileSystem = Shim.FileSystem
+
     type VFileSystem(container: (string * string) [], defaultFileSystem: IFileSystem) =
-        let RestoreFileSystem = Shim.FileSystem <- defaultFileSystem
         let files = dict container
         interface IFileSystem with
             // Implement the service to open files for reading and writing
@@ -62,7 +63,11 @@ module VirtualFileSystem =
             member __.AssemblyLoad(assemblyName) =
                 defaultFileSystem.AssemblyLoad assemblyName
 
-    let GetFileSystem (files : (string * string) []) (defaultFileSystem: IFileSystem) = 
-        let mvfs = VFileSystem(files, defaultFileSystem)
+    let SetVirtualFileSystem (files : (string * string) []) (shim: IFileSystem) = 
+        let mvfs = VFileSystem(files, shim)
         Shim.FileSystem <- mvfs
         mvfs
+
+    let RestoreFileSystem : int =
+        Shim.FileSystem <- defaultFileSystem
+        0

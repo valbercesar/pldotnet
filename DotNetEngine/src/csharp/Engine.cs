@@ -46,14 +46,19 @@ namespace PlDotNET
         {
             public IntPtr SourceCode;
             public int Number;
-            public int FuncOid;
+            public uint FuncOid;
         }
+
+        static uint funcOid;
 
         static MemoryStream memStream;
         static Assembly compiledAssembly;
-        static IDictionary<int, (string, MemoryStream)> funcBuiltCodeDict;
+
+        static IDictionary<uint, (string, Func<IntPtr, int, int>)> funcBuiltCodeDict;
 
         static Storage.StorageClient client;
+
+        static Func<IntPtr, int, int> userFunction;
 
         public static int Compile(IntPtr arg, int argLength)
         {
@@ -139,14 +144,15 @@ namespace PlDotNET
             string sourceCode = Marshal.PtrToStringAuto(libArgs.SourceCode);
 
             if (Engine.funcBuiltCodeDict == null)
-                Engine.funcBuiltCodeDict = new Dictionary<int, (string, MemoryStream)>();
+                Engine.funcBuiltCodeDict = new Dictionary<uint, (string, Func<IntPtr, int, int>)>();
             else {
                 // Code has not changed then it is not needed to build it
                 try {
                     Engine.funcBuiltCodeDict.TryGetValue(libArgs.FuncOid,
-                    out (string src, MemoryStream builtCode) pair);
+                    out (string src, Func<IntPtr, int, int> builtCode) pair);
                     if  (pair.src == sourceCode) {
-                        Engine.memStream = pair.builtCode;
+                        Engine.funcOid = libArgs.FuncOid;
+                        Engine.userFunction = pair.builtCode;
                         return 0;
                     }
                 }catch{}
@@ -190,9 +196,13 @@ namespace PlDotNET
                 .Select(p => MetadataReference.CreateFromFile(p))
             .ToList();
 
+            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithOptimizationLevel(OptimizationLevel.Release)
+                .WithConcurrentBuild(true);
+
             CSharpCompilation compilation = CSharpCompilation.Create(
                 "plnetproc.dll",
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                options: compilationOptions,
                 syntaxTrees: new[] { userTree },
                 references: references);
 
@@ -210,9 +220,11 @@ namespace PlDotNET
                 return 0;
             }
 
-            funcBuiltCodeDict[libArgs.FuncOid] = (sourceCode, Engine.memStream);
+            Engine.SetDelegate(Engine.memStream);
 
             Engine.SendToRemoteStorage(sourceCode, libArgs.FuncOid);
+
+            Engine.funcBuiltCodeDict[libArgs.FuncOid] = (sourceCode, Engine.userFunction);
 
             return 0;
         }
@@ -231,14 +243,35 @@ namespace PlDotNET
 
         public static int Run(IntPtr arg, int argLength)
         {
-            Engine.compiledAssembly = Assembly.Load(Engine.memStream.GetBuffer());
-            Type procClassType = Engine.compiledAssembly.GetType("PlDotNETUserSpace.UserClass");
-            MethodInfo procMethod = procClassType.GetMethod("CallFunction");
-            procMethod.Invoke(null, new object[] {arg, argLength});
+            // The functionID is an additional int32_t appended into arg
+            var functionId = (uint) Marshal.ReadInt32(arg, argLength);
+
+            if (functionId != Engine.funcOid)
+            {
+                try {
+                    if (Engine.funcBuiltCodeDict.TryGetValue(functionId,
+                        out (string src, Func<IntPtr, int, int> builtCode) pair2))
+                    {
+                        Engine.funcOid = functionId;
+                        Engine.userFunction = pair2.builtCode;
+                        Engine.userFunction(arg, argLength);
+                        return 0;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+
+                }catch{
+                    return 2;
+                }
+            }
+
+            Engine.userFunction(arg, argLength);
             return 0;
         }
 
-        static private void SendToRemoteStorage(string sourceCode, int functionId)
+        static private void SendToRemoteStorage(string sourceCode, uint functionId)
         {
             try
             {
@@ -267,7 +300,7 @@ namespace PlDotNET
             }
         }
 
-        static private bool RetrieveFromRemoteStorage(string sourceCode, int functionId)
+        static private bool RetrieveFromRemoteStorage(string sourceCode, uint functionId)
         {
             try
             {
@@ -293,9 +326,10 @@ namespace PlDotNET
                         Engine.memStream.Write(buffer, 0, buffer.Length);
                         if (Engine.funcBuiltCodeDict == null)
                         {
-                            Engine.funcBuiltCodeDict = new Dictionary<int, (string, MemoryStream)>();
+                            Engine.funcBuiltCodeDict = new Dictionary<uint, (string, Func<IntPtr, int, int>)>();
                         }
-                        Engine.funcBuiltCodeDict[functionId] = (sourceCode, Engine.memStream);
+                        Engine.SetDelegate(Engine.memStream);
+                        Engine.funcBuiltCodeDict[functionId] = (sourceCode, Engine.userFunction);
                         return true;
                     }
                 }
@@ -305,6 +339,19 @@ namespace PlDotNET
             }
 
             return false;
+        }
+
+        public static void SetDelegate(MemoryStream memoryStream)
+        {
+            Engine.compiledAssembly = Assembly.Load(memStream.GetBuffer());
+            Type procClassType = Engine.compiledAssembly.GetType("PlDotNETUserSpace.UserClass");
+            MethodInfo procMethod = procClassType.GetMethod("CallFunction");
+
+            Engine.userFunction = (Func<IntPtr, int, int>) Delegate.CreateDelegate(
+                typeof(Func<IntPtr, int, int>),
+                null,
+                procMethod
+            );
         }
     }
 }
