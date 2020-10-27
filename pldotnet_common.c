@@ -31,6 +31,7 @@
 char *root_path = NULL;
 char *dnldir = STR(PLNET_ENGINE_DIR);
 
+
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
 {
     if (nullptr == source)
@@ -101,38 +102,42 @@ pldotnet_ValidCachedFunction(
 pldotnet_FunctionDecl*
 pldotnet_FindFunctionDecl(int function_id)
 {
-    gpointer key, value;
-    key = (gpointer) &function_id;
-    value = g_hash_table_lookup(procedures, key);
+    gpointer value = g_hash_table_lookup(procedures, GUINT_TO_POINTER(function_id));
 
     if (nullptr != value)
-    {
         return (pldotnet_FunctionDecl*) value;
-    }
 
     return nullptr;
 }
 
 void
-pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl)
+pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl, bool insert)
 {
-    gpointer key, value;
+    MemoryContext mem;
     pldotnet_FunctionDecl *decl;
+
+    mem = CurrentMemoryContext;
+
+    /* change the mem context to save data in hash table */
+    MemoryContextSwitchTo(executor_ctx);
 
     decl = pldotnet_CopyFunctionDecl(function_decl);
 
-    key = (gpointer) &function_decl->source.func_oid;
-    value = (gpointer) decl;
+    if (insert)
+        g_hash_table_insert(procedures, GUINT_TO_POINTER(decl->source.func_oid), (gpointer) decl);
+    else
+        g_hash_table_replace(procedures, GUINT_TO_POINTER(decl->source.func_oid), (gpointer) decl);
 
-    g_hash_table_insert(procedures, key, value);
+    /* revert */
+    MemoryContextSwitchTo(mem);
 }
 
 pldotnet_FunctionDecl*
-pldotnet_CopyFunctionDecl(pldotnet_FunctionDecl *function_decl)
+pldotnet_CopyFunctionDecl(const pldotnet_FunctionDecl *function_decl)
 {
     pldotnet_FunctionDecl *decl;
 
-    decl = (pldotnet_FunctionDecl*) SPI_palloc(sizeof(pldotnet_FunctionDecl));
+    decl = (pldotnet_FunctionDecl*) palloc(sizeof(pldotnet_FunctionDecl));
 
     decl->ret_type = function_decl->ret_type;
 
@@ -140,9 +145,8 @@ pldotnet_CopyFunctionDecl(pldotnet_FunctionDecl *function_decl)
 
     decl->source.func_oid = function_decl->source.func_oid;
     decl->source.result = function_decl->source.result;
-    decl->source.source_code = (char*) SPI_palloc(sizeof(char) * strlen(function_decl->source.source_code));
+    decl->source.source_code = (char*) palloc(sizeof(char) * strlen(function_decl->source.source_code));
     strcpy(decl->source.source_code, function_decl->source.source_code);
-
     decl->dotnet_method = function_decl->dotnet_method;
 
     return decl;
@@ -154,6 +158,7 @@ pldotnet_SaveFunctionDecl(
     pldotnet_PathConfig *paths,
     pldotnet_FunctionDecl *function_decl)
 {
+    bool insert;
     pldotnet_FunctionDecl *decl;
 
     if (nullptr == function_decl)
@@ -161,10 +166,12 @@ pldotnet_SaveFunctionDecl(
 
     decl = pldotnet_FindFunctionDecl(function_decl->source.func_oid);
 
+    insert = nullptr == decl;
+
     if (!pldotnet_ValidCachedFunction(function_decl, decl))
     {
         function_decl->dotnet_method = pldotnet_GetUserMethod(loader, paths);
-        pldotnet_InsertFunctionDecl(function_decl);
+        pldotnet_InsertFunctionDecl(function_decl, insert);
     }
 }
 

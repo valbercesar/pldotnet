@@ -140,13 +140,15 @@ typedef struct MemoryContextWrapper
     MemoryContext curr;
 } MemoryContextWrapper;
 
+
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *args);
 void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl);
 bool pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl);
 bool pldotnet_ValidCachedFunction( pldotnet_FunctionDecl *reference, pldotnet_FunctionDecl *candidate);
 pldotnet_FunctionDecl* pldotnet_FindFunctionDecl(int function_id);
-void pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl);
-pldotnet_FunctionDecl* pldotnet_CopyFunctionDecl(pldotnet_FunctionDecl *function_decl);
+void pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl, bool insert);
+pldotnet_FunctionDecl* pldotnet_CopyFunctionDecl(const pldotnet_FunctionDecl *function_decl);
+
 void pldotnet_SaveFunctionDecl(
     dotnet_loader loader,
     pldotnet_PathConfig *paths,
@@ -216,5 +218,6 @@ char *dnldir;
 
 pldotnet_PathConfig *spi_paths;
 dotnet_loader assembly_loader;
+MemoryContext executor_ctx;
 
 #endif /* PLDOTNETCOMMON_H */
