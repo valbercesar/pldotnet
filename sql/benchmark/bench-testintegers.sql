@@ -7,6 +7,7 @@
 \i sql/java/testintegers.sql
 \i sql/perl/testintegers.sql
 \i sql/lua/testintegers.sql
+\i sql/tcl/testintegers.sql
 
 SELECT
     'maxSmallInt',
@@ -16,7 +17,8 @@ SELECT
     plbench('SELECT maxSmallIntPg()', 200) as plpgsql,
     plbench('SELECT maxSmallIntJava()', 200) as pljava,
     plbench('SELECT maxSmallIntPerl()', 200) as plperl,
-    plbench('SELECT maxSmallIntLua()', 200) as pllua;
+    plbench('SELECT maxSmallIntLua()', 200) as pllua,
+    plbench('SELECT maxSmallIntTcl()', 200) as pltcl;
 
 SELECT
     'sum2SmallInt',
@@ -26,7 +28,8 @@ SELECT
     plbench('SELECT sum2SmallIntPg(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as plpgsql,
     plbench('SELECT sum2SmallIntJava(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pljava,
     plbench('SELECT sum2SmallIntPerl(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as plperl,
-    plbench('SELECT sum2SmallIntLua(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pllua;
+    plbench('SELECT sum2SmallIntLua(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pllua,
+    plbench('SELECT sum2SmallIntTcl(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pltcl;
 
 SELECT
     'maxInteger',
@@ -36,7 +39,8 @@ SELECT
     plbench('SELECT maxIntegerPg()', 200) as plpgsql,
     plbench('SELECT maxIntegerJava()', 200) as pljava,
     plbench('SELECT maxIntegerPerl()', 200) as plperl,
-    plbench('SELECT maxIntegerLua()', 200) as pllua;
+    plbench('SELECT maxIntegerLua()', 200) as pllua,
+    plbench('SELECT maxIntegerTcl()', 200) as pltcl;
 
 SELECT
     'sum2Integer',
@@ -46,7 +50,8 @@ SELECT
     plbench('SELECT sum2IntegerPg(32770, 100)', 200) as plpgsql,
     plbench('SELECT sum2IntegerJava(32770, 100)', 200) as pljava,
     plbench('SELECT sum2IntegerPerl(32770, 100)', 200) as plperl,
-    plbench('SELECT sum2IntegerLua(32770, 100)', 200) as pllua;
+    plbench('SELECT sum2IntegerLua(32770, 100)', 200) as pllua,
+    plbench('SELECT sum2IntegerTcl(32770, 100)', 200) as pltcl;
 
 SELECT
     'maxBigInt',
@@ -56,7 +61,8 @@ SELECT
     plbench('SELECT maxBigIntPg()', 200) as plpgsql,
     plbench('SELECT maxBigIntJava()', 200) as pljava,
     plbench('SELECT maxBigIntPerl()', 200) as plperl,
-    plbench('SELECT maxBigIntLua()', 200) as pllua;
+    plbench('SELECT maxBigIntLua()', 200) as pllua,
+    plbench('SELECT maxBigIntTcl()', 200) as pltcl;
 
 SELECT
     'sum2BigInt',
@@ -66,7 +72,8 @@ SELECT
     plbench('SELECT sum2BigIntPg(9223372036854775707, 100)', 200) as plpgsql,
     plbench('SELECT sum2BigIntJava(9223372036854775707, 100)', 200) as pljava,
     plbench('SELECT sum2BigIntPerl(9223372036854775707, 100)', 200) as plperl,
-    plbench('SELECT sum2BigIntLua(9223372036854775707, 100)', 200) as pllua;
+    plbench('SELECT sum2BigIntLua(9223372036854775707, 100)', 200) as pllua,
+    plbench('SELECT sum2BigIntTcl(9223372036854775707, 100)', 200) as pltcl;
 
 SELECT
     'mixedBigInt',
@@ -76,7 +83,8 @@ SELECT
     plbench('SELECT mixedBigIntPg(32767,  CAST(2147483647 as bigint), CAST(100 as bigint))', 200) as plpgsql,
     plbench('SELECT mixedBigIntJava(32767,  2147483647, 100)', 200) as pljava,
     plbench('SELECT mixedBigIntPerl(32767,  2147483647, 100)', 200) as plperl,
-    plbench('SELECT mixedBigIntLua(32767,  2147483647, 100)', 200) as pllua;
+    plbench('SELECT mixedBigIntLua(32767,  2147483647, 100)', 200) as pllua,
+    plbench('SELECT mixedBigIntTcl(32767,  2147483647, 100)', 200) as pltcl;
 
 SELECT
     'mixedInt',
@@ -86,4 +94,5 @@ SELECT
     plbench('SELECT mixedIntPg(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as plpgsql,
     plbench('SELECT mixedIntJava(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pljava,
     plbench('SELECT mixedIntPerl(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as plperl,
-    plbench('SELECT mixedIntLua(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pllua;
+    plbench('SELECT mixedIntLua(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pllua,
+    plbench('SELECT mixedIntTcl(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pltcl;

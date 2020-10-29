@@ -6,6 +6,7 @@
 \i sql/pgsql/testmixedtypes.sql
 \i sql/java/testmixedtypes.sql
 \i sql/perl/testmixedtypes.sql
+\i sql/tcl/testmixedtypes.sql
 
 SELECT
     'ageTest(Billy)',
@@ -14,7 +15,9 @@ SELECT
     plbench('SELECT ageTestPython(''Billy'', 10, ''The KID'')', 1000) as plpython,
     plbench('SELECT ageTestPg(''Billy'', 10, ''The KID'')', 1000) as plpgsql,
     plbench('SELECT ageTestJava(''Billy'', 10, ''The KID'')', 1000) as pljava,
-    plbench('SELECT ageTestPerl(''Billy'', 10, ''The KID'')', 1000) as plperl;
+    plbench('SELECT ageTestPerl(''Billy'', 10, ''The KID'')', 1000) as plperl,
+    '-' as pllua,
+    plbench('SELECT ageTestTcl(''Billy'', 10, ''The KID'')', 1000) as pltcl;
 
 SELECT
     'ageTest(John)',
@@ -23,7 +26,9 @@ SELECT
     plbench('SELECT ageTestPython(''John'', 33, ''Smith'')', 1000) as plpython,
     plbench('SELECT ageTestPg(''John'', 33, ''Smith'')', 1000) as plpgsql,
     plbench('SELECT ageTestJava(''John'', 33, ''Smith'')', 1000) as pljava,
-    plbench('SELECT ageTestPerl(''John'', 33, ''Smith'')', 1000) as plperl;
+    plbench('SELECT ageTestPerl(''John'', 33, ''Smith'')', 1000) as plperl,
+    '-' as pllua,
+    plbench('SELECT ageTestTcl(''John'', 33, ''Smith'')', 1000) as pltcl;
 
 SELECT
     'ageTest(Robson)',
@@ -32,4 +37,6 @@ SELECT
     plbench('SELECT ageTestPython(''Robson'', 41, ''Cruzoe'')', 1000) as plpython,
     plbench('SELECT ageTestPg(''Robson'', 41, ''Cruzoe'')', 1000) as plpgsql,
     plbench('SELECT ageTestJava(''Robson'', 41, ''Cruzoe'')', 1000) as pljava,
-    plbench('SELECT ageTestPerl(''Robson'', 41, ''Cruzoe'')', 1000) as plperl;
+    plbench('SELECT ageTestPerl(''Robson'', 41, ''Cruzoe'')', 1000) as plperl,
+    '-' as pllua,
+    plbench('SELECT ageTestTcl(''Robson'', 41, ''Cruzoe'')', 1000) as pltcl;

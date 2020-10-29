@@ -6,6 +6,7 @@
 \i sql/pgsql/testchar.sql
 \i sql/java/testchar.sql
 \i sql/perl/testchar.sql
+\i sql/tcl/testchar.sql
 
 SELECT
     'retVarChar',
@@ -14,7 +15,9 @@ SELECT
     plbench('SELECT retVarCharPython(''Rodrigo'')', 300) as plpython,
     plbench('SELECT retVarCharPg(''Rodrigo'')', 300) as plpgsql,
     plbench('SELECT retVarCharJava(''Rodrigo'')', 300) as pljava,
-    plbench('SELECT retVarCharPerl(''Rodrigo'')', 300) as plperl;
+    plbench('SELECT retVarCharPerl(''Rodrigo'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retVarCharTcl(''Rodrigo'')', 300) as pltcl;
 
 SELECT
     'retConcatVarChar',
@@ -23,7 +26,9 @@ SELECT
     plbench('SELECT retConcatVarCharPython(''João '', ''da Silva'')', 300) as plpython,
     plbench('SELECT retConcatVarCharPg(''João '', ''da Silva'')', 300) as plpgsql,
     plbench('SELECT retConcatVarCharJava(''João '', ''da Silva'')', 300) as pljava,
-    plbench('SELECT retConcatVarCharPerl(''João '', ''da Silva'')', 300) as plperl;
+    plbench('SELECT retConcatVarCharPerl(''João '', ''da Silva'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retConcatVarCharTcl(''João '', ''da Silva'')', 300) as pltcl;
 
 SELECT
     'retConcatText',
@@ -32,7 +37,9 @@ SELECT
     plbench('SELECT retConcatTextPython(''João '', ''da Silva'')', 300) as plpython,
     plbench('SELECT retConcatTextPg(''João '', ''da Silva'')', 300) as plpgsql,
     plbench('SELECT retConcatTextJava(''João '', ''da Silva'')', 300) as pljava,
-    plbench('SELECT retConcatTextPerl(''João '', ''da Silva'')', 300) as plperl;
+    plbench('SELECT retConcatTextPerl(''João '', ''da Silva'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retConcatTextTcl(''João '', ''da Silva'')', 300) as pltcl;
 
 SELECT
     'retVarCharText',
@@ -41,7 +48,9 @@ SELECT
     plbench('SELECT retVarCharTextPython(''Homer Jay '', ''Simpson'')', 300) as plpython,
     plbench('SELECT retVarCharTextPg(''Homer Jay '', ''Simpson'')', 300) as plpgsql,
     plbench('SELECT retVarCharTextJava(''Homer Jay '', ''Simpson'')', 300) as pljava,
-    plbench('SELECT retVarCharTextPerl(''Homer Jay '', ''Simpson'')', 300) as plperl;
+    plbench('SELECT retVarCharTextPerl(''Homer Jay '', ''Simpson'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retVarCharTextTcl(''Homer Jay '', ''Simpson'')', 300) as pltcl;
 
 SELECT
     'retChar',
@@ -50,7 +59,9 @@ SELECT
     plbench('SELECT retCharPython(''R'')', 300) as plpython,
     plbench('SELECT retCharPg(''R'')', 300) as plpgsql,
     plbench('SELECT retCharJava(''R'')', 300) as pljava,
-    plbench('SELECT retCharPerl(''R'')', 300) as plperl;
+    plbench('SELECT retCharPerl(''R'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retCharTcl(''R'')', 300) as pltcl;
 
 SELECT
     'retConcatLetters',
@@ -59,7 +70,9 @@ SELECT
     plbench('SELECT retConcatLettersPython(''R'', ''C'')', 300) as plpython,
     plbench('SELECT retConcatLettersPg(''R'', ''C'')', 300) as plpgsql,
     plbench('SELECT retConcatLettersJava(''R'', ''C'')', 300) as pljava,
-    plbench('SELECT retConcatLettersPerl(''R'', ''C'')', 300) as plperl;
+    plbench('SELECT retConcatLettersPerl(''R'', ''C'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retConcatLettersTcl(''R'', ''C'')', 300) as pltcl;
 
 SELECT
     'retConcatChars',
@@ -68,7 +81,9 @@ SELECT
     plbench('SELECT retConcatCharsPython(''H.'', ''Simpson'')', 300) as plpython,
     plbench('SELECT retConcatCharsPg(''H.'', ''Simpson'')', 300) as plpgsql,
     plbench('SELECT retConcatCharsJava(''H.'', ''Simpson'')', 300) as pljava,
-    plbench('SELECT retConcatCharsPerl(''H.'', ''Simpson'')', 300) as plperl;
+    plbench('SELECT retConcatCharsPerl(''H.'', ''Simpson'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retConcatCharsTcl(''H.'', ''Simpson'')', 300) as pltcl;
 
 SELECT
     'retConcatVarChars',
@@ -77,8 +92,9 @@ SELECT
     plbench('SELECT retConcatVarCharsPython(''H.'', ''Simpson'')', 300) as plpython,
     plbench('SELECT retConcatVarCharsPg(''H.'', ''Simpson'')', 300) as plpgsql,
     plbench('SELECT retConcatVarCharsJava(''H.'', ''Simpson'')', 300) as pljava,
-    plbench('SELECT retConcatVarCharsPerl(''H.'', ''Simpson'')', 300) as plperl;
-
+    plbench('SELECT retConcatVarCharsPerl(''H.'', ''Simpson'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retConcatVarCharsTcl(''H.'', ''Simpson'')', 300) as pltcl;
 
 SELECT
     'retConcatVarChars(H. あ)',
@@ -87,7 +103,9 @@ SELECT
     plbench('SELECT retConcatVarCharsPython(''H. あ'', ''Simpson'')', 300) as plpython,
     plbench('SELECT retConcatVarCharsPg(''H. あ'', ''Simpson'')', 300) as plpgsql,
     plbench('SELECT retConcatVarCharsJava(''H. あ'', ''Simpson'')', 300) as pljava,
-    plbench('SELECT retConcatVarCharsPerl(''H. あ'', ''Simpson'')', 300) as plperl;
+    plbench('SELECT retConcatVarCharsPerl(''H. あ'', ''Simpson'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retConcatVarCharsTcl(''H. あ'', ''Simpson'')', 300) as pltcl;
 
 SELECT
     'retNonRegularEncoding(漢字)',
@@ -96,7 +114,9 @@ SELECT
     plbench('SELECT retNonRegularEncodingPython(''漢字'')', 300) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''漢字'')', 300) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''漢字'')', 300) as pljava,
-    plbench('SELECT retNonRegularEncodingPerl(''漢字'')', 300) as plperl;
+    plbench('SELECT retNonRegularEncodingPerl(''漢字'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retNonRegularEncodingTcl(''漢字'')', 300) as pltcl;
 
 SELECT
     'retNonRegularEncoding',
@@ -105,7 +125,9 @@ SELECT
     plbench('SELECT retNonRegularEncodingPython(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', 300) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', 300) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', 300) as pljava,
-    plbench('SELECT retNonRegularEncodingPerl(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', 300) as plperl;
+    plbench('SELECT retNonRegularEncodingPerl(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retNonRegularEncodingTcl(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', 300) as pltcl;
 
 SELECT
     'retNonRegularEncoding(ŁĄŻĘĆŃŚŹ)',
@@ -114,7 +136,9 @@ SELECT
     plbench('SELECT retNonRegularEncodingPython(''ŁĄŻĘĆŃŚŹ'')', 300) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''ŁĄŻĘĆŃŚŹ'')', 300) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''ŁĄŻĘĆŃŚŹ'')', 300) as pljava,
-    plbench('SELECT retNonRegularEncodingPerl(''ŁĄŻĘĆŃŚŹ'')', 300) as plperl;
+    plbench('SELECT retNonRegularEncodingPerl(''ŁĄŻĘĆŃŚŹ'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retNonRegularEncodingTcl(''ŁĄŻĘĆŃŚŹ'')', 300) as pltcl;
 
 SELECT
     'retNonRegularEncoding(Unicode)',
@@ -123,4 +147,6 @@ SELECT
     plbench('SELECT retNonRegularEncodingPython(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', 300) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', 300) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', 300) as pljava,
-    plbench('SELECT retNonRegularEncodingPerl(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', 300) as plperl;
+    plbench('SELECT retNonRegularEncodingPerl(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', 300) as plperl,
+    '-' as pllua,
+    plbench('SELECT retNonRegularEncodingTcl(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', 300) as pltcl;
