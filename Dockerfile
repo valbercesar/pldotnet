@@ -11,7 +11,8 @@ RUN apt-get update \
        wget \
        git  \
        sudo \
-       gnupg
+       gnupg \
+       libglib2.0-dev
 
 RUN wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
