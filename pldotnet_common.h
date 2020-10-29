@@ -128,6 +128,7 @@ typedef struct pldotnet_FunctionDecl
 
 typedef struct pldotnet_PathConfig
 {
+    char prefix[MAXPGPATH];
     char config_path[MAXPGPATH];
     char library_path[MAXPGPATH];
     char src_lib_path[MAXPGPATH];
@@ -218,6 +219,5 @@ char *dnldir;
 
 pldotnet_PathConfig *spi_paths;
 dotnet_loader assembly_loader;
-MemoryContext executor_ctx;
 
 #endif /* PLDOTNETCOMMON_H */

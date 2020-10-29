@@ -24,6 +24,7 @@ typedef load_assembly_and_get_function_pointer_fn dotnet_loader;
 
 int pldotnet_LoadHostfxr(void);
 load_assembly_and_get_function_pointer_fn GetNetLoadAssembly(const char_t *assembly);
+load_assembly_and_get_function_pointer_fn GetNetLoadAssemblySetup(const char_t *config_path, const char_t *host_base_path);
 /* loaded host placeholder variable */
 void *nethost_lib;
 

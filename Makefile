@@ -15,7 +15,8 @@ PLNET_ENGINE_DIR := -D PLNET_ENGINE_DIR=$(PLNET_ENGINE_ROOT)/DotNetEngine
 ifeq ("$(shell echo $(USE_DOTNETBUILD) | tr A-Z a-z)", "true")
 	DEFINE_DOTNET_BUILD := -D USE_DOTNETBUILD
 else
-	GENERATE_BUILD_FILES := dotnet build $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp
+	GENERATE_CSHARP_BUILD_FILES := dotnet build $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp -c Release
+	GENERATE_FSHARP_BUILD_FILES := dotnet build $(PLNET_ENGINE_ROOT)/DotNetEngine/src/fsharp -c Release
 endif
 
 PG_CONFIG ?= pg_config
@@ -64,7 +65,8 @@ plnet-install: install
 	echo $(DOTNET_LIBDIR) > /etc/ld.so.conf.d/nethost_pldotnet.conf && ldconfig
 	cp -r DotNetEngine $(PLNET_ENGINE_ROOT) && chown -R postgres $(PLNET_ENGINE_ROOT)/DotNetEngine
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/Engine.cs
-	$(GENERATE_BUILD_FILES)
+	$(GENERATE_CSHARP_BUILD_FILES)
+	$(GENERATE_FSHARP_BUILD_FILES)
 
 plnet-uninstall: uninstall
 	rm -rf $(PLNET_ENGINE_ROOT)/DotNetEngine

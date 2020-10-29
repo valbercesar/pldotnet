@@ -25,6 +25,7 @@
 #include <utils/numeric.h>
 
 PGDLLEXPORT Datum plfsharp_call_handler(PG_FUNCTION_ARGS);
+Datum plfsharp_call_handler1(PG_FUNCTION_ARGS);
 PGDLLEXPORT Datum plfsharp_validator(PG_FUNCTION_ARGS);
 #if PG_VERSION_NUM >= 90000
 PGDLLEXPORT Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
@@ -53,7 +54,7 @@ static Datum plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, b
 static bool   plfsharp_TypeSupported(Oid type);
 
 static char fs_block_header[] = "\n\
-namespace PlDotNET\n\
+namespace PlDotNETUserSpace\n\
 open System.Runtime.InteropServices\n\
 [<Struct>]           \n\
 [<StructLayout (LayoutKind.Sequential)>]\n\
@@ -549,7 +550,7 @@ plfsharp_CompileAndRunUserFunction(
 
     if (nullptr == function_decl.dotnet_method)
     {
-        if (nullptr == loader && nullptr == (loader = GetNetLoadAssembly(paths.config_path)))
+        if (nullptr == loader && nullptr == (loader = GetNetLoadAssemblySetup(paths.config_path, paths.prefix)))
         {
             elog(ERROR, "[pldotnet]: Could not obtain .NET Loader");
             return (Datum) 0;
@@ -614,13 +615,12 @@ plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline)
 
 /****** FSharp handlers ******/
 PG_FUNCTION_INFO_V1(plfsharp_call_handler);
-Datum plfsharp_call_handler1(PG_FUNCTION_ARGS);
-Datum plfsharp_call_handler1(PG_FUNCTION_ARGS)
+Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
 {
     return plfsharp_generic_handler(fcinfo, false);
 }
 
-Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
+Datum plfsharp_call_handler1(PG_FUNCTION_ARGS)
 {
     bool istrigger;
     char *source_code,

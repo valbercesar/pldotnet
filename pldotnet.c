@@ -48,9 +48,6 @@ Datum _PG_init(PG_FUNCTION_ARGS)
     if (root_path[strlen(root_path) - 1] == DIR_SEPARATOR)
         root_path[strlen(root_path) - 1] = 0;
 
-    /* save the current memory context to add data to hash table */
-    executor_ctx = CurrentMemoryContext;
-
     /* starts a new hash table */
     procedures = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
 

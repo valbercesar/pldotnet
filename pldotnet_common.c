@@ -119,7 +119,7 @@ pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl, bool insert)
     mem = CurrentMemoryContext;
 
     /* change the mem context to save data in hash table */
-    MemoryContextSwitchTo(executor_ctx);
+    MemoryContextSwitchTo(TopMemoryContext);
 
     decl = pldotnet_CopyFunctionDecl(function_decl);
 
@@ -178,7 +178,6 @@ pldotnet_SaveFunctionDecl(
 bool
 pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
 {
-    char prefix[MAXPGPATH];
     const char json_path_suffix[] = "/PlDotNET.runtimeconfig.json";
     const char src_path_suffix[]  = "/Lib.cs";
     const char dll_path_suffix[]  = "/PlDotNET.dll";
@@ -195,10 +194,10 @@ pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
         if (!is_csharp)
             lang[0] = 'f';
 
-        SNPRINTF(prefix, MAXPGPATH, "%s%s%s", root_path, "/src/", lang);
-        SNPRINTF(paths->config_path, MAXPGPATH, "%s%s", prefix, json_path_suffix);
-        SNPRINTF(paths->library_path, MAXPGPATH, "%s%s", prefix, dll_path_suffix);
-        SNPRINTF(paths->src_lib_path, MAXPGPATH, "%s%s", prefix, src_path_suffix);
+        SNPRINTF(paths->prefix, MAXPGPATH, "%s%s%s", root_path, "/src/", lang);
+        SNPRINTF(paths->config_path, MAXPGPATH, "%s%s", paths->prefix, json_path_suffix);
+        SNPRINTF(paths->library_path, MAXPGPATH, "%s%s", paths->prefix, dll_path_suffix);
+        SNPRINTF(paths->src_lib_path, MAXPGPATH, "%s%s", paths->prefix, src_path_suffix);
         spi_paths = paths;
         path_defined = true;
     }
@@ -449,19 +448,19 @@ pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
             fcinfo->isnull = *(bool *) (resultnull_ptr);
             if (fcinfo->isnull)
                 return (Datum) 0;
-            return Int32GetDatum ( *(int *)(result_ptr) );
+            return Int32GetDatum ( *(int32_t *)(result_ptr) );
         case INT8OID:
             fcinfo->isnull = *(bool *) (resultnull_ptr);
             if (fcinfo->isnull)
                 return (Datum) 0;
-            return  Int64GetDatum ( *(long *)(result_ptr) );
+            return  Int64GetDatum ( *(int64_t *)(result_ptr) );
         case INT2OID:
             fcinfo->isnull = *(bool *) (resultnull_ptr);
             if (fcinfo->isnull)
                 return (Datum) 0;
-            return  Int16GetDatum ( *(short *)(result_ptr) );
+            return  Int16GetDatum ( *(int16_t *)(result_ptr) );
         case FLOAT4OID:
-            return  Float4GetDatum ( *(float *)(result_ptr) );
+            return  Float4GetDatum ( *(float4 *)(result_ptr) );
         case FLOAT8OID:
             return  Float8GetDatum ( *(double *)(result_ptr) );
         case NUMERICOID:

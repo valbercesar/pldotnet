@@ -29,6 +29,7 @@ static void *pldotnet_LoadLibrary(const char_t *);
 static void *pldotnet_GetExport(void *, const char *);
 
 static hostfxr_initialize_for_runtime_config_fn init_fptr;
+static hostfxr_set_runtime_property_value_fn set_runtime_properties_ptr;
 static hostfxr_get_runtime_delegate_fn get_delegate_fptr;
 static hostfxr_close_fn close_fptr;
 
@@ -72,14 +73,22 @@ pldotnet_LoadHostfxr(void)
         lib, "hostfxr_initialize_for_runtime_config");
     get_delegate_fptr = (hostfxr_get_runtime_delegate_fn)pldotnet_GetExport( \
         lib, "hostfxr_get_runtime_delegate");
+    set_runtime_properties_ptr = (hostfxr_set_runtime_property_value_fn) pldotnet_GetExport( \
+        lib, "hostfxr_set_runtime_property_value");
     close_fptr = (hostfxr_close_fn)pldotnet_GetExport(lib, "hostfxr_close");
 
-    return (init_fptr && get_delegate_fptr && close_fptr);
+    return (init_fptr && get_delegate_fptr && set_runtime_properties_ptr && close_fptr);
 }
 
 /* Load and initialize .NET Core and get desired function pointer for scenario */
 load_assembly_and_get_function_pointer_fn
 GetNetLoadAssembly(const char_t *config_path)
+{
+    return GetNetLoadAssemblySetup(config_path, nullptr);
+}
+
+load_assembly_and_get_function_pointer_fn
+GetNetLoadAssemblySetup(const char_t *config_path, const char_t *host_base_path)
 {
     /* Load .NET Core */
     int rc;
@@ -97,6 +106,9 @@ GetNetLoadAssembly(const char_t *config_path)
         close_fptr(cxt);
         return nullptr;
     }
+
+    if (nullptr != host_base_path)
+        set_runtime_properties_ptr(cxt, "APP_CONTEXT_BASE_DIRECTORY", (char*) host_base_path);
 
     /* Get the load assembly function pointer */
     rc = get_delegate_fptr(

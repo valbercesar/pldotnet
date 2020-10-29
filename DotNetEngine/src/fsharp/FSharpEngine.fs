@@ -68,17 +68,16 @@ type Engine() =
         let fakeOutput : string = "/tmp/UserClass.dll"
         let options = Engine.GetAllFlags fakeInput fakeOutput
         let files = [| (fakeInput, sourceCode); (fakeOutput, "") |]
-        File.WriteAllText("/tmp/UserClass1.fs", sourceCode)
-        
+
         // set a virtual file system to avoid read/write to disk
         let vfs = VirtualFileSystem.SetVirtualFileSystem files Shim.FileSystem
+
         let errors, exitCode, dynAssembly =
             Engine.checker.CompileToDynamicAssembly(options, execute = None)
              |> Async.RunSynchronously
-        0
-        // match (exitCode, dynAssembly) with
-        // | 0, Some assembly -> Engine.AddUserfunction functionId sourceCode assembly
-        // | _ -> 1
+        match (exitCode, dynAssembly) with
+        | 0, Some assembly -> Engine.AddUserfunction functionId sourceCode assembly
+        | _ -> 1
     
     static member SetFunction (functionId : uint) (fn : Func<IntPtr, int, int>) : bool =
         FunctionCache.userFunction <- fn
@@ -124,7 +123,7 @@ type Engine() =
                 System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86) +
                 @"\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll"
             else
-                sysLib "FSharp.Core"
+                "FSharp.Core.dll"
 
         let allFlags =
             [| yield "-o"; yield output;
