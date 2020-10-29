@@ -80,3 +80,5 @@ DotNetEngine/src/*/bin/
 *.jar
 *.lst
 pom.properties
+
+logs/

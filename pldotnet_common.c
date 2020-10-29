@@ -175,34 +175,27 @@ pldotnet_SaveFunctionDecl(
     }
 }
 
-bool
+/*
+ * This function builds the corresponding paths given the language flag
+ * The second argument should never be null, take care o that
+ */
+void
 pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
 {
+    char prefix[MAXPGPATH];
     const char json_path_suffix[] = "/PlDotNET.runtimeconfig.json";
     const char src_path_suffix[]  = "/Lib.cs";
     const char dll_path_suffix[]  = "/PlDotNET.dll";
     char lang[] = "csharp";
 
-    static bool path_defined = false;
+    if (!is_csharp)
+        lang[0] = 'f';
 
-    if (nullptr == paths)
-    {
-        elog(ERROR, "[pldotnet]:[pldotnet_BuildPaths] Argument 'paths' is null");
-    }
-    else if (!path_defined)
-    {
-        if (!is_csharp)
-            lang[0] = 'f';
-
-        SNPRINTF(paths->prefix, MAXPGPATH, "%s%s%s", root_path, "/src/", lang);
-        SNPRINTF(paths->config_path, MAXPGPATH, "%s%s", paths->prefix, json_path_suffix);
-        SNPRINTF(paths->library_path, MAXPGPATH, "%s%s", paths->prefix, dll_path_suffix);
-        SNPRINTF(paths->src_lib_path, MAXPGPATH, "%s%s", paths->prefix, src_path_suffix);
-        spi_paths = paths;
-        path_defined = true;
-    }
-
-    return path_defined;
+    SNPRINTF(paths->prefix, MAXPGPATH, "%s%s", root_path, "/src/");
+    SNPRINTF(prefix, MAXPGPATH, "%s%s", paths->prefix, lang);
+    SNPRINTF(paths->config_path, MAXPGPATH, "%s%s", prefix, json_path_suffix);
+    SNPRINTF(paths->library_path, MAXPGPATH, "%s%s", prefix, dll_path_suffix);
+    SNPRINTF(paths->src_lib_path, MAXPGPATH, "%s%s", prefix, src_path_suffix);
 }
 
 bool
@@ -214,7 +207,11 @@ pldotnet_ValidPaths(const pldotnet_PathConfig *paths)
         return false;
     }
 
-    return true;
+    /* needs better validation? */
+    return 0 < strlen(paths->prefix) &&
+           0 < strlen(paths->config_path) &&
+           0 < strlen(paths->library_path) &&
+           0 < strlen(paths->src_lib_path);
 }
 
 void 
@@ -628,12 +625,10 @@ pldotnet_Run(
     int8_t *libargs,
     size_t args_length)
 {
-    Datum retval;
-    int rc;
     component_entry_point_fn dotnet_method = nullptr;
 
     /* Function pointer to managed delegate */
-    rc = loader(
+    int rc = loader(
         paths->library_path,
         dotnet_type,
         dotnet_type_method,
@@ -645,9 +640,7 @@ pldotnet_Run(
     assert(rc == 0 && dotnet_method != nullptr && \
         "Failure: load_assembly_and_get_function_pointer()");
 
-    retval = (Datum) dotnet_method(libargs, args_length);
-
-    return 0 == retval;
+    return 0 == dotnet_method(libargs, args_length);
 }
 
 bool 

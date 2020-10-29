@@ -44,6 +44,7 @@ static int8_t *plfsharp_CreateCStructLibargs(
 
 static Datum  plfsharp_GetNetResult(int8_t * libargs, Oid rettype, FunctionCallInfo fcinfo);
 
+inline static bool plfsharp_BuildPaths(pldotnet_PathConfig *paths);
 static char* plfsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst);
 static char* plfsharp_GetInlineSourceCode(FunctionCallInfo fcinfo);
 static bool plfsharp_GetSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst, bool is_inline, pldotnet_ArgsSource *source);
@@ -401,6 +402,22 @@ plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
     return retval;
 }
 
+inline static bool
+plfsharp_BuildPaths(pldotnet_PathConfig *paths)
+{
+    static bool built = false;
+
+    if (!built)
+    {
+        pldotnet_BuildPaths(false, paths);
+        built = true;
+    }
+
+    spi_paths = paths;
+
+    return built;
+}
+
 static char*
 plfsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst)
 {
@@ -547,7 +564,7 @@ plfsharp_CompileAndRunUserFunction(
 
     pldotnet_ResetFunctionDecl(&function_decl);
 
-    if (!pldotnet_BuildPaths(false, &paths))
+    if (!plfsharp_BuildPaths(&paths))
         return (Datum) 0;
 
     if (!plfsharp_BuildFunctionDecl(fcinfo, is_inline, &function_decl))

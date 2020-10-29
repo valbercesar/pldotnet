@@ -55,6 +55,7 @@ static int   pldotnet_PublicDeclSize(Oid type);
 static const char * pldotnet_GetNullableTypeName(Oid id);
 bool pldotnet_CheckArgIsArray(Datum datum, Oid oid, int narg);
 
+inline static bool plcsharp_BuildPaths(pldotnet_PathConfig *paths);
 static bool plcsharp_CreateStructLibargs( const FunctionCallInfo fcinfo, const Form_pg_proc procst, pldotnet_FunctionDecl *function_decl);
 static char* plcsharp_GetInlineSourceCode(FunctionCallInfo fcinfo);
 static char* plcsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst);
@@ -1016,6 +1017,22 @@ plcsharp_GetNetResult(char * libargs, Oid rettype, FunctionCallInfo fcinfo)
           pldotnet_GetScalarValue(result_ptr, resultnull_ptr, fcinfo, rettype);
 }
 
+inline static bool
+plcsharp_BuildPaths(pldotnet_PathConfig *paths)
+{
+    static bool built = false;
+
+    if (!built)
+    {
+        pldotnet_BuildPaths(true, paths);
+        built = true;
+    }
+
+    spi_paths = paths;
+
+    return built;
+}
+
 static bool
 plcsharp_CreateStructLibargs(
     const FunctionCallInfo fcinfo,
@@ -1219,7 +1236,7 @@ plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline
 
     pldotnet_ResetFunctionDecl(&function_decl);
 
-    if (!pldotnet_BuildPaths(true, &paths))
+    if (!plcsharp_BuildPaths(&paths))
         return (Datum) 0;
 
     if (!plcsharp_BuildFunctionDecl(fcinfo, is_inline, &function_decl))
@@ -1227,7 +1244,7 @@ plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline
 
     if (nullptr == function_decl.dotnet_method)
     {
-        if (nullptr == loader && nullptr == (loader = GetNetLoadAssembly(paths.config_path)))
+        if (nullptr == loader && nullptr == (loader = GetNetLoadAssemblySetup(paths.config_path, paths.prefix)))
         {
             elog(ERROR, "[pldotnet]: Could not obtain .NET Loader");
             return (Datum) 0;
@@ -1323,7 +1340,7 @@ plcsharp_call_handler1(PG_FUNCTION_ARGS)
     char cs_block_composite_decl[256];
     cs_block_composite_decl[0] = 0;
 
-    if (!pldotnet_BuildPaths(true, &paths))
+    if (!plcsharp_BuildPaths(&paths))
         return retval;
 
     if (SPI_connect() != SPI_OK_CONNECT)
@@ -1468,10 +1485,8 @@ plcsharp_inline_handler(PG_FUNCTION_ARGS)
     char* block_inline_usercode;
     char* source_code;
 
-    if (!pldotnet_BuildPaths(true, &paths))
-    {
+    if (!plcsharp_BuildPaths(&paths))
         return (Datum) 0;
-    }
 
     if (SPI_connect() != SPI_OK_CONNECT)
         elog(ERROR, "[plldotnet]: could not connect to SPI manager");

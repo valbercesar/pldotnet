@@ -128,7 +128,7 @@ type Engine() =
                 System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86) +
                 @"\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll"
             else
-                "FSharp.Core.dll"
+                System.AppContext.BaseDirectory + "fsharp/FSharp.Core.dll"
 
         let allFlags =
             [| yield "-o"; yield output;

@@ -155,7 +155,7 @@ void pldotnet_SaveFunctionDecl(
     pldotnet_PathConfig *paths,
     pldotnet_FunctionDecl *function_decl);
 
-bool pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths);
+void pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths);
 bool pldotnet_ValidPaths(const pldotnet_PathConfig *paths);
 
 void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config);
