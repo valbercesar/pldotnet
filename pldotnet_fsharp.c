@@ -33,6 +33,7 @@ PGDLLEXPORT Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
 
 static pldotnet_FuncInOutInfo func_inout_info;
 
+static void plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix);
 static char   *plfsharp_BuildBlockArgsDecl(Form_pg_proc procst);
 static char   *plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst,
                                                HeapTuple proc);
@@ -51,14 +52,13 @@ static bool plfsharp_GetSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form
 static bool plfsharp_CreateStructLibargs(const FunctionCallInfo fcinfo, const Form_pg_proc procst, pldotnet_FunctionDecl *function_decl);
 static bool plfsharp_BuildFunctionDecl(FunctionCallInfo fcinfo, bool is_inline, pldotnet_FunctionDecl *function_decl);
 static Datum plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline);
-
-static bool   plfsharp_TypeSupported(Oid type);
+static bool  plfsharp_TypeSupported(Oid type);
 
 static char fs_block_header[] = "\n\
 namespace PlDotNETUserSpace\n\
 open System.Runtime.InteropServices\n\
 [<Struct>]           \n\
-[<StructLayout (LayoutKind.Sequential)>]\n\
+[<StructLayout (LayoutKind.Sequential, Pack=1)>]\n\
 type LibArgs =\n\
     struct\n";
 /****** fs_block_args_decl ******
@@ -88,6 +88,24 @@ plfsharp_TypeSupported(Oid type)
     return pldotnet_IsSimpleType(type);
 }
 
+static void
+plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix)
+{
+    static const char unmanaged_template[] = "\
+        [<MarshalAs(UnmanagedType.%s)>]\n\
+        %s";
+
+    static const char val[] = "\
+        val mutable";
+
+    const char *unmanaged_name = pldotnet_GetUnmanagedTypeName(type);
+
+    if (nullptr != unmanaged_name && 0 < strlen(unmanaged_name))
+        snprintf(field_prefix, 1024, unmanaged_template, unmanaged_name, val);
+    else
+        SNPRINTF(field_prefix, 1024, "%s", val);
+}
+
 static char *
 plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
 {
@@ -95,11 +113,7 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
     Oid *argtype = procst->proargtypes.values; /* Indicates the args type */
     Oid rettype = procst->prorettype; /* Indicates the return type */
     int nargs = procst->pronargs;
-    const char boolVal[]  = "\
-        [<MarshalAs(UnmanagedType.U1)>]\n\
-        val mutable";
-    const char val[] = "        val mutable";
-    const char *currval = nullptr;
+    char currval[1024];
     const char colon[] = ":";
     char argname[] = " argN";
     char result[] = " resu"; /* have to be same size argN */
@@ -119,14 +133,14 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
             return 0;
         }
 
-        currval = BOOLOID == argtype[i] ? &boolVal[0] : &val[0];
+        plfsharp_GetStructFieldPrefix(argtype[i], currval);
 
         totalsize += strlen(currval) + strlen(argname) + strlen(colon)
                         + strlen(pldotnet_GetCompatibleNetTypeName(argtype[i], true, false))
                         + strlen("\n");
     }
 
-    currval = BOOLOID == rettype ? &boolVal[0] : &val[0];
+    plfsharp_GetStructFieldPrefix(rettype, currval);
 
     totalsize += strlen(currval) + strlen(result) + strlen(colon)
                     + strlen(pldotnet_GetCompatibleNetTypeName(rettype, true, false)) + 1;
@@ -139,7 +153,7 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
         SNPRINTF(argname, strlen(argname)+1, " arg%d", i);
         str_ptr = (char *)(block2str + cursize);
 
-        currval = BOOLOID == argtype[i] ? &boolVal[0] : &val[0];
+        plfsharp_GetStructFieldPrefix(argtype[i], currval);
 
         SNPRINTF(str_ptr,totalsize - cursize, "%s%s%s%s\n",
                    currval, argname, colon,
@@ -149,7 +163,7 @@ plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
 
     str_ptr = (char *)(block2str + cursize);
 
-    currval = BOOLOID == rettype ? &boolVal[0] : &val[0];
+    plfsharp_GetStructFieldPrefix(rettype, currval);
 
     SNPRINTF(str_ptr, totalsize - cursize, "%s%s%s%s",
                 currval, result, colon,
@@ -364,7 +378,6 @@ plfsharp_CreateCStructLibargs(
             case FLOAT8OID:
                 *(float8 *)(cur_arg) = DatumGetFloat8(argdatum);
                 break;
-            
         }
         cursize += pldotnet_GetTypeSize(argtype[i]);
         cur_arg = libargs_ptr + cursize;
@@ -379,10 +392,7 @@ plfsharp_CreateCStructLibargs(
 static Datum
 plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
 {
-    Datum retval;
-    int8_t *resultP;
-    retval = 0;
-    resultP = libargs + func_inout_info.typesize_args;
+    int8_t *resultP = libargs + func_inout_info.typesize_args;
 
     switch (rettype)
     {
@@ -399,7 +409,7 @@ plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
         case FLOAT8OID:
             return Float8GetDatum ( *(float8 *)(resultP) );
     }
-    return retval;
+    return (Datum) 0;
 }
 
 inline static bool
@@ -532,7 +542,9 @@ plfsharp_BuildFunctionDecl(
     if (!plfsharp_GetSourceCode(fcinfo, proc, procst, is_inline, &(function_decl->source)))
         result = false;
     else if (!is_inline && !plfsharp_CreateStructLibargs(fcinfo, procst, function_decl))
+    {
         result = false;
+    }
 
     if (result)
     {

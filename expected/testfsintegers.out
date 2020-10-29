@@ -1,25 +1,90 @@
-CREATE OR REPLACE FUNCTION returnInt() RETURNS integer AS $$
-10
+CREATE OR REPLACE FUNCTION maxSmallIntFsharp() RETURNS smallint AS $$
+32767s
 $$ LANGUAGE plfsharp;
-SELECT returnInt() = integer '10';
+SELECT maxSmallIntFsharp() = integer '32767';
  ?column? 
 ----------
  t
 (1 row)
 
-/*
-CREATE OR REPLACE FUNCTION sum2Integer(a integer, b integer) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION sum2SmallIntFsharp(a smallint, b smallint) RETURNS smallint AS $$
+(int16)(a+b) // -- F# requires int16 cast
+$$ LANGUAGE plfsharp;
+SELECT sum2SmallIntFsharp(CAST(100 AS smallint), CAST(101 AS smallint)) = smallint '201';
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION maxIntegerFsharp() RETURNS integer AS $$
+2147483647
+$$ LANGUAGE plfsharp;
+SELECT maxIntegerFsharp() = integer '2147483647';
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION sum2IntegerFsharp(a integer, b integer) RETURNS integer AS $$
 a+b
 $$ LANGUAGE plfsharp;
-SELECT sum2Integer(1000, 1) = integer '1001';
+SELECT sum2IntegerFsharp(32770, 100) = int '32870';
+ ?column? 
+----------
+ t
+(1 row)
 
-CREATE OR REPLACE FUNCTION mult3Integer(a integer, b integer, c integer) RETURNS integer AS $$
-a*b*c
+CREATE OR REPLACE FUNCTION maxBigIntFsharp() RETURNS bigint AS $$
+9223372036854775807L
 $$ LANGUAGE plfsharp;
-SELECT mult3Integer(5, 2, 3) = integer '30';
+SELECT maxBigIntFsharp() = bigint '9223372036854775807';
+ ?column? 
+----------
+ t
+(1 row)
 
-CREATE OR REPLACE FUNCTION sum1Integer(a integer) RETURNS integer AS $$
-a+10
+CREATE OR REPLACE FUNCTION sum2BigIntFsharp(a bigint, b bigint) RETURNS bigint AS $$
+(int64) a + b
 $$ LANGUAGE plfsharp;
-SELECT sum1Integer(5) = integer '15';
-*/
+SELECT sum2BigIntFsharp(9223372036854775707, 100) = bigint '9223372036854775807';
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION mixedBigIntFsharp(a integer, b integer, c bigint) RETURNS bigint AS $$
+((int64) a) + ((int64) b) + c;
+$$ LANGUAGE plfsharp;
+SELECT mixedBigIntFsharp(32767,  2147483647, 100) = bigint '2147516514';
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION mixedIntFsharp(a smallint, b smallint, c integer) RETURNS integer AS $$
+(int)a + ((int) b) + c;
+$$ LANGUAGE plfsharp;
+SELECT mixedIntFsharp(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100) = integer '65634';
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION mixedBigInt16Fsharp(b smallint, c bigint) RETURNS bigint AS $$
+(int64) (int64 b) + c
+$$ LANGUAGE plfsharp;
+SELECT mixedBigInt16Fsharp(CAST(32 AS SMALLINT), CAST(100 AS BIGINT)) = bigint '132';
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION mixedBigInt16SmallFsharp(b smallint, c bigint) RETURNS smallint AS $$
+(int16) ((int64 b) + c)
+$$ LANGUAGE plfsharp;
+SELECT mixedBigInt16SmallFsharp(CAST(32 AS SMALLINT), CAST(100 AS BIGINT)) = smallint '132';
+ ?column? 
+----------
+ t
+(1 row)
+
