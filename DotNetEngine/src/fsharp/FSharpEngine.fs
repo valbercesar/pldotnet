@@ -39,7 +39,7 @@ type Engine() =
     static member Run (args: IntPtr) (argLength: int) : int =
         let fid = uint (Marshal.ReadInt32(args, argLength))
         match fid <> FunctionCache.functionId with
-        | false -> 
+        | true ->
             try
                 match FunctionCache.functionCache.TryGetValue fid with
                 | true, (_, fn) ->
@@ -77,7 +77,12 @@ type Engine() =
              |> Async.RunSynchronously
         match (exitCode, dynAssembly) with
         | 0, Some assembly -> Engine.AddUserfunction functionId sourceCode assembly
-        | _ -> 1
+        | _ ->
+            printfn "%s" "\n********ERROR************\n"
+            for e in errors do
+                printfn "=======\n%A\n========" e
+            printfn "%s" "\n********ERROR************\n"
+            1
     
     static member SetFunction (functionId : uint) (fn : Func<IntPtr, int, int>) : bool =
         FunctionCache.userFunction <- fn

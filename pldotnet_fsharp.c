@@ -310,6 +310,7 @@ plfsharp_CreateCStructLibargs(
     Form_pg_proc procst)
 {
     int i;
+    size_t default_size;
     int cursize = 0;
     int8_t *libargs_ptr = NULL;
     int8_t *cur_arg = NULL;
@@ -328,8 +329,9 @@ plfsharp_CreateCStructLibargs(
 
     func_inout_info.typesize_result = pldotnet_GetTypeSize(rettype);
 
-    libargs_ptr = (int8_t *) palloc0(func_inout_info.typesize_args +
-                                  func_inout_info.typesize_result);
+    default_size = func_inout_info.typesize_args + func_inout_info.typesize_result;
+
+    libargs_ptr = (int8_t *) palloc0(default_size + sizeof(uint32_t));
 
     cur_arg = libargs_ptr;
 
@@ -366,6 +368,9 @@ plfsharp_CreateCStructLibargs(
         cursize += pldotnet_GetTypeSize(argtype[i]);
         cur_arg = libargs_ptr + cursize;
     }
+
+    cur_arg = libargs_ptr + default_size;
+    *((uint32_t*) cur_arg) = (uint32_t) fcinfo->flinfo->fn_oid;
 
     return libargs_ptr;
 }
