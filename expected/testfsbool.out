@@ -1,0 +1,36 @@
+CREATE OR REPLACE FUNCTION returnBoolFSharp() RETURNS boolean AS $$
+false
+$$ LANGUAGE plfsharp;
+SELECT returnBoolFSharp() is false;
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION BooleanAndFSharp(a boolean, b boolean) RETURNS boolean AS $$
+a && b
+$$ LANGUAGE plfsharp;
+SELECT BooleanAndFSharp(true, true) is true;
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION BooleanOrFSharp(a boolean, b boolean) RETURNS boolean AS $$
+a || b
+$$ LANGUAGE plfsharp;
+SELECT BooleanOrFSharp(false, false) is false;
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION BooleanXorFSharp(a boolean, b boolean) RETURNS boolean AS $$
+a ^^^ b
+$$ LANGUAGE plfsharp;
+SELECT BooleanXorFSharp(false, false) is false;
+ ?column? 
+----------
+ t
+(1 row)
+

@@ -37,6 +37,8 @@ REGRESS = \
 	testmixedtypes \
 	testrecursive \
 	testfsintegers \
+	testfsbool \
+	testfsfloats \
 	testspi \
 	testarray \
 	testcomposites \
