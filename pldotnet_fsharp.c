@@ -82,18 +82,27 @@ static char fs_block_footer[] = "\n\
         Marshal.StructureToPtr(libargs, arg, false)\n\
         0";
 
+/*
+ * This function should be available while
+ * we dont have support for all desired types
+ * In the future, C# and F# should have the same
+ * capabilities and so we will use
+ * pldotnet_TypeSupported intead
+ */
 static bool
 plfsharp_TypeSupported(Oid type)
 {
-    return pldotnet_IsSimpleType(type);
+    return pldotnet_IsSimpleType(type) ||
+           BPCHAROID == type ||
+           VARCHAROID == type ||
+           TEXTOID == type;
 }
 
 static void
 plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix)
 {
     static const char unmanaged_template[] = "\
-        [<MarshalAs(UnmanagedType.%s)>]\n\
-        %s";
+        [<MarshalAs(UnmanagedType.%s)>]\n%s";
 
     static const char val[] = "\
         val mutable";
@@ -341,7 +350,6 @@ plfsharp_CreateCStructLibargs(
 {
     int i;
     size_t default_size;
-    int cursize = 0;
     int8_t *libargs_ptr = NULL;
     int8_t *cur_arg = NULL;
     Oid *argtype = procst->proargtypes.values;
@@ -373,29 +381,16 @@ plfsharp_CreateCStructLibargs(
 #else
         argdatum = fcinfo->arg[i];
 #endif
-        switch (type)
-        {
-            case BOOLOID:
-                *(bool *)(cur_arg) = DatumGetBool(argdatum);
-                break;
-            case INT2OID:
-                *(int16_t *)cur_arg = DatumGetInt16(argdatum);
-                break;
-            case INT4OID:
-                *(int32_t *)cur_arg = DatumGetInt32(argdatum);
-                break;
-            case INT8OID:
-                *(int64_t *)cur_arg = DatumGetInt64(argdatum);
-                break;
-            case FLOAT4OID:
-                *(float4 *)(cur_arg) = DatumGetFloat4(argdatum);
-                break;
-            case FLOAT8OID:
-                *(float8 *)(cur_arg) = DatumGetFloat8(argdatum);
-                break;
-        }
-        cursize += pldotnet_GetTypeSize(argtype[i]);
-        cur_arg = libargs_ptr + cursize;
+        pldotnet_SetScalarValue(
+            (char *)cur_arg,
+            argdatum,
+            fcinfo,
+            i,
+            type,
+            nullptr
+        );
+
+        cur_arg += pldotnet_GetTypeSize(argtype[i]);
     }
 
     cur_arg = libargs_ptr + default_size;
@@ -407,24 +402,15 @@ plfsharp_CreateCStructLibargs(
 static Datum
 plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
 {
-    int8_t *resultP = libargs + func_inout_info.typesize_args;
-
-    switch (rettype)
-    {
-        case BOOLOID:
-            return BoolGetDatum ( *(bool *)(resultP) );
-        case INT2OID:
-            return Int16GetDatum ( *(int16_t *)(resultP) );
-        case INT4OID:
-            return Int32GetDatum ( *(int32_t *)(resultP) );
-        case INT8OID:
-            return Int64GetDatum ( *(int64_t *)(resultP) );
-        case FLOAT4OID:
-            return Float4GetDatum ( *(float4 *)(resultP) );
-        case FLOAT8OID:
-            return Float8GetDatum ( *(float8 *)(resultP) );
-    }
-    return (Datum) 0;
+    /* We have only Scalar values right now
+     * TODO implement arrays, composite and nullable types
+     */
+    return pldotnet_GetScalarValue(
+        (char*) (libargs + func_inout_info.typesize_args),
+        nullptr,
+        fcinfo,
+        rettype
+    );
 }
 
 inline static bool
@@ -451,7 +437,7 @@ plfsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc
     char *fs_block_userfunc_decl;
     char *fs_block_callfunc_call;
     char *source_code = nullptr;
-    
+
     fs_block_args_decl = plfsharp_BuildBlockArgsDecl(procst);
     fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(procst, proc);
     fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(procst);
@@ -507,7 +493,7 @@ plfsharp_GetSourceCode(
         source->source_code = plfsharp_GetInlineSourceCode(fcinfo);
     else
         source->source_code = plfsharp_GetUserSourceCode(fcinfo, proc, procst);
-    
+
     return source->source_code != nullptr;
 }
 

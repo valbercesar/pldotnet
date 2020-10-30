@@ -39,6 +39,7 @@ REGRESS = \
 	testfsintegers \
 	testfsbool \
 	testfsfloats \
+	testfschar \
 	testspi \
 	testarray \
 	testcomposites \

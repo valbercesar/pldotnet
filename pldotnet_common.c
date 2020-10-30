@@ -343,9 +343,14 @@ pldotnet_GetUnmanagedTypeName(Oid type)
             return "LPStr";
         case BPCHAROID:
         case VARCHAROID:
+            return "LPUTF8Str";
         case TEXTOID:
-            /*return "LPUTF8Str";  review why marshal is not working */
             return "LPStr";
+            /*
+              return "LPUTF8Str";
+              review why marshal is not working
+              only in TEXTOID
+            */
     }
     return  "";
 }
@@ -374,30 +379,30 @@ int pldotnet_SetScalarValue(char * argp, Datum datum, FunctionCallInfo fcinfo,
                 *nullp = isnull;
             break;
         case INT4OID:
-            *(int *)(argp) = DatumGetInt32(datum);
+            *(int32_t *)(argp) = DatumGetInt32(datum);
             if (nullp)
                 *nullp = isnull;
             break;
         case INT8OID:
-            *(long *)(argp) = DatumGetInt64(datum);
+            *(int64_t *)(argp) = DatumGetInt64(datum);
             if (nullp)
                 *nullp = isnull;
             break;
         case INT2OID:
-            *(short *)(argp) = DatumGetInt16(datum);
-            if (argp)
+            *(int16_t *)(argp) = DatumGetInt16(datum);
+            if (nullp)
                 *nullp = isnull;
             break;
         case FLOAT4OID:
-            *(float *)(argp) = DatumGetFloat4(datum);
+            *(float4 *)(argp) = DatumGetFloat4(datum);
             break;
         case FLOAT8OID:
-            *(double *)(argp) = DatumGetFloat8(datum);
+            *(float8 *)(argp) = DatumGetFloat8(datum);
             break;
         case NUMERICOID:
             /* C String encoding (numeric_out) is used here as it
              is a number. Unlikely to have encoding issues. */
-            *(unsigned long *)(argp) = (unsigned long)
+            *(uint64_t *)(argp) = (uint64_t)
                 DatumGetCString(DirectFunctionCall1(numeric_out, datum));
             break;
         case BPCHAROID:
@@ -408,7 +413,7 @@ int pldotnet_SetScalarValue(char * argp, Datum datum, FunctionCallInfo fcinfo,
            len = VARSIZE( DatumGetTextP (datum) ) - VARHDRSZ;
            newstr = (char *)palloc0(len+1);
            memcpy(newstr, VARDATA( DatumGetTextP(datum) ), len);
-           *(unsigned long *)(argp) = (unsigned long)
+           *(uint64_t *)(argp) = (uint64_t)
                     pg_do_encoding_conversion((unsigned char *)newstr,
                                               len+1,
                                               GetDatabaseEncoding(), PG_UTF8);
@@ -433,33 +438,31 @@ pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
     unsigned long * ret_ptr;
     int str_len;
 
+    fcinfo->isnull = nullptr == resultnull_ptr ? false : *(bool *) resultnull_ptr;
+
     switch (type)
     {
         case BOOLOID:
             /* Recover flag for null result */
-            fcinfo->isnull = *(bool *) (resultnull_ptr);
             if (fcinfo->isnull)
                 return (Datum) 0;
-            return  BoolGetDatum  ( *(bool *)(result_ptr) );
+            return BoolGetDatum  ( *(bool *)(result_ptr) );
         case INT4OID:
-            fcinfo->isnull = *(bool *) (resultnull_ptr);
             if (fcinfo->isnull)
                 return (Datum) 0;
             return Int32GetDatum ( *(int32_t *)(result_ptr) );
         case INT8OID:
-            fcinfo->isnull = *(bool *) (resultnull_ptr);
             if (fcinfo->isnull)
                 return (Datum) 0;
-            return  Int64GetDatum ( *(int64_t *)(result_ptr) );
+            return Int64GetDatum ( *(int64_t *)(result_ptr) );
         case INT2OID:
-            fcinfo->isnull = *(bool *) (resultnull_ptr);
             if (fcinfo->isnull)
                 return (Datum) 0;
             return  Int16GetDatum ( *(int16_t *)(result_ptr) );
         case FLOAT4OID:
-            return  Float4GetDatum ( *(float4 *)(result_ptr) );
+            return Float4GetDatum ( *(float4 *)(result_ptr) );
         case FLOAT8OID:
-            return  Float8GetDatum ( *(double *)(result_ptr) );
+            return Float8GetDatum ( *(double *)(result_ptr) );
         case NUMERICOID:
             str_num = (char *)*(unsigned long *)(result_ptr);
             return NumericGetDatum(
@@ -492,11 +495,11 @@ pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
               *                       + dotnet_cstruct_info.typesize_params)));
               */
             /* UTF8 encoding */
-            ret_ptr = *(unsigned long **)(result_ptr);
+            ret_ptr = *(uint64_t **)(result_ptr);
             /* str_len = pg_mbstrlen(ret_ptr); */
             str_len = strlen((char*)ret_ptr);
             encoded_str = (char *)pg_do_encoding_conversion( 
-            (unsigned char*)ret_ptr, str_len, PG_UTF8, GetDatabaseEncoding() );
+            (u_char*)ret_ptr, str_len, PG_UTF8, GetDatabaseEncoding() );
             res_varchar = (VarChar *)SPI_palloc(str_len + VARHDRSZ);
 #if PG_VERSION_NUM < 80300
             /* Total size of structure, not just data */
