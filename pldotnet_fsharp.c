@@ -179,9 +179,11 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     int argnm_size, i, nnames, cursize=0, totalsize;
     bool isnull;
     char *func;
+    size_t line_length;
     const char member[] = "static member ";
     const char func_signature_indent[] = "    ";
     const char func_body_indent[] = "        ";
+    const size_t body_indent_size = strlen(func_body_indent);
     char *user_line;
     const char end_fun_decl[] = " =\n";
     const char end_fun[] = "\n";
@@ -219,12 +221,14 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
         totalsize +=  1 + argnm_size;
     }
 
+    user_line = source_text;
+
     /* tokenizes source_code into its lines for indentation insertion */
-    user_line = strtok(source_text,"\n");
-    while (user_line != NULL)
+    while (*(user_line += strspn(user_line, "\n")) != '\0')
     {
-        totalsize += strlen(func_body_indent) + strlen(user_line);
-        user_line = strtok(NULL,"\n");
+        line_length = strcspn(user_line, "\n");
+        totalsize += body_indent_size + line_length + 1;
+        user_line += line_length;
     }
 
     totalsize += strlen(end_fun_decl) + strlen(end_fun) + 1;
@@ -252,14 +256,25 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     SNPRINTF(str_ptr, totalsize - cursize, "%s", end_fun_decl);
     cursize = strlen(block2str);
 
-    user_line = strtok(source_text,"\n");
-    while (user_line != NULL)
+    user_line = source_text;
+
+    /* tokenizes source_code into its lines for indentation insertion */
+    while (*(user_line += strspn(user_line, "\n")) != '\0')
     {
+        line_length = strcspn(user_line, "\n");
         str_ptr = (char *)(block2str + cursize);
-        SNPRINTF(str_ptr, totalsize - cursize, "%s%s"
-            ,func_body_indent,user_line);
-        user_line = strtok(NULL,"\n");
-        cursize = strlen(block2str);
+
+        SNPRINTF(str_ptr, totalsize - cursize, "%s", func_body_indent);
+        str_ptr += body_indent_size;
+        cursize += body_indent_size;
+
+        for (i = 0; i < line_length; ++i)
+            str_ptr[i] = user_line[i];
+
+        str_ptr[line_length] = '\n';
+        str_ptr += line_length + 1;
+        cursize += line_length + 1;
+        user_line += line_length;
     }
 
     str_ptr = (char *)(block2str + cursize);
