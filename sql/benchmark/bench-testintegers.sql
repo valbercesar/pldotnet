@@ -8,6 +8,7 @@
 \i sql/perl/testintegers.sql
 \i sql/lua/testintegers.sql
 \i sql/tcl/testintegers.sql
+\i sql/r/testintegers.sql
 
 SELECT
     'maxSmallInt',
@@ -18,7 +19,8 @@ SELECT
     plbench('SELECT maxSmallIntJava()', 200) as pljava,
     plbench('SELECT maxSmallIntPerl()', 200) as plperl,
     plbench('SELECT maxSmallIntLua()', 200) as pllua,
-    plbench('SELECT maxSmallIntTcl()', 200) as pltcl;
+    plbench('SELECT maxSmallIntTcl()', 200) as pltcl,
+    plbench('SELECT maxSmallIntR()', 200) as plr;
 
 SELECT
     'sum2SmallInt',
@@ -29,7 +31,8 @@ SELECT
     plbench('SELECT sum2SmallIntJava(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pljava,
     plbench('SELECT sum2SmallIntPerl(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as plperl,
     plbench('SELECT sum2SmallIntLua(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pllua,
-    plbench('SELECT sum2SmallIntTcl(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pltcl;
+    plbench('SELECT sum2SmallIntTcl(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as pltcl,
+    plbench('SELECT sum2SmallIntR(CAST(100 AS smallint), CAST(101 AS smallint))', 200) as plr;
 
 SELECT
     'maxInteger',
@@ -40,7 +43,8 @@ SELECT
     plbench('SELECT maxIntegerJava()', 200) as pljava,
     plbench('SELECT maxIntegerPerl()', 200) as plperl,
     plbench('SELECT maxIntegerLua()', 200) as pllua,
-    plbench('SELECT maxIntegerTcl()', 200) as pltcl;
+    plbench('SELECT maxIntegerTcl()', 200) as pltcl,
+    plbench('SELECT maxIntegerR()', 200) as plr;
 
 SELECT
     'sum2Integer',
@@ -51,7 +55,8 @@ SELECT
     plbench('SELECT sum2IntegerJava(32770, 100)', 200) as pljava,
     plbench('SELECT sum2IntegerPerl(32770, 100)', 200) as plperl,
     plbench('SELECT sum2IntegerLua(32770, 100)', 200) as pllua,
-    plbench('SELECT sum2IntegerTcl(32770, 100)', 200) as pltcl;
+    plbench('SELECT sum2IntegerTcl(32770, 100)', 200) as pltcl,
+    plbench('SELECT sum2IntegerR(32770, 100)', 200) as plr;
 
 SELECT
     'maxBigInt',
@@ -62,7 +67,8 @@ SELECT
     plbench('SELECT maxBigIntJava()', 200) as pljava,
     plbench('SELECT maxBigIntPerl()', 200) as plperl,
     plbench('SELECT maxBigIntLua()', 200) as pllua,
-    plbench('SELECT maxBigIntTcl()', 200) as pltcl;
+    plbench('SELECT maxBigIntTcl()', 200) as pltcl,
+    plbench('SELECT maxBigIntR()', 200) as plr;
 
 SELECT
     'sum2BigInt',
@@ -73,7 +79,8 @@ SELECT
     plbench('SELECT sum2BigIntJava(9223372036854775707, 100)', 200) as pljava,
     plbench('SELECT sum2BigIntPerl(9223372036854775707, 100)', 200) as plperl,
     plbench('SELECT sum2BigIntLua(9223372036854775707, 100)', 200) as pllua,
-    plbench('SELECT sum2BigIntTcl(9223372036854775707, 100)', 200) as pltcl;
+    plbench('SELECT sum2BigIntTcl(9223372036854775707, 100)', 200) as pltcl,
+    '-' as plr;
 
 SELECT
     'mixedBigInt',
@@ -84,7 +91,8 @@ SELECT
     plbench('SELECT mixedBigIntJava(32767,  2147483647, 100)', 200) as pljava,
     plbench('SELECT mixedBigIntPerl(32767,  2147483647, 100)', 200) as plperl,
     plbench('SELECT mixedBigIntLua(32767,  2147483647, 100)', 200) as pllua,
-    plbench('SELECT mixedBigIntTcl(32767,  2147483647, 100)', 200) as pltcl;
+    plbench('SELECT mixedBigIntTcl(32767,  2147483647, 100)', 200) as pltcl,
+    '-' as plr;
 
 SELECT
     'mixedInt',
@@ -95,4 +103,5 @@ SELECT
     plbench('SELECT mixedIntJava(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pljava,
     plbench('SELECT mixedIntPerl(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as plperl,
     plbench('SELECT mixedIntLua(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pllua,
-    plbench('SELECT mixedIntTcl(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pltcl;
+    plbench('SELECT mixedIntTcl(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 100) as pltcl,
+    plbench('SELECT mixedIntR(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', 200) as plr;

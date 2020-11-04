@@ -8,6 +8,7 @@
 \i sql/perl/testcomposites.sql
 \i sql/lua/testcomposites.sql
 \i sql/tcl/testcomposites.sql
+\i sql/r/testcomposites.sql
 
 SELECT
     'helloPersonAge',
@@ -18,7 +19,8 @@ SELECT
     plbench('SELECT helloPersonAgeJava((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pljava,
     plbench('SELECT helloPersonAgePerl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plperl,
     plbench('SELECT helloPersonAgeLua((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pllua,
-    plbench('SELECT helloPersonAgeTcl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pltcl;
+    plbench('SELECT helloPersonAgeTcl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pltcl,
+    plbench('SELECT helloPersonAgeR((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plr;
 
 SELECT
     'helloPerson',
@@ -29,4 +31,5 @@ SELECT
     plbench('SELECT helloPersonJava((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pljava,
     plbench('SELECT helloPersonPerl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plperl,
     plbench('SELECT helloPersonLua((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pllua,
-    plbench('SELECT helloPersonTcl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pltcl;
+    plbench('SELECT helloPersonTcl((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as pltcl,
+    plbench('SELECT helloPersonR((''John Smith'', 38, 85.5, 1.71, 999.999, true))', 700) as plr;

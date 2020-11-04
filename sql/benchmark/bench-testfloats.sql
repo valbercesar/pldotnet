@@ -8,6 +8,7 @@
 \i sql/perl/testfloats.sql
 \i sql/lua/testfloats.sql
 \i sql/tcl/testfloats.sql
+\i sql/r/testfloats.sql
 
 SELECT
     'returnReal',
@@ -18,7 +19,8 @@ SELECT
     plbench('SELECT returnRealJava()', 500) as pljava,
     plbench('SELECT returnRealPerl()', 500) as plperl,
     plbench('SELECT returnRealLua()', 500) as pllua,
-    plbench('SELECT returnRealTcl()', 500) as pltcl;
+    plbench('SELECT returnRealTcl()', 500) as pltcl,
+    plbench('SELECT returnRealR()', 500) as plr;
 
 SELECT
     'sumReal',
@@ -29,7 +31,8 @@ SELECT
     plbench('SELECT sumRealJava(1.50055, 1.50054)', 500) as pljava,
     plbench('SELECT sumRealPerl(1.50055, 1.50054)', 500) as plperl,
     plbench('SELECT sumRealLua(1.50055, 1.50054)', 500) as pllua,
-    plbench('SELECT sumRealTcl(1.50055, 1.50054)', 500) as pltcl;
+    plbench('SELECT sumRealTcl(1.50055, 1.50054)', 500) as pltcl,
+    plbench('SELECT sumRealR(1.50055, 1.50054)', 500) as plr;
 
 SELECT
     'returnDouble',
@@ -40,7 +43,8 @@ SELECT
     plbench('SELECT returnDoubleJava()', 500) as pljava,
     plbench('SELECT returnDoublePerl()', 500) as plperl,
     plbench('SELECT returnDoubleLua()', 500) as pllua,
-    plbench('SELECT returnDoubleTcl()', 500) as pltcl;
+    plbench('SELECT returnDoubleTcl()', 500) as pltcl,
+    plbench('SELECT returnDoubleR()', 500) as plr;
 
 SELECT
     'sumDouble',
@@ -51,4 +55,5 @@ SELECT
     plbench('SELECT sumDoubleJava(10.5000000000055, 10.5000000000054)', 500) as pljava,
     plbench('SELECT sumDoublePerl(10.5000000000055, 10.5000000000054)', 500) as plperl,
     plbench('SELECT sumDoubleLua(10.5000000000055, 10.5000000000054)', 500) as pllua,
-    plbench('SELECT sumDoubleTcl(10.5000000000055, 10.5000000000054)', 500) as pltcl;
+    plbench('SELECT sumDoubleTcl(10.5000000000055, 10.5000000000054)', 500) as pltcl,
+    plbench('SELECT sumDoubleR(10.5000000000055, 10.5000000000054)', 500) as plr;

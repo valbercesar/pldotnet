@@ -7,6 +7,7 @@
 \i sql/java/testspi.sql
 \i sql/perl/testspi.sql
 \i sql/tcl/testspi.sql
+\i sql/r/testspi.sql
 
 SELECT
     'returnCompositeSum',
@@ -17,7 +18,8 @@ SELECT
     plbench('SELECT returnCompositeSumJava()', 100) as pljava,
     plbench('SELECT returnCompositeSumPerl()', 100) as plperl,
     '-' as pllua,
-    plbench('SELECT returnCompositeSumTcl()', 100) as pltcl;
+    plbench('SELECT returnCompositeSumTcl()', 100) as pltcl,
+    plbench('SELECT returnCompositeSumR()', 100) as plr;
 
 SELECT
     'checkTypes',
@@ -28,7 +30,8 @@ SELECT
     plbench('SELECT checkTypesJava()', 100) as pljava,
     '-' as plperl,
     '-' as pllua,
-    plbench('SELECT checkTypesTcl()', 100) as pltcl;
+    plbench('SELECT checkTypesTcl()', 100) as pltcl,
+    plbench('SELECT checkTypesR()', 100) as plr;
 
 SELECT
     'getUsersWithBalance',
@@ -39,7 +42,8 @@ SELECT
     plbench('SELECT getUsersWithBalanceJava(2304.55)', 100) as pljava,
     plbench('SELECT getUsersWithBalancePerl(2304.55)', 100) as plperl,
     '-' as pllua,
-    plbench('SELECT getUsersWithBalanceTcl(2304.55)', 100) as pltcl;
+    plbench('SELECT getUsersWithBalanceTcl(2304.55)', 100) as pltcl,
+    plbench('SELECT getUsersWithBalanceR(2304.55)', 100) as plr;
 
 SELECT
     'getUserDescription(123456789)',
@@ -50,7 +54,8 @@ SELECT
     plbench('SELECT getUserDescriptionJava(123456789)', 100) as pljava,
     plbench('SELECT getUserDescriptionPerl(123456789)', 100) as plperl,
     '-' as pllua,
-    plbench('SELECT getUserDescriptionTcl(123456789)', 100) as pltcl;
+    plbench('SELECT getUserDescriptionTcl(123456789)', 100) as pltcl,
+    plbench('SELECT getUserDescriptionR(123456789)', 100) as plr;
 
 SELECT
     'getUserDescriptionV8(987654321)',
@@ -61,4 +66,5 @@ SELECT
     plbench('SELECT getUserDescriptionJava(987654321)', 100) as pljava,
     plbench('SELECT getUserDescriptionPerl(987654321)', 100) as plperl,
     '-' as pllua,
-    plbench('SELECT getUserDescriptionTcl(987654321)', 100) as pltcl;
+    plbench('SELECT getUserDescriptionTcl(987654321)', 100) as pltcl,
+    plbench('SELECT getUserDescriptionR(987654321)', 100) as plr;

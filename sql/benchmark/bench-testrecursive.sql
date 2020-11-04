@@ -15,7 +15,8 @@ SELECT
     plbench('SELECT fibbbJava(30)', 10) as pljava,
     '-' as plperl,
     '-' as pllua,
-    '-' as pltcl;
+    '-' as pltcl,
+    '-' as plr;
 
 SELECT
     'fact',
@@ -26,7 +27,8 @@ SELECT
     plbench('SELECT factJava(5)', 10) as pljava,
     '-' as plperl,
     '-' as pllua,
-    '-' as pltcl;
+    '-' as pltcl,
+    '-' as plr;
 
 SELECT
     'natural(10)',
@@ -37,7 +39,8 @@ SELECT
     plbench('SELECT naturalJava(10)', 10) as pljava,
     '-' as plperl,
     '-' as pllua,
-    '-' as pltcl;
+    '-' as pltcl,
+    '-' as plr;
 
 SELECT
     'natural(10.5)',
@@ -48,4 +51,5 @@ SELECT
     plbench('SELECT naturalJava(10.5)', 10) as pljava,
     '-' as plperl,
     '-' as pllua,
-    '-' as pltcl;
+    '-' as pltcl,
+    '-' as plr;

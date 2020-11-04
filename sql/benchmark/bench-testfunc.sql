@@ -8,6 +8,7 @@
 \i sql/perl/testfunc.sql
 \i sql/lua/testfunc.sql
 \i sql/tcl/testfunc.sql
+\i sql/r/testfunc.sql
 
 SELECT
     'returnX',
@@ -18,7 +19,8 @@ SELECT
     plbench('SELECT returnXJava()', 300) as pljava,
     plbench('SELECT returnXPerl()', 300) as plperl,
     plbench('SELECT returnXLua()', 300) as pllua,
-    plbench('SELECT returnXTcl()', 300) as pltcl;
+    plbench('SELECT returnXTcl()', 300) as pltcl,
+    plbench('SELECT returnXR()', 300) as plr;
 
 SELECT
     'inc2',
@@ -29,7 +31,8 @@ SELECT
     plbench('SELECT inc2Java(8)', 300) as pljava,
     plbench('SELECT inc2Perl(8)', 300) as plperl,
     plbench('SELECT inc2Lua(8)', 300) as pllua,
-    plbench('SELECT inc2Tcl(8)', 300) as pltcl;
+    plbench('SELECT inc2Tcl(8)', 300) as pltcl,
+    plbench('SELECT inc2R(8)', 300) as plr;
 
 SELECT
     'sum2',
@@ -40,7 +43,8 @@ SELECT
     plbench('SELECT sum2Java(3,2)', 300) as pljava,
     plbench('SELECT sum2Perl(3,2)', 300) as plperl,
     plbench('SELECT sum2Lua(3,2)', 300) as pllua,
-    plbench('SELECT sum2Tcl(3,2)', 300) as pltcl;
+    plbench('SELECT sum2Tcl(3,2)', 300) as pltcl,
+    plbench('SELECT sum2R(3,2)', 300) as plr;
 
 SELECT
     'sum3',
@@ -51,7 +55,8 @@ SELECT
     plbench('SELECT sum3Java(3,2,1)', 300) as pljava,
     plbench('SELECT sum3Perl(3,2,1)', 300) as plperl,
     plbench('SELECT sum3Lua(3,2,1)', 300) as pllua,
-    plbench('SELECT sum3Tcl(3,2,1)', 300) as pltcl;
+    plbench('SELECT sum3Tcl(3,2,1)', 300) as pltcl,
+    plbench('SELECT sum3R(3,2,1)', 300) as plr;
 
 SELECT
     'sum4',
@@ -62,4 +67,5 @@ SELECT
     plbench('SELECT sum4Java(4,3,2,1)', 300) as pljava,
     plbench('SELECT sum4Perl(4,3,2,1)', 300) as plperl,
     plbench('SELECT sum4Lua(4,3,2,1)', 300) as pllua,
-    plbench('SELECT sum4Tcl(4,3,2,1)', 300) as pltcl;
+    plbench('SELECT sum4Tcl(4,3,2,1)', 300) as pltcl,
+    plbench('SELECT sum4R(4,3,2,1)', 300) as plr;
