@@ -9,6 +9,7 @@
 \i sql/lua/testnumeric.sql
 \i sql/tcl/testnumeric.sql
 \i sql/r/testnumeric.sql
+\i sql/testfsnumeric.sql
 
 SELECT
     'get_sum(1.3333333, 10)',
@@ -20,7 +21,8 @@ SELECT
     plbench('SELECT get_sumPerl(1.3333333, 10)', 500) as plperl,
     '-' as pllua,
     plbench('SELECT get_sumTcl(1.3333333, 10)', 500) as pltcl,
-    plbench('SELECT get_sumR(1.3333333, 10)', 500) as plr;
+    plbench('SELECT get_sumR(1.3333333, 10)', 500) as plr,
+    plbench('SELECT get_sumFSharp(1.3333333, 10)', 500) as plfsharp;
 
 SELECT
     'get_sum(1.33333333, -10.99999999)',
@@ -32,7 +34,8 @@ SELECT
     plbench('SELECT get_sumPerl(1.33333333, -10.99999999)', 500) as plperl,
     '-' as pllua,
     plbench('SELECT get_sumTcl(1.33333333, -10.99999999)', 500) as pltcl,
-    plbench('SELECT get_sumR(1.33333333, -10.99999999)', 500) as plr;
+    plbench('SELECT get_sumR(1.33333333, -10.99999999)', 500) as plr,
+    plbench('SELECT get_sumFSharp(1.33333333, -10.99999999)', 500) as plfsharp;
 
 SELECT
     'get_sum(1999999999999.555555555555555, -10.99999999)',
@@ -44,7 +47,8 @@ SELECT
     plbench('SELECT get_sumPerl(1999999999999.555555555555555, -10.99999999)', 500) as plperl,
     '-' as pllua,
     plbench('SELECT get_sumTcl(1999999999999.555555555555555, -10.99999999)', 500) as pltcl,
-    plbench('SELECT get_sumR(1999999999999.555555555555555, -10.99999999)', 500) as plr;
+    plbench('SELECT get_sumR(1999999999999.555555555555555, -10.99999999)', 500) as plr,
+    plbench('SELECT get_sumFSharp(1999999999999.555555555555555, -10.99999999)', 500) as plfsharp;
 
 SELECT
     'getbigNum(999999999999999999991.9999991)',
@@ -56,7 +60,8 @@ SELECT
     plbench('SELECT getbigNumPerl(999999999999999999991.9999991)', 500) as plperl,
     plbench('SELECT getbigNumLua(999999999999999999991.9999991)', 500) as pllua,
     plbench('SELECT getbigNumTcl(999999999999999999991.9999991)', 500) as pltcl,
-    plbench('SELECT getbigNumR(999999999999999999991.9999991)', 500) as plr;
+    plbench('SELECT getbigNumR(999999999999999999991.9999991)', 500) as plr,
+    plbench('SELECT getbigNumFSharp(999999999999999999991.9999991)', 500) as plfsharp;
 
 SELECT
     'getbigNum(999999999999999999991.99999999)',
@@ -68,4 +73,5 @@ SELECT
     plbench('SELECT getbigNumPerl(999999999999999999991.99999999)', 500) as plperl,
     plbench('SELECT getbigNumLua(999999999999999999991.99999999)', 500) as pllua,
     plbench('SELECT getbigNumTcl(999999999999999999991.99999999)', 500) as pltcl,
-    plbench('SELECT getbigNumR(999999999999999999991.99999999)', 500) as plr;
+    plbench('SELECT getbigNumR(999999999999999999991.99999999)', 500) as plr,
+    plbench('SELECT getbigNumFSharp(999999999999999999991.99999999)', 500) as plfsharp;

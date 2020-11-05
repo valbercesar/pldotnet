@@ -9,6 +9,7 @@
 \i sql/lua/testfloats.sql
 \i sql/tcl/testfloats.sql
 \i sql/r/testfloats.sql
+\i sql/testfsfloats.sql
 
 SELECT
     'returnReal',
@@ -20,7 +21,8 @@ SELECT
     plbench('SELECT returnRealPerl()', 500) as plperl,
     plbench('SELECT returnRealLua()', 500) as pllua,
     plbench('SELECT returnRealTcl()', 500) as pltcl,
-    plbench('SELECT returnRealR()', 500) as plr;
+    plbench('SELECT returnRealR()', 500) as plr,
+    plbench('SELECT returnRealFSharp()', 500) as plfsharp;
 
 SELECT
     'sumReal',
@@ -32,7 +34,8 @@ SELECT
     plbench('SELECT sumRealPerl(1.50055, 1.50054)', 500) as plperl,
     plbench('SELECT sumRealLua(1.50055, 1.50054)', 500) as pllua,
     plbench('SELECT sumRealTcl(1.50055, 1.50054)', 500) as pltcl,
-    plbench('SELECT sumRealR(1.50055, 1.50054)', 500) as plr;
+    plbench('SELECT sumRealR(1.50055, 1.50054)', 500) as plr,
+    plbench('SELECT sumRealFSharp(1.50055, 1.50054)', 500) as plfsharp;
 
 SELECT
     'returnDouble',
@@ -44,7 +47,8 @@ SELECT
     plbench('SELECT returnDoublePerl()', 500) as plperl,
     plbench('SELECT returnDoubleLua()', 500) as pllua,
     plbench('SELECT returnDoubleTcl()', 500) as pltcl,
-    plbench('SELECT returnDoubleR()', 500) as plr;
+    plbench('SELECT returnDoubleR()', 500) as plr,
+    plbench('SELECT returnDoubleFSharp()', 500) as plfsharp;
 
 SELECT
     'sumDouble',
@@ -56,4 +60,5 @@ SELECT
     plbench('SELECT sumDoublePerl(10.5000000000055, 10.5000000000054)', 500) as plperl,
     plbench('SELECT sumDoubleLua(10.5000000000055, 10.5000000000054)', 500) as pllua,
     plbench('SELECT sumDoubleTcl(10.5000000000055, 10.5000000000054)', 500) as pltcl,
-    plbench('SELECT sumDoubleR(10.5000000000055, 10.5000000000054)', 500) as plr;
+    plbench('SELECT sumDoubleR(10.5000000000055, 10.5000000000054)', 500) as plr,
+    plbench('SELECT sumDoubleFSharp(10.5000000000055, 10.5000000000054)', 500) as plfsharp;

@@ -5,6 +5,7 @@
 \i sql/python/testrecursive.sql
 \i sql/pgsql/testrecursive.sql
 \i sql/java/testrecursive.sql
+\i sql/testfsrecursive.sql
 
 SELECT
     'fibbb',
@@ -16,7 +17,8 @@ SELECT
     '-' as plperl,
     '-' as pllua,
     '-' as pltcl,
-    '-' as plr;
+    '-' as plr,
+    plbench('SELECT fibbbFSharp(30)', 10) as plfsharp;
 
 SELECT
     'fact',
@@ -28,7 +30,8 @@ SELECT
     '-' as plperl,
     '-' as pllua,
     '-' as pltcl,
-    '-' as plr;
+    '-' as plr,
+    plbench('SELECT factFSharp(5)', 10) as plfsharp;
 
 SELECT
     'natural(10)',
@@ -40,7 +43,8 @@ SELECT
     '-' as plperl,
     '-' as pllua,
     '-' as pltcl,
-    '-' as plr;
+    '-' as plr,
+    plbench('SELECT naturalFSharp(10)', 10) as plfsharp;
 
 SELECT
     'natural(10.5)',
@@ -52,4 +56,5 @@ SELECT
     '-' as plperl,
     '-' as pllua,
     '-' as pltcl,
-    '-' as plr;
+    '-' as plr,
+    plbench('SELECT naturalFSharp(10.5)', 10) as plfsharp;

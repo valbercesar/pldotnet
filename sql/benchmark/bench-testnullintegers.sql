@@ -8,6 +8,7 @@
 \i sql/perl/testnullintegers.sql
 \i sql/tcl/testnullintegers.sql
 \i sql/r/testnullintegers.sql
+\i sql/testfsnullintegers.sql
 
 SELECT
     'returnNullInt',
@@ -19,7 +20,8 @@ SELECT
     plbench('SELECT returnNullIntPerl()', 100) as plperl,
     '-' as pllua,
     plbench('SELECT returnNullIntTcl()', 100) as pltcl,
-    plbench('SELECT returnNullIntR()', 100) as plr;
+    plbench('SELECT returnNullIntR()', 100) as plr,
+    plbench('SELECT returnNullIntFSharp()', 100) as plfsharp;
 
 SELECT
     'returnNullSmallInt',
@@ -31,7 +33,8 @@ SELECT
     plbench('SELECT returnNullSmallIntPerl()', 100) as plperl,
     '-' as pllua,
     plbench('SELECT returnNullSmallIntTcl()', 100) as pltcl,
-    plbench('SELECT returnNullSmallIntR()', 100) as plr;
+    plbench('SELECT returnNullSmallIntR()', 100) as plr,
+    plbench('SELECT returnNullSmallIntFSharp()', 100) as plfsharp;
 
 SELECT
     'returnNullBigInt',
@@ -43,7 +46,8 @@ SELECT
     plbench('SELECT returnNullBigIntPerl()', 100) as plperl,
     '-' as pllua,
     plbench('SELECT returnNullBigIntTcl()', 100) as pltcl,
-    plbench('SELECT returnNullBigIntR()', 100) as plr;
+    plbench('SELECT returnNullBigIntR()', 100) as plr,
+    plbench('SELECT returnNullBigIntFSharp()', 100) as plfsharp;
 
 SELECT
     'sumNullArgInt(null,null)',
@@ -55,7 +59,8 @@ SELECT
     plbench('SELECT sumNullArgIntPerl(null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgIntTcl(null,null)', 100) as pltcl,
-    plbench('SELECT sumNullArgIntR(null,null)', 100) as plr;
+    plbench('SELECT sumNullArgIntR(null,null)', 100) as plr,
+    plbench('SELECT sumNullArgIntFSharp(null,null)', 100) as plfsharp;
 
 SELECT
     'sumNullArgInt(null,3)',
@@ -67,7 +72,8 @@ SELECT
     plbench('SELECT sumNullArgIntPerl(null,3)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgIntTcl(null,3)', 100) as pltcl,
-    plbench('SELECT sumNullArgIntR(null,3)', 100) as plr;
+    plbench('SELECT sumNullArgIntR(null,3)', 100) as plr,
+    plbench('SELECT sumNullArgIntFSharp(null,3)', 100) as plfsharp;
 
 SELECT
     'sumNullArgInt(3,null)',
@@ -79,7 +85,8 @@ SELECT
     plbench('SELECT sumNullArgIntPerl(3,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgIntTcl(3,null)', 100) as pltcl,
-    plbench('SELECT sumNullArgIntR(3,null)', 100) as plr;
+    plbench('SELECT sumNullArgIntR(3,null)', 100) as plr,
+    plbench('SELECT sumNullArgIntFSharp(3,null)', 100) as plfsharp;
 
 SELECT
     'sumNullArgInt(3,3)',
@@ -91,7 +98,8 @@ SELECT
     plbench('SELECT sumNullArgIntPerl(3,3)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgIntTcl(3,3)', 100) as pltcl,
-    plbench('SELECT sumNullArgIntR(3,3)', 100) as plr;
+    plbench('SELECT sumNullArgIntR(3,3)', 100) as plr,
+    plbench('SELECT sumNullArgIntFSharp(3,3)', 100) as plfsharp;
 
 SELECT
     'sumNullArgSmallInt(null,null)',
@@ -103,7 +111,8 @@ SELECT
     plbench('SELECT sumNullArgSmallIntPerl(null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgSmallIntTcl(null,null)', 100) as pltcl,
-    plbench('SELECT sumNullArgSmallIntR(null,null)', 100) as plr;
+    plbench('SELECT sumNullArgSmallIntR(null,null)', 100) as plr,
+    plbench('SELECT sumNullArgSmallIntFSharp(null,null)', 100) as plfsharp;
 
 SELECT
     'sumNullArgSmallInt(null,CAST(101 AS smallint))',
@@ -115,7 +124,8 @@ SELECT
     plbench('SELECT sumNullArgSmallIntPerl(null,CAST(101 AS smallint))', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgSmallIntTcl(null,CAST(101 AS smallint))', 100) as pltcl,
-    plbench('SELECT sumNullArgSmallIntR(null,CAST(101 AS smallint))', 100) as plr;
+    plbench('SELECT sumNullArgSmallIntR(null,CAST(101 AS smallint))', 100) as plr,
+    plbench('SELECT sumNullArgSmallIntFSharp(null,CAST(101 AS smallint))', 100) as plfsharp;
 
 SELECT
     'sumNullArgSmallInt(CAST(101 AS smallint),null)',
@@ -127,7 +137,8 @@ SELECT
     plbench('SELECT sumNullArgSmallIntPerl(CAST(101 AS smallint),null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgSmallIntTcl(CAST(101 AS smallint),null)', 100) as pltcl,
-    plbench('SELECT sumNullArgSmallIntR(CAST(101 AS smallint),null)', 100) as plr;
+    plbench('SELECT sumNullArgSmallIntR(CAST(101 AS smallint),null)', 100) as plr,
+    plbench('SELECT sumNullArgSmallIntFSharp(CAST(101 AS smallint),null)', 100) as plfsharp;
 
 SELECT
     'sumNullArgSmallInt(CAST(101 AS smallint),CAST(101 AS smallint))',
@@ -139,7 +150,8 @@ SELECT
     plbench('SELECT sumNullArgSmallIntPerl(CAST(101 AS smallint),CAST(101 AS smallint))', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgSmallIntTcl(CAST(101 AS smallint),CAST(101 AS smallint))', 100) as pltcl,
-    plbench('SELECT sumNullArgSmallIntR(CAST(101 AS smallint),CAST(101 AS smallint))', 100) as plr;
+    plbench('SELECT sumNullArgSmallIntR(CAST(101 AS smallint),CAST(101 AS smallint))', 100) as plr,
+    plbench('SELECT sumNullArgSmallIntFSharp(CAST(101 AS smallint),CAST(101 AS smallint))', 100) as plfsharp;
 
 SELECT
     'sumNullArgBigInt(null,null)',
@@ -151,7 +163,8 @@ SELECT
     plbench('SELECT sumNullArgBigIntPerl(null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgBigIntTcl(null,null)', 100) as pltcl,
-    plbench('SELECT sumNullArgBigIntR(null,null)', 100) as plr;
+    plbench('SELECT sumNullArgBigIntR(null,null)', 100) as plr,
+    plbench('SELECT sumNullArgBigIntFSharp(null,null)', 100) as plfsharp;
 
 SELECT
     'sumNullArgBigInt(null,100)',
@@ -163,7 +176,8 @@ SELECT
     plbench('SELECT sumNullArgBigIntPerl(null,100)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgBigIntTcl(null,100)', 100) as pltcl,
-    plbench('SELECT sumNullArgBigIntR(null,100)', 100) as plr;
+    plbench('SELECT sumNullArgBigIntR(null,100)', 100) as plr,
+    plbench('SELECT sumNullArgBigIntFSharp(null,100)', 100) as plfsharp;
 
 SELECT
     'sumNullArgBigInt(9223372036854775707,null)',
@@ -175,9 +189,9 @@ SELECT
     '-' as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgBigIntTcl(9223372036854775707,null)', 100) as pltcl,
-    plbench('SELECT sumNullArgBigIntR(9223372036854775707,null)', 100) as plr;
+    plbench('SELECT sumNullArgBigIntR(9223372036854775707,null)', 100) as plr,
+    plbench('SELECT sumNullArgBigIntFSharp(9223372036854775707,null)', 100) as plfsharp;
     /*plbench('SELECT sumNullArgBigIntPerl(9223372036854775707,null)', 100) as plperl,
-    '-' as pllua,
     */
 
 SELECT
@@ -190,7 +204,8 @@ SELECT
     plbench('SELECT sumNullArgBigIntPerl(9223372036854775707,100)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT sumNullArgBigIntTcl(9223372036854775707,100)', 100) as pltcl,
-    '-' as plr;
+    '-' as plr,
+    plbench('SELECT sumNullArgBigIntFSharp(9223372036854775707,100)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgInt(null,null)',
@@ -202,7 +217,8 @@ SELECT
     plbench('SELECT checkedSumNullArgIntPerl(null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgIntTcl(null,null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgIntR(null,null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgIntR(null,null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgIntFSharp(null,null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgInt(null,3)',
@@ -214,7 +230,8 @@ SELECT
     plbench('SELECT checkedSumNullArgIntPerl(null,3)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgIntTcl(null,3)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgIntR(null,3)', 100) as plr;
+    plbench('SELECT checkedSumNullArgIntR(null,3)', 100) as plr,
+    plbench('SELECT checkedSumNullArgIntFSharp(null,3)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgInt(3,null)',
@@ -226,7 +243,8 @@ SELECT
     plbench('SELECT checkedSumNullArgIntPerl(3,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgIntTcl(3,null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgIntR(3,null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgIntR(3,null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgIntFSharp(3,null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgInt(3,3)',
@@ -238,7 +256,8 @@ SELECT
     plbench('SELECT checkedSumNullArgIntPerl(3,3)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgIntTcl(3,3)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgIntR(3,3)', 100) as plr;
+    plbench('SELECT checkedSumNullArgIntR(3,3)', 100) as plr,
+    plbench('SELECT checkedSumNullArgIntFSharp(3,3)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgSmallInt(null,null)',
@@ -250,7 +269,8 @@ SELECT
     plbench('SELECT checkedSumNullArgSmallIntPerl(null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgSmallIntTcl(null,null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgSmallIntR(null,null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgSmallIntR(null,null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgSmallIntFSharp(null,null)', 100) as plfsharp;
 
 SELECT  
     'checkedSumNullArgSmallInt(null,CAST(133 AS smallint))',
@@ -262,7 +282,8 @@ SELECT
     plbench('SELECT checkedSumNullArgSmallIntPerl(null,CAST(133 AS smallint))', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgSmallIntTcl(null,CAST(133 AS smallint))', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgSmallIntR(null,CAST(133 AS smallint))', 100) as plr;
+    plbench('SELECT checkedSumNullArgSmallIntR(null,CAST(133 AS smallint))', 100) as plr,
+    plbench('SELECT checkedSumNullArgSmallIntFSharp(null,CAST(133 AS smallint))', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgSmallInt(CAST(133 AS smallint),null)',
@@ -274,7 +295,8 @@ SELECT
     plbench('SELECT checkedSumNullArgSmallIntPerl(CAST(133 AS smallint),null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgSmallIntTcl(CAST(133 AS smallint),null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgSmallIntR(CAST(133 AS smallint),null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgSmallIntR(CAST(133 AS smallint),null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgSmallIntFSharp(CAST(133 AS smallint),null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgSmallInt(CAST(133 AS smallint),CAST(133 AS smallint)',
@@ -286,7 +308,8 @@ SELECT
     plbench('SELECT checkedSumNullArgSmallIntPerl(CAST(133 AS smallint),CAST(133 AS smallint))', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgSmallIntTcl(CAST(133 AS smallint),CAST(133 AS smallint))', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgSmallIntR(CAST(133 AS smallint),CAST(133 AS smallint))', 100) as plr;
+    plbench('SELECT checkedSumNullArgSmallIntR(CAST(133 AS smallint),CAST(133 AS smallint))', 100) as plr,
+    plbench('SELECT checkedSumNullArgSmallIntFSharp(CAST(133 AS smallint),CAST(133 AS smallint))', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgBigInt(null,null)',
@@ -298,7 +321,8 @@ SELECT
     plbench('SELECT checkedSumNullArgBigIntPerl(null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgBigIntTcl(null,null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgBigIntR(null,null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgBigIntR(null,null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgBigIntFSharp(null,null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgBigInt(null,100)',
@@ -310,7 +334,8 @@ SELECT
     plbench('SELECT checkedSumNullArgBigIntPerl(null,100)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgBigIntTcl(null,100)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgBigIntR(null,100)', 100) as plr;
+    plbench('SELECT checkedSumNullArgBigIntR(null,100)', 100) as plr,
+    plbench('SELECT checkedSumNullArgBigIntFSharp(null,100)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgBigInt(9223372036854775707,null)',
@@ -322,7 +347,8 @@ SELECT
     plbench('SELECT checkedSumNullArgBigIntPerl(9223372036854775707,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgBigIntTcl(9223372036854775707,null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgBigIntR(9223372036854775707,null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgBigIntR(9223372036854775707,null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgBigIntFSharp(9223372036854775707,null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgBigInt(9223372036854775707,100)',
@@ -334,7 +360,8 @@ SELECT
     plbench('SELECT checkedSumNullArgBigIntPerl(9223372036854775707,100)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgBigIntTcl(9223372036854775707,100)', 100) as pltcl,
-    '-' as plr;
+    '-' as plr,
+    plbench('SELECT checkedSumNullArgBigIntFSharp(9223372036854775707,100)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgMixed(null,null,null)',
@@ -346,7 +373,8 @@ SELECT
     plbench('SELECT checkedSumNullArgMixedPerl(null,null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgMixedTcl(null,null,null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgMixedR(null,null,null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgMixedR(null,null,null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgMixedFSharp(null,null,null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgMixed(null,CAST(1313 as smallint),null)',
@@ -358,7 +386,8 @@ SELECT
     plbench('SELECT checkedSumNullArgMixedPerl(null,CAST(1313 as smallint),null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgMixedTcl(null,CAST(1313 as smallint),null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgMixedR(null,CAST(1313 as smallint),null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgMixedR(null,CAST(1313 as smallint),null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgMixedFSharp(null,CAST(1313 as smallint),null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgMixed(1313,null,null)',
@@ -370,7 +399,8 @@ SELECT
     plbench('SELECT checkedSumNullArgMixedPerl(1313,null,null)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgMixedTcl(1313,null,null)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgMixedR(1313,null,null)', 100) as plr;
+    plbench('SELECT checkedSumNullArgMixedR(1313,null,null)', 100) as plr,
+    plbench('SELECT checkedSumNullArgMixedFSharp(1313,null,null)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgMixed(null,null,3)',
@@ -382,7 +412,8 @@ SELECT
     plbench('SELECT checkedSumNullArgMixedPerl(null,null,3)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgMixedTcl(null,null,3)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgMixedR(null,null,3)', 100) as plr;
+    plbench('SELECT checkedSumNullArgMixedR(null,null,3)', 100) as plr,
+    plbench('SELECT checkedSumNullArgMixedFSharp(null,null,3)', 100) as plfsharp;
 
 SELECT
     'checkedSumNullArgMixed(1313,CAST(1313 as smallint), 1313)',
@@ -394,4 +425,5 @@ SELECT
     plbench('SELECT checkedSumNullArgMixedPerl(1313,CAST(1313 as smallint), 1313)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT checkedSumNullArgMixedTcl(1313,CAST(1313 as smallint), 1313)', 100) as pltcl,
-    plbench('SELECT checkedSumNullArgMixedR(1313,CAST(1313 as smallint), 1313)', 100) as plr;
+    plbench('SELECT checkedSumNullArgMixedR(1313,CAST(1313 as smallint), 1313)', 100) as plr,
+    plbench('SELECT checkedSumNullArgMixedFSharp(1313,CAST(1313 as smallint), 1313)', 100) as plfsharp;

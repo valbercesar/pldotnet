@@ -19,7 +19,8 @@ SELECT
     plbench('SELECT returnCompositeSumPerl()', 100) as plperl,
     '-' as pllua,
     plbench('SELECT returnCompositeSumTcl()', 100) as pltcl,
-    plbench('SELECT returnCompositeSumR()', 100) as plr;
+    plbench('SELECT returnCompositeSumR()', 100) as plr,
+    '-' as plfsharp;
 
 SELECT
     'checkTypes',
@@ -31,7 +32,8 @@ SELECT
     '-' as plperl,
     '-' as pllua,
     plbench('SELECT checkTypesTcl()', 100) as pltcl,
-    plbench('SELECT checkTypesR()', 100) as plr;
+    plbench('SELECT checkTypesR()', 100) as plr,
+    '-' as plfsharp;
 
 SELECT
     'getUsersWithBalance',
@@ -43,7 +45,8 @@ SELECT
     plbench('SELECT getUsersWithBalancePerl(2304.55)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT getUsersWithBalanceTcl(2304.55)', 100) as pltcl,
-    plbench('SELECT getUsersWithBalanceR(2304.55)', 100) as plr;
+    plbench('SELECT getUsersWithBalanceR(2304.55)', 100) as plr,
+    '-' as plfsharp;
 
 SELECT
     'getUserDescription(123456789)',
@@ -55,7 +58,8 @@ SELECT
     plbench('SELECT getUserDescriptionPerl(123456789)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT getUserDescriptionTcl(123456789)', 100) as pltcl,
-    plbench('SELECT getUserDescriptionR(123456789)', 100) as plr;
+    plbench('SELECT getUserDescriptionR(123456789)', 100) as plr,
+    '-' as plfsharp;
 
 SELECT
     'getUserDescriptionV8(987654321)',
@@ -67,4 +71,5 @@ SELECT
     plbench('SELECT getUserDescriptionPerl(987654321)', 100) as plperl,
     '-' as pllua,
     plbench('SELECT getUserDescriptionTcl(987654321)', 100) as pltcl,
-    plbench('SELECT getUserDescriptionR(987654321)', 100) as plr;
+    plbench('SELECT getUserDescriptionR(987654321)', 100) as plr,
+    '-' as plfsharp;

@@ -8,6 +8,7 @@
 \i sql/perl/testmixedtypes.sql
 \i sql/tcl/testmixedtypes.sql
 \i sql/r/testmixedtypes.sql
+\i sql/testfsmixedtypes.sql
 
 SELECT
     'ageTest(Billy)',
@@ -19,7 +20,8 @@ SELECT
     plbench('SELECT ageTestPerl(''Billy'', 10, ''The KID'')', 1000) as plperl,
     '-' as pllua,
     plbench('SELECT ageTestTcl(''Billy'', 10, ''The KID'')', 1000) as pltcl,
-    plbench('SELECT ageTestR(''Billy'', 10, ''The KID'')', 1000) as plr;
+    plbench('SELECT ageTestR(''Billy'', 10, ''The KID'')', 1000) as plr,
+    plbench('SELECT ageTestFSharp(''Billy'', 10, ''The KID'')', 1000) as plfsharp;
 
 SELECT
     'ageTest(John)',
@@ -31,7 +33,8 @@ SELECT
     plbench('SELECT ageTestPerl(''John'', 33, ''Smith'')', 1000) as plperl,
     '-' as pllua,
     plbench('SELECT ageTestTcl(''John'', 33, ''Smith'')', 1000) as pltcl,
-    plbench('SELECT ageTestR(''John'', 33, ''Smith'')', 1000) as plr;
+    plbench('SELECT ageTestR(''John'', 33, ''Smith'')', 1000) as plr,
+    plbench('SELECT ageTestFSharp(''John'', 33, ''Smith'')', 1000) as plfsharp;
 
 SELECT
     'ageTest(Robson)',
@@ -43,4 +46,5 @@ SELECT
     plbench('SELECT ageTestPerl(''Robson'', 41, ''Cruzoe'')', 1000) as plperl,
     '-' as pllua,
     plbench('SELECT ageTestTcl(''Robson'', 41, ''Cruzoe'')', 1000) as pltcl,
-    plbench('SELECT ageTestR(''Robson'', 41, ''Cruzoe'')', 1000) as plr;
+    plbench('SELECT ageTestR(''Robson'', 41, ''Cruzoe'')', 1000) as plr,
+    plbench('SELECT ageTestFSharp(''Robson'', 41, ''Cruzoe'')', 1000) as plfsharp;

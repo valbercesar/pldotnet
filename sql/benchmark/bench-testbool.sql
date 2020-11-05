@@ -9,6 +9,7 @@
 \i sql/lua/testbool.sql
 \i sql/tcl/testbool.sql
 \i sql/r/testbool.sql
+\i sql/testfsbool.sql
 
 SELECT
     'returnBool',
@@ -20,7 +21,8 @@ SELECT
     plbench('SELECT returnBoolPerl()', 1000) as plperl,
     plbench('SELECT returnBoolLua()', 1000) as pllua,
     plbench('SELECT returnBoolTcl()', 1000) as pltcl,
-    plbench('SELECT returnBoolR()', 1000) as plr;
+    plbench('SELECT returnBoolR()', 1000) as plr,
+    plbench('SELECT returnBoolFSharp()', 1000) as plfsharp;
 
 SELECT
     'BooleanAnd',
@@ -32,7 +34,8 @@ SELECT
     plbench('SELECT BooleanAndPerl(true, true)', 1000) as plperl,
     plbench('SELECT BooleanAndLua(true, true)', 1000) as pllua,
     plbench('SELECT BooleanAndTcl(true, true)', 1000) as pltcl,
-    plbench('SELECT BooleanAndR(true, true)', 1000) as plr;
+    plbench('SELECT BooleanAndR(true, true)', 1000) as plr,
+    plbench('SELECT BooleanAndFSharp(true, true)', 1000) as plfsharp;
 
 SELECT
     'BooleanOr',
@@ -44,7 +47,8 @@ SELECT
     plbench('SELECT BooleanOrPerl(false, false)', 1000) as plperl,
     plbench('SELECT BooleanOrLua(false, false)', 1000) as pllua,
     plbench('SELECT BooleanOrTcl(false, false)', 1000) as pltcl,
-    plbench('SELECT BooleanOrR(false, false)', 1000) as plr;
+    plbench('SELECT BooleanOrR(false, false)', 1000) as plr,
+    plbench('SELECT BooleanOrFSharp(false, false)', 1000) as plfsharp;
 
 SELECT
     'BooleanXor',
@@ -56,4 +60,5 @@ SELECT
     plbench('SELECT BooleanXorPerl(false, false)', 100) as plperl,
     plbench('SELECT BooleanXorLua(false, false)', 100) as pllua,
     plbench('SELECT BooleanXorTcl(false, false)', 100) as pltcl,
-    plbench('SELECT BooleanXorR(false, false)', 1000) as plr;
+    plbench('SELECT BooleanXorR(false, false)', 100) as plr,
+    plbench('SELECT BooleanXorFSharp(false, false)', 100) as plfsharp;

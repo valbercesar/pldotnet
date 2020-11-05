@@ -9,6 +9,7 @@
 \i sql/lua/testarray.sql
 \i sql/tcl/testarray.sql
 \i sql/r/testarray.sql
+\i sql/testfsarray.sql
 
 SELECT
     'sumArrayInt',
@@ -20,7 +21,8 @@ SELECT
     plbench('SELECT sumArrayIntPerl( ARRAY[4,1,5] )', 1000) as plperl,
     plbench('SELECT sumArrayIntLua( ARRAY[4,1,5] )', 1000) as pllua,
     plbench('SELECT sumArrayIntTcl( ARRAY[4,1,5] )', 1000) as pltcl,
-    plbench('SELECT sumArrayIntR( ARRAY[4,1,5] )', 1000) as plr;
+    plbench('SELECT sumArrayIntR( ARRAY[4,1,5] )', 1000) as plr,
+    plbench('SELCT sumArrayIntFSharp( ARRAY[4,1,5] )', 100) as plfsharp;
 
 SELECT
     'sumArrayNum',
@@ -32,8 +34,9 @@ SELECT
     plbench('SELECT sumArrayNumPerl( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as plperl,
     '-' as pllua,
     plbench('SELECT sumArrayNumTcl( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as pltcl,
-    plbench('SELECT sumArrayNumR( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as plr;
-     /* FIXME: Not working:
+    plbench('SELECT sumArrayNumR( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as plr,
+    plbench('SELECT sumArrayNumFSharp( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as plfsharp;
+    /* FIXME: Not working:
     plbench('SELECT sumArrayNumLua( ARRAY[1.00002, 1.00003, 1.00004] )', 1000) as pllua.
     */
 
@@ -47,4 +50,5 @@ SELECT
     plbench('SELECT sumArrayTextPerl( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as plperl,
     plbench('SELECT sumArrayTextLua( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as pllua,
     plbench('SELECT sumArrayTextTcl( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as pltcl,
-    plbench('SELECT sumArrayTextR( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as plr;
+    plbench('SELECT sumArrayTextR( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as plr,
+    plbench('SELECT sumArrayTextFSharp( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', 1000) as plfsharp;
