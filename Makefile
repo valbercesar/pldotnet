@@ -36,13 +36,13 @@ REGRESS = \
 	testchar \
 	testmixedtypes \
 	testrecursive \
-	testfsintegers \
-	testfsbool \
-	testfsfloats \
+	testfsintegers testfsnullintegers \
+	testfsbool testfsnullbool \
 	testfschar \
+	testfsfloats \
 	testspi \
 	testarray \
-	testcomposites \
+	testcomposites
 
 OBJS = \
 	pldotnet.o \

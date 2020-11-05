@@ -34,14 +34,10 @@ PGDLLEXPORT Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
 static pldotnet_FuncInOutInfo func_inout_info;
 
 static void plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix);
-static char   *plfsharp_BuildBlockArgsDecl(Form_pg_proc procst);
+static char   *plfsharp_BuildBlockArgsDecl(FunctionCallInfo fcinfo, Form_pg_proc procst);
 static char   *plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst,
                                                HeapTuple proc);
-static char   *plfsharp_BuildBlockCallFuncCall(Form_pg_proc procst);
-
-static int8_t *plfsharp_CreateCStructLibargs(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst);
+static char   *plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst);
 
 static Datum  plfsharp_GetNetResult(int8_t * libargs, Oid rettype, FunctionCallInfo fcinfo);
 
@@ -54,29 +50,31 @@ static bool plfsharp_BuildFunctionDecl(FunctionCallInfo fcinfo, bool is_inline, 
 static Datum plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline);
 static bool  plfsharp_TypeSupported(Oid type);
 
+static char* plfsharp_BuildNullFlagArray(uint32_t elems);
+static void plfsharp_BuildStructValue(Oid type, size_t index, char *currval);
+static char* plfsharp_BuildStructValues(FunctionCallInfo fcinfo, Form_pg_proc procst);
+
 static char fs_block_header[] = "\n\
 namespace PlDotNETUserSpace\n\
-open System.Runtime.InteropServices\n\
-[<Struct>]           \n\
-[<StructLayout (LayoutKind.Sequential, Pack=1)>]\n\
-type LibArgs =\n\
-    struct\n";
+open System.Runtime.InteropServices\n";
 /****** fs_block_args_decl ******
+[<Struct>]
+[<StructLayout (LayoutKind.Sequential, Pack=1)>]
+type LibArgs =
+    struct\n";
  *      val mutable arg1:int
  *      val mutable arg2:int
  *      ...
  *      val mutable resu:int
  */
 static char fs_block_userclass_header[] = "\n\
-    end\n\
 type UserClass =\n";
 /********* fs_block_userfunc_decl ******
  *         static member <function_name> =
  *             <function_body>
  */
 static char fs_block_callfunc[] = "\n\
-    static member CallFunction (arg:System.IntPtr) (argLength:int) = \n\
-        let mutable libargs = Marshal.PtrToStructure<LibArgs> arg\n";
+    static member CallFunction (arg:System.IntPtr) (argLength:int) = \n";
 
 static char fs_block_footer[] = "\n\
         Marshal.StructureToPtr(libargs, arg, false)\n\
@@ -115,70 +113,176 @@ plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix)
         SNPRINTF(field_prefix, 1024, "%s", val);
 }
 
-static char *
-plfsharp_BuildBlockArgsDecl(Form_pg_proc procst)
+static void
+plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
 {
-    char *block2str, *str_ptr;
-    Oid *argtype = procst->proargtypes.values; /* Indicates the args type */
-    Oid rettype = procst->prorettype; /* Indicates the return type */
-    int nargs = procst->pronargs;
-    char currval[1024];
-    const char colon[] = ":";
-    char argname[] = " argN";
-    char result[] = " resu"; /* have to be same size argN */
-    int i, cursize = 0, totalsize = 0;
+    size_t length;
+    char *str_ptr;
+    plfsharp_GetStructFieldPrefix(type, currval);
 
-    if (!plfsharp_TypeSupported(rettype))
+    length = strlen(currval);
+    str_ptr = currval + length;
+
+    SNPRINTF(
+        str_ptr,
+        length + 1,
+        " arg%lu: %s\n",
+        index,
+        pldotnet_GetCompatibleNetTypeName(type, true, false)
+    );
+}
+
+static char*
+plfsharp_BuildStructValues(FunctionCallInfo fcinfo, Form_pg_proc procst)
+{
+    char *block2str;
+    char *cursor;
+    uint32_t i;
+    Datum argdatum;
+    bool isarr;
+    Oid type;
+    char currval[512];
+    size_t pos = 0;
+    uint32_t nargs = (uint32_t) fcinfo->nargs;
+    Oid *argtype = procst->proargtypes.values;
+    size_t totalsize = 0;
+
+    static const char array_template[] = "\
+        [<MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.%s,SizeConst=%u)>]\n\
+        val mutable arg%u : %s array";
+
+    if (0 == nargs)
     {
-        elog(ERROR, "[pldotnet]: unsupported type on return");
-        return 0;
+        block2str = (char *) palloc0(1);
+        SNPRINTF(block2str, 1, "%s", "\0");
+        return block2str;
     }
 
-    for (i = 0; i < nargs; i++)
+    for (i = 0; i < nargs; ++i)
     {
-        if (!plfsharp_TypeSupported(argtype[i]))
+        argdatum = pldotnet_GetArgDatum(fcinfo, i);
+        isarr = pldotnet_SetArrayInfo( argdatum, argtype[i], i, array_template, true, &func_inout_info);
+
+        type = isarr ? func_inout_info.arrayinfo[i].typelem : argtype[i];
+
+        if (isarr)
+            totalsize += strlen(func_inout_info.arrayinfo[i].csharpdecl) + 1;
+        else
         {
-            elog(ERROR, "[pldotnet]: unsupported type on arg %d", i);
-            return 0;
+            plfsharp_BuildStructValue(type, i, currval);
+            totalsize += strlen(currval) + 1;
         }
-
-        plfsharp_GetStructFieldPrefix(argtype[i], currval);
-
-        totalsize += strlen(currval) + strlen(argname) + strlen(colon)
-                        + strlen(pldotnet_GetCompatibleNetTypeName(argtype[i], true, false))
-                        + strlen("\n");
     }
 
-    plfsharp_GetStructFieldPrefix(rettype, currval);
+    block2str = (char*) palloc0(totalsize);
 
-    totalsize += strlen(currval) + strlen(result) + strlen(colon)
-                    + strlen(pldotnet_GetCompatibleNetTypeName(rettype, true, false)) + 1;
-
-    block2str = (char *) palloc0(totalsize);
-
-    for (i = 0; i < nargs; i++)
+    for (i = 0; i < nargs; ++i)
     {
-        /* Review for nargs > 9 */
-        SNPRINTF(argname, strlen(argname)+1, " arg%d", i);
-        str_ptr = (char *)(block2str + cursize);
-
-        plfsharp_GetStructFieldPrefix(argtype[i], currval);
-
-        SNPRINTF(str_ptr,totalsize - cursize, "%s%s%s%s\n",
-                   currval, argname, colon,
-                   pldotnet_GetCompatibleNetTypeName(argtype[i], true, false) );
-        cursize += strlen(str_ptr);
+        cursor = block2str + pos;
+        if (pldotnet_IsArray(i, &func_inout_info))
+        {
+            SNPRINTF(cursor, totalsize - pos, "%s", func_inout_info.arrayinfo[i].csharpdecl);
+        }
+        else
+        {
+            plfsharp_BuildStructValue(argtype[i], i, currval);
+            SNPRINTF(cursor, totalsize - pos, "%s", currval);
+        }
+        pos += strlen(cursor);
     }
-
-    str_ptr = (char *)(block2str + cursize);
-
-    plfsharp_GetStructFieldPrefix(rettype, currval);
-
-    SNPRINTF(str_ptr, totalsize - cursize, "%s%s%s%s",
-                currval, result, colon,
-                pldotnet_GetCompatibleNetTypeName(rettype, true, false));
 
     return block2str;
+}
+
+static char*
+plfsharp_BuildNullFlagArray(uint32_t elems)
+{
+    size_t size;
+    char *null_flag_array;
+    const char *type_name;
+    static const char array_template[] = "\n\
+        [<MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.U1,SizeConst=%u)>]\n\
+        val argsnull : %s array";
+
+    if (0 == elems)
+    {
+        null_flag_array = (char*) palloc0(1);
+        null_flag_array[0] = '\0';
+        return null_flag_array;
+    }
+
+    type_name = pldotnet_GetCompatibleNetTypeName(BOOLOID, true, false);
+
+    size = strlen(array_template) + strlen(type_name) + 2;
+
+    null_flag_array = (char*) palloc0(size);
+
+    snprintf(
+        null_flag_array,
+        size,
+        array_template,
+        elems,
+        type_name
+    );
+
+    return null_flag_array;
+}
+
+static char*
+plfsharp_BuildBlockArgsDecl(FunctionCallInfo fcinfo, Form_pg_proc procst)
+{
+    char *values;
+    char *block2string;
+    char *null_flag_array;
+    const char *rettype_name;
+    const char *rettype_unmanaged_name;
+    const char *bool_name;
+    size_t totalsize;
+    static const char struct_template[] = "\
+[<Struct>]\n\
+[<StructLayout (LayoutKind.Sequential, Pack=1)>]\n\
+type LibArgs =\n\
+    struct\n\
+        %s\n\
+        [<MarshalAs(UnmanagedType.U1)>]\n\
+        val mutable resunull: %s\n%s\
+        [<MarshalAs(UnmanagedType.%s)>]\n\
+        val mutable resu: %s\n\
+    end\n";
+
+    if (!plfsharp_TypeSupported(procst->prorettype))
+        elog(ERROR, "[pldotnet]: unsupported type on return");
+
+    bool_name = pldotnet_GetCompatibleNetTypeName(BOOLOID, true, false);
+
+    null_flag_array = plfsharp_BuildNullFlagArray(fcinfo->nargs);
+
+    values = plfsharp_BuildStructValues(fcinfo, procst);
+
+    rettype_name = pldotnet_GetCompatibleNetTypeName(procst->prorettype, true, false);
+    rettype_unmanaged_name = pldotnet_GetUnmanagedTypeName(procst->prorettype);
+
+    totalsize = strlen(struct_template)
+              + strlen(null_flag_array)
+              + strlen(bool_name)
+              + strlen(values)
+              + strlen(rettype_unmanaged_name)
+              + strlen(rettype_name);
+
+    block2string = (char*) palloc0(totalsize);
+
+    snprintf(
+        block2string,
+        totalsize,
+        struct_template,
+        null_flag_array,
+        bool_name,
+        values,
+        rettype_unmanaged_name,
+        rettype_name
+    );
+
+    return block2string;
 }
 
 static char *
@@ -260,7 +364,6 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
         cursize = strlen(block2str);
     }
 
-
     str_ptr = (char *)(block2str + cursize);
     SNPRINTF(str_ptr, totalsize - cursize, "%s", end_fun_decl);
     cursize = strlen(block2str);
@@ -293,16 +396,34 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
 }
 
 static char *
-plfsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
+plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
 {
     char *block2str, *str_ptr;
-    int cursize = 0, i, totalsize;
+    char *func_call;
+    size_t i, totalsize, call_func_size;
+    size_t cursize = 0;
     char * func;
-    const char libargs[] = " libargs.";
-    char argname[] = "argN";
-    const char end_fun[] = "\n";
-    const char func_line_indent[] = "        ";
-    const char result[] = "libargs.resu <- UserClass.";
+    char arg_template[] = " (wrap libargs.argsnull.[%d] libargs.arg%d)";
+    size_t arg_size = strlen(arg_template);
+
+    static const char body_template[] = "\
+        let wrap (isnull: bool) a =\n\
+            match isnull with\n\
+            | true -> None\n\
+            | _ -> Some a\n\
+        let mutable libargs = Marshal.PtrToStructure<LibArgs> arg\n\
+        let res =\n\
+            try\n\
+                UserClass.%s\n\
+            with\n\
+                | _ -> None\n\
+        libargs.resunull <- \n\
+            match res with\n\
+            | None -> true\n\
+            | Some v ->\n\
+                libargs.resu <- v\n\
+                false";
+
     int nargs = procst->pronargs;
 
     /* Function name */
@@ -311,103 +432,51 @@ plfsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
     /* TODO:  review for nargs > 9 */
     if (nargs == 0)
     {
-         int block_size = strlen(func_line_indent) + strlen(result)
-            + strlen(func) + strlen(end_fun) + 1;
-         block2str = (char *)palloc0(block_size);
-         SNPRINTF(block2str, block_size, "%s%s%s%s"
-            , func_line_indent, result, func, end_fun);
-         return block2str;
+        int block_size = strlen(body_template) + strlen(func) + 1;
+        block2str = (char *)palloc0(block_size);
+        snprintf(block2str, block_size, body_template, func);
+        return block2str;
     }
 
-    totalsize = strlen(func_line_indent) +strlen(result) + strlen(func) 
-                    + (strlen(libargs) + strlen(argname)) * nargs
-                    + strlen(end_fun) + 1;
+    call_func_size = strlen(func) + (arg_size + 10) * nargs;
+
+    func_call = (char*) palloc0(call_func_size);
+
+    SNPRINTF(func_call, call_func_size, "%s", func);
+    cursize = strlen(func_call);
+
+    for (i = 0; i < nargs; ++i)
+    {
+        str_ptr = (char*) (func_call + cursize);
+        snprintf(str_ptr, call_func_size - cursize, arg_template, i, i);
+        cursize += strlen(str_ptr);
+    }
+
+    totalsize = strlen(body_template) + call_func_size;
 
     block2str = (char *) palloc0(totalsize);
-    SNPRINTF(block2str, totalsize - cursize, "%s%s%s"
-        ,func_line_indent, result, func);
-    cursize = strlen(block2str);
 
-    for (i = 0; i < nargs; i++)
-    {
-        /* review nargs > 9 */
-        SNPRINTF(argname, strlen(argname) + 1, "arg%d", i);
-        str_ptr = (char *)(block2str + cursize);
-        SNPRINTF(str_ptr, totalsize - cursize, "%s%s", libargs, argname);
-        cursize = strlen(block2str);
-    }
-
-    str_ptr = (char *)(block2str + cursize);
-    SNPRINTF(str_ptr, totalsize - cursize, "%s", end_fun);
+    snprintf(block2str, totalsize, body_template, func_call);
 
     return block2str;
-}
-
-static int8_t*
-plfsharp_CreateCStructLibargs(
-    FunctionCallInfo fcinfo, 
-    Form_pg_proc procst)
-{
-    int i;
-    size_t default_size;
-    int8_t *libargs_ptr = NULL;
-    int8_t *cur_arg = NULL;
-    Oid *argtype = procst->proargtypes.values;
-    Oid rettype = procst->prorettype;
-    Oid type;
-    Datum argdatum;
-
-    func_inout_info.typesize_nullflags = 0;
-    func_inout_info.typesize_args = 0;
-
-    for (i = 0; i < fcinfo->nargs; i++)
-    {
-        func_inout_info.typesize_args += pldotnet_GetTypeSize(argtype[i]);
-    }
-
-    func_inout_info.typesize_result = pldotnet_GetTypeSize(rettype);
-
-    default_size = func_inout_info.typesize_args + func_inout_info.typesize_result;
-
-    libargs_ptr = (int8_t *) palloc0(default_size + sizeof(uint32_t));
-
-    cur_arg = libargs_ptr;
-
-    for (i = 0; i < fcinfo->nargs; i++)
-    {
-        type = argtype[i];
-#if PG_VERSION_NUM >= 120000
-        argdatum = fcinfo->args[i].value;
-#else
-        argdatum = fcinfo->arg[i];
-#endif
-        pldotnet_SetScalarValue(
-            (char *)cur_arg,
-            argdatum,
-            fcinfo,
-            i,
-            type,
-            nullptr
-        );
-
-        cur_arg += pldotnet_GetTypeSize(argtype[i]);
-    }
-
-    cur_arg = libargs_ptr + default_size;
-    *((uint32_t*) cur_arg) = (uint32_t) fcinfo->flinfo->fn_oid;
-
-    return libargs_ptr;
 }
 
 static Datum
 plfsharp_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo)
 {
     /* We have only Scalar values right now
-     * TODO implement arrays, composite and nullable types
+     * TODO implement arrays and composite
      */
+    char *args = (char*) libargs
+                + func_inout_info.typesize_args
+                + func_inout_info.typesize_nullflags;
+
+    char *resnull_ptr = (char*) libargs
+            + (func_inout_info.typesize_nullflags - sizeof(bool));
+
     return pldotnet_GetScalarValue(
-        (char*) (libargs + func_inout_info.typesize_args),
-        nullptr,
+        args,
+        resnull_ptr,
         fcinfo,
         rettype
     );
@@ -438,9 +507,9 @@ plfsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc
     char *fs_block_callfunc_call;
     char *source_code = nullptr;
 
-    fs_block_args_decl = plfsharp_BuildBlockArgsDecl(procst);
+    fs_block_args_decl = plfsharp_BuildBlockArgsDecl(fcinfo, procst);
     fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(procst, proc);
-    fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(procst);
+    fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(fcinfo, procst);
 
     source_code_size = strlen(fs_block_header)
                      + strlen(fs_block_args_decl)
@@ -478,16 +547,10 @@ plfsharp_GetSourceCode(
     pldotnet_ArgsSource *source)
 {
     if (nullptr == source)
-    {
         elog(ERROR, "[pldotnet]: Invalid argument: source is null");
-        return false;
-    }
 
     if (nullptr != source->source_code)
-    {
-        elog(WARNING, "[pldotnet]: ArgSouce.source code should be null at this point: \n%s", source->source_code);
-        return false;
-    }
+        elog(ERROR, "[pldotnet]: ArgSouce.source code should be null at this point: \n%s", source->source_code);
 
     if (is_inline)
         source->source_code = plfsharp_GetInlineSourceCode(fcinfo);
@@ -504,7 +567,7 @@ plfsharp_CreateStructLibargs(
     pldotnet_FunctionDecl *function_decl
 )
 {
-    function_decl->args = plfsharp_CreateCStructLibargs(fcinfo, procst);
+    function_decl->args = pldotnet_CreateCStructLibargs(fcinfo, procst, true, &func_inout_info);
     function_decl->args_length = func_inout_info.typesize_nullflags +
                                  func_inout_info.typesize_args +
                                  func_inout_info.typesize_result;
@@ -715,9 +778,9 @@ Datum plfsharp_call_handler1(PG_FUNCTION_ARGS)
         procst = (Form_pg_proc) GETSTRUCT(proc);
 
         /* Build the source code */
-        fs_block_args_decl = plfsharp_BuildBlockArgsDecl( procst );
+        fs_block_args_decl = plfsharp_BuildBlockArgsDecl(fcinfo, procst);
         fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(procst, proc);
-        fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall( procst );
+        fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(fcinfo, procst);
 
         source_code_size = strlen(fs_block_header)
                          + strlen(fs_block_args_decl)
@@ -799,7 +862,7 @@ Datum plfsharp_call_handler1(PG_FUNCTION_ARGS)
         assert(rc == 0 && fsharp_method != nullptr && \
             "Failure: load_assembly_and_get_function_pointer()");
 
-        libargs = plfsharp_CreateCStructLibargs(fcinfo, procst);
+        libargs = pldotnet_CreateCStructLibargs(fcinfo, procst, true, &func_inout_info);
         fsharp_method(libargs, func_inout_info.typesize_nullflags +
                                func_inout_info.typesize_args +
                                func_inout_info.typesize_result);

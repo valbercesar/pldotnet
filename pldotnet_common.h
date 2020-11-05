@@ -99,7 +99,7 @@ typedef struct pldotnet_ArgArrayInfo
     int ndim;
     const int * dims;
     int nelems;
-    char csharpdecl[64];
+    char csharpdecl[256];
 }pldotnet_ArgArrayInfo;
 
 typedef struct pldotnet_FuncInOutInfo
@@ -107,7 +107,7 @@ typedef struct pldotnet_FuncInOutInfo
     int typesize_nullflags;
     int typesize_args;
     int typesize_result;
-    pldotnet_ArgArrayInfo arrayinfo[64]; /* check max nr of args */
+    pldotnet_ArgArrayInfo arrayinfo[32]; /* check max nr of args */
 }pldotnet_FuncInOutInfo;
 
 typedef struct pldotnet_ArgsSource
@@ -166,13 +166,19 @@ const char * pldotnet_GetNetTypeName(Oid id, bool hastypeconversion);
 const char * pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp);
 int pldotnet_GetTypeSize(Oid id);
 const char * pldotnet_GetUnmanagedTypeName(Oid type);
-int pldotnet_SetScalarValue(char * argp, Datum datum, FunctionCallInfo fcinfo,
-                            int narg, Oid type, bool * nullp);
+int pldotnet_SetScalarValue(char *argp, Datum datum, FunctionCallInfo fcinfo,
+                            size_t narg, Oid type, bool * nullp);
 Datum pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
                               FunctionCallInfo fcinfo, Oid type);
 bool pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info);
 bool pldotnet_IsSimpleType(Oid type);
 bool pldotnet_IsTextType(Oid type);
+bool pldotnet_IsNullable(Oid type);
+bool pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index);
+
+Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index);
+bool pldotnet_SetArrayInfo(Datum datum, Oid oid, uint32_t narg, const char *attributeTemplate, bool swap_variable_decl, pldotnet_FuncInOutInfo *func_inout_info);
+int8_t* pldotnet_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst, bool force_nullable_flags, pldotnet_FuncInOutInfo *func_inout_info);
 
 bool pldotnet_SPIReady(void);
 void pldotnet_SPIFinish(void);

@@ -31,6 +31,14 @@
 char *root_path = NULL;
 char *dnldir = STR(PLNET_ENGINE_DIR);
 
+static void
+pldotnet_FillArgArrayInfo(
+    Datum datum,
+    Form_pg_type typeinfo,
+    uint32_t narg,
+    const char *array_template,
+    bool swap_variable_decl,
+    pldotnet_ArgArrayInfo *parr_info);
 
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
 {
@@ -355,9 +363,13 @@ pldotnet_GetUnmanagedTypeName(Oid type)
     return  "";
 }
 
-int pldotnet_SetScalarValue(char * argp, Datum datum, FunctionCallInfo fcinfo,
-                            int narg, Oid type, bool * nullp)
-
+int pldotnet_SetScalarValue(
+    char *argp,
+    Datum datum,
+    FunctionCallInfo fcinfo,
+    size_t arg_index,
+    Oid type,
+    bool *nullp)
 {
     char * newstr;
     int len;
@@ -365,10 +377,10 @@ int pldotnet_SetScalarValue(char * argp, Datum datum, FunctionCallInfo fcinfo,
 
 #if PG_VERSION_NUM >= 120000
     if (nullp)
-        isnull=datum.isnull;
+        isnull = fcinfo->args[arg_index].isnull;
 #else
     if (nullp)
-        isnull=fcinfo->argnull[narg];
+        isnull=fcinfo->argnull[arg_index];
 #endif
 
     switch (type)
@@ -544,6 +556,244 @@ pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info)
     return (funinout_info->arrayinfo[narg].ixarray == narg);
 }
 
+inline bool
+pldotnet_IsNullable(Oid type)
+{
+    return (type == INT2OID || type == INT4OID || type == INT8OID || type == BOOLOID);
+}
+
+bool
+pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index)
+{
+#if PG_VERSION_NUM > 120000
+    return fcinfo->args[index].isnull;
+#else
+    return fcinfo->argnull[index];
+#endif
+}
+
+inline Datum
+pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index)
+{
+#if PG_VERSION_NUM >= 120000
+    return fcinfo->args[index].value;
+#else
+    return fcinfo->arg[index];
+#endif
+}
+
+static void
+pldotnet_FillArgArrayInfo(
+    Datum datum,
+    Form_pg_type typeinfo,
+    uint32_t narg,
+    const char *array_template,
+    bool swap_variable_decl,
+    pldotnet_ArgArrayInfo *parr_info)
+{
+    ArrayType *arr;
+    parr_info->ixarray = narg;
+    parr_info->typlen = typeinfo->typlen;
+    parr_info->typbyval = typeinfo->typbyval;
+    parr_info->typtype = typeinfo->typtype;
+    parr_info->typelem = typeinfo->typelem;
+    parr_info->typalign = typeinfo->typalign;
+
+    arr = DatumGetArrayTypeP(datum);
+    parr_info->ndim = ARR_NDIM(arr);
+    parr_info->dims = ARR_DIMS(arr);
+    parr_info->nelems = ArrayGetNItems(ARR_NDIM(arr), ARR_DIMS(arr));
+
+    if (swap_variable_decl)
+        sprintf(parr_info->csharpdecl,
+                array_template,
+                pldotnet_GetUnmanagedTypeName(parr_info->typelem),
+                parr_info->nelems,
+                narg,
+                pldotnet_GetNetTypeName(parr_info->typelem, true)
+        );
+    else
+        sprintf(parr_info->csharpdecl,
+                array_template,
+                pldotnet_GetUnmanagedTypeName(parr_info->typelem),
+                parr_info->nelems,
+                pldotnet_GetNetTypeName(parr_info->typelem, true),
+                narg
+        );
+}
+
+bool
+pldotnet_SetArrayInfo(
+    Datum datum,
+    Oid oid,
+    uint32_t narg,
+    const char *array_template,
+    bool swap_variable_decl,
+    pldotnet_FuncInOutInfo *func_inout_info)
+{
+    HeapTuple typetuple;
+    Form_pg_type typeinfo;
+    bool isarr = false;
+
+    typetuple = SearchSysCache(TYPEOID, ObjectIdGetDatum(oid), 0, 0, 0);
+
+    if (!HeapTupleIsValid(typetuple))
+        elog(ERROR, "[pldotnet]: (CheckArgIsArray) cache lookup failed for type %u", oid);
+
+    if (nullptr == array_template)
+        elog(ERROR, "[pldotnet]: Invalid argument: array_template is null");
+
+    if (nullptr == func_inout_info)
+        elog(ERROR, "[pldotnet]: Invalid argument: func_inout_info is null");
+
+    typeinfo = (Form_pg_type) GETSTRUCT(typetuple);
+
+    isarr = (typeinfo->typelem != 0 && typeinfo->typlen == -1);
+
+    if (isarr)
+        pldotnet_FillArgArrayInfo(
+            datum,
+            typeinfo,
+            narg,
+            array_template,
+            swap_variable_decl,
+            &func_inout_info->arrayinfo[narg]
+        );
+    else
+        func_inout_info->arrayinfo[narg].ixarray = -1;
+
+    ReleaseSysCache(typetuple);
+
+    return isarr;
+}
+
+/*
+ * This function creates a buffer to hold arguments and result data.
+ * The buffer is sent to C#/F#$. The current user function may read
+ * this buffer to obtain the arguments and/or write any ouput data.
+ * TRICKY -> IN ORDER TO SPEED UP THE EXECUTION, THE FUNCTION OID FROM PG
+ * IS ALSO APPENDED IN THE BUFFER, SO OUR C#/Engine.cs CAN FIND THE COMPILED
+ * DELEGATE. SEE Engine.Run() at Engine.cs;
+ */
+int8_t*
+pldotnet_CreateCStructLibargs(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    bool force_nullable_flags,
+    pldotnet_FuncInOutInfo *func_inout_info)
+{
+    size_t i;
+    size_t default_size;
+    char *array_p;
+    Datum array_element;
+    pldotnet_ArgArrayInfo * arrinfo;
+    ArrayType *arr;
+
+    /* nullable related */
+    bool nullable_arg_flag = false;
+    bool *argsnull_ptr;
+    Datum argdatum;
+
+    int8_t *libargs_ptr = NULL;
+    int8_t *cur_arg = NULL;
+    Oid *argtype = procst->proargtypes.values;
+    Oid rettype = procst->prorettype;
+
+    func_inout_info->typesize_args = 0;
+    func_inout_info->typesize_nullflags = 0;
+
+    for (i = 0; i < fcinfo->nargs; i++)
+    {
+        if (pldotnet_IsArray((int) i, func_inout_info))
+        {
+            func_inout_info->typesize_args +=
+              (func_inout_info->arrayinfo[i].nelems *
+               pldotnet_GetTypeSize(func_inout_info->arrayinfo[i].typelem));
+        }
+        else
+            func_inout_info->typesize_args += pldotnet_GetTypeSize(argtype[i]);
+        if (pldotnet_IsNullable(argtype[i]))
+            nullable_arg_flag = true;
+    }
+
+    if (nullable_arg_flag || force_nullable_flags)
+        func_inout_info->typesize_nullflags += sizeof(bool) * fcinfo->nargs;
+    func_inout_info->typesize_nullflags += sizeof(bool);
+    func_inout_info->typesize_result = pldotnet_GetTypeSize(rettype);
+
+    default_size = (size_t) (
+                      func_inout_info->typesize_nullflags
+                    + func_inout_info->typesize_args
+                    + func_inout_info->typesize_result);
+
+    libargs_ptr = (int8_t*) palloc0(default_size + sizeof(uint32_t));
+    argsnull_ptr = (bool *) libargs_ptr;
+    cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
+
+    for (i = 0; i < fcinfo->nargs; i++)
+    {
+        argdatum = pldotnet_GetArgDatum(fcinfo, i);
+        if (pldotnet_IsArray(i, func_inout_info))
+        {
+            arrinfo = &(func_inout_info->arrayinfo[i]);
+            arr = DatumGetArrayTypeP(argdatum);
+            array_p = ARR_DATA_PTR(arr);
+            if (arrinfo->ndim > 1)
+                elog(ERROR, "Multidimensional array not supported.");
+            for (int j = 0; j < arrinfo->nelems; j++)
+            {
+
+                array_element = fetch_att(array_p, arrinfo->typbyval, arrinfo->typlen);
+
+                /* This needs to reviewed: why for bittable/simple
+                    types we need to pass the value. Makes sense
+                    but it seems not to be necessary/used in others pl
+                    extensions. */
+                if (pldotnet_IsSimpleType(arrinfo->typelem))
+                    array_element = (Datum) (*(Datum *) (array_element));
+
+                pldotnet_SetScalarValue(
+                        (char*)cur_arg,
+                        array_element,
+                        fcinfo,
+                        j,
+                        arrinfo->typelem,
+                        nullptr
+                );
+
+                /* Iterate array */
+                array_p = att_addlength_pointer(array_p, arrinfo->typlen,
+                                                array_p);
+                array_p = (char *) att_align_nominal(array_p,
+                                                           arrinfo->typalign);
+                /* Iterate CLibargs */
+                cur_arg += pldotnet_GetTypeSize(arrinfo->typelem);
+            }
+            continue;
+        }
+        else if ( !pldotnet_IsSimpleType(argtype[i]) &&
+                  !pldotnet_IsTextType(argtype[i]) )
+            pldotnet_FillCompositeValues((char*)cur_arg, argdatum, argtype[i], fcinfo, procst);
+        else
+            pldotnet_SetScalarValue(
+                (char *)cur_arg,
+                argdatum,
+                fcinfo,
+                i,
+                argtype[i],
+                fcinfo->nargs + 1 == func_inout_info->typesize_nullflags ? argsnull_ptr + i : nullptr
+            );
+
+        cur_arg += pldotnet_GetTypeSize(argtype[i]);
+    }
+
+    /* append the function id after usual libargs data */
+    cur_arg = libargs_ptr + default_size;
+    *((uint32_t*)cur_arg) = (uint32_t) fcinfo->flinfo->fn_oid;
+
+    return libargs_ptr;
+}
+
 bool
 pldotnet_SPIReady(void)
 {
@@ -642,7 +892,6 @@ pldotnet_Run(
 
     assert(rc == 0 && dotnet_method != nullptr && \
         "Failure: load_assembly_and_get_function_pointer()");
-
     return 0 == dotnet_method(libargs, args_length);
 }
 

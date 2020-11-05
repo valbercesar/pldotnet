@@ -46,10 +46,7 @@ static char  *plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst,
 static int   GetSizeNullableHeader(int argnm_size, Oid arg_type, int narg);
 static int   GetSizeNullableFooter(Oid ret_type);
 static bool  IsNullable(Oid type);
-static char  *plcsharp_CreateCStructLibargs(FunctionCallInfo fcinfo,
-                                                           Form_pg_proc procst);
-static Datum plcsharp_GetNetResult(char * libargs, Oid rettype,
-                                                       FunctionCallInfo fcinfo);
+static Datum plcsharp_GetNetResult(char * libargs, Oid rettype, FunctionCallInfo fcinfo);
 static int   GetSizeArgsNullArray(int nargs);
 static int   pldotnet_PublicDeclSize(Oid type);
 static const char * pldotnet_GetNullableTypeName(Oid id);
@@ -873,125 +870,6 @@ SizeConst=%d)]public %s[] %s;",
 }
 
 /*
- * This function creates a buffer to hold arguments and result data.
- * The buffer is sent to C#. The current user function may read
- * this buffer to obtain the arguments and/or write any ouput data.
- * TRICKY -> IN ORDER TO SPEED UP THE EXECUTION, THE FUNCTION OID FROM PG
- * IS ALSO APPENDED IN THE BUFFER, SO OUR C#/Engine.cs CAN FIND THE COMPILED
- * DELEGATE. SEE Engine.Run() at Engine.cs;
- */
-static char *
-plcsharp_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst)
-{
-    int i;
-    size_t default_size;
-    char *libargs_ptr = NULL;
-    char *cur_arg = NULL;
-    Oid *argtype = procst->proargtypes.values;
-    Oid rettype = procst->prorettype;
-    /* nullable related */
-    bool nullable_arg_flag = false;
-    bool *argsnull_ptr;
-    Datum argdatum;
-
-    char *array_p;
-    Datum array_element;
-    pldotnet_ArgArrayInfo * arrinfo;
-    ArrayType *arr;
-
-    func_inout_info.typesize_args = 0;
-    func_inout_info.typesize_nullflags = 0;
-
-    for (i = 0; i < fcinfo->nargs; i++)
-    {
-        if (pldotnet_IsArray(i, &func_inout_info))
-        {
-            func_inout_info.typesize_args +=
-              (func_inout_info.arrayinfo[i].nelems *
-               pldotnet_GetTypeSize(func_inout_info.arrayinfo[i].typelem));
-        }
-        else
-            func_inout_info.typesize_args += pldotnet_GetTypeSize(argtype[i]);
-        if (IsNullable(argtype[i]))
-            nullable_arg_flag = true;
-    }
-
-    if (nullable_arg_flag)
-        func_inout_info.typesize_nullflags += sizeof(bool) * fcinfo->nargs;
-
-    func_inout_info.typesize_nullflags += sizeof(bool);
-
-    func_inout_info.typesize_result = pldotnet_GetTypeSize(rettype);
-
-    default_size = (size_t) (
-                    func_inout_info.typesize_nullflags
-                    + func_inout_info.typesize_args
-                    + func_inout_info.typesize_result);
-
-    libargs_ptr = (char*) palloc0(default_size + sizeof(uint32_t));
-    argsnull_ptr = (bool *) libargs_ptr;
-    cur_arg = libargs_ptr + func_inout_info.typesize_nullflags;
-
-    for (i = 0; i < fcinfo->nargs; i++)
-    {
-#if PG_VERSION_NUM >= 120000
-        argdatum = fcinfo->args[i].value;
-#else
-        argdatum = fcinfo->arg[i];
-#endif
-        if (pldotnet_IsArray(i, &func_inout_info))
-        {
-            arrinfo = &(func_inout_info.arrayinfo[i]);
-            arr = DatumGetArrayTypeP(argdatum);
-            array_p = ARR_DATA_PTR(arr);
-            if (arrinfo->ndim > 1)
-                elog(ERROR, "Multidimensional array not supported.");
-            for (int j = 0; j < arrinfo->nelems; j++)
-            {
-
-                array_element =
-                      fetch_att(array_p, arrinfo->typbyval, arrinfo->typlen);
-
-                pldotnet_SetScalarValue(cur_arg,
-                        /* This needs to reviewed: why for bittable/simple
-                           types we need to pass the value. Makes sense
-                           but it seems not to be necessary/used in others pl
-                           extensions. */
-                                pldotnet_IsSimpleType(arrinfo->typelem) ?
-                  (Datum) (*(Datum *) (array_element)) : array_element,
-                                        fcinfo, j, arrinfo->typelem, NULL);
-                /* Iterate array */
-                array_p = att_addlength_pointer(array_p, arrinfo->typlen,
-                                                array_p);
-                array_p = (char *) att_align_nominal(array_p,
-                                                           arrinfo->typalign);
-                /* Iterate CLibargs */
-                cur_arg += pldotnet_GetTypeSize(arrinfo->typelem);
-            }
-            continue;
-        }
-        else if ( !pldotnet_IsSimpleType(argtype[i]) &&
-                  !pldotnet_IsTextType(argtype[i]) )
-        {
-            pldotnet_FillCompositeValues(cur_arg, argdatum, argtype[i],
-                                                               fcinfo, procst);
-        }
-        else
-        {
-            pldotnet_SetScalarValue(cur_arg, argdatum, fcinfo, i, argtype[i],
-                                    argsnull_ptr + i);
-        }
-        cur_arg += pldotnet_GetTypeSize(argtype[i]);
-    }
-
-    /* append the function id after usual libargs data */
-    cur_arg = libargs_ptr + default_size;
-    *((uint32_t*)cur_arg) = (uint32_t) fcinfo->flinfo->fn_oid;
-
-    return libargs_ptr;
-}
-
-/*
 * This function was renamed, given that it works only on C# functions.
 * This function reads the libargs buffer and retrieves data from
 * C# (user function)
@@ -1040,7 +918,7 @@ plcsharp_CreateStructLibargs(
     pldotnet_FunctionDecl *function_decl
 )
 {
-    function_decl->args = (int8_t*) plcsharp_CreateCStructLibargs(fcinfo, procst);
+    function_decl->args = (int8_t*) pldotnet_CreateCStructLibargs(fcinfo, procst, false, &func_inout_info);
     function_decl->args_length = func_inout_info.typesize_nullflags +
                                  func_inout_info.typesize_args +
                                  func_inout_info.typesize_result;
@@ -1321,8 +1199,9 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS)
 }
 
 /*
- *  RENAMED AND DEPRECATED -> see
- *  the new plcsharp_call_handler and plcsharp_generic_handler
+ * @Deprecated
+ * RENAMED AND DEPRECATED -> see
+ * the new plcsharp_call_handler and plcsharp_generic_handler
  */
 Datum
 plcsharp_call_handler1(PG_FUNCTION_ARGS)
@@ -1405,7 +1284,7 @@ plcsharp_call_handler1(PG_FUNCTION_ARGS)
          * function input values accoring to .NET interop possibilites.
          * TODO: Check if CStructLibargs needs to be generated and filled
          * again */
-        libargs = plcsharp_CreateCStructLibargs(fcinfo, procst);
+        libargs = (char*) pldotnet_CreateCStructLibargs(fcinfo, procst, false, &func_inout_info);
 
 #ifdef USE_DOTNETBUILD
         /* STEP 5: Compiles the C# code  */
