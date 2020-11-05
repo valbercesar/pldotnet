@@ -320,15 +320,17 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     bool isnull;
     char *func;
     size_t line_length;
-    const char member[] = "static member ";
-    const char func_signature_indent[] = "    ";
-    const char func_body_indent[] = "        ";
+    const char let[] = "let ";
+    const char rec[] = "rec ";
+    const char func_signature_indent[] = "        ";
+    const char func_body_indent[] = "            ";
     const size_t body_indent_size = strlen(func_body_indent);
     char *user_line;
     const char end_fun_decl[] = " =\n";
     const char end_fun[] = "\n";
     int nargs = procst->pronargs;
     Datum *argname, argnames, prosrc;
+    bool is_recursive = false;
 
     /* Function name */
     func = NameStr(procst->proname);
@@ -336,6 +338,8 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     /* Source code */
     prosrc = SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_prosrc, &isnull);
     source_text = DatumGetCString(DirectFunctionCall1(textout, prosrc));
+
+    is_recursive = pldotnet_FixFunctionName(func, source_text);
 
     argnames = SysCacheGetAttr(PROCOID, proc,
         Anum_pg_proc_proargnames, &isnull);
@@ -350,7 +354,7 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
      */
 
     totalsize = strlen(func_signature_indent)
-        + strlen(member) + strlen(func) + strlen(" ");
+        + strlen(let) + strlen(rec) + strlen(func) + strlen(" ");
 
     for (i = 0; i < nargs; i++) 
     {
@@ -375,8 +379,16 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
 
     block2str = (char *)palloc0(totalsize);
 
-    SNPRINTF(block2str, totalsize - cursize, "%s%s%s "
-        ,func_signature_indent, member, func);
+    if (is_recursive)
+    {
+        SNPRINTF(block2str, totalsize - cursize, "%s%s%s%s"
+            ,func_signature_indent, let, rec, func);
+    }
+    else
+    {
+        SNPRINTF(block2str, totalsize - cursize, "%s%s%s"
+            ,func_signature_indent, let, func);
+    }
 
     cursize = strlen(block2str);
 
@@ -441,7 +453,7 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
         let mutable libargs = Marshal.PtrToStructure<LibArgs> arg\n\
         let res =\n\
             try\n\
-                UserClass.%s\n\
+                %s\n\
             with\n\
                 | _ -> None\n\
         libargs.resunull <- \n\
@@ -541,18 +553,18 @@ plfsharp_GetUserSourceCode(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc
     source_code_size = strlen(fs_block_header)
                      + strlen(fs_block_args_decl)
                      + strlen(fs_block_userclass_header)
-                     + strlen(fs_block_userfunc_decl)
                      + strlen(fs_block_callfunc)
+                     + strlen(fs_block_userfunc_decl)
                      + strlen(fs_block_callfunc_call)
                      + strlen(fs_block_footer) + 1;
 
-    source_code = palloc0(source_code_size);
+    source_code = (char*) palloc0(source_code_size);
     SNPRINTF(source_code, source_code_size, "%s%s%s%s%s%s%s",
                                             fs_block_header,
                                             fs_block_args_decl,
                                             fs_block_userclass_header,
-                                            fs_block_userfunc_decl,
                                             fs_block_callfunc,
+                                            fs_block_userfunc_decl,
                                             fs_block_callfunc_call,
                                             fs_block_footer);
     return source_code;

@@ -58,6 +58,8 @@
 #include <glib.h>
 #include <glib/ghash.h>
 
+#include "pldotnet_helpers.h"
+
 GHashTable *procedures;
 
 #if PG_VERSION_NUM < 110000
@@ -85,8 +87,6 @@ GHashTable *procedures;
 #define CH(c) c
 #define DIR_SEPARATOR '/'
 #define MAX_PATH PATH_MAX
-/* Null pointer constant definition */
-#define nullptr ((void*)0)
 
 typedef struct pldotnet_ArgArrayInfo
 {
