@@ -45,6 +45,7 @@ REGRESS = \
 	testfsmixedtypes \
 	testspi \
 	testarray \
+	testfsarray \
 	testcomposites
 
 OBJS = \

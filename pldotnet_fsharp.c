@@ -79,7 +79,15 @@ type UserClass =\n\
         | false ->\n\
             match System.Decimal.TryParse(str) with\n\
             | true, v -> Some v\n\
-            | _ -> None\n";
+            | _ -> None\n\
+    static member arrayToDecimal (isnull: bool) (a : string array) : decimal [] option =\n\
+        match isnull with\n\
+        | true -> None\n\
+        | false ->\n\
+            try\n\
+                a |> Array.map System.Decimal.Parse |> Some\n\
+            with\n\
+                | _ -> None\n";
 /********* fs_block_userfunc_decl ******
  *         static member <function_name> =
  *             <function_body>
@@ -188,7 +196,7 @@ plfsharp_BuildStructFields(FunctionCallInfo fcinfo, Form_pg_proc procst)
 
     static const char array_template[] = "\
         [<MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.%s,SizeConst=%u)>]\n\
-        val mutable arg%u : %s array";
+        val mutable arg%u : %s array\n";
 
     if (0 == nargs)
     {
@@ -452,6 +460,7 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
     size_t cursize = 0;
     char * func;
     static const char *arg_template = " (UserClass.%s libargs.argsnull.[%d] libargs.arg%d)";
+    static const char *arrayToDecimal = "arrayToDecimal";
     static const char *toDecimal = "toDecimal";
     static const char *wrap = "wrap";
     const char *toString = NUMERICOID == procst->prorettype ? ".ToString()" : "";
@@ -489,7 +498,7 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
         return block2str;
     }
 
-    call_func_size = strlen(func) + (arg_size + strlen(toDecimal) + 10) * nargs;
+    call_func_size = strlen(func) + (arg_size + strlen(arrayToDecimal) + 10) * nargs;
 
     func_call = (char*) palloc0(call_func_size);
 
@@ -499,7 +508,9 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
     for (i = 0; i < nargs; ++i)
     {
         str_ptr = (char*) (func_call + cursize);
-        if (NUMERICOID == procst->proargtypes.values[i])
+        if (pldotnet_IsArray(i, &func_inout_info) && func_inout_info.arrayinfo[i].typelem == NUMERICOID)
+            snprintf(str_ptr, call_func_size - cursize, arg_template, arrayToDecimal, i, i);
+        else if (NUMERICOID == procst->proargtypes.values[i])
             snprintf(str_ptr, call_func_size - cursize, arg_template, toDecimal, i, i);
         else
             snprintf(str_ptr, call_func_size - cursize, arg_template, wrap, i, i);

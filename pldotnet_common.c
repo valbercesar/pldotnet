@@ -476,6 +476,8 @@ pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
         case FLOAT8OID:
             return Float8GetDatum ( *(double *)(result_ptr) );
         case NUMERICOID:
+            if (fcinfo->isnull)
+                return (Datum) 0;
             str_num = (char *)*(unsigned long *)(result_ptr);
             return NumericGetDatum(
                                    DirectFunctionCall3(numeric_in,
