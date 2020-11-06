@@ -68,7 +68,18 @@ type LibArgs =
  *      val mutable resu:int
  */
 static char fs_block_userclass_header[] = "\n\
-type UserClass =\n";
+type UserClass =\n\
+    static member wrap (isnull: bool) a =\n\
+        match isnull with\n\
+        | true -> None\n\
+        | false -> Some a\n\
+    static member toDecimal (isnull: bool) (str: string) : decimal option =\n\
+        match isnull with\n\
+        | true -> None\n\
+        | false ->\n\
+            match System.Decimal.TryParse(str) with\n\
+            | true, v -> Some v\n\
+            | _ -> None\n";
 /********* fs_block_userfunc_decl ******
  *         static member <function_name> =
  *             <function_body>
@@ -93,7 +104,8 @@ plfsharp_TypeSupported(Oid type)
     return pldotnet_IsSimpleType(type) ||
            BPCHAROID == type ||
            VARCHAROID == type ||
-           TEXTOID == type;
+           TEXTOID == type ||
+           NUMERICOID == type;
 }
 
 static void
@@ -330,7 +342,6 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     const char end_fun[] = "\n";
     int nargs = procst->pronargs;
     Datum *argname, argnames, prosrc;
-    bool is_recursive = false;
 
     /* Function name */
     func = NameStr(procst->proname);
@@ -338,8 +349,6 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     /* Source code */
     prosrc = SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_prosrc, &isnull);
     source_text = DatumGetCString(DirectFunctionCall1(textout, prosrc));
-
-    is_recursive = pldotnet_FixFunctionName(func, source_text);
 
     argnames = SysCacheGetAttr(PROCOID, proc,
         Anum_pg_proc_proargnames, &isnull);
@@ -379,7 +388,7 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
 
     block2str = (char *)palloc0(totalsize);
 
-    if (is_recursive)
+    if (pldotnet_IsRecursive(func, source_text))
     {
         SNPRINTF(block2str, totalsize - cursize, "%s%s%s%s"
             ,func_signature_indent, let, rec, func);
@@ -442,10 +451,13 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
     size_t i, totalsize, call_func_size;
     size_t cursize = 0;
     char * func;
-    char arg_template[] = " (wrap libargs.argsnull.[%d] libargs.arg%d)";
+    static const char *arg_template = " (UserClass.%s libargs.argsnull.[%d] libargs.arg%d)";
+    static const char *toDecimal = "toDecimal";
+    static const char *wrap = "wrap";
+    const char *toString = NUMERICOID == procst->prorettype ? ".ToString()" : "";
     size_t arg_size = strlen(arg_template);
 
-    static const char body_template[] = "\
+    static const char *body_template = "\
         let wrap (isnull: bool) a =\n\
             match isnull with\n\
             | true -> None\n\
@@ -460,7 +472,7 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
             match res with\n\
             | None -> true\n\
             | Some v ->\n\
-                libargs.resu <- v\n\
+                libargs.resu <- v%s\n\
                 false";
 
     int nargs = procst->pronargs;
@@ -473,11 +485,11 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
     {
         int block_size = strlen(body_template) + strlen(func) + 1;
         block2str = (char *)palloc0(block_size);
-        snprintf(block2str, block_size, body_template, func);
+        snprintf(block2str, block_size, body_template, func, "");
         return block2str;
     }
 
-    call_func_size = strlen(func) + (arg_size + 10) * nargs;
+    call_func_size = strlen(func) + (arg_size + strlen(toDecimal) + 10) * nargs;
 
     func_call = (char*) palloc0(call_func_size);
 
@@ -487,15 +499,18 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
     for (i = 0; i < nargs; ++i)
     {
         str_ptr = (char*) (func_call + cursize);
-        snprintf(str_ptr, call_func_size - cursize, arg_template, i, i);
+        if (NUMERICOID == procst->proargtypes.values[i])
+            snprintf(str_ptr, call_func_size - cursize, arg_template, toDecimal, i, i);
+        else
+            snprintf(str_ptr, call_func_size - cursize, arg_template, wrap, i, i);
         cursize += strlen(str_ptr);
     }
 
-    totalsize = strlen(body_template) + call_func_size;
+    totalsize = strlen(body_template) + call_func_size + strlen(toString);
 
     block2str = (char *) palloc0(totalsize);
 
-    snprintf(block2str, totalsize, body_template, func_call);
+    snprintf(block2str, totalsize, body_template, func_call, toString);
 
     return block2str;
 }

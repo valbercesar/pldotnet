@@ -38,8 +38,11 @@ REGRESS = \
 	testrecursive \
 	testfsintegers testfsnullintegers \
 	testfsbool testfsnullbool \
+	testfsrecursive \
 	testfschar \
 	testfsfloats \
+	testfsnumeric \
+	testfsmixedtypes \
 	testspi \
 	testarray \
 	testcomposites

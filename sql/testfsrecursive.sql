@@ -1,0 +1,33 @@
+CREATE OR REPLACE FUNCTION "fibbbFSharp"(n integer) RETURNS integer AS $$
+let rec loop acc1 acc2 m =
+    match m with
+    | 0 -> acc1
+    | 1 -> acc2
+    | _ ->
+        loop acc2 (acc1 + acc2) (m - 1)
+match n with
+| Some _n -> Some (loop 0 1 _n)
+| None -> None
+$$ LANGUAGE plfsharp;
+SELECT "fibbbFSharp"(30) = integer '832040';
+
+CREATE OR REPLACE FUNCTION "factFSharp"(n integer) RETURNS integer AS $$
+match n with
+| Some _n when _n <= 1 -> Some 1
+| Some _n ->
+    match factFSharp(Some (_n - 1)) with
+    | Some v -> Some (_n * v)
+    | _ -> None
+| _ -> None
+$$ LANGUAGE plfsharp;
+SELECT "factFSharp"(5) = integer '120';
+
+CREATE OR REPLACE FUNCTION "naturalFSharp"(n numeric) RETURNS numeric AS $$
+match n with
+| Some 1m -> Some 1m
+| Some _n when _n < 0m -> Some 0m
+| Some _n -> naturalFSharp(Some (_n - 1m))
+| _ -> None
+$$ LANGUAGE plfsharp;
+SELECT "naturalFSharp"(10) =  numeric '1';
+SELECT "naturalFSharp"(10.5) = numeric '0';

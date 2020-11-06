@@ -647,7 +647,6 @@ plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     /* Source code */
     prosrc = SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_prosrc, &isnull);
     source_text = DatumGetCString(DirectFunctionCall1(textout, prosrc));
-    pldotnet_FixFunctionName(func_name, source_text);
     source_size = strlen(source_text);
 
     argnames = SysCacheGetAttr(PROCOID, proc,

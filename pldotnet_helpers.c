@@ -11,6 +11,12 @@ pldotnet_ToLowerCase(const char* str)
     return copy;
 }
 
+bool
+pldotnet_IsRecursive(const char *function_name, char *function_body)
+{
+    return nullptr != strstr(function_body, function_name);
+}
+
 /*
  *
  * This function receives the function name and body.
