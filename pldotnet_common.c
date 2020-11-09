@@ -796,6 +796,45 @@ pldotnet_CreateCStructLibargs(
     return libargs_ptr;
 }
 
+Oid
+pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index)
+{
+    bool isnull;
+    
+    GetAttributeByNum(tup, TupleDescAttr(tupdesc, index)->attnum, &isnull);
+    if (!isnull)
+        return TupleDescAttr(tupdesc, index)->atttypid;
+    else
+        return InvalidOid;
+}
+
+/*
+ * This function was moved from csharp to common, 
+ * given that it now works in C# and F# functions
+ * This function reads the libargs buffer and retrieves data
+ * F# or C#
+ */
+Datum
+pldotnet_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo, pldotnet_FuncInOutInfo *func_inout_info)
+{
+    int8_t *result_ptr = libargs + func_inout_info->typesize_args
+                                + func_inout_info->typesize_nullflags;
+    int8_t *resultnull_ptr = libargs +
+                           (func_inout_info->typesize_nullflags - sizeof(bool));
+
+    if (!pldotnet_IsSimpleType(rettype) && !pldotnet_IsTextType(rettype))
+    {
+        /* TODO: review null composite values */
+        fcinfo->isnull = *(bool *) (resultnull_ptr);
+        if (fcinfo->isnull)
+            return (Datum) 0;
+        return pldotnet_CreateCompositeResult((char*) result_ptr, rettype, fcinfo);
+    }
+
+    return
+          pldotnet_GetScalarValue((char*) result_ptr, (char*) resultnull_ptr, fcinfo, rettype);
+}
+
 bool
 pldotnet_SPIReady(void)
 {

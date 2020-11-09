@@ -46,7 +46,8 @@ REGRESS = \
 	testspi \
 	testarray \
 	testfsarray \
-	testcomposites
+	testcomposites \
+	testfscomposites
 
 OBJS = \
 	pldotnet.o \

@@ -180,6 +180,9 @@ Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index);
 bool pldotnet_SetArrayInfo(Datum datum, Oid oid, uint32_t narg, const char *attributeTemplate, bool swap_variable_decl, pldotnet_FuncInOutInfo *func_inout_info);
 int8_t* pldotnet_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst, bool force_nullable_flags, pldotnet_FuncInOutInfo *func_inout_info);
 
+Oid pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index);
+Datum pldotnet_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo, pldotnet_FuncInOutInfo *func_inout_info);
+
 bool pldotnet_SPIReady(void);
 void pldotnet_SPIFinish(void);
 bool pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo);
