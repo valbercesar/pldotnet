@@ -51,8 +51,8 @@ static Datum plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, b
 static bool  plfsharp_TypeSupported(Oid type);
 
 static char* plfsharp_BuildNullFlagArray(uint32_t elems);
-static void plfsharp_BuildStructValue(Oid type, size_t index, char *currval);
-static char* plfsharp_BuildStructValues(FunctionCallInfo fcinfo, Form_pg_proc procst);
+static void plfsharp_BuildStructField(Oid type, size_t index, char *currval);
+static char* plfsharp_BuildStructFields(FunctionCallInfo fcinfo, Form_pg_proc procst);
 
 static char fs_block_header[] = "\n\
 namespace PlDotNETUserSpace\n\
@@ -113,8 +113,20 @@ plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix)
         SNPRINTF(field_prefix, 1024, "%s", val);
 }
 
+/*
+ * This function aims to build a single field inside
+ * a struct, including the required annotations and types.
+ * For example:
+ *     [<MarshalAs.Unmanaged.U1>]
+ *     val mutable arg0 : bool
+ *
+ * @param [in] type A raw postgres type, used to fill the type name
+ * @param [in] index The argument position in the procedure declared by users
+ * @param [out] currval A buffer to hold the current field
+ * @return Nothing
+ */ 
 static void
-plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
+plfsharp_BuildStructField(Oid type, size_t index, char *currval)
 {
     size_t length;
     char *str_ptr;
@@ -132,8 +144,23 @@ plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
     );
 }
 
+/*
+ * This functions aims to build all fields inside a struct,
+ * including the required annotations and types
+ * For example:
+ *     [<MarshalAs.Unmanaged.U1>]
+ *     val mutable arg0 : bool
+ *     [<MarshalAs.Unmanaged.U1>]
+ *     val mutable arg1 : bool
+ *     [<MarshalAs.Unmanaged.U4>]
+ *     val mutable arg2 : int
+ *
+ * @param [in] fcinfo Data passed to a fmgr-called function - it's from postgres
+ * @param [in] procst A struct pointer containing the procedure information
+ * @return a pointer to palloced string which contains the struct fields
+ */
 static char*
-plfsharp_BuildStructValues(FunctionCallInfo fcinfo, Form_pg_proc procst)
+plfsharp_BuildStructFields(FunctionCallInfo fcinfo, Form_pg_proc procst)
 {
     char *block2str;
     char *cursor;
@@ -169,7 +196,7 @@ plfsharp_BuildStructValues(FunctionCallInfo fcinfo, Form_pg_proc procst)
             totalsize += strlen(func_inout_info.arrayinfo[i].csharpdecl) + 1;
         else
         {
-            plfsharp_BuildStructValue(type, i, currval);
+            plfsharp_BuildStructField(type, i, currval);
             totalsize += strlen(currval) + 1;
         }
     }
@@ -185,7 +212,7 @@ plfsharp_BuildStructValues(FunctionCallInfo fcinfo, Form_pg_proc procst)
         }
         else
         {
-            plfsharp_BuildStructValue(argtype[i], i, currval);
+            plfsharp_BuildStructField(argtype[i], i, currval);
             SNPRINTF(cursor, totalsize - pos, "%s", currval);
         }
         pos += strlen(cursor);
@@ -257,7 +284,7 @@ type LibArgs =\n\
 
     null_flag_array = plfsharp_BuildNullFlagArray(fcinfo->nargs);
 
-    values = plfsharp_BuildStructValues(fcinfo, procst);
+    values = plfsharp_BuildStructFields(fcinfo, procst);
 
     rettype_name = pldotnet_GetCompatibleNetTypeName(procst->prorettype, true, false);
     rettype_unmanaged_name = pldotnet_GetUnmanagedTypeName(procst->prorettype);
