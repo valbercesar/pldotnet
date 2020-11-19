@@ -40,7 +40,7 @@ Typically for Ubuntu 19.04 those are the steps:
     $ sudo apt-get update
     $ sudo apt install dotnet-runtime-3.1 dotnet-sdk-3.1 dotnet-hostfxr-3.1
 
-### Installing PL/.NET in Linux - Ubuntu/Debian flavours
+### [BROKEN] Installing PL/.NET in Linux - Ubuntu/Debian flavours
 
 Installing PostgreSQL:
 
@@ -77,13 +77,14 @@ We constantly use Docker in our development computers then you also
 can benefit of it case your OS is not the supported one:
 
     $ git clone https://github.com/brickabode/pldotnet.git
+    $ cd pldotnet
     $ docker-compose run pldotnet-devenv bash
+    # service postgresql start
     # make && make plnet-install
-    # su postgres
-    $ psql -c "CREATE EXTENSION pldotnet;"
+    # psql -U postgres -c "CREATE EXTENSION pldotnet;"
 
 
-###  Building Debian/Ubuntu package
+###  [BROKEN] Building Debian/Ubuntu package
 
 Check [.NET Core](#install_dotnetcore) installation session first. All .NET
 requirements must be installed.
@@ -197,6 +198,12 @@ Function call and output:
   -----------
           10
   (1 row)
+```
+
+### Run the entire test suite
+
+```
+make checkinstall
 ```
 
 ## Types support
