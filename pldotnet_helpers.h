@@ -32,7 +32,6 @@
 #define nullptr ((void*)0)
 
 char* pldotnet_ToLowerCase(const char* str);
-bool pldotnet_IsRecursive(const char *function_name, char *function_body);
-bool pldotnet_FixFunctionName(const char *function_name, char *function_body);
+
 
 #endif

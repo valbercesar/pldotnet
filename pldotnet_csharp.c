@@ -1148,7 +1148,7 @@ plcsharp_BuildFunctionDecl(
 
     /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END IF PROC != nullptr */
     /* START */
-    if (nullptr == (proc = pldotnet_GetPostgresHeapTuple(fcinfo)))
+    if (nullptr == (proc = pldotnet_GetPostgresHeapTuple(fcinfo->flinfo->fn_oid)))
         return false;
 
     procst = (Form_pg_proc) GETSTRUCT(proc);
@@ -1222,7 +1222,7 @@ plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline
 
         if (nullptr == assembly_loader) assembly_loader = loader;
 
-        if (!pldotnet_CompileUserFunction(loader, fcinfo, &paths, &(function_decl.source)))
+        if (!pldotnet_CompileUserFunction(loader, &paths, &(function_decl.source)))
             return (Datum) 0;
         if (!pldotnet_RunUserFunction(loader, &paths, function_decl.args, function_decl.args_length))
             return (Datum) 0;

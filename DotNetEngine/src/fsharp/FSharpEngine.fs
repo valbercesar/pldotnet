@@ -62,7 +62,7 @@ type Engine() =
         FunctionCache.functionCache.Add(functionId, (sourceCode, FunctionCache.userFunction))
         Engine.SendToRemoteStorage sourceCode functionId assembly |> ignore
         0
-    
+
     static member CompileUserFunction (functionId: uint) (sourceCode: string) : int =
         let fakeInput : string = "/tmp/UserClass.fs"
         let fakeOutput : string = "/tmp/UserClass.dll"
@@ -83,27 +83,29 @@ type Engine() =
                 printfn "=======\n%A\n========" e
             printfn "%s" "\n********ERROR************\n"
             1
-    
+
     static member SetFunction (functionId : uint) (fn : Func<IntPtr, int, int>) : bool =
         FunctionCache.userFunction <- fn
         FunctionCache.functionId <- functionId
         true
 
-    static member Compile (args: IntPtr) (argLength: int) : int = 
+    static member Compile (args: IntPtr) (argLength: int) : int =
         let libArgs = Marshal.PtrToStructure<LibArgs>(args)
         let sourceCode = Marshal.PtrToStringAuto(libArgs.Source)
-        let local = 
+        let local =
             try
                 match FunctionCache.functionCache.TryGetValue libArgs.FunctionId with
                 | true, (src, fn) ->
                     match sourceCode.Equals(src) with
                     | true -> Engine.SetFunction libArgs.FunctionId fn
-                    | _ -> false
+                    | _ ->
+                        FunctionCache.functionCache.Remove libArgs.FunctionId |> ignore
+                        false
                 | _ -> false
             with
                 | _ -> false
 
-        let remote = 
+        let remote =
             match local with
             | false -> Engine.RetrieveFromRemoteStorage sourceCode libArgs.FunctionId
             | _ -> true

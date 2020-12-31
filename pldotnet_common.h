@@ -152,10 +152,16 @@ bool pldotnet_NeedsIntPtr(Oid oid);
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *args);
 void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl);
 bool pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl);
-bool pldotnet_ValidCachedFunction( pldotnet_FunctionDecl *reference, pldotnet_FunctionDecl *candidate);
+bool pldotnet_ValidCachedFunction(pldotnet_FunctionDecl *reference, pldotnet_FunctionDecl *candidate);
+
+pldotnet_FunctionDecl* pldotnet_CreateFunctionDecl(void);
 pldotnet_FunctionDecl* pldotnet_FindFunctionDecl(int function_id);
 void pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl, bool insert);
 pldotnet_FunctionDecl* pldotnet_CopyFunctionDecl(const pldotnet_FunctionDecl *function_decl);
+
+void pldotnet_SaveFunction(
+    pldotnet_FunctionDecl *function,
+    bool insert);
 
 void pldotnet_SaveFunctionDecl(
     dotnet_loader loader,
@@ -170,13 +176,32 @@ void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
 
 bool pldotnet_TypeSupported(Oid type);
 const char * pldotnet_GetNetTypeName(Oid id, bool hastypeconversion);
-const char * pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp);
+
+const char * pldotnet_GetCompatibleNetTypeName(
+    Oid id,
+    bool hastypeconversion,
+    bool is_csharp
+);
+
 int pldotnet_GetTypeSize(Oid id);
 const char * pldotnet_GetUnmanagedTypeName(Oid type);
-int pldotnet_SetScalarValue(char *argp, Datum datum, FunctionCallInfo fcinfo,
-                            size_t narg, Oid type, bool * nullp);
-Datum pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
-                              FunctionCallInfo fcinfo, Oid type);
+int pldotnet_SetScalarValue(
+    char *argp,
+    Datum datum,
+    FunctionCallInfo fcinfo,
+    size_t narg,
+    Oid type,
+    bool * nullp
+);
+
+Datum pldotnet_GetScalarValue(
+    char * result_ptr,
+    char * resultnull_ptr,
+    FunctionCallInfo fcinfo,
+    Oid type
+);
+
+bool pldotnet_IsPostgresArray(Oid oid);
 bool pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info);
 bool pldotnet_IsSimpleType(Oid type);
 bool pldotnet_IsTextType(Oid type);
@@ -184,18 +209,42 @@ bool pldotnet_IsNullable(Oid type);
 bool pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index);
 
 Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index);
-bool pldotnet_SetArrayInfo(Datum datum, Oid oid, uint32_t narg, const char *attributeTemplate, bool swap_variable_decl, pldotnet_FuncInOutInfo *func_inout_info);
-int8_t* pldotnet_CreateCStructLibargs(FunctionCallInfo fcinfo, Form_pg_proc procst, bool force_nullable_flags, pldotnet_FuncInOutInfo *func_inout_info);
+bool pldotnet_SetArrayInfo(
+    Datum datum,
+    Oid oid,
+    uint32_t narg,
+    const char *attributeTemplate,
+    bool swap_variable_decl,
+    pldotnet_FuncInOutInfo *func_inout_info
+);
+void
+pldotnet_SetArraySize(Datum datum, pldotnet_ArgArrayInfo *parr_info);
 
-Oid pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index);
-Datum pldotnet_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo, pldotnet_FuncInOutInfo *func_inout_info);
+int8_t* pldotnet_CreateCStructLibargs(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    bool force_nullable_flags,
+    pldotnet_FuncInOutInfo *func_inout_info
+);
+
+Oid pldotnet_GetTypeAttribute(
+    TupleDesc tupdesc,
+    HeapTupleHeader tup,
+    size_t index
+);
+
+Datum pldotnet_GetNetResult(
+    int8_t *libargs,
+    Oid rettype,
+    FunctionCallInfo fcinfo,
+    pldotnet_FuncInOutInfo *func_inout_info
+);
 
 bool pldotnet_SPIReady(void);
 void pldotnet_SPIFinish(void);
 bool pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo);
 
-
-HeapTuple pldotnet_GetPostgresHeapTuple(FunctionCallInfo fcinfo);
+HeapTuple pldotnet_GetPostgresHeapTuple(Oid oid);
 void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc);
 
 component_entry_point_fn pldotnet_GetUserMethod( dotnet_loader loader, pldotnet_PathConfig *paths);
@@ -212,7 +261,6 @@ pldotnet_Run(
 bool
 pldotnet_CompileUserFunction(
     dotnet_loader loader,
-    const FunctionCallInfo fcinfo,
     const pldotnet_PathConfig *paths,
     pldotnet_ArgsSource *source
 );

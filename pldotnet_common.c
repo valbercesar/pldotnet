@@ -108,6 +108,25 @@ pldotnet_ValidCachedFunction(
 }
 
 pldotnet_FunctionDecl*
+pldotnet_CreateFunctionDecl(void)
+{
+    pldotnet_FunctionDecl *decl;
+    MemoryContext mem = CurrentMemoryContext;
+
+    /* change to top mem context */
+    MemoryContextSwitchTo(TopMemoryContext);
+
+    decl = (pldotnet_FunctionDecl*) palloc(sizeof(pldotnet_FunctionDecl));
+
+    pldotnet_ResetFunctionDecl(decl);
+
+    /* revert to previous mem context */
+    MemoryContextSwitchTo(mem);
+
+    return decl;
+}
+
+pldotnet_FunctionDecl*
 pldotnet_FindFunctionDecl(int function_id)
 {
     gpointer value = g_hash_table_lookup(procedures, GUINT_TO_POINTER(function_id));
@@ -116,6 +135,24 @@ pldotnet_FindFunctionDecl(int function_id)
         return (pldotnet_FunctionDecl*) value;
 
     return nullptr;
+}
+
+void pldotnet_SaveFunction(
+    pldotnet_FunctionDecl *function,
+    bool insert)
+{
+    if (insert)
+        g_hash_table_insert(
+            procedures,
+            GUINT_TO_POINTER(function->source.func_oid),
+            (gpointer) function
+        );
+    else
+        g_hash_table_replace(
+            procedures,
+            GUINT_TO_POINTER(function->source.func_oid),
+            (gpointer) function
+        );
 }
 
 void
@@ -231,9 +268,7 @@ pldotnet_StartNewMemoryContext(MemoryContextWrapper *config)
                                     ALLOCSET_SMALL_SIZES);
 
     if (nullptr == config->curr)
-    {
         elog(ERROR, "Could not create a new memory context");
-    }
 
     MemoryContextSwitchTo(config->curr);
 }
@@ -600,7 +635,6 @@ pldotnet_FillArgArrayInfo(
     bool swap_variable_decl,
     pldotnet_ArgArrayInfo *parr_info)
 {
-    ArrayType *arr;
     const char *typename =
         pldotnet_NeedsIntPtr(typeinfo->typelem) ?
         "IntPtr" :
@@ -617,11 +651,6 @@ pldotnet_FillArgArrayInfo(
     parr_info->typelem = typeinfo->typelem;
     parr_info->typalign = typeinfo->typalign;
 
-    arr = DatumGetArrayTypeP(datum);
-    parr_info->ndim = ARR_NDIM(arr);
-    parr_info->dims = ARR_DIMS(arr);
-    parr_info->nelems = ArrayGetNItems(ARR_NDIM(arr), ARR_DIMS(arr));
-
     if (swap_variable_decl)
         sprintf(parr_info->csharpdecl,
                 array_template,
@@ -637,6 +666,25 @@ pldotnet_FillArgArrayInfo(
 }
 
 bool
+pldotnet_IsPostgresArray(Oid oid)
+{
+    Form_pg_type typeinfo;
+    bool is_array;
+    HeapTuple tuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(oid));
+
+    if (!HeapTupleIsValid(tuple))
+        elog(ERROR, "[pldotnet]: (CheckArgIsArray) cache lookup failed for type %u", oid);
+
+    typeinfo = (Form_pg_type) GETSTRUCT(tuple);
+
+    is_array = (typeinfo->typelem != 0 && typeinfo->typlen == -1);
+
+    ReleaseSysCache(tuple);
+
+    return is_array;
+}
+
+bool
 pldotnet_SetArrayInfo(
     Datum datum,
     Oid oid,
@@ -645,14 +693,9 @@ pldotnet_SetArrayInfo(
     bool swap_variable_decl,
     pldotnet_FuncInOutInfo *func_inout_info)
 {
-    HeapTuple typetuple;
     Form_pg_type typeinfo;
+    HeapTuple tuple;
     bool isarr = false;
-
-    typetuple = SearchSysCache(TYPEOID, ObjectIdGetDatum(oid), 0, 0, 0);
-
-    if (!HeapTupleIsValid(typetuple))
-        elog(ERROR, "[pldotnet]: (CheckArgIsArray) cache lookup failed for type %u", oid);
 
     if (nullptr == array_template)
         elog(ERROR, "[pldotnet]: Invalid argument: array_template is null");
@@ -660,7 +703,12 @@ pldotnet_SetArrayInfo(
     if (nullptr == func_inout_info)
         elog(ERROR, "[pldotnet]: Invalid argument: func_inout_info is null");
 
-    typeinfo = (Form_pg_type) GETSTRUCT(typetuple);
+    tuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(oid));
+
+    if (!HeapTupleIsValid(tuple))
+        elog(ERROR, "[pldotnet]: (CheckArgIsArray) cache lookup failed for type %u", oid);
+
+    typeinfo = (Form_pg_type) GETSTRUCT(tuple);
 
     isarr = (typeinfo->typelem != 0 && typeinfo->typlen == -1);
 
@@ -676,9 +724,18 @@ pldotnet_SetArrayInfo(
     else
         func_inout_info->arrayinfo[narg].ixarray = -1;
 
-    ReleaseSysCache(typetuple);
+    ReleaseSysCache(tuple);
 
     return isarr;
+}
+
+void
+pldotnet_SetArraySize(Datum datum, pldotnet_ArgArrayInfo *parr_info)
+{
+    ArrayType *arr = DatumGetArrayTypeP(datum);
+    parr_info->ndim = ARR_NDIM(arr);
+    parr_info->dims = ARR_DIMS(arr);
+    parr_info->nelems = ArrayGetNItems(ARR_NDIM(arr), ARR_DIMS(arr));
 }
 
 /*
@@ -717,7 +774,7 @@ pldotnet_CreateCStructLibargs(
     func_inout_info->typesize_args = 0;
     func_inout_info->typesize_nullflags = 0;
 
-    for (i = 0; i < fcinfo->nargs; i++)
+    for (i = 0; i < procst->pronargs; i++)
     {
         if (pldotnet_IsArray((int) i, func_inout_info))
             func_inout_info->typesize_args += sizeof(pldotnet_ArrayT);
@@ -728,7 +785,7 @@ pldotnet_CreateCStructLibargs(
     }
 
     if (nullable_arg_flag || force_nullable_flags)
-        func_inout_info->typesize_nullflags += sizeof(bool) * fcinfo->nargs;
+        func_inout_info->typesize_nullflags += sizeof(bool) * procst->pronargs;
     func_inout_info->typesize_nullflags += sizeof(bool);
     func_inout_info->typesize_result = pldotnet_GetTypeSize(rettype);
 
@@ -741,7 +798,7 @@ pldotnet_CreateCStructLibargs(
     argsnull_ptr = (bool *) libargs_ptr;
     cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
 
-    for (i = 0; i < fcinfo->nargs; i++)
+    for (i = 0; i < procst->pronargs; i++)
     {
         argdatum = pldotnet_GetArgDatum(fcinfo, i);
         if (pldotnet_IsArray(i, func_inout_info))
@@ -752,6 +809,8 @@ pldotnet_CreateCStructLibargs(
 
             if (arrinfo->ndim > 1)
                 elog(ERROR, "Multidimensional array not supported.");
+
+            pldotnet_SetArraySize(argdatum, arrinfo);
 
             tmp = (pldotnet_ArrayT*) cur_arg;
 
@@ -799,7 +858,7 @@ pldotnet_CreateCStructLibargs(
                 fcinfo,
                 i,
                 argtype[i],
-                fcinfo->nargs + 1 == func_inout_info->typesize_nullflags ? argsnull_ptr + i : nullptr
+                procst->pronargs + 1 == func_inout_info->typesize_nullflags ? argsnull_ptr + i : nullptr
             );
 
         cur_arg += pldotnet_GetTypeSize(argtype[i]);
@@ -882,17 +941,11 @@ pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo)
 }
 
 HeapTuple
-pldotnet_GetPostgresHeapTuple(FunctionCallInfo fcinfo)
+pldotnet_GetPostgresHeapTuple(Oid oid)
 {
-    Oid oid = fcinfo->flinfo->fn_oid;
-
-    HeapTuple proc = SearchSysCache(PROCOID, ObjectIdGetDatum(oid), 0, 0, 0);
+    HeapTuple proc = SearchSysCache1(PROCOID, ObjectIdGetDatum(oid));
     if (!HeapTupleIsValid(proc))
-    {
         elog(ERROR, "[pldotnet]: Cache lookup failed for function %u", oid);
-        return nullptr;
-    }
-
     return proc;
 }
 
@@ -920,8 +973,8 @@ pldotnet_GetUserMethod(dotnet_loader loader, pldotnet_PathConfig *paths)
         (void**) &dotnet_method
     );
 
-    assert(rc == 0 && dotnet_method != nullptr && \
-        "Failure: load_assembly_and_get_function_pointer()");
+    if (0 != rc || nullptr == dotnet_method)
+        elog(ERROR, "[pldotnet]: Could not load_assembly_and_get_function_pointer()");
 
     return dotnet_method;
 }
@@ -955,7 +1008,6 @@ pldotnet_Run(
 bool
 pldotnet_CompileUserFunction(
     dotnet_loader loader,
-    const FunctionCallInfo fcinfo,
     const pldotnet_PathConfig *paths,
     pldotnet_ArgsSource *source
 )
@@ -994,7 +1046,6 @@ pldotnet_RunUserFunction(
 
     if (!pldotnet_ValidPaths(paths))
         return (Datum) 1;
-
 
     if (nullptr != libargs)
     {
