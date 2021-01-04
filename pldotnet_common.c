@@ -476,8 +476,12 @@ int pldotnet_SetScalarValue(
 }
 
 Datum
-pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
-                                             FunctionCallInfo fcinfo, Oid type)
+pldotnet_GetScalarValue(
+    char * result_ptr,
+    char * resultnull_ptr,
+    FunctionCallInfo fcinfo,
+    Oid type
+)
 {
     Datum retval = 0;
     VarChar * res_varchar; /* For Unicode/UTF8 support */
@@ -953,6 +957,16 @@ inline void
 pldotnet_ReleasePostgresHeapTuple(HeapTuple proc)
 {
     ReleaseSysCache(proc);
+}
+
+bool
+pldotnet_SetNetLoader(const char *config_path, const char* prefix)
+{
+    if (nullptr != assembly_loader)
+        return true;
+
+    assembly_loader = GetNetLoadAssemblySetup(config_path, prefix);
+    return nullptr != assembly_loader;
 }
 
 component_entry_point_fn

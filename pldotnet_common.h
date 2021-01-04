@@ -247,7 +247,16 @@ bool pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo);
 HeapTuple pldotnet_GetPostgresHeapTuple(Oid oid);
 void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc);
 
-component_entry_point_fn pldotnet_GetUserMethod( dotnet_loader loader, pldotnet_PathConfig *paths);
+bool pldotnet_SetNetLoader(
+    const char *config_path,
+    const char* prefix
+);
+
+component_entry_point_fn
+pldotnet_GetUserMethod(
+    dotnet_loader loader,
+    pldotnet_PathConfig *paths
+);
 
 bool
 pldotnet_Run(

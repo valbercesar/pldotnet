@@ -15,9 +15,18 @@
 */
 
 int
-pldotnet_GetStructFromCompositeTuple(char * src, int src_size, Datum dat,
-                                       Form_pg_type typeinfo, TupleDesc tupdesc)
+pldotnet_GetStructFromCompositeTuple(
+    char * src,
+    int src_size,
+    Datum dat,
+    Form_pg_type typeinfo,
+    TupleDesc tupdesc
+)
 {
+    const char *key;
+    bool isnull;
+    Oid type_attr;
+
     const char composite_header[] = \
 "[StructLayout(LayoutKind.Sequential,Pack=1)]\n\
 public struct ";
@@ -28,31 +37,34 @@ public struct ";
     const char semicon[] = ";";
     int cursize = 0;
 
-    HeapTupleHeader tup;
+    SNPRINTF(
+        src,
+        src_size,
+        "%s%s%s",
+        composite_header,
+        NameStr(typeinfo->typname),
+        composite_start
+    );
 
-    const char *key;
-    bool isnull;
-    Oid type_attr;
-
-    tup = DatumGetHeapTupleHeader(dat);
-
-    SNPRINTF(src, src_size, "%s%s%s", composite_header,
-                          NameStr( typeinfo->typname ), composite_start);
     cursize = strlen(src);
     src_size -= cursize;
     src += cursize;
 
     for (int i = 0; i < tupdesc->natts; i++) 
     {
-        key = NameStr(TupleDescAttr(tupdesc, i)->attname);
-        GetAttributeByNum(tup, TupleDescAttr(tupdesc, i)->attnum, &isnull);
         type_attr = TupleDescAttr(tupdesc, i)->atttypid;
-        if (!isnull) 
+        if (InvalidOid != type_attr)
         {
-            SNPRINTF(src, src_size,"%s%s %s%s"
-                        , pldotnet_PublicDecl(type_attr)
-                        , pldotnet_GetNetTypeName(type_attr , true)
-                        , key, semicon);
+            key = NameStr(TupleDescAttr(tupdesc, i)->attname);
+            SNPRINTF(
+                src,
+                src_size,
+                "%s%s %s%s",
+                pldotnet_PublicDecl(type_attr),
+                pldotnet_GetNetTypeName(type_attr , true),
+                key,
+                semicon
+            );
             cursize = strlen(src);
             src_size -= cursize;
             src += cursize;

@@ -236,7 +236,7 @@ public static class SPI
                     Console.WriteLine(diagnostic.ToString());
                 }
                 Console.WriteLine("\n********ERROR************\n");
-                return 0;
+                return 1;
             }
 
             Engine.SetDelegate(Engine.memStream, sourceCode, libArgs.FuncOid);
