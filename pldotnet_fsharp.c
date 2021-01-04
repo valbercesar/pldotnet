@@ -35,8 +35,16 @@ static pldotnet_FuncInOutInfo func_inout_info;
 
 static void plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix);
 static char   *plfsharp_BuildBlockArgsDecl(FunctionCallInfo fcinfo, Form_pg_proc procst);
-static char   *plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst,
-                                               HeapTuple proc);
+static char   *plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc);
+
+static void
+plfsharp_BuildArrayArgument(
+    const Oid oid,
+    const size_t i,
+    const size_t cursor,
+    const char *template,
+    char *str_ptr);
+
 static char   *plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst);
 
 static Datum  plfsharp_GetNetResult(int8_t * libargs, Oid rettype, FunctionCallInfo fcinfo);
@@ -61,7 +69,18 @@ static char* plfsharp_GetStructFromComposite(Datum dat, Form_pg_type typeinfo, T
 
 static char fs_block_header[] = "\n\
 namespace PlDotNETUserSpace\n\
-open System.Runtime.InteropServices\n";
+open System\n\
+open System.Globalization\n\
+open System.Runtime.InteropServices\n\
+\n\
+[<Struct>]\n\
+[<StructLayout (LayoutKind.Sequential, Pack=1)>]\n\
+type ArrayT<'b> =\n\
+    struct\n\
+        val mutable Buffer: IntPtr\n\
+        val mutable ElementSize: uint\n\
+        val mutable BufferSize: uint\n\
+    end\n";
 /****** fs_block_args_decl ******
 [<Struct>]
 [<StructLayout (LayoutKind.Sequential, Pack=1)>]
@@ -85,14 +104,38 @@ type UserClass =\n\
             match System.Decimal.TryParse(str) with\n\
             | true, v -> Some v\n\
             | _ -> None\n\
-    static member arrayToDecimal (isnull: bool) (a : string array) : decimal [] option =\n\
+    static member arrayToDecimal (isnull: bool) (a : ArrayT<'b>) : decimal [] option =\n\
         match isnull with\n\
         | true -> None\n\
         | false ->\n\
+            CultureInfo.CurrentCulture = new CultureInfo(\"en-US\", false) |> ignore\n\
+            match UserClass.arrayToString isnull a with\n\
+            | Some strs ->\n\
+                Array.ConvertAll<string, decimal>(strs, fun item -> Convert.ToDecimal(item)) |> Some\n\
+            | _ -> None\n\
+    static member arrayToString (isnull : bool) (a : ArrayT<'b>) : string [] option =\n\
+        match isnull with\n\
+        | true -> None\n\
+        | false ->\n\
+            let elsize = typedefof<IntPtr> |> Marshal.SizeOf\n\
+            let is = seq { 0..((int)a.BufferSize)-1 }\n\
+            let ptrToStr (buffer : IntPtr) (offset : int) : string =\n\
+                Marshal.ReadIntPtr(buffer, offset) |> Marshal.PtrToStringUTF8\n\
             try\n\
-                a |> Array.map System.Decimal.Parse |> Some\n\
+                [|for i in is do yield (ptrToStr a.Buffer (i * elsize))|] |> Some\n\
             with\n\
-                | _ -> None\n";
+                | _ -> None\n\
+    static member fromArrayT<'b> (isnull: bool) (a : ArrayT<'b>) : 'b[] option =\n\
+        match isnull with\n\
+            | true -> None\n\
+            | false ->\n\
+                let size = (int) (a.BufferSize * a.ElementSize)\n\
+                let mutable input : 'b array = Array.zeroCreate ((int) a.BufferSize)\n\
+                let mutable bytes : byte array = Array.zeroCreate size\n\
+                Marshal.Copy(a.Buffer, bytes, 0, size)\n\
+                System.Buffer.BlockCopy(bytes, 0, input, 0, size)\n\
+                Some input\n";
+
 /********* fs_block_userfunc_decl ******
  *         static member <function_name> =
  *             <function_body>
@@ -196,8 +239,8 @@ plfsharp_BuildStructFields(FunctionCallInfo fcinfo, Form_pg_proc procst)
     size_t totalsize = 0;
 
     static const char array_template[] = "\
-        [<MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.%s,SizeConst=%u)>]\n\
-        val mutable arg%u : %s array\n";
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable arg%u : ArrayT<%s>\n";
 
     if (0 == nargs)
     {
@@ -209,7 +252,14 @@ plfsharp_BuildStructFields(FunctionCallInfo fcinfo, Form_pg_proc procst)
     for (i = 0; i < nargs; ++i)
     {
         argdatum = pldotnet_GetArgDatum(fcinfo, i);
-        isarr = pldotnet_SetArrayInfo( argdatum, argtype[i], i, array_template, true, &func_inout_info);
+        isarr = pldotnet_SetArrayInfo(
+            argdatum,
+            argtype[i],
+            i,
+            array_template,
+            true,
+            &func_inout_info
+        );
 
         type = isarr ? func_inout_info.arrayinfo[i].typelem : argtype[i];
 
@@ -463,6 +513,52 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     return block2str;
 }
 
+
+static void
+plfsharp_BuildArrayArgument(
+    const Oid oid,
+    const size_t i,
+    const size_t cursor,
+    const char *template,
+    char *str_ptr)
+{
+    static const char *arrayToDecimal = "arrayToDecimal";
+    static const char *arrayToString = "arrayToString";
+
+    if (NUMERICOID == oid)
+        snprintf(
+            str_ptr,
+            cursor,
+            template,
+            arrayToDecimal,
+            i,
+            i
+        );
+    else if (pldotnet_IsTextType(oid))
+        snprintf(
+            str_ptr,
+            cursor,
+            template,
+            arrayToString,
+            i,
+            i
+        );
+    else
+        snprintf(
+            str_ptr,
+            cursor,
+            " (UserClass.fromArrayT<%s> libargs.argsnull.[%lu] libargs.arg%lu)",
+            pldotnet_NeedsIntPtr(oid) ?
+                "IntPtr" : pldotnet_GetCompatibleNetTypeName(
+                    oid,
+                    true,
+                    false
+                ),
+            i,
+            i
+        );
+}
+
 static char *
 plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
 {
@@ -472,17 +568,12 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
     size_t cursize = 0;
     char * func;
     static const char *arg_template = " (UserClass.%s libargs.argsnull.[%d] libargs.arg%d)";
-    static const char *arrayToDecimal = "arrayToDecimal";
     static const char *toDecimal = "toDecimal";
     static const char *wrap = "wrap";
     const char *toString = NUMERICOID == procst->prorettype ? ".ToString()" : "";
     size_t arg_size = strlen(arg_template);
 
     static const char *body_template = "\
-        let wrap (isnull: bool) a =\n\
-            match isnull with\n\
-            | true -> None\n\
-            | _ -> Some a\n\
         let mutable libargs = Marshal.PtrToStructure<LibArgs> arg\n\
         let res =\n\
             try\n\
@@ -510,7 +601,7 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
         return block2str;
     }
 
-    call_func_size = strlen(func) + (arg_size + strlen(arrayToDecimal) + 10) * nargs;
+    call_func_size = strlen(func) + (arg_size + strlen("fromArray<>()") + 10) * nargs;
 
     func_call = (char*) palloc0(call_func_size);
 
@@ -520,8 +611,14 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
     for (i = 0; i < nargs; ++i)
     {
         str_ptr = (char*) (func_call + cursize);
-        if (pldotnet_IsArray(i, &func_inout_info) && func_inout_info.arrayinfo[i].typelem == NUMERICOID)
-            snprintf(str_ptr, call_func_size - cursize, arg_template, arrayToDecimal, i, i);
+        if (pldotnet_IsArray(i, &func_inout_info))
+            plfsharp_BuildArrayArgument(
+                func_inout_info.arrayinfo[i].typelem,
+                i,
+                call_func_size - cursize,
+                arg_template,
+                str_ptr
+            );
         else if (NUMERICOID == procst->proargtypes.values[i])
             snprintf(str_ptr, call_func_size - cursize, arg_template, toDecimal, i, i);
         else

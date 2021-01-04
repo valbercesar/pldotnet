@@ -1,22 +1,22 @@
-/* 
- * PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as 
+/*
+ * PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
  *                      procedural languages (PL)
- * 
- * 
+ *
+ *
  * Copyright 2019-2020 Brick Abode
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * pldotnet_common.c - Common functions for PG <-> .NET type delivering
  *
  */
@@ -222,7 +222,7 @@ pldotnet_ValidPaths(const pldotnet_PathConfig *paths)
            0 < strlen(paths->src_lib_path);
 }
 
-void 
+void
 pldotnet_StartNewMemoryContext(MemoryContextWrapper *config)
 {
     config->prev = CurrentMemoryContext;
@@ -230,7 +230,7 @@ pldotnet_StartNewMemoryContext(MemoryContextWrapper *config)
                                     "PL/NET func_exec_ctx",
                                     ALLOCSET_SMALL_SIZES);
 
-    if (nullptr == config->curr) 
+    if (nullptr == config->curr)
     {
         elog(ERROR, "Could not create a new memory context");
     }
@@ -320,6 +320,7 @@ pldotnet_GetTypeSize(Oid id)
         case FLOAT8OID:
             return sizeof(float8);
         case NUMERICOID:
+            return sizeof(void*);
         case BPCHAROID:
         case TEXTOID:
         case VARCHAROID:
@@ -330,7 +331,7 @@ pldotnet_GetTypeSize(Oid id)
     return -1;
 }
 
-const char * 
+const char *
 pldotnet_GetUnmanagedTypeName(Oid type)
 {
     switch (type)
@@ -439,7 +440,7 @@ int pldotnet_SetScalarValue(
     return 0;
 }
 
-Datum 
+Datum
 pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
                                              FunctionCallInfo fcinfo, Oid type)
 {
@@ -512,7 +513,7 @@ pldotnet_GetScalarValue(char * result_ptr, char * resultnull_ptr,
             ret_ptr = *(uint64_t **)(result_ptr);
             /* str_len = pg_mbstrlen(ret_ptr); */
             str_len = strlen((char*)ret_ptr);
-            encoded_str = (char *)pg_do_encoding_conversion( 
+            encoded_str = (char *)pg_do_encoding_conversion(
             (u_char*)ret_ptr, str_len, PG_UTF8, GetDatabaseEncoding() );
             res_varchar = (VarChar *)SPI_palloc(str_len + VARHDRSZ);
 #if PG_VERSION_NUM < 80300
@@ -537,7 +538,7 @@ pldotnet_TypeSupported(Oid type)
            || TYPTYPE_COMPOSITE);
 }
 
-bool 
+bool
 pldotnet_IsSimpleType(Oid type)
 {
     return (type == INT2OID || type == INT4OID || type == INT8OID ||
@@ -552,7 +553,7 @@ pldotnet_IsTextType(Oid type)
             type == BPCHAROID || type == NUMERICOID);
 }
 
-bool 
+bool
 pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info)
 {
     return (funinout_info->arrayinfo[narg].ixarray == narg);
@@ -584,6 +585,12 @@ pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index)
 #endif
 }
 
+bool
+pldotnet_NeedsIntPtr(Oid oid)
+{
+    return NUMERICOID == oid || pldotnet_IsTextType(oid);
+}
+
 static void
 pldotnet_FillArgArrayInfo(
     Datum datum,
@@ -594,6 +601,15 @@ pldotnet_FillArgArrayInfo(
     pldotnet_ArgArrayInfo *parr_info)
 {
     ArrayType *arr;
+    const char *typename =
+        pldotnet_NeedsIntPtr(typeinfo->typelem) ?
+        "IntPtr" :
+        pldotnet_GetCompatibleNetTypeName(
+            typeinfo->typelem,
+            true,
+            !swap_variable_decl
+        );
+
     parr_info->ixarray = narg;
     parr_info->typlen = typeinfo->typlen;
     parr_info->typbyval = typeinfo->typbyval;
@@ -609,17 +625,13 @@ pldotnet_FillArgArrayInfo(
     if (swap_variable_decl)
         sprintf(parr_info->csharpdecl,
                 array_template,
-                pldotnet_GetUnmanagedTypeName(parr_info->typelem),
-                parr_info->nelems,
                 narg,
-                pldotnet_GetNetTypeName(parr_info->typelem, true)
+                typename
         );
     else
         sprintf(parr_info->csharpdecl,
                 array_template,
-                pldotnet_GetUnmanagedTypeName(parr_info->typelem),
-                parr_info->nelems,
-                pldotnet_GetNetTypeName(parr_info->typelem, true),
+                typename,
                 narg
         );
 }
@@ -690,6 +702,7 @@ pldotnet_CreateCStructLibargs(
     Datum array_element;
     pldotnet_ArgArrayInfo * arrinfo;
     ArrayType *arr;
+    pldotnet_ArrayT *tmp;
 
     /* nullable related */
     bool nullable_arg_flag = false;
@@ -707,11 +720,7 @@ pldotnet_CreateCStructLibargs(
     for (i = 0; i < fcinfo->nargs; i++)
     {
         if (pldotnet_IsArray((int) i, func_inout_info))
-        {
-            func_inout_info->typesize_args +=
-              (func_inout_info->arrayinfo[i].nelems *
-               pldotnet_GetTypeSize(func_inout_info->arrayinfo[i].typelem));
-        }
+            func_inout_info->typesize_args += sizeof(pldotnet_ArrayT);
         else
             func_inout_info->typesize_args += pldotnet_GetTypeSize(argtype[i]);
         if (pldotnet_IsNullable(argtype[i]))
@@ -740,11 +749,18 @@ pldotnet_CreateCStructLibargs(
             arrinfo = &(func_inout_info->arrayinfo[i]);
             arr = DatumGetArrayTypeP(argdatum);
             array_p = ARR_DATA_PTR(arr);
+
             if (arrinfo->ndim > 1)
                 elog(ERROR, "Multidimensional array not supported.");
+
+            tmp = (pldotnet_ArrayT*) cur_arg;
+
+            tmp->element_size = NUMERICOID == arrinfo->typelem ? sizeof(void*) : pldotnet_GetTypeSize(arrinfo->typelem);
+            tmp->buffer_size = arrinfo->nelems;
+            tmp->buffer = (void*) palloc0(tmp->element_size * tmp->buffer_size);
+
             for (int j = 0; j < arrinfo->nelems; j++)
             {
-
                 array_element = fetch_att(array_p, arrinfo->typbyval, arrinfo->typlen);
 
                 /* This needs to reviewed: why for bittable/simple
@@ -755,7 +771,7 @@ pldotnet_CreateCStructLibargs(
                     array_element = (Datum) (*(Datum *) (array_element));
 
                 pldotnet_SetScalarValue(
-                        (char*)cur_arg,
+                        ((char*) tmp->buffer) + j * tmp->element_size,
                         array_element,
                         fcinfo,
                         j,
@@ -768,9 +784,9 @@ pldotnet_CreateCStructLibargs(
                                                 array_p);
                 array_p = (char *) att_align_nominal(array_p,
                                                            arrinfo->typalign);
-                /* Iterate CLibargs */
-                cur_arg += pldotnet_GetTypeSize(arrinfo->typelem);
             }
+            /* Iterate CLibargs */
+            cur_arg += sizeof(pldotnet_ArrayT);
             continue;
         }
         else if ( !pldotnet_IsSimpleType(argtype[i]) &&
@@ -800,7 +816,7 @@ Oid
 pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index)
 {
     bool isnull;
-    
+
     GetAttributeByNum(tup, TupleDescAttr(tupdesc, index)->attnum, &isnull);
     if (!isnull)
         return TupleDescAttr(tupdesc, index)->atttypid;
@@ -809,7 +825,7 @@ pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index)
 }
 
 /*
- * This function was moved from csharp to common, 
+ * This function was moved from csharp to common,
  * given that it now works in C# and F# functions
  * This function reads the libargs buffer and retrieves data
  * F# or C#
@@ -832,7 +848,7 @@ pldotnet_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo, pld
     }
 
     return
-          pldotnet_GetScalarValue((char*) result_ptr, (char*) resultnull_ptr, fcinfo, rettype);
+        pldotnet_GetScalarValue((char*) result_ptr, (char*) resultnull_ptr, fcinfo, rettype);
 }
 
 bool
@@ -841,7 +857,7 @@ pldotnet_SPIReady(void)
     if (SPI_connect() != SPI_OK_CONNECT)
     {
         elog(ERROR, "[pldotnet]: could not connect to SPI manager");
-        return false; 
+        return false;
     }
 
     return true;
@@ -913,8 +929,8 @@ pldotnet_GetUserMethod(dotnet_loader loader, pldotnet_PathConfig *paths)
 bool
 pldotnet_Run(
     dotnet_loader loader,
-    const char *dotnet_type, 
-    const char *dotnet_type_method, 
+    const char *dotnet_type,
+    const char *dotnet_type_method,
     const pldotnet_PathConfig *paths,
     int8_t *libargs,
     size_t args_length)
@@ -936,7 +952,7 @@ pldotnet_Run(
     return 0 == dotnet_method(libargs, args_length);
 }
 
-bool 
+bool
 pldotnet_CompileUserFunction(
     dotnet_loader loader,
     const FunctionCallInfo fcinfo,
@@ -947,7 +963,7 @@ pldotnet_CompileUserFunction(
     char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
     char dotnet_type_method[64] = "Compile";
 
-    if (nullptr == loader) 
+    if (nullptr == loader)
         return false;
 
     if (!pldotnet_ValidPaths(paths))
@@ -963,17 +979,17 @@ pldotnet_CompileUserFunction(
     );
 }
 
-bool 
+bool
 pldotnet_RunUserFunction(
     dotnet_loader loader,
     const pldotnet_PathConfig *paths,
-    int8_t *libargs, 
+    int8_t *libargs,
     size_t args_length)
 {
     char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
     char dotnet_type_method[64] = "Run";
 
-    if (nullptr == loader) 
+    if (nullptr == loader)
         return (Datum) 1;
 
     if (!pldotnet_ValidPaths(paths))
@@ -984,8 +1000,8 @@ pldotnet_RunUserFunction(
     {
         return pldotnet_Run(
             loader,
-            dotnet_type, 
-            dotnet_type_method, 
+            dotnet_type,
+            dotnet_type_method,
             paths,
             libargs,
             args_length
@@ -994,8 +1010,8 @@ pldotnet_RunUserFunction(
 
     return pldotnet_Run(
         loader,
-        dotnet_type, 
-        dotnet_type_method, 
+        dotnet_type,
+        dotnet_type_method,
         paths,
         nullptr,
         0

@@ -141,7 +141,14 @@ typedef struct MemoryContextWrapper
     MemoryContext curr;
 } MemoryContextWrapper;
 
+typedef struct pldotnet_ArrayT
+{
+    void *buffer;
+    uint32 element_size;
+    uint32 buffer_size;
+} pldotnet_ArrayT;
 
+bool pldotnet_NeedsIntPtr(Oid oid);
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *args);
 void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl);
 bool pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl);

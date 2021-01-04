@@ -72,7 +72,7 @@ pldotnet_PathConfig paths;
 #define CODEBLOCK \
   ((InlineCodeBlock *) DatumGetPointer(PG_GETARG_DATUM(0)))->source_text
 
-const char public_bool[] = "\n[MarshalAs(UnmanagedType.U1)]public ";
+const char public_bool[] = "\n[MarshalAs(UnmanagedType.U1)]\npublic ";
 const char public_string_utf8[] = "\n[MarshalAs(UnmanagedType.LPUTF8Str)]public ";
 const char public_struct[] = "\n[MarshalAs(UnmanagedType.Struct)]public ";
 const char public_[] = "\npublic ";
@@ -90,6 +90,7 @@ using System;                               \n\
 using System.Dynamic;                       \n\
 using System.Collections.Generic;           \n\
 using System.Runtime.InteropServices;       \n\
+using System.Globalization;                 \n\
 namespace PlDotNETUserSpace                 \n\
 {                                           \n\
     enum TypeOid                            \n\
@@ -104,7 +105,60 @@ namespace PlDotNETUserSpace                 \n\
        NUMERICOID = 1700,                   \n\
     }                                       \n\
     public static class UserClass           \n\
-    {                                       \n";
+    {                                       \n\
+        [StructLayout(LayoutKind.Sequential, Pack=1)]\n\
+        public struct ArrayT<T>\n\
+        {\n\
+            public IntPtr Buffer;\n\
+            public uint ElementSize;\n\
+            public uint BufferSize;\n\
+        }\n\
+        static decimal[] ArrayToDecimal(ArrayT<IntPtr> array)\n\
+        {\n\
+            var strings = UserClass.ArrayToString(array);\n\
+            if (\"en-US\" != System.Globalization.CultureInfo.CurrentCulture.Name)\n\
+            {\n\
+                System.Globalization.CultureInfo.CurrentCulture = new CultureInfo(\"en-US\", false);\n\
+            }\n\
+            return Array.ConvertAll<string, decimal>(strings, Convert.ToDecimal);\n\
+        }\n\
+        static string[] ArrayToString(ArrayT<IntPtr> array)\n\
+        {\n\
+            var elementSize = Marshal.SizeOf(typeof(IntPtr));\n\
+            string[] strs = new string[array.BufferSize];\n\
+            for (int i = 0; i < array.BufferSize; ++i)\n\
+            {\n\
+                strs[i] = Marshal.PtrToStringUTF8(\n\
+                    Marshal.ReadIntPtr(\n\
+                        array.Buffer,\n\
+                        i * elementSize\n\
+                    )\n\
+                );\n\
+            }\n\
+            return strs;\n\
+        }\n\
+        static T[] fromArrayT<T>(ArrayT<T> array)\n\
+        {\n\
+            var size = (int) (array.BufferSize * array.ElementSize);\n\
+            var input = new T[array.BufferSize];\n\
+            var bytes = new Byte[size];\n\
+            Marshal.Copy(array.Buffer, bytes, 0, size);\n\
+            System.Buffer.BlockCopy(bytes, 0, input, 0, size);\n\
+            return input;\n\
+        }\n\
+        static ArrayT<T> toArrayT<T>(T[] output, uint ElementSize)\n\
+         {\n\
+            int size = (int) (output.Length * ElementSize);\n\
+            var array = new ArrayT<T>();\n\
+            array.ElementSize = ElementSize;\n\
+            array.BufferSize = (uint) output.Length;\n\
+            array.Buffer = Marshal.AllocHGlobal(size);\n\
+            var bytes = new byte[size];\n\
+            System.Buffer.BlockCopy(output, 0, bytes, 0, size);\n\
+            Marshal.Copy(bytes, 0, array.Buffer, size);\n\
+            return array;\n\
+        }\n";
+
 /********** cs_block_composites *********
  *   [StructLayout(LayoutKind.Sequential,Pack=1)]
  *   public struct CompositeName1;
@@ -148,13 +202,6 @@ static char cs_block_callfunc_header[] = "             \n\
  *          }
  */
 static char cs_block_footer[] = "              \n\
-            decimal[] ArrayToDecimal(string[]str) {\n\
-                int i=0;\n\
-                decimal[] decarr = new decimal[str.Length];\n\
-                foreach(string s in str)\n\
-                    decarr[i++] = Convert.ToDecimal(s);\n\
-                return decarr;\n\
-            }\n\
             Marshal.StructureToPtr<LibArgs>(libargs, arg, false);\n\
             return 0;                         \n\
         }                                     \n\
@@ -171,12 +218,12 @@ namespace PlDotNETUserSpace                 \n\
     {";
 static char block_inline_callfunc[] = "             \n\
         public static int CallFunction(IntPtr arg, int argLength)\n\
-        {";                                   
+        {";
 /* block_inline_usercode  Function body */
 static char block_inline_footer[] = "             \n\
-	    return 0;                           \n\
-	}                                       \n\
-     }                                      \n\
+	        return 0;\n\
+	    }\n\
+    }\n\
 }";
 
 static int
@@ -323,7 +370,10 @@ plcsharp_BuildBlockArgsDecl(FunctionCallInfo fcinfo, Form_pg_proc procst)
 
     for (i = 0; i < nargs; i++)
     {
-        isarr = pldotnet_CheckArgIsArray(fcinfo->arg[i], argtype[i], i);
+        isarr = pldotnet_CheckArgIsArray(
+            pldotnet_GetArgDatum(fcinfo, i), 
+            argtype[i], i
+        );
         type = isarr ? func_inout_info.arrayinfo[i].typelem : argtype[i];
 
         if (!pldotnet_TypeSupported(type))
@@ -409,9 +459,11 @@ plcsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
     const char libargs[] = "libargs.";
     const char strconvert[] = ".ToString()"; /* Converts func return */
     const char todecimal[] = "Convert.ToDecimal(";
-    const char arr_todecimal[] = "ArrayToDecimal(";
+    const char arr_todecimal[] = "UserClass.ArrayToDecimal(";
+    const char arr_tostring[] = "UserClass.ArrayToString(";
     const char result[] = "            libargs.resu=";
     const char nullable_result[] = "            resu_nullable=";
+    const char fromArrayT[] = "UserClass.fromArrayT<%s>(%s%s)";
     const char comma[] = ",";
     char argname[] = "argN";
     const char end_fun[] = ")";
@@ -469,9 +521,15 @@ plcsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
     {
         if (argtype[i] == NUMERICOID)
             totalsize += strlen(todecimal) + strlen(end_fun);
-        else if (pldotnet_IsArray(i, &func_inout_info) &&
-                 func_inout_info.arrayinfo[i].typelem == NUMERICOID)
-            totalsize += strlen(arr_todecimal) + strlen(end_fun);
+        else if (pldotnet_IsArray(i, &func_inout_info))
+        {
+            if (func_inout_info.arrayinfo[i].typelem == NUMERICOID)
+                totalsize += strlen(arr_todecimal) + strlen(end_fun);
+            else if (pldotnet_IsTextType(func_inout_info.arrayinfo[i].typelem))
+                totalsize += strlen(arr_tostring) + strlen(end_fun);
+            else
+                totalsize += strlen(fromArrayT) + strlen(end_fun);
+        }
     }
 
     if (rettype == NUMERICOID)
@@ -494,11 +552,47 @@ plcsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
             SNPRINTF(str_ptr,totalsize-cursize,"%s%s%s%s",
                      todecimal, libargs, argname, end_fun);
         }
-        else if (pldotnet_IsArray(i, &func_inout_info) &&
-                func_inout_info.arrayinfo[i].typelem == NUMERICOID)
+        else if (pldotnet_IsArray(i, &func_inout_info))
         {
-            SNPRINTF(str_ptr,totalsize-cursize,"%s%s%s%s",
-                     arr_todecimal, libargs, argname, end_fun);
+            if (func_inout_info.arrayinfo[i].typelem == NUMERICOID)
+            {
+                SNPRINTF(
+                    str_ptr,
+                    totalsize - cursize,
+                    "%s%s%s%s",
+                    arr_todecimal,
+                    libargs,
+                    argname,
+                    end_fun
+                );
+            }
+            else if (pldotnet_IsTextType(func_inout_info.arrayinfo[i].typelem))
+            {
+                SNPRINTF(
+                    str_ptr,
+                    totalsize - cursize,
+                    "%s%s%s%s",
+                    arr_tostring,
+                    libargs,
+                    argname,
+                    end_fun
+                );
+            }
+            else
+            {
+                SNPRINTF(
+                    str_ptr,
+                    totalsize - cursize,
+                    "UserClass.fromArrayT<%s>(%s%s)",
+                    pldotnet_GetCompatibleNetTypeName(
+                        func_inout_info.arrayinfo[i].typelem,
+                        true,
+                        true
+                    ),
+                    libargs,
+                    argname
+                );
+            }
         }
         else
         {
@@ -825,7 +919,6 @@ pldotnet_CheckArgIsArray(Datum datum, Oid oid, int narg)
     HeapTuple typetuple;
     Form_pg_type typeinfo;
     ArrayType *arr;
-    char argName[] = " argN";
     bool isarr = false;
     pldotnet_ArgArrayInfo * parr_info;
 
@@ -854,14 +947,13 @@ pldotnet_CheckArgIsArray(Datum datum, Oid oid, int narg)
         parr_info->nelems = ArrayGetNItems(ARR_NDIM(arr), ARR_DIMS(arr));
 
         /* Review for nargs > 9*/
-        sprintf(argName, " arg%d", narg);
-        sprintf(parr_info->csharpdecl,
-"\n[MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.%s,\
-SizeConst=%d)]public %s[] %s;",
-                    pldotnet_GetUnmanagedTypeName(parr_info->typelem),
-                    parr_info->nelems,
-                    pldotnet_GetNetTypeName(parr_info->typelem, true),
-                    argName);
+        sprintf(parr_info->csharpdecl, "\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public ArrayT<%s> arg%d;\n\
+            ",
+            pldotnet_NeedsIntPtr(typeinfo->typelem) ? "IntPtr" :  pldotnet_GetNetTypeName(typeinfo->typelem, true),
+            narg
+        );
     }
     else
         func_inout_info.arrayinfo[ narg ].ixarray = -1;
