@@ -23,11 +23,11 @@ $$ LANGUAGE plfsharp;
 SELECT "factFSharp"(5) = integer '120';
 
 CREATE OR REPLACE FUNCTION "naturalFSharp"(n numeric) RETURNS numeric AS $$
-let rec natural (m : decimal) =
-    match m with
+let rec natural (_n : decimal) =
+    match _n with
     | 1m -> 1m
     | _m when _m <= 0m -> 0m
-    | _ -> natural(m - 1m)
+    | _ -> natural(_n - 1m)
 match n with
 | Some _n -> Some (natural _n)
 | _ -> None

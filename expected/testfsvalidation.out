@@ -1,0 +1,151 @@
+CREATE OR REPLACE FUNCTION returnInvalidBoolFSharp() RETURNS boolean AS $$
+Some True
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnInvalidBoolFSharp() is true;
+ERROR:  function returninvalidboolfsharp() does not exist
+LINE 1: SELECT returnInvalidBoolFSharp() is true;
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+CREATE OR REPLACE FUNCTION returnValidBoolFSharp() RETURNS boolean AS $$
+Some true
+$$ LANGUAGE plfsharp;
+SELECT returnValidBoolFSharp() is true;
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION returnInvalidVoidFSharp() RETURNS boolean AS $$
+()
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnInvalidVoidFSharp() is true;
+ERROR:  function returninvalidvoidfsharp() does not exist
+LINE 1: SELECT returnInvalidVoidFSharp() is true;
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+CREATE OR REPLACE FUNCTION returnInvalidBodyFSharp() RETURNS boolean AS $$
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnInvalidBodyFSharp() is true;
+ERROR:  function returninvalidbodyfsharp() does not exist
+LINE 1: SELECT returnInvalidBodyFSharp() is true;
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+CREATE OR REPLACE FUNCTION returnMissingFSharp() RETURNS boolean AS $$
+let a = true
+let b = 2
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnMissingValueFSharp() is true;
+ERROR:  function returnmissingvaluefsharp() does not exist
+LINE 1: SELECT returnMissingValueFSharp() is true;
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+CREATE OR REPLACE FUNCTION returnInvalidReturnTypeFSharp(a integer, b integer) RETURNS integer AS $$
+match (a, b) with
+| (Some a, Some b) ->
+    let c = a + b
+    Convert.ToString(c);
+| _ -> ""
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnInvalidReturnTypeFSharp() is '10';
+ERROR:  syntax error at or near "'10'"
+LINE 1: SELECT returnInvalidReturnTypeFSharp() is '10';
+                                                  ^
+CREATE OR REPLACE FUNCTION returnValidReturnTypeFSharp(a integer, b integer) RETURNS text AS $$
+match (a, b) with
+| (Some a, Some b) ->
+    let c = a + b
+    Convert.ToString(c) |> Some
+| _ -> None
+$$ LANGUAGE plfsharp;
+SELECT returnValidReturnTypeFSharp(10::integer, 20::integer) = '30';
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION returnMissingPattern(a integer, b integer) RETURNS text AS $$
+match (a, b) with
+| (Some a, Some b) ->
+    let c = a + b
+    Convert.ToString(c) |> Some
+| _ ->
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnMissingCommaFSharp(10::integer, 20::integer) = '30';
+ERROR:  function returnmissingcommafsharp(integer, integer) does not exist
+LINE 1: SELECT returnMissingCommaFSharp(10::integer, 20::integer) = ...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+CREATE OR REPLACE FUNCTION returnInvalidOperationFSharp(a text, b double precision) RETURNS double precision AS $$
+match (a, b) with
+| (Some a, Some b) -> Math.Sqrt(a) + b
+| _ -> -1.0
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnInvalidOperationFSharp('9', 20::double precision) = 23::double precision;
+ERROR:  function returninvalidoperationfsharp(unknown, double precision) does not exist
+LINE 1: SELECT returnInvalidOperationFSharp('9', 20::double precisio...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+CREATE OR REPLACE FUNCTION returnValidOperationFSharp(a text, b double precision) RETURNS double precision AS $$
+match (a, b) with
+| (Some _a, Some _b) -> Math.Sqrt(Convert.ToDouble(_a)) + _b |> Some
+| _ -> None
+$$ LANGUAGE plfsharp;
+SELECT returnValidOperationFSharp('9', 20::double precision) = 23::double precision;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT returnValidOperationFSharp(null, 20::double precision) is null;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT returnValidOperationFSharp('9', null) is null;
+ ?column? 
+----------
+ t
+(1 row)
+
+CREATE OR REPLACE FUNCTION returnUnknownNameFSharp(a varchar, b integer) RETURNS varchar AS $$
+match (a, b) with
+| (Some _a, Some _b) -> append_integer_to_string a b |> Some
+| _ -> None
+$$ LANGUAGE plfsharp;
+WARNING:  [pldotnet]: Exception on PG context
+ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql
+SELECT returnUnknownNameFSharp('this is the integer: ', 123::integer) = 'this is the integer: 123';
+ERROR:  function returnunknownnamefsharp(unknown, integer) does not exist
+LINE 1: SELECT returnUnknownNameFSharp('this is the integer: ', 123:...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+CREATE OR REPLACE FUNCTION returnKnownNameFSharp(a varchar, b integer) RETURNS varchar AS $$
+let append_integer_to_string (_a : string) (_b : int option) : string option =
+    match _b with
+    | Some v -> String.Concat(_a, Convert.ToString(v)) |> Some
+    | _ -> Some _a
+match a with
+| Some _a -> append_integer_to_string _a b
+| _ -> None
+$$ LANGUAGE plfsharp;
+SELECT returnKnownNameFSharp('this is the integer: ', 123::integer) = 'this is the integer: 123';
+ ?column? 
+----------
+ t
+(1 row)
+

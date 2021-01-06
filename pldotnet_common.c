@@ -443,28 +443,41 @@ int pldotnet_SetScalarValue(
             break;
         case FLOAT4OID:
             *(float4 *)(argp) = DatumGetFloat4(datum);
+            if (nullp)
+                *nullp = isnull;
             break;
         case FLOAT8OID:
             *(float8 *)(argp) = DatumGetFloat8(datum);
+            if (nullp)
+                *nullp = isnull;
             break;
         case NUMERICOID:
             /* C String encoding (numeric_out) is used here as it
              is a number. Unlikely to have encoding issues. */
             *(uint64_t *)(argp) = (uint64_t)
                 DatumGetCString(DirectFunctionCall1(numeric_out, datum));
+            if (nullp)
+                *nullp = isnull;
             break;
         case BPCHAROID:
         case TEXTOID:
         case VARCHAROID:
-
-           /* UTF8 encoding */
-           len = VARSIZE( DatumGetTextP (datum) ) - VARHDRSZ;
-           newstr = (char *)palloc0(len+1);
-           memcpy(newstr, VARDATA( DatumGetTextP(datum) ), len);
-           *(uint64_t *)(argp) = (uint64_t)
-                    pg_do_encoding_conversion((unsigned char *)newstr,
-                                              len+1,
-                                              GetDatabaseEncoding(), PG_UTF8);
+            if (isnull)
+            {
+                *(uint64_t *)(argp) = (uint64_t) nullptr;
+                if (nullp)
+                    *nullp = isnull;
+                break;
+            }
+            /* UTF8 encoding */
+            len = VARSIZE( DatumGetTextP (datum) ) - VARHDRSZ;
+            newstr = (char *)palloc0(len+1);
+            memcpy(newstr, VARDATA( DatumGetTextP(datum) ), len);
+            *(uint64_t *)(argp) = (uint64_t) pg_do_encoding_conversion(
+                (unsigned char *)newstr,
+                len+1,
+                GetDatabaseEncoding(), PG_UTF8
+            );
 
             /*  If you need C String encoding do like this:
                 *(unsigned long *)argp =

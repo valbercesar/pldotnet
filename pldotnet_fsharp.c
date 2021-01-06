@@ -892,7 +892,7 @@ plfsharp_BuildFunctionDecl(
         elog(ERROR, "[pldotnet]: Could not obtain the source code");
 
     if (!pldotnet_CompileUserFunction(loader, &paths, &(function_decl->source)))
-        elog(ERROR, "[pldotnet]: Could not compile this function. See the errors on /var/logs/postgresql");
+        elog(ERROR, "[pldotnet]: Could not compile this function. See the errors on /var/log/postgresql");
 
     function_decl->dotnet_method = pldotnet_GetUserMethod(loader, &paths);
 

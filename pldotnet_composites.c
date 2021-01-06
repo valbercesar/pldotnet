@@ -24,7 +24,6 @@ pldotnet_GetStructFromCompositeTuple(
 )
 {
     const char *key;
-    bool isnull;
     Oid type_attr;
 
     const char composite_header[] = \
