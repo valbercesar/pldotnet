@@ -44,6 +44,7 @@ REGRESS = \
 	testfsnumeric \
 	testfsmixedtypes \
 	testspi \
+	testfsspi \
 	testarray \
 	testfsarray \
 	testcomposites \

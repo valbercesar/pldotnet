@@ -40,7 +40,7 @@ pldotnet_SPIExecute(char* cmd, long limit)
     }
     PG_CATCH();
     {
-        /* Do the excption handling */
+        /* Do the exception handling */
         elog(WARNING, "Exception");
         PG_RE_THROW();
     }
@@ -60,7 +60,12 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
     /* delegate related */
     char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
     char dotnet_type_method[64] = "InvokeAddProperty";
-    /* Auxiliary vars for obtaning the correct pointer
+    dotnet_loader loader = GetNetLoadAssemblySetup(
+        spi_paths->config_path,
+        spi_paths->prefix
+    );
+
+    /* Auxiliary vars for obtaining the correct pointer
      * TODO: Remove it for a generic one, maybe union?
      */
     bool bool_aux;
@@ -115,26 +120,36 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
                         break;
                     case NUMERICOID:
                         val.value = (Datum) DatumGetCString(
-                                        DirectFunctionCall1(numeric_out,
-                                                            attr_val));
+                            DirectFunctionCall1(
+                                numeric_out,
+                                attr_val
+                            )
+                        );
                         break;
                     case VARCHAROID:
                         buff_len = VARSIZE(DatumGetTextP(attr_val)) - VARHDRSZ;
                         newargvl = (char *)palloc0(buff_len + 1);
-                        memcpy(newargvl, VARDATA(DatumGetTextP(attr_val)),
-                                                 buff_len);
+                        memcpy(
+                            newargvl,
+                            VARDATA(DatumGetTextP(attr_val)),
+                            buff_len
+                        );
                         val.value = (Datum)
-                             pg_do_encoding_conversion((unsigned char*)newargvl,
-                                                       buff_len+1,
-                                                       GetDatabaseEncoding(),
-                                                       PG_UTF8);
+                            pg_do_encoding_conversion(
+                                (unsigned char*)newargvl,
+                                buff_len+1,
+                                GetDatabaseEncoding(),
+                                PG_UTF8
+                            );
                         break;
                 }
-                pldotnet_Run(assembly_loader, 
-                             dotnet_type, 
-                             dotnet_type_method,
-                             spi_paths,
-                             (int8_t*) &val, sizeof(PropertyValue));
+                pldotnet_Run(
+                    loader,
+                    dotnet_type,
+                    dotnet_type_method,
+                    spi_paths,
+                    (int8_t*) &val, sizeof(PropertyValue)
+                );
             }
         }
     }

@@ -35,31 +35,43 @@ type Engine() =
 
     static member RetrieveFromRemoteStorage (sourceCode : string) (functionId : uint) : bool = false
     static member SendToRemoteStorage (sourceCode: string) (functionId: uint) (assembly: Assembly) : bool = true
+    static member RunCachedFunction (cached: CachedFunction option) (args: IntPtr) (argLength: int) : int =
+        match cached with
+        | Some _cached ->
+            _cached.userFunction.Invoke(args, argLength) |> ignore
+            0
+        | _ -> 1
 
     static member Run (args: IntPtr) (argLength: int) : int =
         let fid = uint (Marshal.ReadInt32(args, argLength))
         match fid <> FunctionCache.functionId with
         | true ->
-            try
-                match FunctionCache.functionCache.TryGetValue fid with
-                | true, (_, fn) ->
-                    Engine.SetFunction fid fn  |> ignore
-                    fn.Invoke(args, argLength) |> ignore
-                    0
-                | _ -> 1
-            with
-                | _ -> 2
-        | _ ->
-            FunctionCache.userFunction.Invoke(args, argLength) |> ignore
-            0
+            match FunctionCache.findCachedFunction fid with
+            | None -> 1
+            | cached ->
+                FunctionCache.setCachedFunction fid cached
+                Engine.RunCachedFunction cached args argLength
+        | _ -> Engine.RunCachedFunction FunctionCache.cachedFunction args argLength
 
-    static member AddUserfunction (functionId: uint) (sourceCode: string) (assembly : Assembly) : int =
-        let userClass = assembly.GetType("PlDotNETUserSpace.UserClass")
-        let method = userClass.GetMethod("CallFunction")
-        let funcType = typeof<System.Func<IntPtr, int, int>>
-        FunctionCache.functionId <- functionId
-        FunctionCache.userFunction <- Delegate.CreateDelegate(funcType, null, method) :?> (Func<IntPtr,int,int>)
-        FunctionCache.functionCache.Add(functionId, (sourceCode, FunctionCache.userFunction))
+    static member SetDelegate (functionId: uint) (sourceCode: string) (assembly : Assembly) : int =
+        let procClassType1 = assembly.GetType("PlDotNETUserSpace.UserClass")
+        let method1 = procClassType1.GetMethod("CallFunction")
+
+        let procClassType2 = assembly.GetType("PlDotNETUserSpace.SPI")
+        let method2 = procClassType2.GetMethod("AddProperty")
+        let method3 = procClassType2.GetMethod("ResetFuncExpandDo")
+
+        let userFuncType = typeof<System.Func<IntPtr, int, int>>
+        let addPropType = typeof<System.Action<IntPtr, int>>
+        let rstPropType = typeof<System.Action>
+
+        let userFunction = Delegate.CreateDelegate(userFuncType, null, method1) :?> System.Func<IntPtr,int,int>
+        let addProperty = Delegate.CreateDelegate(addPropType, null, method2) :?> (System.Action<IntPtr,int>)
+        let resetFuncExpandDo = Delegate.CreateDelegate(rstPropType, null, method3) :?> (System.Action)
+
+        let cached = new CachedFunction(sourceCode, userFunction, addProperty, resetFuncExpandDo) |> Some
+
+        FunctionCache.saveCachedFunction functionId cached
         Engine.SendToRemoteStorage sourceCode functionId assembly |> ignore
         0
 
@@ -76,7 +88,7 @@ type Engine() =
             Engine.checker.CompileToDynamicAssembly(options, execute = None)
              |> Async.RunSynchronously
         match (exitCode, dynAssembly) with
-        | 0, Some assembly -> Engine.AddUserfunction functionId sourceCode assembly
+        | 0, Some assembly -> Engine.SetDelegate functionId sourceCode assembly
         | _ ->
             printfn "%s" "\n********ERROR************\n"
             for e in errors do
@@ -84,36 +96,41 @@ type Engine() =
             printfn "%s" "\n********ERROR************\n"
             1
 
-    static member SetFunction (functionId : uint) (fn : Func<IntPtr, int, int>) : bool =
-        FunctionCache.userFunction <- fn
-        FunctionCache.functionId <- functionId
-        true
+    static member VerifyCachedFunction (functionId: uint) (cached : CachedFunction option) (sourceCode : string) : bool =
+        match cached with
+        | Some _cached ->
+            match _cached.sourceCode.Equals(sourceCode) with
+            | true ->
+                FunctionCache.setCachedFunction functionId cached
+                true
+            | _ ->
+                FunctionCache.removeFromHashDict functionId
+                false
+        | _ -> false
 
     static member Compile (args: IntPtr) (argLength: int) : int =
         let libArgs = Marshal.PtrToStructure<LibArgs>(args)
         let sourceCode = Marshal.PtrToStringAuto(libArgs.Source)
-        let local =
-            try
-                match FunctionCache.functionCache.TryGetValue libArgs.FunctionId with
-                | true, (src, fn) ->
-                    match sourceCode.Equals(src) with
-                    | true -> Engine.SetFunction libArgs.FunctionId fn
-                    | _ ->
-                        FunctionCache.functionCache.Remove libArgs.FunctionId |> ignore
-                        false
-                | _ -> false
-            with
-                | _ -> false
-
+        let cached = FunctionCache.findCachedFunction libArgs.FunctionId
         let remote =
-            match local with
+            match Engine.VerifyCachedFunction libArgs.FunctionId cached sourceCode with
             | false -> Engine.RetrieveFromRemoteStorage sourceCode libArgs.FunctionId
             | _ -> true
         match remote with
         | false -> Engine.CompileUserFunction libArgs.FunctionId sourceCode
         | _ -> 0
 
-    static member InvokeAddProperty (arg:System.IntPtr) (argLength:int) : int = 0
+    static member InvokeAddProperty (arg: System.IntPtr) (argLength: int) : int =
+        match FunctionCache.cachedFunction with
+        | Some cached ->
+            match FunctionCache.needsReset with
+            | true ->
+                cached.resetFuncExpandDo.Invoke()
+                FunctionCache.needsReset <- false
+            | _ -> ()
+            cached.addProperty.Invoke(arg, argLength) |> ignore
+            0
+        | _ -> 1
 
     static member GetAllFlags (input : string) (output : string) =
         let sysLib nm =
@@ -148,12 +165,16 @@ type Engine() =
                  [ sysLib "mscorlib"
                    sysLib "System"
                    sysLib "System.Core"
+                   sysLib "System.Linq.Expressions"
                    sysLib "System.Runtime"
                    sysLib "System.Runtime.Numerics"
                    sysLib "System.Private.CoreLib"
                    sysLib "System.Collections"
                    sysLib "System.Net.Requests"
                    sysLib "System.Net.WebClient"
+                   sysLib "System.Globalization"
+                   sysLib "System.Runtime.InteropServices"
+                   sysLib "System.Runtime.Extensions"
                    fsCore4300() ]
                for r in references do
                      yield "-r:" + r |]

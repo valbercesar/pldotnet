@@ -18,7 +18,7 @@ CREATE TABLE pldotnettypes (
     i2col SMALLINT,
     i4col INTEGER,
     i8col BIGINT,
-    f4col FLOAT,
+    f4col REAL,
     f8col DOUBLE PRECISION,
     ncol  NUMERIC,
     vccol VARCHAR
@@ -28,7 +28,7 @@ INSERT INTO pldotnettypes VALUES (
     CAST(1 as INT2),
     CAST(32767 as INT4),
     CAST(9223372036854775707 as BIGINT),
-    CAST(1.4 as FLOAT),
+    CAST(1.4 as REAL),
     CAST(10.5000000000055 as DOUBLE PRECISION),
     CAST(1.2 as NUMERIC),
     'StringSample;'

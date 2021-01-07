@@ -111,8 +111,12 @@ static char* plfsharp_GetStructFromComposite(Datum dat, Form_pg_type typeinfo, T
 static char fs_block_header[] = "\n\
 namespace PlDotNETUserSpace\n\
 open System\n\
+open System.Dynamic\n\
+open System.Collections\n\
 open System.Globalization\n\
+open System.Collections.Generic\n\
 open System.Runtime.InteropServices\n\
+\n\
 \n\
 [<Struct>]\n\
 [<StructLayout (LayoutKind.Sequential, Pack=1)>]\n\
@@ -121,7 +125,71 @@ type ArrayT<'b> =\n\
         val mutable Buffer: IntPtr\n\
         val mutable ElementSize: uint\n\
         val mutable BufferSize: uint\n\
-    end\n";
+    end\n\
+\n\
+module SPI =\n\
+    type TypeOid =\n\
+        | BOOLOID    = 16\n\
+        | INT8OID    = 20\n\
+        | INT2OID    = 21\n\
+        | INT4OID    = 23\n\
+        | FLOAT4OID  = 700\n\
+        | FLOAT8OID  = 701\n\
+        | NUMERICOID = 1700\n\
+        | VARCHAROID = 1043\n\
+    [<StructLayout(LayoutKind.Sequential, Pack=1)>]\n\
+    type PropertyValue =\n\
+        struct\n\
+            val mutable value: IntPtr\n\
+            val mutable name: string\n\
+            val mutable typ: int\n\
+            val mutable nrow: int\n\
+        end\n\
+    \n\
+    let (?) (exp:ExpandoObject) (s : string) = \n\
+        let d = exp :> IDictionary<string, obj>\n\
+        d.[s]\n\
+    let (?<-) (exp: ExpandoObject) (s : string) (o: obj) =\n\
+        let d = exp :> IDictionary<string, obj>\n\
+        d.Remove(s) |> ignore\n\
+        d.Add(s, o)\n\
+\n\
+    [<DllImport(@\"/usr/lib/postgresql/10/lib/pldotnet.so\", CallingConvention=CallingConvention.Cdecl)>]\n\
+    extern int pldotnet_SPIExecute(string cmd, int64 limit)\n\
+\n\
+    let mutable FuncExpandDo : List<ExpandoObject> = new List<ExpandoObject>()\n\
+\n\
+    let ResetFuncExpandDo () : unit =\n\
+        FuncExpandDo <- new List<ExpandoObject>()\n\
+        ()\n\
+    let ReadValueT<'T> (handle: IntPtr) : obj =\n\
+        match typeof<'T> with\n\
+        | t when t = typeof<string> -> handle |> Marshal.PtrToStringUTF8 :> obj\n\
+        | t when t = typeof<decimal> -> handle |> Marshal.PtrToStringAnsi |> Convert.ToDecimal :> obj\n\
+        | _ -> handle |> Marshal.PtrToStructure<'T> :> obj\n\
+    let ReadValue (prop : PropertyValue) : obj option =\n\
+        match enum<TypeOid> prop.typ with\n\
+            | TypeOid.BOOLOID -> ReadValueT<bool> prop.value |> Some\n\
+            | TypeOid.INT2OID -> ReadValueT<int16> prop.value |> Some\n\
+            | TypeOid.INT4OID -> ReadValueT<int> prop.value |> Some\n\
+            | TypeOid.INT8OID -> ReadValueT<int64> prop.value |> Some\n\
+            | TypeOid.FLOAT4OID -> ReadValueT<float32> prop.value |> Some\n\
+            | TypeOid.FLOAT8OID -> ReadValueT<double> prop.value |> Some\n\
+            | TypeOid.NUMERICOID -> ReadValueT<decimal> prop.value |> Some\n\
+            | TypeOid.VARCHAROID -> ReadValueT<string> prop.value |> Some\n\
+            | _ -> None\n\
+    let AddProperty (arg: IntPtr) (funcoid: int) : unit =\n\
+        let prop : PropertyValue = arg |> Marshal.PtrToStructure<PropertyValue>\n\
+        match ReadValue prop with\n\
+        | Some value ->\n\
+            match FuncExpandDo.Count < prop.nrow + 1 with\n\
+            | true -> FuncExpandDo.Add(new ExpandoObject())\n\
+            | _ -> ()\n\
+            FuncExpandDo.[prop.nrow]?(prop.name) <- value\n\
+        | _ -> ()\n\
+    let Execute (cmd: string) (limit: int64) : List<ExpandoObject> =\n\
+        pldotnet_SPIExecute(cmd, limit) |> ignore\n\
+        FuncExpandDo\n";
 /****** fs_block_args_decl ******
 [<Struct>]
 [<StructLayout (LayoutKind.Sequential, Pack=1)>]
