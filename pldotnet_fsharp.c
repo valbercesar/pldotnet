@@ -34,7 +34,11 @@ PGDLLEXPORT Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
 static pldotnet_FuncInOutInfo func_inout_info;
 
 static void plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix);
-static char   *plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc);
+static char* plfsharp_BuildBlockUserFuncDecl(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    HeapTuple proc
+);
 
 static void
 plfsharp_BuildArrayArgument(
@@ -52,7 +56,10 @@ static char *plfsharp_BuildBlockArgsDecl(
     bool validation
 );
 
-static char   *plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst);
+static const char *plfsharp_BuildBlockCallFuncCall(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+);
 
 static Datum  plfsharp_GetNetResult(int8_t * libargs, Oid rettype, FunctionCallInfo fcinfo);
 
@@ -103,10 +110,11 @@ static char* plfsharp_BuildNullFlagArray(uint32_t elems);
 static void plfsharp_BuildStructField(Oid type, const char *key, char *currval);
 static char* plfsharp_BuildStructFields(FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst, bool validation);
 
-static char* plfsharp_BuildStructFieldsFromTuple(Datum dat, Form_pg_type typeinfo, TupleDesc tupdesc);
+static char* plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc);
 void plfsharp_BuildKeyFromIndex(size_t index, char *key);
-static char* plfsharp_GetStructFromComposite(Datum dat, Form_pg_type typeinfo, TupleDesc tupdesc);
 
+static char*
+plfsharp_GetStructFromComposite(const char *typname, TupleDesc tupdesc);
 
 static char fs_block_header[] = "\n\
 namespace PlDotNETUserSpace\n\
@@ -250,7 +258,8 @@ type UserClass =\n\
  *             <function_body>
  */
 static char fs_block_callfunc[] = "\n\
-    static member CallFunction (arg:System.IntPtr) (argLength:int) = \n";
+    static member CallFunction (arg: System.IntPtr) (argLength: int) = \n\
+        let mutable libargs = Marshal.PtrToStructure<LibArgs> arg\n";
 
 static char fs_block_footer[] = "\n\
         Marshal.StructureToPtr(libargs, arg, false)\n\
@@ -318,6 +327,53 @@ plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
 }
 
 /*
+ * This function aims to build the trigger field inside a struct,
+ * including the required annotations and types
+ *
+ * For example:
+ *     [<MarshalAs(UnmanagedType.Struct)>]
+ *     val mutable OLD : TriggerTuple
+ *     [<MarshalAs(UnmanagedType.Struct)>]
+ *     val mutable NEW : TriggerTuple
+ *
+ * @param [in] fcinfo Data passed to a fmgr-called function - it's from postgres
+ * @param [in] procst A struct pointer containing the procedure information
+ * @param [in] validation a boolean to indicate it we are in the validation mode
+ * @return a pointer to palloced string which contains the struct fields
+ */
+static char*
+plfsharp_BuildTriggerFields(FunctionCallInfo fcinfo)
+{
+    const char *trigger = "\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable %s: TriggerTuple\n";
+    TriggerData *tdata = (TriggerData*) fcinfo->context;
+    bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
+
+    size_t current_trigger_size = strlen(trigger) + strlen("NEW") + 1;
+    char *current_trigger = (char*) palloc0(current_trigger_size * (has_old ? 2 : 1));
+    char *cursor = current_trigger;
+    if (has_old)
+    {
+        snprintf(
+            cursor,
+            current_trigger_size,
+            trigger,
+            "OLD"
+        );
+        cursor += strlen(current_trigger);
+    }
+    snprintf(
+        cursor,
+        current_trigger_size,
+        trigger,
+        "NEW"
+    );
+
+    return current_trigger;
+}
+
+/*
  * This function aims to build all fields inside a struct,
  * including the required annotations and types
  * For example:
@@ -334,7 +390,7 @@ plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
  * @return a pointer to palloced string which contains the struct fields
  */
 static char*
-plfsharp_BuildStructFields(
+plfsharp_BuildNonTriggerFields(
     FunctionCallInfo fcinfo,
     HeapTuple proc,
     Form_pg_proc procst,
@@ -404,6 +460,25 @@ plfsharp_BuildStructFields(
     }
 
     return block2str;
+}
+
+static char*
+plfsharp_BuildStructFields(
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst,
+    bool validation
+)
+{
+    if (CALLED_AS_TRIGGER(fcinfo))
+        return plfsharp_BuildTriggerFields(fcinfo);
+
+    return plfsharp_BuildNonTriggerFields(
+        fcinfo,
+        proc,
+        procst,
+        validation
+    );
 }
 
 static char*
@@ -496,8 +571,53 @@ type LibArgs =\n\
     return block2string;
 }
 
+static const char*
+plfsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
+{
+    static const char old_tuple[] = "\
+        let _OLD = libargs.OLD\n";
+    static const char new_tuple[] = "\
+        let mutable _NEW = libargs.NEW\n";
+
+    if (CALLED_AS_TRIGGER(fcinfo))
+    {
+        TriggerData *tdata = (TriggerData*) fcinfo->context;
+        bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
+        size_t tuple_size = strlen(new_tuple) + 1;
+
+        char *result = (char *) palloc0(tuple_size + has_old ? tuple_size : 0);
+        char *cursor = result;
+
+        if (has_old)
+        {
+            SNPRINTF(
+                cursor,
+                tuple_size,
+                "%s",
+                old_tuple
+            );
+            cursor += strlen(result);
+        }
+
+        SNPRINTF(
+            cursor,
+            tuple_size,
+            "%s",
+            new_tuple
+        );
+
+        return result;
+    }
+
+    return "";
+}
+
 static char *
-plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
+plfsharp_BuildBlockUserFuncDecl(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    HeapTuple proc
+)
 {
     char *block2str, *str_ptr, *argnm, *source_text;
     int argnm_size, i, nnames, cursize=0, totalsize;
@@ -514,6 +634,7 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     char *user_line;
     const char end_fun_decl[] = " =\n";
     const char end_fun[] = "\n";
+    const char *tg_tuples = plfsharp_GetTriggerTuples(fcinfo);
     int nargs = procst->pronargs;
     Datum *argname, argnames, prosrc;
     Oid *argtypes = procst->proargtypes.values;
@@ -539,6 +660,7 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     totalsize = strlen(func_signature_indent)
               + strlen(let)
               + strlen(rec)
+              + strlen(tg_tuples)
               + strlen(func)
               + strlen(" ");
 
@@ -567,8 +689,15 @@ plfsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
 
     block2str = (char *)palloc0(totalsize);
 
-    SNPRINTF(block2str, totalsize - cursize, "%s%s%s"
-        ,func_signature_indent, let, func);
+    SNPRINTF(
+        block2str,
+        totalsize - cursize,
+        "%s%s%s%s",
+        tg_tuples,
+        func_signature_indent,
+        let,
+        func
+    );
 
     cursize = strlen(block2str);
 
@@ -669,45 +798,70 @@ plfsharp_BuildArrayArgument(
         );
 }
 
-static char *
-plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
+static const char*
+plfsharp_BuildBlockCallTrigger(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    const char *body_template
+)
 {
-    char *block2str, *str_ptr;
-    char *func_call;
-    size_t i, totalsize, call_func_size;
-    size_t cursize = 0;
-    char * func;
-    static const char *arg_template = " (UserClass.%s libargs.argsnull.[%d] libargs.arg%d)";
+    static const char tg_tuple[] = "libargs.NEW <- _NEW";
+    const char *func = NameStr(procst->proname);
+    size_t size = strlen(body_template)
+                + strlen(tg_tuple)
+                + strlen(func)
+                + 1;
+
+    char *block2str = (char*) palloc0(size);
+
+    snprintf(
+        block2str,
+        size,
+        body_template,
+        func,
+        "",
+        tg_tuple
+    );
+
+    return block2str;
+}
+
+static const char*
+plfsharp_BuildBlockCallNonTrigger(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    const char *body_template
+)
+{
+    /* Function name */
+    const char *func = NameStr(procst->proname);
     static const char *toDecimal = "toDecimal";
     static const char *wrap = "wrap";
     const char *toString = NUMERICOID == procst->prorettype ? ".ToString()" : "";
+    static const char *arg_template = " (UserClass.%s libargs.argsnull.[%d] libargs.arg%d)";
     size_t arg_size = strlen(arg_template);
+    size_t nargs = procst->pronargs;
+    size_t cursize = 0;
 
-    static const char *body_template = "\
-        let mutable libargs = Marshal.PtrToStructure<LibArgs> arg\n\
-        let res =\n\
-            try\n\
-                %s\n\
-            with\n\
-                | _ -> None\n\
-        libargs.resunull <- \n\
-            match res with\n\
-            | None -> true\n\
-            | Some v ->\n\
-                libargs.resu <- v%s\n\
-                false";
-
-    int nargs = procst->pronargs;
-
-    /* Function name */
-    func = NameStr(procst->proname);
+    char *block2str, *str_ptr;
+    char *func_call;
+    size_t i, totalsize, call_func_size;
 
     /* TODO:  review for nargs > 9 */
-    if (nargs == 0)
+    if (0 == nargs)
     {
-        int block_size = strlen(body_template) + strlen(func) + 1;
-        block2str = (char *)palloc0(block_size);
-        snprintf(block2str, block_size, body_template, func, "");
+        totalsize = strlen(body_template)
+                   + strlen(func)
+                   + 1;
+        block2str = (char *)palloc0(totalsize);
+        snprintf(
+            block2str,
+            totalsize,
+            body_template,
+            func,
+            "",
+            ""
+        );
         return block2str;
     }
 
@@ -736,13 +890,45 @@ plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
         cursize += strlen(str_ptr);
     }
 
-    totalsize = strlen(body_template) + call_func_size + strlen(toString);
+    totalsize = strlen(body_template)
+              + strlen(toString)
+              + call_func_size;
 
     block2str = (char *) palloc0(totalsize);
 
-    snprintf(block2str, totalsize, body_template, func_call, toString);
+    snprintf(
+        block2str,
+        totalsize,
+        body_template,
+        func_call,
+        toString,
+        ""
+    );
 
     return block2str;
+}
+
+static const char *
+plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
+{
+    static const char *body_template = "\
+        let res =\n\
+            try\n\
+                %s\n\
+            with\n\
+                | _ -> None\n\
+        libargs.resunull <- \n\
+            match res with\n\
+            | None -> true\n\
+            | Some v ->\n\
+                libargs.resu <- v%s\n\
+                false\n\
+        %s";
+
+    if (CALLED_AS_TRIGGER(fcinfo))
+        return plfsharp_BuildBlockCallTrigger(fcinfo, procst, body_template);
+    else
+        return plfsharp_BuildBlockCallNonTrigger(fcinfo, procst, body_template);
 }
 
 static Datum
@@ -782,13 +968,30 @@ plfsharp_BuildPaths(pldotnet_PathConfig *paths)
     return built;
 }
 
-char*
-plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
+static char*
+plfsharp_BuildBlockCompositesFromTrigger(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+)
+{
+    TriggerData* tdata = (TriggerData*) fcinfo->context;
+    TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
+
+    return plfsharp_GetStructFromComposite(
+        "TriggerTuple",
+        rel_desc
+    );
+}
+
+static char*
+plfsharp_BuildBlockCompositesFromProcedure(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+)
 {
     HeapTuple type;
     Form_pg_type typeinfo;
     TupleDesc tupdesc;
-    Datum datum;
     char *composite = nullptr;
     size_t composite_size = 0;
     size_t elems = 0;
@@ -803,7 +1006,7 @@ plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
         if (pldotnet_IsSimpleType(argtype[i]) || pldotnet_IsTextType(argtype[i]))
             continue;
 
-        type = SearchSysCache(TYPEOID, ObjectIdGetDatum(argtype[i]), 0, 0, 0);
+        type = SearchSysCache1(TYPEOID, ObjectIdGetDatum(argtype[i]));
         if (!HeapTupleIsValid(type))
             elog(ERROR, "[pldotnet]: cache lookup failed for type %u", argtype[i]);
 
@@ -811,8 +1014,10 @@ plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
         if (typeinfo->typtype == TYPTYPE_COMPOSITE)
         {
             tupdesc = lookup_rowtype_tupdesc(argtype[i], typeinfo->typtypmod);
-            datum = pldotnet_GetArgDatum(fcinfo, i);
-            composite = plfsharp_GetStructFromComposite(datum, typeinfo, tupdesc);
+            composite = plfsharp_GetStructFromComposite(
+                NameStr(typeinfo->typname),
+                tupdesc
+            );
             composite_size += strlen(composite) + 1;
             composite_list = g_slist_prepend(composite_list, composite);
 
@@ -823,9 +1028,9 @@ plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
         ReleaseSysCache(type);
     }
 
-    if (nullptr != composite_list)
+    if (0 < elems && nullptr != composite_list)
     {
-        composite = (char*) palloc(composite_size) + 1;
+        composite = (char*) palloc0(composite_size) + 1;
 
         next = g_slist_reverse(composite_list);
         while(nullptr != next)
@@ -842,6 +1047,21 @@ plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
     return composite;
 }
 
+char*
+plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
+{
+    if (CALLED_AS_TRIGGER(fcinfo))
+        return plfsharp_BuildBlockCompositesFromTrigger(
+            fcinfo,
+            procst
+        );
+
+    return plfsharp_BuildBlockCompositesFromProcedure(
+        fcinfo,
+        procst
+    );
+}
+
 static char*
 plfsharp_GetUserSourceCode(
     FunctionCallInfo fcinfo,
@@ -849,19 +1069,13 @@ plfsharp_GetUserSourceCode(
     Form_pg_proc procst,
     bool validation)
 {
-    size_t source_code_size;
-    char *fs_block_args_decl;
-    char *fs_block_userfunc_decl;
-    char *fs_block_callfunc_call;
-    char *fs_block_composite_decl;
     char *source_code = nullptr;
+    const char * fs_block_composite_decl = plfsharp_BuildBlockComposites(fcinfo, procst);
+    const char * fs_block_args_decl = plfsharp_BuildBlockArgsDecl(fcinfo, proc, procst, validation);
+    const char * fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(fcinfo, procst, proc);
+    const char * fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(fcinfo, procst);
 
-    fs_block_composite_decl = plfsharp_BuildBlockComposites(fcinfo, procst);
-    fs_block_args_decl = plfsharp_BuildBlockArgsDecl(fcinfo, proc, procst, validation);
-    fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(procst, proc);
-    fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(fcinfo, procst);
-
-    source_code_size = strlen(fs_block_header)
+    size_t source_code_size = strlen(fs_block_header)
                      + strlen(fs_block_composite_decl)
                      + strlen(fs_block_args_decl)
                      + strlen(fs_block_userclass_header)
@@ -968,7 +1182,7 @@ plfsharp_BuildFunctionDecl(
 }
 
 static char*
-plfsharp_BuildStructFieldsFromTuple(Datum dat, Form_pg_type typeinfo, TupleDesc tupdesc)
+plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc)
 {
     const char *key;
     Oid type_attr;
@@ -1015,7 +1229,7 @@ plfsharp_BuildStructFieldsFromTuple(Datum dat, Form_pg_type typeinfo, TupleDesc 
 }
 
 static char*
-plfsharp_GetStructFromComposite(Datum dat, Form_pg_type typeinfo, TupleDesc tupdesc)
+plfsharp_GetStructFromComposite(const char* typname, TupleDesc tupdesc)
 {
     const char *template = "\n\
 [<Struct>]\n\
@@ -1027,14 +1241,13 @@ type %s =\n\
     char *output = nullptr;
     size_t output_size = 0;
 
-    const char *name = NameStr(typeinfo->typname);
-    const char *fields = plfsharp_BuildStructFieldsFromTuple(dat, typeinfo, tupdesc);
+    const char *fields = plfsharp_BuildStructFieldsFromTuple(tupdesc);
 
-    output_size = strlen(template) + strlen(name) + strlen(fields) + 1;
+    output_size = strlen(template) + strlen(typname) + strlen(fields) + 1;
 
     output = (char*) palloc(output_size * sizeof(char));
 
-    if (output_size <= snprintf(output, output_size, template, name, fields))
+    if (output_size <= snprintf(output, output_size, template, typname, fields))
         elog(ERROR, "[pldotnet]: String too long for buffer. ");
     return output;
 }
@@ -1113,18 +1326,11 @@ plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline)
 
     pldotnet_LoadHostFxrIfNeeded();
 
-    if (!pldotnet_SPIReady())
+    if (!pldotnet_SPIReady()) 
         return retval;
 
     PG_TRY();
     {
-        /* TODO we need to support trigger function */
-        if (pldotnet_TriggerNotSupported(fcinfo))
-        {
-            pldotnet_SPIFinish();
-            return retval;
-        }
-
         /* START NEW MEM CONTEXT */
         pldotnet_StartNewMemoryContext(&memory_context);
 
@@ -1157,10 +1363,10 @@ Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
 Datum plfsharp_call_handler1(PG_FUNCTION_ARGS)
 {
     bool istrigger;
-    char *source_code,
-         *fs_block_args_decl,
-         *fs_block_userfunc_decl,
-         *fs_block_callfunc_call;
+    char *source_code;
+    const char *fs_block_args_decl;
+    const char *fs_block_userfunc_decl;
+    const char *fs_block_callfunc_call;
     int8_t *libargs;
     int source_code_size;
     HeapTuple proc;
@@ -1215,7 +1421,7 @@ Datum plfsharp_call_handler1(PG_FUNCTION_ARGS)
 
         /* Build the source code */
         fs_block_args_decl = plfsharp_BuildBlockArgsDecl(fcinfo, proc, procst, false);
-        fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(procst, proc);
+        fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(fcinfo, procst, proc);
         fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(fcinfo, procst);
 
         source_code_size = strlen(fs_block_header)
@@ -1367,14 +1573,13 @@ Datum plfsharp_validator(PG_FUNCTION_ARGS)
      *    PG_RETURN_VOID();
     */
 
+    if (!check_function_bodies)
+        return (Datum) 0;
+
     pldotnet_LoadHostFxrIfNeeded();
 
     PG_TRY();
     {
-        /* TODO we need to support trigger function */
-        if (pldotnet_TriggerNotSupported(fcinfo))
-            PG_RETURN_VOID();
-
         /* START NEW MEM CONTEXT */
         pldotnet_StartNewMemoryContext(&memory_context);
 

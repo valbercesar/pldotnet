@@ -16,10 +16,9 @@
 
 int
 pldotnet_GetStructFromCompositeTuple(
-    char * src,
+    char *src,
     int src_size,
-    Datum dat,
-    Form_pg_type typeinfo,
+    char *typname,
     TupleDesc tupdesc
 )
 {
@@ -32,7 +31,7 @@ public struct ";
     const char composite_start[] = \
 "\n{";
     const char composite_end[] = \
-"\n}";
+"\n}\n";
     const char semicon[] = ";";
     int cursize = 0;
 
@@ -41,7 +40,7 @@ public struct ";
         src_size,
         "%s%s%s",
         composite_header,
-        NameStr(typeinfo->typname),
+        typname,
         composite_start
     );
 

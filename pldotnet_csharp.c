@@ -35,21 +35,49 @@ PGDLLEXPORT Datum plcsharp_validator(PG_FUNCTION_ARGS);
 PGDLLEXPORT Datum plcsharp_inline_handler(PG_FUNCTION_ARGS);
 #endif
 
+static int
+plcsharp_BuildBlockCompositesFromTrigger(
+    char * composite_decls,
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+);
+
+static int
+plcsharp_BuildBlockCompositesFromProcedure(
+    char * composite_decls,
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+);
+
 static int plcsharp_BuildBlockComposites(char * composites_decl,
                                          FunctionCallInfo fcinfo,
                                          Form_pg_proc procst);
-static char  *plcsharp_BuildBlockArgsDecl(
+static char*
+plcsharp_BuildTriggerArgs(FunctionCallInfo fcinfo, const char *trigger);
+
+static char *plcsharp_BuildBlockArgsDecl(
     FunctionCallInfo fcinfo,
     HeapTuple proc,
     Form_pg_proc procst,
     bool validation
 );
-static char  *plcsharp_BuildBlockCallFuncCall(Form_pg_proc procst);
-static char  *plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst,
-                                              HeapTuple proc);
+
+static char*
+plcsharp_GetTriggerTuples(FunctionCallInfo fcinfo);
+
+static char  *plcsharp_BuildBlockCallFuncCall(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+);
+
+static const char *plcsharp_BuildBlockUserFuncDecl(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    HeapTuple proc
+);
+
 static int   GetSizeNullableHeader(int argnm_size, Oid arg_type, int narg);
 static int   GetSizeNullableFooter(Oid ret_type);
-static bool  IsNullable(Oid type);
 static Datum plcsharp_GetNetResult(char * libargs, Oid rettype, FunctionCallInfo fcinfo);
 static int   GetSizeArgsNullArray(int nargs);
 static int   pldotnet_PublicDeclSize(Oid type);
@@ -122,6 +150,7 @@ const char public_[] = "\npublic ";
 /* nullable related constants */
 const char resu_nullable_value[] = "libargs.resu = resu_nullable.GetValueOrDefault();\n";
 const char resu_nullable_flag[] = "libargs.resunull = !resu_nullable.HasValue;\n";
+const char resu_null_flag[] = "libargs.resunull = null == libargs.resu;\n";
 const char argsnull_str[] = "libargs.argsnull";
 const char nullable_suffix[] = "_nullable";
 const char resu_flag_str[] = "bool resunull;";
@@ -228,7 +257,7 @@ static char cs_block_args_header[] = "\
  *	        public returnT resu;
  */
 static char cs_block_callfunc_header[] = "             \n\
-        }                                    \n\
+        }\n\
         public static int CallFunction(IntPtr arg, int argLength)\n\
         {                                    \n\
             if (argLength != System.Runtime.InteropServices.Marshal.SizeOf(typeof(LibArgs)))\n\
@@ -289,6 +318,7 @@ pldotnet_PublicDeclSize(Oid type)
             return strlen(public_bool);
         case BPCHAROID:
         case VARCHAROID:
+        case TRIGGEROID:
         case TEXTOID:
             return strlen(public_string_utf8);
         default:
@@ -329,17 +359,17 @@ pldotnet_PublicDecl(Oid type)
             return (char *)&public_bool;
         case BPCHAROID:
         case VARCHAROID:
+        case TRIGGEROID:
         case TEXTOID:
             return (char *)&public_string_utf8;
         default:
-            typ = SearchSysCache(TYPEOID,
-                                  ObjectIdGetDatum(type), 0, 0, 0);
+            typ = SearchSysCache(TYPEOID, ObjectIdGetDatum(type), 0, 0, 0);
             if (!HeapTupleIsValid(typ))
-            {
-                elog(ERROR, "[pldotnet]: cache lookup failed for type %u",
-
-        type);
-            }
+                elog(
+                    ERROR,
+                    "[pldotnet]: cache lookup failed for type %u",
+                    type
+                );
             typeinfo = (Form_pg_type) GETSTRUCT(typ);
             id = typeinfo->typtype;
             ReleaseSysCache(typ);
@@ -350,14 +380,36 @@ pldotnet_PublicDecl(Oid type)
 }
 
 static int
-plcsharp_BuildBlockComposites(char * composite_decls, FunctionCallInfo fcinfo,
-                                                           Form_pg_proc procst)
+plcsharp_BuildBlockCompositesFromTrigger(
+    char * composite_decls,
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+)
 {
-    int cursize=0, i;
-    Oid *argtype = procst->proargtypes.values;
+    TriggerData* tdata = (TriggerData*) fcinfo->context;
+    TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
+
+    pldotnet_GetStructFromCompositeTuple(
+        composite_decls,
+        1024,
+        "TriggerTuple",
+        rel_desc
+    );
+    return strlen(composite_decls);
+}
+
+static int
+plcsharp_BuildBlockCompositesFromProcedure(
+    char *composite_decls,
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+)
+{
     Form_pg_type typeinfo;
     HeapTuple type;
     TupleDesc tupdesc;
+    int cursize = 0, i;
+    Oid *argtype = procst->proargtypes.values;
 
     for (i = 0;i < procst->pronargs; i++)
     {
@@ -368,10 +420,11 @@ plcsharp_BuildBlockComposites(char * composite_decls, FunctionCallInfo fcinfo,
 
         type = SearchSysCache(TYPEOID, ObjectIdGetDatum(argtype[i]), 0, 0, 0);
         if (!HeapTupleIsValid(type))
-        {
-            elog(ERROR, "[pldotnet]: cache lookup failed for type %u",
-                                                                    argtype[i]);
-        }
+            elog(
+                ERROR,
+                "[pldotnet]: cache lookup failed for type %u",
+                argtype[i]
+            );
         typeinfo = (Form_pg_type) GETSTRUCT(type);
         if (typeinfo->typtype == TYPTYPE_COMPOSITE)
         {
@@ -379,8 +432,7 @@ plcsharp_BuildBlockComposites(char * composite_decls, FunctionCallInfo fcinfo,
             pldotnet_GetStructFromCompositeTuple(
                 composite_decls + cursize,
                 1024 - cursize,
-                pldotnet_GetArgDatum(fcinfo, i),
-                typeinfo,
+                NameStr(typeinfo->typname),
                 tupdesc
             );
 
@@ -389,7 +441,56 @@ plcsharp_BuildBlockComposites(char * composite_decls, FunctionCallInfo fcinfo,
         }
         ReleaseSysCache(type);
     }
-    return 0;
+    return strlen(composite_decls);
+}
+
+static int
+plcsharp_BuildBlockComposites(
+    char * composite_decls,
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+)
+{
+    if (CALLED_AS_TRIGGER(fcinfo))
+        return plcsharp_BuildBlockCompositesFromTrigger(
+            composite_decls,
+            fcinfo,
+            procst
+        );
+
+    return plcsharp_BuildBlockCompositesFromProcedure(
+        composite_decls,
+        fcinfo,
+        procst
+    );
+}
+
+static char*
+plcsharp_BuildTriggerArgs(FunctionCallInfo fcinfo, const char *trigger)
+{
+    TriggerData *tdata = (TriggerData*) fcinfo->context;
+    bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
+    size_t current_trigger_size = strlen(trigger) + strlen("NEW") + 1;
+    char *current_trigger = (char*) palloc0(current_trigger_size * (has_old ? 2 : 1));
+    char *cursor = current_trigger;
+    if (has_old)
+    {
+        snprintf(
+            cursor,
+            current_trigger_size,
+            trigger,
+            "OLD"
+        );
+        cursor += strlen(current_trigger);
+    }
+    snprintf(
+        cursor,
+        current_trigger_size,
+        trigger,
+        "NEW"
+    );
+
+    return current_trigger;
 }
 
 static char *
@@ -407,6 +508,10 @@ plcsharp_BuildBlockArgsDecl(
     char argname[] = " argN";
     char result[] = " resu"; /*  have to be same size argN */
     int i, cursize = 0, totalsize = 0;
+    const char *trigger = "\n\
+[MarshalAs(UnmanagedType.Struct)]\n\
+public TriggerTuple %s;";
+    char *current_trigger = nullptr;
     /* nullable related */
     bool nullable_arg_flag = false;
     int null_flags_size = 0, return_null_flag_size = 0;
@@ -414,10 +519,7 @@ plcsharp_BuildBlockArgsDecl(
     Oid type;
 
     if (!pldotnet_TypeSupported(rettype))
-    {
         elog(ERROR, "[pldotnet]: unsupported type on return");
-        return 0;
-    }
 
     for (i = 0; i < nargs; i++)
     {
@@ -427,6 +529,7 @@ plcsharp_BuildBlockArgsDecl(
             i,
             validation
         );
+
         type = isarr ? func_inout_info.arrayinfo[i].typelem : argtype[i];
 
         if (!pldotnet_TypeSupported(type))
@@ -444,33 +547,64 @@ plcsharp_BuildBlockArgsDecl(
                          strlen(argname) + strlen(semicon);
         }
 
-        if (IsNullable(argtype[i]))
+        if (pldotnet_IsNullable(argtype[i]))
             nullable_arg_flag = true;
     }
-    
+
     return_null_flag_size = strlen(public_bool) + strlen(resu_flag_str);
 
-    if (nullable_arg_flag)
+    if (nullable_arg_flag && 0 < nargs)
         null_flags_size = GetSizeArgsNullArray(nargs);
 
-    totalsize += pldotnet_PublicDeclSize(rettype) +
-                 strlen(pldotnet_GetNetTypeName(rettype, true)) +
-                 null_flags_size + return_null_flag_size +
-                 strlen(result) + strlen(semicon) + 1;
+    if (CALLED_AS_TRIGGER(fcinfo))
+    {
+        current_trigger = plcsharp_BuildTriggerArgs(fcinfo, trigger);
+        totalsize += strlen(current_trigger);
+    }
+
+    totalsize += pldotnet_PublicDeclSize(rettype)
+               + strlen(pldotnet_GetNetTypeName(rettype, true))
+               + null_flags_size
+               + return_null_flag_size
+               + strlen(result)
+               + strlen(semicon) + 1;
 
     block2str = (char *) palloc0(totalsize);
 
-    if (nullable_arg_flag)
+    if (nullable_arg_flag && 0 < nargs)
     {
-        SNPRINTF((char *)block2str, totalsize
-            , "\n[MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.U1,SizeConst=%d)]public %s"
-            , nargs, arg_flag_str);
+        SNPRINTF(
+            block2str,
+            totalsize,
+            "\n[MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.U1,SizeConst=%d)]public %s",
+            nargs,
+            arg_flag_str
+        );
         cursize = strlen(block2str);
     }
 
     str_ptr = (char *)(block2str + cursize);
-    SNPRINTF(str_ptr,totalsize - cursize,"%s%s",public_bool,resu_flag_str);
+    SNPRINTF(
+        str_ptr,
+        totalsize - cursize,
+        "%s%s",
+        public_bool,
+        resu_flag_str
+    );
+
     cursize += strlen(str_ptr);
+
+    if (CALLED_AS_TRIGGER(fcinfo))
+    {
+        str_ptr = (char*)(block2str + cursize);
+        SNPRINTF(
+            str_ptr,
+            strlen(current_trigger) + 1,
+            "%s",
+            current_trigger
+        );
+        cursize = strlen(block2str);
+    }
 
     for (i = 0; i < nargs; i++)
     {
@@ -495,15 +629,91 @@ plcsharp_BuildBlockArgsDecl(
     /* result */
     str_ptr = (char *)(block2str + cursize);
 
-    SNPRINTF(str_ptr,totalsize - cursize,"%s%s%s%s"
-                ,pldotnet_PublicDecl(rettype)
-                ,pldotnet_GetNetTypeName(rettype, true), result, semicon);
+    SNPRINTF(
+        str_ptr,
+        totalsize - cursize,
+        "%s%s%s%s",
+        pldotnet_PublicDecl(rettype),
+        pldotnet_GetNetTypeName(rettype, true),
+        result,
+        semicon
+    );
 
     return block2str;
 }
 
-static char *
-plcsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
+static char*
+plcsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
+{
+    static const char old_tuple[] = "TriggerTuple _OLD = libargs.OLD;\n";
+    static const char new_tuple[] = "TriggerTuple _NEW = libargs.NEW;\n";
+    static const char indent[] = "            ";
+
+    TriggerData *tdata = (TriggerData*) fcinfo->context;
+    bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
+    size_t tuple_size = strlen(new_tuple) + 1;
+    size_t indent_size = strlen(indent) + 1;
+
+    char *result = (char *) palloc0(tuple_size + (has_old ? tuple_size + indent_size : 0));
+    char *cursor = result;
+
+    if (has_old)
+    {
+        SNPRINTF(
+            cursor,
+            tuple_size + indent_size,
+            "%s%s",
+            old_tuple,
+            indent
+        );
+        cursor += strlen(result);
+    }
+
+    SNPRINTF(
+        cursor,
+        tuple_size,
+        "%s",
+        new_tuple
+    );
+
+    return result;
+}
+
+static char*
+plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
+{
+    const char *template = "\n\
+            %s\n\
+            libargs.resu = %s();\n\
+            libargs.resunull = null == libargs.resu;\n\
+            if (\"MODIFY\" == libargs.resu)\n\
+            {\n\
+                libargs.NEW = _NEW;\n\
+            }\n";
+
+    char *tg_tuples = plcsharp_GetTriggerTuples(fcinfo);
+    char *func = NameStr(procst->proname);
+
+    size_t size = strlen(template)
+                + strlen(func)
+                + strlen(tg_tuples)
+                + 1;
+
+    char *block2str = (char*) palloc0(size);
+
+    snprintf(
+        block2str,
+        size,
+        template,
+        tg_tuples,
+        func
+    );
+
+    return block2str;
+}
+
+static char*
+plcsharp_BuildBlockNonTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
 {
     char *block2str, *str_ptr, *resu_var;
     int cursize = 0, i, totalsize;
@@ -528,15 +738,22 @@ plcsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
     /* Function name */
     func = NameStr(procst->proname);
 
-    if (IsNullable(rettype))
+    if (pldotnet_IsNullable(rettype))
     {
-        int resu_var_size = strlen(pldotnet_GetNullableTypeName(rettype)) 
-                + strlen(nullable_result) + 1;
+        int resu_var_size =
+            strlen(pldotnet_GetNullableTypeName(rettype))
+          + strlen(nullable_result)
+          + 1;
+
         resu_var = (char *)palloc0(resu_var_size);
-        SNPRINTF(resu_var, resu_var_size, "%s%s"
-                   , pldotnet_GetNullableTypeName(rettype)
-                   , nullable_result);
-    } 
+        SNPRINTF(
+            resu_var,
+            resu_var_size,
+            "%s%s",
+            pldotnet_GetNullableTypeName(rettype),
+            nullable_result
+        );
+    }
     else
         resu_var = (char *)result;
 
@@ -671,9 +888,19 @@ plcsharp_BuildBlockCallFuncCall(Form_pg_proc procst)
     {
         SNPRINTF(str_ptr, totalsize-cursize, "%s%s", end_fun, semicolon);
     }
-
     return block2str;
+}
 
+static char *
+plcsharp_BuildBlockCallFuncCall(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+)
+{
+    if (CALLED_AS_TRIGGER(fcinfo))
+        return plcsharp_BuildBlockTriggerFuncCall(fcinfo, procst);
+
+    return plcsharp_BuildBlockNonTriggerFuncCall(fcinfo, procst);
 }
 
 static int
@@ -743,31 +970,70 @@ GetSizeNullableHeader(int argnm_size, Oid arg_type, int narg)
 static int
 GetSizeNullableFooter(Oid ret_type)
 {
-    int total_size = 0;
-
     switch (ret_type)
     {
         case INT2OID:
         case INT4OID:
         case INT8OID:
         case BOOLOID:
-            total_size = strlen(resu_nullable_value)
-                + strlen(resu_nullable_flag);
-            break;
+            return strlen(resu_nullable_value)
+                 + strlen(resu_nullable_flag);
+        case TRIGGEROID:
+            return strlen(resu_null_flag);
+        default:
+            return 0;
     }
-
-    return total_size;
 }
 
-static bool
-IsNullable(Oid type)
+static const char*
+plcsharp_BuildBlockTriggerFuncDecl(
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst
+)
 {
-    return (type == INT2OID || type == INT4OID
-       || type == INT8OID   ||  type == BOOLOID);
+    bool isnull = false;
+    const char *template = "\n\
+            %s %s()\n\
+            {\n\
+                %s\n\
+            }\n";
+
+    char *func = NameStr(procst->proname);
+    Datum prosrc = SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_prosrc, &isnull);
+    const char *source_text = DatumGetCString(DirectFunctionCall1(textout, prosrc));
+    const char *rettypname = pldotnet_GetCompatibleNetTypeName(
+        procst->prorettype,
+        true,
+        true
+    );
+
+    size_t size = strlen(template)
+                + strlen(rettypname)
+                + strlen(func) * 2
+                + strlen(source_text) + 1;
+
+    char *block2str = (char*) palloc0(size);
+
+    snprintf(
+        block2str,
+        size,
+        template,
+        rettypname,
+        func,
+        source_text,
+        func
+    );
+
+    return block2str;
 }
 
-static char *
-plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
+static const char*
+plcsharp_BuildBlockNonTriggerFuncDecl(
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst
+)
 {
     char *block2str, *str_ptr, *source_argnm, *source_text;
     int argnm_size, i, nnames, cursize = 0, source_size, totalsize;
@@ -803,11 +1069,11 @@ plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
         deconstruct_array(DatumGetArrayTypeP(argnames), TEXTOID,
                           -1, false, 'i', &argname, NULL, &nnames);
 
-    /* Caculates the total amount in bytes of C# src text for 
-     * the function declaration according nr of arguments 
+    /* Caculates the total amount in bytes of C# src text for
+     * the function declaration according nr of arguments
      * their types and the function return type
      */
-    if (IsNullable(rettype))
+    if (pldotnet_IsNullable(rettype))
     {
         totalsize = (2 * strlen(newline))
             + strlen(pldotnet_GetNullableTypeName(rettype))
@@ -820,16 +1086,16 @@ plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
             + strlen(" ") + strlen(func_name) + strlen(begin_fun_decl);
     }
 
-    for (i = 0; i < nargs; i++) 
+    for (i = 0; i < nargs; i++)
     {
         source_argnm = DatumGetCString( DirectFunctionCall1(textout,
                                                             argname[i]) );
-        if (IsNullable(argtype[i]))
+        if (pldotnet_IsNullable(argtype[i]))
         {
             header_size += GetSizeNullableHeader( strlen(source_argnm),
                                                   argtype[i],i );
             argnm_size = strlen(source_argnm) + strlen("_nullable");
-        } 
+        }
         else
             argnm_size = strlen(source_argnm);
 
@@ -857,7 +1123,7 @@ plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
 
     block2str = (char *)palloc0(totalsize);
 
-    if (IsNullable(rettype))
+    if (pldotnet_IsNullable(rettype))
     {
         SNPRINTF(block2str, totalsize, "%s%s%s %s%s",newline
                    , newline, pldotnet_GetNullableTypeName(rettype)
@@ -879,7 +1145,7 @@ plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     {
         source_argnm = DatumGetCString( DirectFunctionCall1(textout,
                                                             argname[i]) );
-        if (IsNullable(argtype[i]))
+        if (pldotnet_IsNullable(argtype[i]))
         {
             header_nullable_ptr = (char *) (header_nullable + cur_header_size);
             SNPRINTF(header_nullable_ptr, (header_size - cur_header_size) + 1
@@ -945,7 +1211,27 @@ plcsharp_BuildBlockUserFuncDecl(Form_pg_proc procst, HeapTuple proc)
     }
 
     return block2str;
+}
 
+static const char *
+plcsharp_BuildBlockUserFuncDecl(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    HeapTuple proc
+)
+{
+    if (CALLED_AS_TRIGGER(fcinfo))
+        return plcsharp_BuildBlockTriggerFuncDecl(
+            fcinfo,
+            proc,
+            procst
+        );
+
+    return plcsharp_BuildBlockNonTriggerFuncDecl(
+        fcinfo,
+        proc,
+        procst
+    );
 }
 
 /* Postgres Datum type to C# nullable type name */
@@ -962,11 +1248,13 @@ pldotnet_GetNullableTypeName(Oid id)
             return "int?";  /* Nullable<System.Int32> */
         case INT8OID:
             return "long?"; /* Nullable<System.Int64> */
+        case TRIGGEROID:
+            return "string?";
     }
     return "";
 }
 
-bool 
+bool
 pldotnet_CheckArgIsArray(
     Datum datum,
     Oid oid,
@@ -1038,8 +1326,7 @@ plcsharp_GetNetResult(char * libargs, Oid rettype, FunctionCallInfo fcinfo)
         return pldotnet_CreateCompositeResult(result_ptr, rettype, fcinfo);
     }
 
-    return
-          pldotnet_GetScalarValue(result_ptr, resultnull_ptr, fcinfo, rettype);
+    return pldotnet_GetScalarValue(result_ptr, resultnull_ptr, fcinfo, rettype);
 }
 
 inline static bool
@@ -1115,17 +1402,17 @@ plcsharp_GetUserSourceCode(
 )
 {
     size_t source_code_size;
-    char *cs_block_args_decl;
-    char *cs_block_userfunc_decl;
-    char *cs_block_callfunc_call;
-    char cs_block_composite_decl[256];
+    const char *cs_block_args_decl;
+    const char *cs_block_userfunc_decl;
+    const char *cs_block_callfunc_call;
     char *source_code = nullptr;
+    char cs_block_composite_decl[1024];
     cs_block_composite_decl[0] = 0;
 
     plcsharp_BuildBlockComposites(cs_block_composite_decl, fcinfo, procst);
     cs_block_args_decl = plcsharp_BuildBlockArgsDecl(fcinfo, proc, procst, validation);
-    cs_block_callfunc_call = plcsharp_BuildBlockCallFuncCall( procst );
-    cs_block_userfunc_decl = plcsharp_BuildBlockUserFuncDecl(procst, proc);
+    cs_block_callfunc_call = plcsharp_BuildBlockCallFuncCall(fcinfo, procst);
+    cs_block_userfunc_decl = plcsharp_BuildBlockUserFuncDecl(fcinfo, procst, proc);
 
     source_code_size = strlen(cs_block_header)
                      + strlen(cs_block_composite_decl)
@@ -1163,16 +1450,10 @@ plcsharp_GetSourceCode(
     pldotnet_ArgsSource *source)
 {
     if (nullptr == source)
-    {
         elog(ERROR, "[pldotnet]: Invalid argument: source is null");
-        return false;
-    }
 
     if (nullptr != source->source_code)
-    {
         elog(ERROR, "[pldotnet]: ArgSouce.source_code should be null at this point: \n%s", source->source_code);
-        return false;
-    }
 
     if (is_inline)
         source->source_code = plcsharp_GetInlineSourceCode(fcinfo);
@@ -1323,6 +1604,7 @@ plcsharp_CompileAndRunUserFunction(
 
     if (!is_inline && !plcsharp_CreateStructLibargs(fcinfo, procst, function_decl))
         elog(ERROR, "[pldotnet]: Could not create struct buffer");
+
     /* END */
     pldotnet_ReleasePostgresHeapTuple(proc);
 
@@ -1357,13 +1639,6 @@ plcsharp_generic_handler(FunctionCallInfo fcinfo, bool is_inline)
 
     PG_TRY();
     {
-        /* TODO we need to support trigger function */
-        if (pldotnet_TriggerNotSupported(fcinfo))
-        {
-            pldotnet_SPIFinish();
-            return retval;
-        }
-
         /* START NEW MEM CONTEXT */
         pldotnet_StartNewMemoryContext(&memory_context);
 
@@ -1402,8 +1677,10 @@ Datum
 plcsharp_call_handler1(PG_FUNCTION_ARGS)
 {
     bool istrigger;
-    char *source_code, *cs_block_args_decl, *cs_block_callfunc_call,
-         *cs_block_userfunc_decl;
+    char *source_code;
+    const char *cs_block_args_decl;
+    const char *cs_block_callfunc_call;
+    const char *cs_block_userfunc_decl;
     char *libargs;
     int source_code_size;
     HeapTuple proc;
@@ -1450,8 +1727,8 @@ plcsharp_call_handler1(PG_FUNCTION_ARGS)
         plcsharp_BuildBlockComposites(cs_block_composite_decl, fcinfo, procst);
 
         cs_block_args_decl = plcsharp_BuildBlockArgsDecl(fcinfo, proc, procst, false);
-        cs_block_callfunc_call = plcsharp_BuildBlockCallFuncCall( procst );
-        cs_block_userfunc_decl = plcsharp_BuildBlockUserFuncDecl(procst, proc);
+        cs_block_callfunc_call = plcsharp_BuildBlockCallFuncCall(fcinfo, procst);
+        cs_block_userfunc_decl = plcsharp_BuildBlockUserFuncDecl(fcinfo, procst, proc);
 
         source_code_size = strlen(cs_block_header)
                          + strlen(cs_block_composite_decl)
@@ -1540,14 +1817,13 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS)
      *    PG_RETURN_VOID();
     */
 
+    if (!check_function_bodies)
+        return (Datum) 0;
+
     pldotnet_LoadHostFxrIfNeeded();
 
     PG_TRY();
     {
-        /* TODO we need to support trigger function */
-        if (pldotnet_TriggerNotSupported(fcinfo))
-            PG_RETURN_VOID();
-
         /* START NEW MEM CONTEXT */
         pldotnet_StartNewMemoryContext(&memory_context);
 

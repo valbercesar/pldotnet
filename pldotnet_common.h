@@ -60,6 +60,8 @@
 
 #include "pldotnet_helpers.h"
 
+extern PGDLLIMPORT bool check_function_bodies;
+
 GHashTable *procedures;
 
 #if PG_VERSION_NUM < 110000
@@ -194,6 +196,17 @@ int pldotnet_SetScalarValue(
     bool * nullp
 );
 
+VarChar*
+pldotnet_GetStringValue(char *result_ptr);
+
+Datum
+pldotnet_GetTriggerResult(
+    FunctionCallInfo fcinfo,
+    int8_t *args,
+    int8_t *result_ptr,
+    int8_t *resultnull_ptr
+);
+
 Datum pldotnet_GetScalarValue(
     char * result_ptr,
     char * resultnull_ptr,
@@ -208,6 +221,9 @@ bool pldotnet_IsTextType(Oid type);
 bool pldotnet_IsNullable(Oid type);
 bool pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index);
 
+bool
+pldotnet_IsCompositeType(Oid oid);
+
 Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index);
 bool pldotnet_SetArrayInfo(
     Datum datum,
@@ -217,8 +233,26 @@ bool pldotnet_SetArrayInfo(
     bool swap_variable_decl,
     pldotnet_FuncInOutInfo *func_inout_info
 );
+
 void
 pldotnet_SetArraySize(Datum datum, pldotnet_ArgArrayInfo *parr_info);
+
+bool
+pldotnet_TriggerHasOldTuple(TriggerEvent event);
+
+bool
+pldotnet_TriggerHasNewTuple(TriggerEvent event);
+
+bool
+pldotnet_TriggerHasBothTuples(TriggerEvent event);
+
+int8_t*
+pldotnet_FillTriggerTuple(
+    FunctionCallInfo fcinfo,
+    HeapTuple trig_tuple,
+    TupleDesc rel_desc,
+    int8_t *cur_arg
+);
 
 int8_t* pldotnet_CreateCStructLibargs(
     FunctionCallInfo fcinfo,

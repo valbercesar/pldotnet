@@ -316,6 +316,7 @@ pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp
         case BPCHAROID:
         case TEXTOID:
         case VARCHAROID:
+        case TRIGGEROID:
             return "string"; /* System.String */
         default:
             typ = SearchSysCache(TYPEOID,
@@ -359,6 +360,7 @@ pldotnet_GetTypeSize(Oid id)
         case BPCHAROID:
         case TEXTOID:
         case VARCHAROID:
+        case TRIGGEROID:
             return sizeof(char *);
         default:
             return pldotnet_GetCompositeTypeSize(id);
@@ -387,6 +389,7 @@ pldotnet_GetUnmanagedTypeName(Oid type)
             return "LPStr";
         case BPCHAROID:
         case VARCHAROID:
+        case TRIGGEROID:
             return "LPUTF8Str";
         case TEXTOID:
             return "LPStr";
@@ -423,32 +426,32 @@ int pldotnet_SetScalarValue(
     {
         case BOOLOID:
             *(bool *)(argp) = DatumGetBool(datum);
-            if (nullp)
+            if (nullptr != nullp)
                 *nullp = isnull;
             break;
         case INT4OID:
             *(int32_t *)(argp) = DatumGetInt32(datum);
-            if (nullp)
+            if (nullptr != nullp)
                 *nullp = isnull;
             break;
         case INT8OID:
             *(int64_t *)(argp) = DatumGetInt64(datum);
-            if (nullp)
+            if (nullptr != nullp)
                 *nullp = isnull;
             break;
         case INT2OID:
             *(int16_t *)(argp) = DatumGetInt16(datum);
-            if (nullp)
+            if (nullptr != nullp)
                 *nullp = isnull;
             break;
         case FLOAT4OID:
             *(float4 *)(argp) = DatumGetFloat4(datum);
-            if (nullp)
+            if (nullptr != nullp)
                 *nullp = isnull;
             break;
         case FLOAT8OID:
             *(float8 *)(argp) = DatumGetFloat8(datum);
-            if (nullp)
+            if (nullptr != nullp)
                 *nullp = isnull;
             break;
         case NUMERICOID:
@@ -456,7 +459,7 @@ int pldotnet_SetScalarValue(
              is a number. Unlikely to have encoding issues. */
             *(uint64_t *)(argp) = (uint64_t)
                 DatumGetCString(DirectFunctionCall1(numeric_out, datum));
-            if (nullp)
+            if (nullptr != nullp)
                 *nullp = isnull;
             break;
         case BPCHAROID:
@@ -465,7 +468,7 @@ int pldotnet_SetScalarValue(
             if (isnull)
             {
                 *(uint64_t *)(argp) = (uint64_t) nullptr;
-                if (nullp)
+                if (nullptr != nullp)
                     *nullp = isnull;
                 break;
             }
@@ -487,6 +490,162 @@ int pldotnet_SetScalarValue(
     }
     return 0;
 }
+VarChar*
+pldotnet_GetStringValue(char *result_ptr)
+{
+    unsigned long *ret = *(unsigned long **) (result_ptr);
+    size_t len = strlen((char*) ret);
+    char *encoded = (char *) pg_do_encoding_conversion(
+        (u_char*) ret,
+        len,
+        PG_UTF8,
+        GetDatabaseEncoding()
+    );
+    VarChar *varchar = (VarChar *) SPI_palloc(len + VARHDRSZ);
+
+#if PG_VERSION_NUM < 80300
+    /* Total size of structure, not just data */
+    VARATT_SIZEP(varchar) = str_len + VARHDRSZ;
+#else
+    /* Total size of structure, not just data */
+    SET_VARSIZE(varchar, len + VARHDRSZ);
+#endif
+    memcpy(VARDATA(varchar), encoded, len);
+    varchar->vl_dat[len] = '\0';
+    return varchar;
+}
+
+static HeapTuple
+pldotnet_ModifyTuple(
+    FunctionCallInfo fcinfo,
+    HeapTuple tuple,
+    TupleDesc rel_desc,
+    int8_t *args
+)
+{
+    Datum *modvalues;
+    bool *modnulls;
+    bool *modrepls;
+
+    int8_t *cur_arg = args;
+    MemoryContext current = CurrentMemoryContext;
+    MemoryContextSwitchTo(TopMemoryContext);
+
+    modvalues = (Datum *) palloc0(rel_desc->natts * sizeof(Datum));
+    modnulls = (bool *) palloc0(rel_desc->natts * sizeof(bool));
+    modrepls = (bool *) palloc0(rel_desc->natts * sizeof(bool));
+
+    for (size_t i = 0; i < rel_desc->natts; ++i)
+    {
+        Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
+
+        modvalues[i] = pldotnet_GetScalarValue(
+            (char *) cur_arg,
+            nullptr,
+            fcinfo,
+            attr->atttypid
+        );
+
+        modrepls[i] = true;
+
+        cur_arg += pldotnet_GetTypeSize(attr->atttypid);
+    }
+
+    tuple = heap_modify_tuple(
+        tuple,
+        rel_desc,
+        modvalues,
+        modnulls,
+        modrepls
+    );
+
+    MemoryContextSwitchTo(current);
+
+    return tuple;
+}
+
+/*
+ * Using the same convention from plpython:
+ * the C# function is expected to return the following:
+ *
+ * null: the tuple is acceptable and unmodified or the
+ * trigger is called after the event in the database.
+ *
+ * "SKIP": don't perform the current action, it aborts
+ * insert, update or delete actions.
+ *
+ * "MODIFY": indicates that the tuple has been modified,
+ * so update tuple and perform action.
+ *
+ */
+Datum
+pldotnet_GetTriggerResult(
+    FunctionCallInfo fcinfo,
+    int8_t *args,
+    int8_t *result_ptr,
+    int8_t *resultnull_ptr
+)
+{
+    VarChar *varchar;
+    TriggerData *tdata = (TriggerData *) fcinfo->context;
+    TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
+    HeapTuple result = nullptr;
+    bool is_null = nullptr == resultnull_ptr ? false : *(bool*) resultnull_ptr;
+
+    /*
+     * at this point, fcinfo->null == true means that .net
+     * returned a null value, but for triggers we have to
+     * update it to false in order to return the input tuple
+     * and perform the current action
+     */
+    if (is_null)
+    {
+        fcinfo->isnull = false;
+        if (TRIGGER_FIRED_BY_UPDATE(tdata->tg_event))
+            return PointerGetDatum(tdata->tg_newtuple);
+        return PointerGetDatum(tdata->tg_trigtuple);
+    }
+
+    varchar = pldotnet_GetStringValue((char*) result_ptr);
+
+    /* "SKIP" from .NET aims to abort the current action
+     * "TRIGGER_FIRED_FOR_STATEMENT"
+     */
+
+    if (0 == strcasecmp((char*) varchar->vl_dat, "SKIP")
+        || TRIGGER_FIRED_FOR_STATEMENT(tdata->tg_event)
+    )
+        return (Datum) 0;
+
+    if (0 != strcasecmp((char*) varchar->vl_dat, "MODIFY"))
+        elog(ERROR, "[pldotnet]: Invalid return for trigger: %u", tdata->tg_event);
+
+    if (TRIGGER_FIRED_FOR_ROW(tdata->tg_event))
+    {
+        if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event) ||
+            TRIGGER_FIRED_BY_DELETE(tdata->tg_event)
+        )
+            result = pldotnet_ModifyTuple(
+                fcinfo,
+                tdata->tg_trigtuple,
+                rel_desc,
+                args
+            );
+        else if (TRIGGER_FIRED_BY_UPDATE(tdata->tg_event))
+            result = pldotnet_ModifyTuple(
+                fcinfo,
+                tdata->tg_newtuple,
+                rel_desc,
+                args
+            );
+        else
+            elog(ERROR, "[pldotnet]: Unrecognized trigger action: %u", tdata->tg_event);
+    }
+    else
+        elog(ERROR, "[pldotnet]: Unrecognized LEVEL event: %u", tdata->tg_event);
+
+    return PointerGetDatum(result);
+}
 
 Datum
 pldotnet_GetScalarValue(
@@ -499,12 +658,8 @@ pldotnet_GetScalarValue(
     Datum retval = 0;
     VarChar * res_varchar; /* For Unicode/UTF8 support */
     char * str_num;
-    char * encoded_str;
-    unsigned long * ret_ptr;
-    int str_len;
 
     fcinfo->isnull = nullptr == resultnull_ptr ? false : *(bool *) resultnull_ptr;
-
     switch (type)
     {
         case BOOLOID:
@@ -533,10 +688,13 @@ pldotnet_GetScalarValue(
                 return (Datum) 0;
             str_num = (char *)*(unsigned long *)(result_ptr);
             return NumericGetDatum(
-                                   DirectFunctionCall3(numeric_in,
-                                         CStringGetDatum(str_num),
-                                         ObjectIdGetDatum(InvalidOid),
-                                         Int32GetDatum(-1)));
+                DirectFunctionCall3(
+                    numeric_in,
+                    CStringGetDatum(str_num),
+                    ObjectIdGetDatum(InvalidOid),
+                    Int32GetDatum(-1)
+                )
+            );
         case TEXTOID:
              /* C String encoding
               * retval = DirectFunctionCall1(textin,
@@ -545,7 +703,7 @@ pldotnet_GetScalarValue(
               *                       + dotnet_cstruct_info.typesize_params)));
               */
         case BPCHAROID:
- /* https://git.brickabode.com/DotNetInPostgreSQL/pldotnet/issues/10#note_19223
+        /* https://git.brickabode.com/DotNetInPostgreSQL/pldotnet/issues/10#note_19223
          * We should try to get atttymod which is n size in char(n)
          * and use it in bpcharin (I did not find a way to get it)
          * case BPCHAROID:
@@ -555,28 +713,7 @@ pldotnet_GetScalarValue(
          *                  + dotnet_cstruct_info.typesize_params)), attypmod);
          */
         case VARCHAROID:
-             /* C String encoding
-              * retval = DirectFunctionCall1(varcharin,
-              *               CStringGetDatum(
-              *                       *(unsigned long *)(libargs
-              *                       + dotnet_cstruct_info.typesize_params)));
-              */
-            /* UTF8 encoding */
-            ret_ptr = *(uint64_t **)(result_ptr);
-            /* str_len = pg_mbstrlen(ret_ptr); */
-            str_len = strlen((char*)ret_ptr);
-            encoded_str = (char *)pg_do_encoding_conversion(
-            (u_char*)ret_ptr, str_len, PG_UTF8, GetDatabaseEncoding() );
-            res_varchar = (VarChar *)SPI_palloc(str_len + VARHDRSZ);
-#if PG_VERSION_NUM < 80300
-            /* Total size of structure, not just data */
-            VARATT_SIZEP(res_varchar) = str_len + VARHDRSZ;
-#else
-            /* Total size of structure, not just data */
-            SET_VARSIZE(res_varchar, str_len + VARHDRSZ);
-#endif
-            memcpy(VARDATA(res_varchar), encoded_str , str_len);
-            /* pfree(encoded_str); */
+            res_varchar = pldotnet_GetStringValue(result_ptr);
             PG_RETURN_VARCHAR_P(res_varchar);
     }
 
@@ -586,8 +723,12 @@ pldotnet_GetScalarValue(
 bool
 pldotnet_TypeSupported(Oid type)
 {
-   return (pldotnet_IsSimpleType(type) || pldotnet_IsTextType(type)
-           || TYPTYPE_COMPOSITE);
+    return (
+        pldotnet_IsSimpleType(type) ||
+        pldotnet_IsTextType(type) ||
+        pldotnet_IsCompositeType(type) ||
+        TRIGGEROID == type
+    );
 }
 
 bool
@@ -601,8 +742,13 @@ bool
 pldotnet_IsTextType(Oid type)
 {
     /* NUMERIC appears here because it is converted to a CString type */
-    return (type == TEXTOID || type == VARCHAROID ||
-            type == BPCHAROID || type == NUMERICOID);
+    return (
+        TEXTOID == type ||
+        VARCHAROID == type ||
+        BPCHAROID == type ||
+        NUMERICOID == type ||
+        TRIGGEROID == type
+    );
 }
 
 bool
@@ -614,7 +760,11 @@ pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info)
 inline bool
 pldotnet_IsNullable(Oid type)
 {
-    return (type == INT2OID || type == INT4OID || type == INT8OID || type == BOOLOID);
+    return
+        INT2OID == type ||
+        INT4OID == type ||
+        INT8OID == type ||
+        BOOLOID == type;
 }
 
 bool
@@ -625,6 +775,21 @@ pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index)
 #else
     return fcinfo->argnull[index];
 #endif
+}
+
+bool
+pldotnet_IsCompositeType(Oid oid)
+{
+    bool is_composite;
+    Form_pg_type typeinfo;
+    HeapTuple type = SearchSysCache1(TYPEOID, ObjectIdGetDatum(oid));
+    if (!HeapTupleIsValid(type))
+      elog(ERROR, "[pldotnet]: cache lookup failed for type %u", oid);
+
+    typeinfo = (Form_pg_type) GETSTRUCT(type);
+    is_composite = TYPTYPE_COMPOSITE == typeinfo->typtype;
+    ReleaseSysCache(type);
+    return is_composite;
 }
 
 inline Datum
@@ -755,69 +920,82 @@ pldotnet_SetArraySize(Datum datum, pldotnet_ArgArrayInfo *parr_info)
     parr_info->nelems = ArrayGetNItems(ARR_NDIM(arr), ARR_DIMS(arr));
 }
 
-/*
- * This function creates a buffer to hold arguments and result data.
- * The buffer is sent to C#/F#$. The current user function may read
- * this buffer to obtain the arguments and/or write any ouput data.
- * TRICKY -> IN ORDER TO SPEED UP THE EXECUTION, THE FUNCTION OID FROM PG
- * IS ALSO APPENDED IN THE BUFFER, SO OUR C#/Engine.cs CAN FIND THE COMPILED
- * DELEGATE. SEE Engine.Run() at Engine.cs;
- */
-int8_t*
-pldotnet_CreateCStructLibargs(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    bool force_nullable_flags,
-    pldotnet_FuncInOutInfo *func_inout_info)
+bool
+pldotnet_TriggerHasOldTuple(TriggerEvent event)
 {
-    size_t i;
-    size_t default_size;
-    char *array_p;
-    Datum array_element;
-    pldotnet_ArgArrayInfo * arrinfo;
-    ArrayType *arr;
-    pldotnet_ArrayT *tmp;
+    return TRIGGER_FIRED_FOR_ROW(event) && (
+        TRIGGER_FIRED_BY_UPDATE(event) ||
+        TRIGGER_FIRED_BY_DELETE(event)
+    );
+}
 
-    /* nullable related */
-    bool nullable_arg_flag = false;
-    bool *argsnull_ptr;
+bool
+pldotnet_TriggerHasNewTuple(TriggerEvent event)
+{
+    return TRIGGER_FIRED_FOR_ROW(event) && (
+        TRIGGER_FIRED_BY_UPDATE(event) ||
+        TRIGGER_FIRED_BY_INSERT(event)
+    );
+}
+
+bool
+pldotnet_TriggerHasBothTuples(TriggerEvent event)
+{
+    return pldotnet_TriggerHasOldTuple(event) &&
+           pldotnet_TriggerHasNewTuple(event);
+}
+
+int8_t*
+pldotnet_FillTriggerTuple(
+    FunctionCallInfo fcinfo,
+    HeapTuple trig_tuple,
+    TupleDesc rel_desc,
+    int8_t *cur_arg
+)
+{
     Datum argdatum;
 
-    int8_t *libargs_ptr = NULL;
-    int8_t *cur_arg = NULL;
-    Oid *argtype = procst->proargtypes.values;
-    Oid rettype = procst->prorettype;
-
-    func_inout_info->typesize_args = 0;
-    func_inout_info->typesize_nullflags = 0;
-
-    for (i = 0; i < procst->pronargs; i++)
+    for (int i = 0; i < rel_desc->natts; ++i)
     {
-        if (pldotnet_IsArray((int) i, func_inout_info))
-            func_inout_info->typesize_args += sizeof(pldotnet_ArrayT);
-        else
-            func_inout_info->typesize_args += pldotnet_GetTypeSize(argtype[i]);
-        if (pldotnet_IsNullable(argtype[i]))
-            nullable_arg_flag = true;
+        Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
+        bool isnull = false;
+        argdatum = heap_getattr(trig_tuple, i + 1, rel_desc, &isnull);
+
+        if (attr->attisdropped)
+            continue;
+
+        pldotnet_SetScalarValue(
+            (char*) cur_arg,
+            argdatum,
+            fcinfo,
+            i,
+            attr->atttypid,
+            &isnull
+        );
+        cur_arg += pldotnet_GetTypeSize(attr->atttypid);
     }
+    return cur_arg;
+}
 
-    if (nullable_arg_flag || force_nullable_flags)
-        func_inout_info->typesize_nullflags += sizeof(bool) * procst->pronargs;
-    func_inout_info->typesize_nullflags += sizeof(bool);
-    func_inout_info->typesize_result = pldotnet_GetTypeSize(rettype);
+static int8_t*
+pldotnet_FillNonTriggerValues(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    pldotnet_FuncInOutInfo *func_inout_info,
+    bool *argsnull_ptr,
+    int8_t *cur_arg
+)
+{
+    pldotnet_ArgArrayInfo *arrinfo;
+    pldotnet_ArrayT *tmp;
+    ArrayType *arr;
+    char *array_p;
+    Datum array_element;
+    Oid *argtype = procst->proargtypes.values;
 
-    default_size = (size_t) (
-                      func_inout_info->typesize_nullflags
-                    + func_inout_info->typesize_args
-                    + func_inout_info->typesize_result);
-
-    libargs_ptr = (int8_t*) palloc0(default_size + sizeof(uint32_t));
-    argsnull_ptr = (bool *) libargs_ptr;
-    cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
-
-    for (i = 0; i < procst->pronargs; i++)
+    for (int16_t i = 0; i < procst->pronargs; i++)
     {
-        argdatum = pldotnet_GetArgDatum(fcinfo, i);
+        Datum argdatum = pldotnet_GetArgDatum(fcinfo, i);
         if (pldotnet_IsArray(i, func_inout_info))
         {
             arrinfo = &(func_inout_info->arrayinfo[i]);
@@ -866,7 +1044,7 @@ pldotnet_CreateCStructLibargs(
             continue;
         }
         else if ( !pldotnet_IsSimpleType(argtype[i]) &&
-                  !pldotnet_IsTextType(argtype[i]) )
+                !pldotnet_IsTextType(argtype[i]) )
             pldotnet_FillCompositeValues((char*)cur_arg, argdatum, argtype[i], fcinfo, procst);
         else
             pldotnet_SetScalarValue(
@@ -880,6 +1058,98 @@ pldotnet_CreateCStructLibargs(
 
         cur_arg += pldotnet_GetTypeSize(argtype[i]);
     }
+    return cur_arg;
+}
+
+/*
+ * This function creates a buffer to hold arguments and result data.
+ * The buffer is sent to C#/F#$. The current user function may read
+ * this buffer to obtain the arguments and/or write any ouput data.
+ * TRICKY -> IN ORDER TO SPEED UP THE EXECUTION, THE FUNCTION OID FROM PG
+ * IS ALSO APPENDED IN THE BUFFER, SO OUR C#/Engine.cs CAN FIND THE COMPILED
+ * DELEGATE. SEE Engine.Run() at Engine.cs;
+ */
+int8_t*
+pldotnet_CreateCStructLibargs(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    bool force_nullable_flags,
+    pldotnet_FuncInOutInfo *func_inout_info)
+{
+    size_t i;
+    size_t default_size;
+
+    /* nullable related */
+    bool nullable_arg_flag = false;
+    bool *argsnull_ptr;
+
+    int8_t *libargs_ptr = NULL;
+    int8_t *cur_arg = NULL;
+    Oid *argtype = procst->proargtypes.values;
+    Oid rettype = procst->prorettype;
+
+    func_inout_info->typesize_args = 0;
+    func_inout_info->typesize_nullflags = 0;
+
+    if (CALLED_AS_TRIGGER(fcinfo))
+    {
+        TriggerData *tdata = (TriggerData*) fcinfo->context;
+        TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
+        size_t limit = pldotnet_TriggerHasOldTuple(tdata->tg_event) ? 2 : 1;
+
+        for (size_t j = 0; j < limit; ++j)
+        {
+            for (i = 0; i < rel_desc->natts; ++i)
+            {
+                Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
+                func_inout_info->typesize_args += pldotnet_GetTypeSize(attr->atttypid);
+            }
+        }
+    }
+    else
+    {
+        for (i = 0; i < procst->pronargs; i++)
+        {
+            if (pldotnet_IsArray((int) i, func_inout_info))
+                func_inout_info->typesize_args += sizeof(pldotnet_ArrayT);
+            else
+                func_inout_info->typesize_args += pldotnet_GetTypeSize(argtype[i]);
+            if (pldotnet_IsNullable(argtype[i]))
+                nullable_arg_flag = true;
+        }
+    }
+
+    if (nullable_arg_flag || force_nullable_flags)
+        func_inout_info->typesize_nullflags += sizeof(bool) * procst->pronargs;
+    func_inout_info->typesize_nullflags += sizeof(bool);
+    func_inout_info->typesize_result = pldotnet_GetTypeSize(rettype);
+
+    default_size = (size_t) (
+        func_inout_info->typesize_nullflags
+      + func_inout_info->typesize_args
+      + func_inout_info->typesize_result
+    );
+
+    libargs_ptr = (int8_t*) palloc0(default_size + sizeof(uint32_t));
+    argsnull_ptr = (bool *) libargs_ptr;
+    cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
+
+    if (CALLED_AS_TRIGGER(fcinfo))
+    {
+        TriggerData *tdata = (TriggerData*) fcinfo->context;
+        TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
+        cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_trigtuple, rel_desc, cur_arg);
+        if (pldotnet_TriggerHasOldTuple(tdata->tg_event))
+            cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_newtuple, rel_desc, cur_arg);
+    }
+    else
+        cur_arg = pldotnet_FillNonTriggerValues(
+            fcinfo,
+            procst,
+            func_inout_info,
+            argsnull_ptr,
+            cur_arg
+        );
 
     /* append the function id after usual libargs data */
     cur_arg = libargs_ptr + default_size;
@@ -907,12 +1177,27 @@ pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index)
  * F# or C#
  */
 Datum
-pldotnet_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo, pldotnet_FuncInOutInfo *func_inout_info)
+pldotnet_GetNetResult(
+    int8_t *libargs,
+    Oid rettype,
+    FunctionCallInfo fcinfo,
+    pldotnet_FuncInOutInfo *func_inout_info
+)
 {
-    int8_t *result_ptr = libargs + func_inout_info->typesize_args
-                                + func_inout_info->typesize_nullflags;
-    int8_t *resultnull_ptr = libargs +
-                           (func_inout_info->typesize_nullflags - sizeof(bool));
+    int8_t *result_ptr = libargs
+                       + func_inout_info->typesize_args
+                       + func_inout_info->typesize_nullflags;
+
+    int8_t *resultnull_ptr = libargs
+                           + (func_inout_info->typesize_nullflags - sizeof(bool));
+
+    if (CALLED_AS_TRIGGER(fcinfo))
+    {
+        int8_t *args = libargs + func_inout_info->typesize_nullflags;
+        if (TRIGGEROID != rettype)
+            elog(ERROR, "[pldotnet]: Invalid Oid while running trigger");
+        return pldotnet_GetTriggerResult(fcinfo, args, result_ptr, resultnull_ptr);
+    }
 
     if (!pldotnet_IsSimpleType(rettype) && !pldotnet_IsTextType(rettype))
     {
@@ -923,8 +1208,7 @@ pldotnet_GetNetResult(int8_t *libargs, Oid rettype, FunctionCallInfo fcinfo, pld
         return pldotnet_CreateCompositeResult((char*) result_ptr, rettype, fcinfo);
     }
 
-    return
-        pldotnet_GetScalarValue((char*) result_ptr, (char*) resultnull_ptr, fcinfo, rettype);
+    return pldotnet_GetScalarValue((char*) result_ptr, (char*) resultnull_ptr, fcinfo, rettype);
 }
 
 bool
