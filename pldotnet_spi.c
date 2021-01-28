@@ -36,7 +36,8 @@ pldotnet_SPIExecute(char* cmd, long limit)
     PG_TRY();
     {
         rv = SPI_execute(cmd, false, limit);
-        pldotnet_SPIFetchResult(SPI_tuptable, rv);
+        if (nullptr != SPI_tuptable)
+            pldotnet_SPIFetchResult(SPI_tuptable, rv);
     }
     PG_CATCH();
     {
