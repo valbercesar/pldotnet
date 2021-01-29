@@ -51,7 +51,8 @@ REGRESS = \
 	testfscomposites \
 	testvalidation \
 	testfsvalidation \
-	testtrigger
+	testtrigger \
+	testfstrigger
 
 OBJS = \
 	pldotnet.o \

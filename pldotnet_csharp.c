@@ -62,7 +62,7 @@ static char *plcsharp_BuildBlockArgsDecl(
     bool validation
 );
 
-static char*
+static const char*
 plcsharp_GetTriggerTuples(FunctionCallInfo fcinfo);
 
 static char  *plcsharp_BuildBlockCallFuncCall(
@@ -642,7 +642,7 @@ public TriggerTuple %s;";
     return block2str;
 }
 
-static char*
+static const char*
 plcsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
 {
     static const char old_tuple[] = "TriggerTuple _OLD = libargs.OLD;\n";
@@ -691,7 +691,7 @@ plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
                 libargs.NEW = _NEW;\n\
             }\n";
 
-    char *tg_tuples = plcsharp_GetTriggerTuples(fcinfo);
+    const char *tg_tuples = plcsharp_GetTriggerTuples(fcinfo);
     char *func = NameStr(procst->proname);
 
     size_t size = strlen(template)

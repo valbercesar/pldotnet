@@ -8,10 +8,12 @@ CREATE TABLE update_events(event_time TIMESTAMPTZ NOT NULL);
 -- we need this while creating new trigger functions
 -- it skips the function validation step.
 -- We do not have any information about the incoming tuples at
--- this time, so we can not generate C# code.
+-- this time, so we can not generate F# code.
 -- We have to enable it again at the end of this test
 --
 SET check_function_bodies = false;
+--
+DEALLOCATE ALL;
 --
 PREPARE insert_my_values(int) AS INSERT INTO my_table
     SELECT
@@ -49,9 +51,9 @@ PREPARE verify_entries(int, int, int, int) AS
 -- it always return null
 -- so PG must save the NEW tuple in the database
 --
-CREATE FUNCTION returnNullBeforeInsertMyTable() RETURNS TRIGGER AS $$
-return null;
-$$ LANGUAGE plcsharp;
+CREATE FUNCTION returnNullBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+None
+$$ LANGUAGE plfsharp;
 --
 -- create the current trigger that calls
 -- the dummy function above
@@ -59,7 +61,7 @@ $$ LANGUAGE plcsharp;
 --
 CREATE TRIGGER returnNullBeforeInsertMyTable
 BEFORE INSERT ON my_table
-FOR EACH ROW EXECUTE PROCEDURE returnNullBeforeInsertMyTable();
+FOR EACH ROW EXECUTE PROCEDURE returnNullBeforeInsertMyTableFSharp();
 --
 -- test valid insertion
 --
@@ -107,9 +109,9 @@ EXECUTE insert_my_values(:entries_quantity);
 -- this one, always return "SKIP", so PG must
 -- discard the NEW tuple (do not save in DB)
 --
-CREATE FUNCTION returnSkipBeforeInsertMyTable() RETURNS TRIGGER AS $$
-return "SKIP";
-$$ LANGUAGE plcsharp;
+CREATE FUNCTION returnSkipBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+Some "SKIP"
+$$ LANGUAGE plfsharp;
 --
 -- create a new trigger to call the
 -- before_insert_on_my_table_skip for each row
@@ -117,7 +119,7 @@ $$ LANGUAGE plcsharp;
 --
 CREATE TRIGGER returnSkipBeforeInsertMyTable
 BEFORE INSERT ON my_table
-FOR EACH ROW EXECUTE PROCEDURE returnSkipBeforeInsertMyTable();
+FOR EACH ROW EXECUTE PROCEDURE returnSkipBeforeInsertMyTableFSharp();
 --
 -- try to insert more data into my_values table
 EXECUTE insert_my_values(:entries_quantity);
@@ -146,12 +148,12 @@ DROP TRIGGER returnSkipBeforeInsertMyTable ON my_table;
 -- inside the NEW tuple and return "MODIFY", so PG must
 -- update the tuple and save it.
 --
-CREATE FUNCTION returnModifyBeforeInsertMyTable() RETURNS TRIGGER AS $$
-_NEW.x += 101;
-_NEW.y += 102;
-_NEW.z += 103;
-return "MODIFY";
-$$ LANGUAGE plcsharp;
+CREATE FUNCTION returnModifyBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+_NEW.x <- _NEW.x + 101
+_NEW.y <- _NEW.y + 102
+_NEW.z <- _NEW.z + 103.0f
+Some "MODIFY"
+$$ LANGUAGE plfsharp;
 --
 -- create a new trigger to call the
 -- before_insert_on_my_table_modify for each row
@@ -159,7 +161,7 @@ $$ LANGUAGE plcsharp;
 --
 CREATE TRIGGER returnModifyBeforeInsertMyTable
 BEFORE INSERT ON my_table
-FOR EACH ROW EXECUTE PROCEDURE returnModifyBeforeInsertMyTable();
+FOR EACH ROW EXECUTE PROCEDURE returnModifyBeforeInsertMyTableFSharp();
 --
 -- truncate the table
 --
@@ -192,13 +194,15 @@ DROP TRIGGER returnModifyBeforeInsertMyTable ON my_table;
 -- It shows how to dynamically avoid an insertion based
 -- on some validation step
 --
-CREATE FUNCTION validateBeforeInsertMyTable() RETURNS TRIGGER AS $$
-return (int) _NEW.x == (int) 1 ? "SKIP" : null;
-$$ LANGUAGE plcsharp;
+CREATE FUNCTION validateBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+match _NEW.x with
+| 1 -> Some "SKIP"
+| _ -> None
+$$ LANGUAGE plfsharp;
 --
 CREATE TRIGGER validateBeforeInsertMyTable
 BEFORE INSERT ON my_table
-FOR EACH ROW EXECUTE PROCEDURE validateBeforeInsertMyTable();
+FOR EACH ROW EXECUTE PROCEDURE validateBeforeInsertMyTableFSharp();
 --
 -- truncate the table again
 --
@@ -236,13 +240,15 @@ DROP TRIGGER validateBeforeInsertMyTable ON my_table;
 -- It shows how to dynamically avoid an insertion based
 -- on the value inside a tuple
 --
-CREATE FUNCTION validateBeforeUpdateMyTable() RETURNS TRIGGER AS $$
-return (int) _NEW.x == (int) 1 ? "SKIP" : null;
-$$ LANGUAGE plcsharp;
+CREATE FUNCTION validateBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
+match _NEW.x with
+| 1 -> Some "SKIP"
+| _ -> None
+$$ LANGUAGE plfsharp;
 --
 CREATE TRIGGER validateBeforeUpdateMyTable
 BEFORE UPDATE ON my_table
-FOR EACH ROW EXECUTE PROCEDURE validateBeforeUpdateMyTable();
+FOR EACH ROW EXECUTE PROCEDURE validateBeforeUpdateMyTableFSharp();
 --
 -- truncate both tables
 --
@@ -296,15 +302,17 @@ DROP TRIGGER validateBeforeUpdateMyTable ON my_table;
 -- create a new function to be called before UPDATE
 -- It shows how to access the old tuple
 --
-CREATE FUNCTION verifyOldBeforeUpdateMyTable() RETURNS TRIGGER AS $$
-bool old_y_is_5 = (int) _OLD.y == (int) 5;
-bool new_x_is_3 = (int) _NEW.x == (int) 3;
-return old_y_is_5 && new_x_is_3 ? "SKIP" : null;
-$$ LANGUAGE plcsharp;
+CREATE FUNCTION verifyOldBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
+let old_y_is_5 : bool = 5 = _OLD.y
+let new_x_is_3 : bool = 3 = _NEW.x
+match (old_y_is_5, new_x_is_3) with
+| (true, true) -> Some "SKIP"
+| _ -> None
+$$ LANGUAGE plfsharp;
 --
 CREATE TRIGGER verifyOldBeforeUpdateMyTable
 BEFORE UPDATE ON my_table
-FOR EACH ROW EXECUTE PROCEDURE verifyOldBeforeUpdateMyTable();
+FOR EACH ROW EXECUTE PROCEDURE verifyOldBeforeUpdateMyTableFSharp();
 --
 -- truncate both tables
 --
@@ -317,7 +325,7 @@ TRUNCATE TABLE my_table;
 EXECUTE insert_my_values(:entries_quantity);
 --
 -- verify the second row
-SELECT 1 = COUNT(*) FROM my_table WHERE 4 = 0 AND y = 5 AND z = 6;
+SELECT 1 = COUNT(*) FROM my_table WHERE x = 4 AND y = 5 AND z = 6;
 --
 -- perform a valid update in the second row
 UPDATE my_table SET x = 0 WHERE x = 4;
@@ -342,14 +350,14 @@ DROP TRIGGER verifyOldBeforeUpdateMyTable ON my_table;
 -- create a new function to update the update_events table
 -- when some change occurs in my_table
 --
-CREATE FUNCTION registerEventAfterUpdateMyTable() RETURNS TRIGGER AS $$
-SPI.Execute("INSERT INTO update_events VALUES (now()::timestamptz)", 1);
-return null;
-$$ LANGUAGE plcsharp;
+CREATE FUNCTION registerEventAfterUpdateMyTableFSharp() RETURNS TRIGGER AS $$
+SPI.Execute "INSERT INTO update_events VALUES (now()::timestamptz)" 1L |> ignore
+None
+$$ LANGUAGE plfsharp;
 --
 CREATE TRIGGER registerEventAfterUpdateMyTable
 AFTER UPDATE ON my_table
-FOR EACH ROW EXECUTE PROCEDURE registerEventAfterUpdateMyTable();
+FOR EACH ROW EXECUTE PROCEDURE registerEventAfterUpdateMyTableFSharp();
 --
 -- truncate both tables
 --
@@ -400,6 +408,6 @@ DROP TRIGGER registerEventAfterUpdateMyTable ON my_table;
 -- enable function body validation again
 --
 SET check_function_bodies = true;
---
+
 DROP TABLE my_table CASCADE;
 DROP TABLE update_events CASCADE;

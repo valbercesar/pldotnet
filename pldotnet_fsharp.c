@@ -585,7 +585,7 @@ plfsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
         bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
         size_t tuple_size = strlen(new_tuple) + 1;
 
-        char *result = (char *) palloc0(tuple_size + has_old ? tuple_size : 0);
+        char *result = (char *) palloc0(tuple_size + (has_old ? tuple_size : 0));
         char *cursor = result;
 
         if (has_old)

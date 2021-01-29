@@ -495,3 +495,6 @@ DROP TRIGGER registerEventAfterUpdateMyTable ON my_table;
 -- enable function body validation again
 --
 SET check_function_bodies = true;
+--
+DROP TABLE my_table CASCADE;
+DROP TABLE update_events CASCADE;
