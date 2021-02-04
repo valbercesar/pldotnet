@@ -49,11 +49,15 @@ plcsharp_BuildBlockCompositesFromProcedure(
     Form_pg_proc procst
 );
 
+
 static int plcsharp_BuildBlockComposites(char * composites_decl,
                                          FunctionCallInfo fcinfo,
                                          Form_pg_proc procst);
+static const char*
+plcsharp_GetTriggerDataDefinition(void);
+
 static char*
-plcsharp_BuildTriggerArgs(FunctionCallInfo fcinfo, const char *trigger);
+plcsharp_BuildTriggerDataArgs(FunctionCallInfo fcinfo);
 
 static char *plcsharp_BuildBlockArgsDecl(
     FunctionCallInfo fcinfo,
@@ -62,8 +66,11 @@ static char *plcsharp_BuildBlockArgsDecl(
     bool validation
 );
 
-static const char*
-plcsharp_GetTriggerTuples(FunctionCallInfo fcinfo);
+const char*
+plchsarp_GetTriggerArgs(FunctionCallInfo fcinfo);
+
+static char*
+plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst);
 
 static char  *plcsharp_BuildBlockCallFuncCall(
     FunctionCallInfo fcinfo,
@@ -380,8 +387,34 @@ pldotnet_PublicDecl(Oid type)
 }
 
 static int
+plcsharp_BuildBLockCompositesFromTriggerData(
+    char* composite_decls,
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst
+)
+{
+    size_t len = plcsharp_BuildBlockCompositesFromTrigger(
+        composite_decls,
+        fcinfo,
+        procst
+    );
+
+    char *cursor = composite_decls + len;
+    const char *tg_definition = plcsharp_GetTriggerDataDefinition();
+
+    snprintf(
+        cursor,
+        8198 - len,
+        "%s",
+        tg_definition
+    );
+
+    return strlen(composite_decls);
+}
+
+static int
 plcsharp_BuildBlockCompositesFromTrigger(
-    char * composite_decls,
+    char *composite_decls,
     FunctionCallInfo fcinfo,
     Form_pg_proc procst
 )
@@ -391,7 +424,7 @@ plcsharp_BuildBlockCompositesFromTrigger(
 
     pldotnet_GetStructFromCompositeTuple(
         composite_decls,
-        1024,
+        8198,
         "TriggerTuple",
         rel_desc
     );
@@ -452,7 +485,7 @@ plcsharp_BuildBlockComposites(
 )
 {
     if (CALLED_AS_TRIGGER(fcinfo))
-        return plcsharp_BuildBlockCompositesFromTrigger(
+        return plcsharp_BuildBLockCompositesFromTriggerData(
             composite_decls,
             fcinfo,
             procst
@@ -465,32 +498,41 @@ plcsharp_BuildBlockComposites(
     );
 }
 
-static char*
-plcsharp_BuildTriggerArgs(FunctionCallInfo fcinfo, const char *trigger)
+static const char*
+plcsharp_GetTriggerDataDefinition(void)
 {
-    TriggerData *tdata = (TriggerData*) fcinfo->context;
-    bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
-    size_t current_trigger_size = strlen(trigger) + strlen("NEW") + 1;
-    char *current_trigger = (char*) palloc0(current_trigger_size * (has_old ? 2 : 1));
-    char *cursor = current_trigger;
-    if (has_old)
-    {
-        snprintf(
-            cursor,
-            current_trigger_size,
-            trigger,
-            "OLD"
-        );
-        cursor += strlen(current_trigger);
-    }
-    snprintf(
-        cursor,
-        current_trigger_size,
-        trigger,
-        "NEW"
-    );
+    return "\n\
+        [StructLayout(LayoutKind.Sequential,Pack=1)]\n\
+        public struct TriggerData\n\
+        {\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public TriggerTuple OLD;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public TriggerTuple NEW;\n\
+            [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
+            public string name;\n\
+            [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
+            public string table_name;\n\
+            [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
+            public string table_schema;\n\
+            [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
+            public string when;\n\
+            [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
+            public string level;\n\
+            [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
+            public string tg_event;\n\
+            [MarshalAs(UnmanagedType.U8)]\n\
+            public ulong relid;\n\
+        }\n";
+}
 
-    return current_trigger;
+
+static char*
+plcsharp_BuildTriggerDataArgs(FunctionCallInfo fcinfo)
+{
+    return "\n\
+[MarshalAs(UnmanagedType.Struct)]\n\
+public TriggerData TD;";
 }
 
 static char *
@@ -508,10 +550,7 @@ plcsharp_BuildBlockArgsDecl(
     char argname[] = " argN";
     char result[] = " resu"; /*  have to be same size argN */
     int i, cursize = 0, totalsize = 0;
-    const char *trigger = "\n\
-[MarshalAs(UnmanagedType.Struct)]\n\
-public TriggerTuple %s;";
-    char *current_trigger = nullptr;
+    char *tg_data;
     /* nullable related */
     bool nullable_arg_flag = false;
     int null_flags_size = 0, return_null_flag_size = 0;
@@ -558,8 +597,8 @@ public TriggerTuple %s;";
 
     if (CALLED_AS_TRIGGER(fcinfo))
     {
-        current_trigger = plcsharp_BuildTriggerArgs(fcinfo, trigger);
-        totalsize += strlen(current_trigger);
+        tg_data = plcsharp_BuildTriggerDataArgs(fcinfo);
+        totalsize += strlen(tg_data);
     }
 
     totalsize += pldotnet_PublicDeclSize(rettype)
@@ -596,12 +635,13 @@ public TriggerTuple %s;";
 
     if (CALLED_AS_TRIGGER(fcinfo))
     {
+        size_t cts = strlen(tg_data) + 1;
         str_ptr = (char*)(block2str + cursize);
         SNPRINTF(
             str_ptr,
-            strlen(current_trigger) + 1,
+            cts,
             "%s",
-            current_trigger
+            tg_data
         );
         cursize = strlen(block2str);
     }
@@ -642,60 +682,39 @@ public TriggerTuple %s;";
     return block2str;
 }
 
-static const char*
-plcsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
+/*
+ * This function builds the parameters to the function 
+ * or stored procedure. A trigger can call a function and
+ * pass some global arguments, not related to the function
+ * definition. 
+ * Example: CREATE FUNCTION my_function() RETURNS TRIGGER ...
+ * my_function does not accept any argument in its definition
+ * but triggers can pass some "global" variables, including both
+ * NEW and OLD tuples in a typical UPDATE query.
+ * This list of special args here is a heterogenous list.
+ * TODO: find a way to pass this data to C#
+ */
+const char*
+plchsarp_GetTriggerArgs(FunctionCallInfo fcinfo)
 {
-    static const char old_tuple[] = "TriggerTuple _OLD = libargs.OLD;\n";
-    static const char new_tuple[] = "TriggerTuple _NEW = libargs.NEW;\n";
-    static const char indent[] = "            ";
-
-    TriggerData *tdata = (TriggerData*) fcinfo->context;
-    bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
-    size_t tuple_size = strlen(new_tuple) + 1;
-    size_t indent_size = strlen(indent) + 1;
-
-    char *result = (char *) palloc0(tuple_size + (has_old ? tuple_size + indent_size : 0));
-    char *cursor = result;
-
-    if (has_old)
-    {
-        SNPRINTF(
-            cursor,
-            tuple_size + indent_size,
-            "%s%s",
-            old_tuple,
-            indent
-        );
-        cursor += strlen(result);
-    }
-
-    SNPRINTF(
-        cursor,
-        tuple_size,
-        "%s",
-        new_tuple
-    );
-
-    return result;
+    /* TODO */
+    return "";
 }
 
 static char*
 plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
 {
     const char *template = "\n\
-            %s\n\
-            libargs.resu = %s();\n\
-            libargs.resunull = null == libargs.resu;\n\
-            if (\"MODIFY\" == libargs.resu)\n\
-            {\n\
-                libargs.NEW = _NEW;\n\
-            }\n";
+            libargs.resu = %s(%s%s);\n\
+            libargs.resunull = null == libargs.resu;\n";
 
-    const char *tg_tuples = plcsharp_GetTriggerTuples(fcinfo);
+    const char *args = plchsarp_GetTriggerArgs(fcinfo);
+    const char *tg_tuples = "ref libargs.TD";
     char *func = NameStr(procst->proname);
 
     size_t size = strlen(template)
                 + strlen(func)
+                + strlen(args)
                 + strlen(tg_tuples)
                 + 1;
 
@@ -705,8 +724,9 @@ plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
         block2str,
         size,
         template,
-        tg_tuples,
-        func
+        func,
+        args,
+        tg_tuples
     );
 
     return block2str;
@@ -994,7 +1014,7 @@ plcsharp_BuildBlockTriggerFuncDecl(
 {
     bool isnull = false;
     const char *template = "\n\
-            %s %s()\n\
+            %s %s(%s%s)\n\
             {\n\
                 %s\n\
             }\n";
@@ -1008,9 +1028,18 @@ plcsharp_BuildBlockTriggerFuncDecl(
         true
     );
 
+    /* TODO
+     * args is a heterogenous list
+     */
+    const char *args = "";
+
+    const char *tg_tuples = "ref TriggerData TD";
+
     size_t size = strlen(template)
                 + strlen(rettypname)
                 + strlen(func) * 2
+                + strlen(args)
+                + strlen(tg_tuples)
                 + strlen(source_text) + 1;
 
     char *block2str = (char*) palloc0(size);
@@ -1021,6 +1050,8 @@ plcsharp_BuildBlockTriggerFuncDecl(
         template,
         rettypname,
         func,
+        args,
+        tg_tuples,
         source_text,
         func
     );
@@ -1406,7 +1437,7 @@ plcsharp_GetUserSourceCode(
     const char *cs_block_userfunc_decl;
     const char *cs_block_callfunc_call;
     char *source_code = nullptr;
-    char cs_block_composite_decl[1024];
+    char cs_block_composite_decl[8198];
     cs_block_composite_decl[0] = 0;
 
     plcsharp_BuildBlockComposites(cs_block_composite_decl, fcinfo, procst);

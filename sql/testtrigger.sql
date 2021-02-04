@@ -147,9 +147,9 @@ DROP TRIGGER returnSkipBeforeInsertMyTable ON my_table;
 -- update the tuple and save it.
 --
 CREATE FUNCTION returnModifyBeforeInsertMyTable() RETURNS TRIGGER AS $$
-_NEW.x += 101;
-_NEW.y += 102;
-_NEW.z += 103;
+TD.NEW.x += 101;
+TD.NEW.y += 102;
+TD.NEW.z += 103;
 return "MODIFY";
 $$ LANGUAGE plcsharp;
 --
@@ -193,7 +193,7 @@ DROP TRIGGER returnModifyBeforeInsertMyTable ON my_table;
 -- on some validation step
 --
 CREATE FUNCTION validateBeforeInsertMyTable() RETURNS TRIGGER AS $$
-return (int) _NEW.x == (int) 1 ? "SKIP" : null;
+return (int) TD.NEW.x == (int) 1 ? "SKIP" : null;
 $$ LANGUAGE plcsharp;
 --
 CREATE TRIGGER validateBeforeInsertMyTable
@@ -237,7 +237,7 @@ DROP TRIGGER validateBeforeInsertMyTable ON my_table;
 -- on the value inside a tuple
 --
 CREATE FUNCTION validateBeforeUpdateMyTable() RETURNS TRIGGER AS $$
-return (int) _NEW.x == (int) 1 ? "SKIP" : null;
+return (int) TD.NEW.x == (int) 1 ? "SKIP" : null;
 $$ LANGUAGE plcsharp;
 --
 CREATE TRIGGER validateBeforeUpdateMyTable
@@ -297,8 +297,8 @@ DROP TRIGGER validateBeforeUpdateMyTable ON my_table;
 -- It shows how to access the old tuple
 --
 CREATE FUNCTION verifyOldBeforeUpdateMyTable() RETURNS TRIGGER AS $$
-bool old_y_is_5 = (int) _OLD.y == (int) 5;
-bool new_x_is_3 = (int) _NEW.x == (int) 3;
+bool old_y_is_5 = (int) TD.OLD.y == (int) 5;
+bool new_x_is_3 = (int) TD.NEW.x == (int) 3;
 return old_y_is_5 && new_x_is_3 ? "SKIP" : null;
 $$ LANGUAGE plcsharp;
 --

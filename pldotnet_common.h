@@ -150,6 +150,22 @@ typedef struct pldotnet_ArrayT
     uint32 buffer_size;
 } pldotnet_ArrayT;
 
+typedef struct pldotnet_TriggerData
+{
+    char *name;
+    char *table_name;
+    char *table_schema;
+    char *when;
+    char *level;
+    char *tg_event;
+    uint64_t relid;
+
+    /* TODO
+     * args is an heterogeneous list
+     */
+
+} pldotnet_TriggerData;
+
 bool pldotnet_NeedsIntPtr(Oid oid);
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *args);
 void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl);
@@ -252,6 +268,12 @@ pldotnet_FillTriggerTuple(
     HeapTuple trig_tuple,
     TupleDesc rel_desc,
     int8_t *cur_arg
+);
+
+void
+pldotnet_SetTriggerData(
+    TriggerData *tdata,
+    pldotnet_TriggerData *pldotnet_tg_data
 );
 
 int8_t* pldotnet_CreateCStructLibargs(
