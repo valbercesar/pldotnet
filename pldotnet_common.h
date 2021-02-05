@@ -152,13 +152,13 @@ typedef struct pldotnet_ArrayT
 
 typedef struct pldotnet_TriggerData
 {
-    char *name;
-    char *table_name;
-    char *table_schema;
-    char *when;
-    char *level;
+    char *tg_name;
+    char *tg_table_name;
+    char *tg_table_schema;
+    char *tg_when;
+    char *tg_level;
     char *tg_event;
-    uint64_t relid;
+    uint64_t tg_relid;
 
     /* TODO
      * args is an heterogeneous list

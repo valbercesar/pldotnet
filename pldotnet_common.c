@@ -983,23 +983,23 @@ pldotnet_SetTriggerData(
     pldotnet_TriggerData *pldotnet_tg_data
 )
 {
-    pldotnet_tg_data->name = tdata->tg_trigger->tgname;
-    pldotnet_tg_data->table_name = SPI_getrelname(tdata->tg_relation);
-    pldotnet_tg_data->relid = (uint32_t) tdata->tg_relation->rd_id;
-    pldotnet_tg_data->table_schema = SPI_getnspname(tdata->tg_relation);
+    pldotnet_tg_data->tg_name = tdata->tg_trigger->tgname;
+    pldotnet_tg_data->tg_table_name = SPI_getrelname(tdata->tg_relation);
+    pldotnet_tg_data->tg_relid = (uint32_t) tdata->tg_relation->rd_id;
+    pldotnet_tg_data->tg_table_schema = SPI_getnspname(tdata->tg_relation);
 
     if (TRIGGER_FIRED_BEFORE(tdata->tg_event))
-        pldotnet_tg_data->when = "BEFORE";
+        pldotnet_tg_data->tg_when = "BEFORE";
     else if (TRIGGER_FIRED_AFTER(tdata->tg_event))
-        pldotnet_tg_data->when = "AFTER";
+        pldotnet_tg_data->tg_when = "AFTER";
     else if (TRIGGER_FIRED_INSTEAD(tdata->tg_event))
-        pldotnet_tg_data->when = "INSTEAD OF";
+        pldotnet_tg_data->tg_when = "INSTEAD OF";
     else
         elog(ERROR, "unrecognized WHEN tg_event: %u", tdata->tg_event);
 
     if (TRIGGER_FIRED_FOR_ROW(tdata->tg_event))
     {
-        pldotnet_tg_data->level = "ROW";
+        pldotnet_tg_data->tg_level = "ROW";
         if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event))
             pldotnet_tg_data->tg_event = "INSERT";
         else if (TRIGGER_FIRED_BY_DELETE(tdata->tg_event))

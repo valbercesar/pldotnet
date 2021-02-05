@@ -497,11 +497,11 @@ DROP TRIGGER registerEventAfterUpdateMyTable ON my_table;
 --
 -- This special function will be called before and after INSERT and UPDATES
 CREATE OR REPLACE FUNCTION accessTriggerVariables() RETURNS TRIGGER AS $$
-bool name = TD.name.Contains("accesstriggervariables");
-bool table_schema = "public" == TD.table_schema;
-bool table_name = "my_table" == TD.table_name;
-bool is_row = "ROW" == TD.level;
-bool is_before = "BEFORE" == TD.when;
+bool name = TD.tg_name.Contains("accesstriggervariables");
+bool table_schema = "public" == TD.tg_table_schema;
+bool table_name = "my_table" == TD.tg_table_name;
+bool is_row = "ROW" == TD.tg_level;
+bool is_before = "BEFORE" == TD.tg_when;
 bool insertion = "INSERT" == TD.tg_event;
 
 if (!(name && table_schema && table_name && is_row))

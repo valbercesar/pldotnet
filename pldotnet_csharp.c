@@ -510,19 +510,19 @@ plcsharp_GetTriggerDataDefinition(void)
             [MarshalAs(UnmanagedType.Struct)]\n\
             public TriggerTuple OLD;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
-            public string name;\n\
+            public string tg_name;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
-            public string table_name;\n\
+            public string tg_table_name;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
-            public string table_schema;\n\
+            public string tg_table_schema;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
-            public string when;\n\
+            public string tg_when;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
-            public string level;\n\
+            public string tg_level;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
             public string tg_event;\n\
             [MarshalAs(UnmanagedType.U8)]\n\
-            public ulong relid;\n\
+            public ulong tg_relid;\n\
         }\n";
 }
 
