@@ -506,9 +506,9 @@ plcsharp_GetTriggerDataDefinition(void)
         public struct TriggerData\n\
         {\n\
             [MarshalAs(UnmanagedType.Struct)]\n\
-            public TriggerTuple OLD;\n\
-            [MarshalAs(UnmanagedType.Struct)]\n\
             public TriggerTuple NEW;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public TriggerTuple OLD;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
             public string name;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\

@@ -26,7 +26,7 @@ PREPARE verify_entries(int, int, int, int) AS
             generate_series(2, $1 * 3, 3) + $3 AS y,
             generate_series(3, $1 * 3, 3) + $4 AS z
     )
-    SELECT $1 = COUNT(mt.x)
+    SELECT $1 = COUNT(*)
     FROM generated_values AS gv
     RIGHT JOIN my_table AS mt
     ON
@@ -490,6 +490,126 @@ SELECT 4 = COUNT(*) FROM update_events;
 DROP TRIGGER registerEventAfterUpdateMyTable ON my_table;
 --
 -------------------- REGISTER UPDATE EVENT -----------------------
+------------------------------------------------------------------
+--
+------------------------------------------------------------------
+------------------- ACCESS TRIGGER VARIABLES ---------------------
+--
+-- This special function will be called before and after INSERT and UPDATES
+CREATE OR REPLACE FUNCTION accessTriggerVariables() RETURNS TRIGGER AS $$
+bool name = TD.name.Contains("accesstriggervariables");
+bool table_schema = "public" == TD.table_schema;
+bool table_name = "my_table" == TD.table_name;
+bool is_row = "ROW" == TD.level;
+bool is_before = "BEFORE" == TD.when;
+bool insertion = "INSERT" == TD.tg_event;
+
+if (!(name && table_schema && table_name && is_row))
+{
+    return "SKIP";
+}
+if (is_before) 
+{
+    if (insertion)
+    {
+        return TD.NEW.x != 0 ? null : "SKIP";
+    }
+    else
+    {
+        TD.NEW.x += 100;
+        return "MODIFY";
+    }
+}
+else
+{
+    SPI.Execute("INSERT INTO update_events VALUES (now()::timestamptz)", 1);
+}
+return null;
+$$ LANGUAGE plcsharp;
+--
+CREATE TRIGGER accessTriggerVariablesBeforeInsert
+BEFORE INSERT ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariables();
+--
+CREATE TRIGGER accessTriggerVariablesAfterInsert
+AFTER INSERT ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariables();
+--
+CREATE TRIGGER accessTriggerVariablesBeforeUpdate
+BEFORE UPDATE ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariables();
+--
+CREATE TRIGGER accessTriggerVariablesAfterUpdate
+AFTER UPDATE ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariables();
+--
+TRUNCATE TABLE my_table;
+TRUNCATE TABLE update_events;
+--
+-- test the simplest insertion of invalid entries
+INSERT INTO my_table (x, y, z) VALUES (0, 2, 3), (0, 3, 2);
+--
+-- The insertion above must be discarded
+--
+SELECT 0 = COUNT(*) FROM my_table;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- Insert valid entries
+INSERT INTO my_table (x, y, z) VALUES (1, 2, 3), (4, 5, 6);
+--
+SELECT 1 = COUNT(*) FROM my_table AS mt WHERE mt.x = 1 AND mt.y = 2 AND mt.z = 3.0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 1 = COUNT(*) FROM my_table AS mt WHERE mt.x = 4 AND mt.y = 5 AND mt.z = 6.0;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- We must have two update events
+--
+SELECT 2 = COUNT(*) FROM update_events;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- Test the update events
+UPDATE my_table SET x = 0 WHERE x = 1;
+--
+-- The update event must increase X by 100, according the BEFORE UDPATE trigger
+--
+SELECT 1 = COUNT(*) FROM my_table WHERE x = 100;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- We have a new update event due to AFTER UPDATE trigger
+--
+SELECT 3 = COUNT(*) FROM update_events;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+DROP TRIGGER accessTriggerVariablesBeforeInsert ON my_table;
+DROP TRIGGER accessTriggerVariablesAfterInsert ON my_table;
+DROP TRIGGER accessTriggerVariablesBeforeUpdate ON my_table;
+DROP TRIGGER accessTriggerVariablesAfterUpdate ON my_table;
+--
+------------------- ACCESS TRIGGER VARIABLES ---------------------
 ------------------------------------------------------------------
 --
 -- enable function body validation again

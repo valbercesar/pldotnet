@@ -1188,13 +1188,13 @@ pldotnet_CreateCStructLibargs(
         pldotnet_TriggerData *pldotnet_tg_data = nullptr;
         if (pldotnet_TriggerHasOldTuple(tdata->tg_event))
         {
-            cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_trigtuple, rel_desc, cur_arg);
             cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_newtuple, rel_desc, cur_arg);
+            cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_trigtuple, rel_desc, cur_arg);
         }
         else
         {
-            cur_arg += trigger_tuple_size;
             cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_trigtuple, rel_desc, cur_arg);
+            cur_arg += trigger_tuple_size;
         }
         pldotnet_tg_data = (pldotnet_TriggerData*) cur_arg;
         pldotnet_SetTriggerData(tdata, pldotnet_tg_data);
