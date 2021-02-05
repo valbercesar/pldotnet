@@ -28,7 +28,7 @@ PREPARE verify_entries(int, int, int, int) AS
             generate_series(2, $1 * 3, 3) + $3 AS y,
             generate_series(3, $1 * 3, 3) + $4 AS z
     )
-    SELECT $1 = COUNT(mt.x)
+    SELECT $1 = COUNT(*)
     FROM generated_values AS gv
     RIGHT JOIN my_table AS mt
     ON
@@ -164,9 +164,9 @@ DROP TRIGGER returnSkipBeforeInsertMyTable ON my_table;
 -- update the tuple and save it.
 --
 CREATE FUNCTION returnModifyBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
-_NEW.x <- _NEW.x + 101
-_NEW.y <- _NEW.y + 102
-_NEW.z <- _NEW.z + 103.0f
+TD.NEW.x <- TD.NEW.x + 101
+TD.NEW.y <- TD.NEW.y + 102
+TD.NEW.z <- TD.NEW.z + 103.0f
 Some "MODIFY"
 $$ LANGUAGE plfsharp;
 --
@@ -215,7 +215,7 @@ DROP TRIGGER returnModifyBeforeInsertMyTable ON my_table;
 -- on some validation step
 --
 CREATE FUNCTION validateBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
-match _NEW.x with
+match TD.NEW.x with
 | 1 -> Some "SKIP"
 | _ -> None
 $$ LANGUAGE plfsharp;
@@ -281,7 +281,7 @@ DROP TRIGGER validateBeforeInsertMyTable ON my_table;
 -- on the value inside a tuple
 --
 CREATE FUNCTION validateBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
-match _NEW.x with
+match TD.NEW.x with
 | 1 -> Some "SKIP"
 | _ -> None
 $$ LANGUAGE plfsharp;
@@ -363,8 +363,8 @@ DROP TRIGGER validateBeforeUpdateMyTable ON my_table;
 -- It shows how to access the old tuple
 --
 CREATE FUNCTION verifyOldBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
-let old_y_is_5 : bool = 5 = _OLD.y
-let new_x_is_3 : bool = 3 = _NEW.x
+let old_y_is_5 : bool = 5 = TD.OLD.y
+let new_x_is_3 : bool = 3 = TD.NEW.x
 match (old_y_is_5, new_x_is_3) with
 | (true, true) -> Some "SKIP"
 | _ -> None
@@ -500,8 +500,120 @@ DROP TRIGGER registerEventAfterUpdateMyTable ON my_table;
 -------------------- REGISTER UPDATE EVENT -----------------------
 ------------------------------------------------------------------
 --
+------------------------------------------------------------------
+------------------- ACCESS TRIGGER VARIABLES ---------------------
+--
+-- This special function will be called before and after INSERT and UPDATES
+CREATE OR REPLACE FUNCTION accessTriggerVariablesFSharp() RETURNS TRIGGER AS $$
+let name: bool = TD.tg_name.Contains("accesstriggervariables")
+let table_schema: bool = "public".Equals TD.tg_table_schema
+let table_name: bool = "my_table".Equals TD.tg_table_name
+let is_row: bool = "ROW".Equals TD.tg_level
+let is_before: bool = "BEFORE".Equals TD.tg_when
+let insertion: bool = "INSERT".Equals TD.tg_event
+
+match (name && table_schema && table_name && is_row, is_before) with
+| false, _ -> Some "SKIP"
+| true, true ->
+    match insertion, TD.NEW.x <> 0 with
+    | true, true -> None
+    | true, false -> Some "SKIP"
+    | false, _ ->
+        TD.NEW.x <- TD.NEW.x + 100
+        Some "MODIFY"
+| _, false ->
+    SPI.Execute "INSERT INTO update_events VALUES (now()::timestamptz)" 1L |> ignore
+    None
+$$ LANGUAGE plfsharp;
+--
+CREATE TRIGGER accessTriggerVariablesBeforeInsertFSharp
+BEFORE INSERT ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariablesFSharp();
+--
+CREATE TRIGGER accessTriggerVariablesAfterInsertFSharp
+AFTER INSERT ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariablesFSharp();
+--
+CREATE TRIGGER accessTriggerVariablesBeforeUpdateFSharp
+BEFORE UPDATE ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariablesFSharp();
+--
+CREATE TRIGGER accessTriggerVariablesAfterUpdateFSharp
+AFTER UPDATE ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariablesFSharp();
+--
+TRUNCATE TABLE my_table;
+TRUNCATE TABLE update_events;
+--
+-- test the simplest insertion of invalid entries
+INSERT INTO my_table (x, y, z) VALUES (0, 2, 3), (0, 3, 2);
+--
+-- The insertion above must be discarded
+--
+SELECT 0 = COUNT(*) FROM my_table;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- Insert valid entries
+INSERT INTO my_table (x, y, z) VALUES (1, 2, 3), (4, 5, 6);
+--
+SELECT 1 = COUNT(*) FROM my_table AS mt WHERE mt.x = 1 AND mt.y = 2 AND mt.z = 3.0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 1 = COUNT(*) FROM my_table AS mt WHERE mt.x = 4 AND mt.y = 5 AND mt.z = 6.0;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- We must have two update events
+--
+SELECT 2 = COUNT(*) FROM update_events;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- Test the update events
+UPDATE my_table SET x = 0 WHERE x = 1;
+--
+-- The update event must increase X by 100, according the BEFORE UDPATE trigger
+--
+SELECT 1 = COUNT(*) FROM my_table WHERE x = 100;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- We have a new update event due to AFTER UPDATE trigger
+--
+SELECT 3 = COUNT(*) FROM update_events;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+DROP TRIGGER accessTriggerVariablesBeforeInsertFSharp ON my_table;
+DROP TRIGGER accessTriggerVariablesAfterInsertFSharp ON my_table;
+DROP TRIGGER accessTriggerVariablesBeforeUpdateFSharp ON my_table;
+DROP TRIGGER accessTriggerVariablesAfterUpdateFSharp ON my_table;
+--
+------------------- ACCESS TRIGGER VARIABLES ---------------------
+------------------------------------------------------------------
+--
 -- enable function body validation again
 --
 SET check_function_bodies = true;
+--
 DROP TABLE my_table CASCADE;
 DROP TABLE update_events CASCADE;

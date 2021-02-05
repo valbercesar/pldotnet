@@ -46,8 +46,11 @@ plfsharp_BuildArrayArgument(
     const size_t i,
     const size_t cursor,
     const char *template,
-    char *str_ptr);
+    char *str_ptr
+);
 
+static const char*
+plfsharp_GetTriggerDataDefinition(void);
 
 static char *plfsharp_BuildBlockArgsDecl(
     FunctionCallInfo fcinfo,
@@ -344,33 +347,9 @@ plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
 static char*
 plfsharp_BuildTriggerFields(FunctionCallInfo fcinfo)
 {
-    const char *trigger = "\
+    return "\
         [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable %s: TriggerTuple\n";
-    TriggerData *tdata = (TriggerData*) fcinfo->context;
-    bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
-
-    size_t current_trigger_size = strlen(trigger) + strlen("NEW") + 1;
-    char *current_trigger = (char*) palloc0(current_trigger_size * (has_old ? 2 : 1));
-    char *cursor = current_trigger;
-    if (has_old)
-    {
-        snprintf(
-            cursor,
-            current_trigger_size,
-            trigger,
-            "OLD"
-        );
-        cursor += strlen(current_trigger);
-    }
-    snprintf(
-        cursor,
-        current_trigger_size,
-        trigger,
-        "NEW"
-    );
-
-    return current_trigger;
+        val mutable TD: TriggerData\n";
 }
 
 /*
@@ -515,6 +494,34 @@ plfsharp_BuildNullFlagArray(uint32_t elems)
     return null_flag_array;
 }
 
+static const char*
+plfsharp_GetTriggerDataDefinition(void)
+{
+    return "\n\
+[<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
+type TriggerData =\n\
+    struct\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable NEW: TriggerTuple\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable OLD: TriggerTuple\n\
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
+        val mutable tg_name: string\n\
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
+        val mutable tg_table_name: string\n\
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
+        val mutable tg_table_schema: string\n\
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
+        val mutable tg_when: string\n\
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
+        val mutable tg_level: string\n\
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
+        val mutable tg_event: string\n\
+        [<MarshalAs(UnmanagedType.U8)>]\n\
+        val mutable tg_relid: uint64\n\
+    end\n";
+}
+
 static char*
 plfsharp_BuildBlockArgsDecl(
     FunctionCallInfo fcinfo,
@@ -574,39 +581,10 @@ type LibArgs =\n\
 static const char*
 plfsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
 {
-    static const char old_tuple[] = "\
-        let _OLD = libargs.OLD\n";
-    static const char new_tuple[] = "\
-        let mutable _NEW = libargs.NEW\n";
-
     if (CALLED_AS_TRIGGER(fcinfo))
     {
-        TriggerData *tdata = (TriggerData*) fcinfo->context;
-        bool has_old = pldotnet_TriggerHasOldTuple(tdata->tg_event);
-        size_t tuple_size = strlen(new_tuple) + 1;
-
-        char *result = (char *) palloc0(tuple_size + (has_old ? tuple_size : 0));
-        char *cursor = result;
-
-        if (has_old)
-        {
-            SNPRINTF(
-                cursor,
-                tuple_size,
-                "%s",
-                old_tuple
-            );
-            cursor += strlen(result);
-        }
-
-        SNPRINTF(
-            cursor,
-            tuple_size,
-            "%s",
-            new_tuple
-        );
-
-        return result;
+        return "\
+        let mutable TD : TriggerData = libargs.TD\n";
     }
 
     return "";
@@ -805,7 +783,7 @@ plfsharp_BuildBlockCallTrigger(
     const char *body_template
 )
 {
-    static const char tg_tuple[] = "libargs.NEW <- _NEW";
+    static const char tg_tuple[] = "libargs.TD <- TD";
     const char *func = NameStr(procst->proname);
     size_t size = strlen(body_template)
                 + strlen(tg_tuple)
@@ -977,10 +955,24 @@ plfsharp_BuildBlockCompositesFromTrigger(
     TriggerData* tdata = (TriggerData*) fcinfo->context;
     TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
 
-    return plfsharp_GetStructFromComposite(
+    const char *trigger_tuple = plfsharp_GetStructFromComposite(
         "TriggerTuple",
         rel_desc
     );
+
+    const char *trigger_data = plfsharp_GetTriggerDataDefinition();
+
+    size_t len = strlen(trigger_tuple) + strlen(trigger_data) + 1;
+    char *composites = (char*) palloc0(len);
+    SNPRINTF(
+        composites,
+        len,
+        "%s%s",
+        trigger_tuple,
+        trigger_data
+    );
+
+    return composites;
 }
 
 static char*
