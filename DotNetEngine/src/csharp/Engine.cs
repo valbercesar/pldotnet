@@ -204,6 +204,7 @@ public static class SPI
                 "System.Runtime",
                 "System.Private.CoreLib",
                 "System.Console",
+                "System.Linq",
                 "System.ObjectModel",      /* For Expando/dynamic */
                 "netstandard",             /* For Expando/dynamic */
                 "System.Linq.Expressions", /* For Expando/dynamic */

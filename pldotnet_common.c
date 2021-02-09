@@ -980,45 +980,50 @@ pldotnet_FillTriggerTuple(
 void
 pldotnet_SetTriggerData(
     TriggerData *tdata,
-    pldotnet_TriggerData *pldotnet_tg_data
+    pldotnet_TriggerInfo *pldotnet_tg_info
 )
 {
-    pldotnet_tg_data->tg_name = tdata->tg_trigger->tgname;
-    pldotnet_tg_data->tg_table_name = SPI_getrelname(tdata->tg_relation);
-    pldotnet_tg_data->tg_relid = (uint32_t) tdata->tg_relation->rd_id;
-    pldotnet_tg_data->tg_table_schema = SPI_getnspname(tdata->tg_relation);
+    Trigger *tg = tdata->tg_trigger;
+    pldotnet_tg_info->tg_name = tg->tgname;
+    pldotnet_tg_info->tg_table_name = SPI_getrelname(tdata->tg_relation);
+    pldotnet_tg_info->tg_relid = (uint32_t) tdata->tg_relation->rd_id;
+    pldotnet_tg_info->tg_table_schema = SPI_getnspname(tdata->tg_relation);
+
+    pldotnet_tg_info->tg_args_array.buffer = (void *) tg->tgargs;
+    pldotnet_tg_info->tg_args_array.element_size = sizeof(char*);
+    pldotnet_tg_info->tg_args_array.buffer_size = 0 < tg->tgnargs ? tg->tgnargs : 0;
 
     if (TRIGGER_FIRED_BEFORE(tdata->tg_event))
-        pldotnet_tg_data->tg_when = "BEFORE";
+        pldotnet_tg_info->tg_when = "BEFORE";
     else if (TRIGGER_FIRED_AFTER(tdata->tg_event))
-        pldotnet_tg_data->tg_when = "AFTER";
+        pldotnet_tg_info->tg_when = "AFTER";
     else if (TRIGGER_FIRED_INSTEAD(tdata->tg_event))
-        pldotnet_tg_data->tg_when = "INSTEAD OF";
+        pldotnet_tg_info->tg_when = "INSTEAD OF";
     else
         elog(ERROR, "unrecognized WHEN tg_event: %u", tdata->tg_event);
 
     if (TRIGGER_FIRED_FOR_ROW(tdata->tg_event))
     {
-        pldotnet_tg_data->tg_level = "ROW";
+        pldotnet_tg_info->tg_level = "ROW";
         if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event))
-            pldotnet_tg_data->tg_event = "INSERT";
+            pldotnet_tg_info->tg_event = "INSERT";
         else if (TRIGGER_FIRED_BY_DELETE(tdata->tg_event))
-            pldotnet_tg_data->tg_event = "DELETE";
+            pldotnet_tg_info->tg_event = "DELETE";
         else if (TRIGGER_FIRED_BY_UPDATE(tdata->tg_event))
-            pldotnet_tg_data->tg_event = "UPDATE";
+            pldotnet_tg_info->tg_event = "UPDATE";
         else
             elog(ERROR, "unrecognized OP tg_event: %u", tdata->tg_event);
     }
     else if (TRIGGER_FIRED_FOR_STATEMENT(tdata->tg_event))
     {
         if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event))
-            pldotnet_tg_data->tg_event = "INSERT";
+            pldotnet_tg_info->tg_event = "INSERT";
         else if (TRIGGER_FIRED_BY_DELETE(tdata->tg_event))
-            pldotnet_tg_data->tg_event = "DELETE";
+            pldotnet_tg_info->tg_event = "DELETE";
         else if (TRIGGER_FIRED_BY_UPDATE(tdata->tg_event))
-            pldotnet_tg_data->tg_event = "UPDATE";
+            pldotnet_tg_info->tg_event = "UPDATE";
         else if (TRIGGER_FIRED_BY_TRUNCATE(tdata->tg_event))
-            pldotnet_tg_data->tg_event = "TRUNCATE";
+            pldotnet_tg_info->tg_event = "TRUNCATE";
         else
             elog(ERROR, "unrecognized OP tg_event: %u", tdata->tg_event);
     }
@@ -1151,7 +1156,7 @@ pldotnet_CreateCStructLibargs(
             trigger_tuple_size += pldotnet_GetTypeSize(attr->atttypid);
         }
 
-        func_inout_info->typesize_args += sizeof(pldotnet_TriggerData) + trigger_tuple_size * 2;
+        func_inout_info->typesize_args += sizeof(pldotnet_TriggerInfo) + trigger_tuple_size * 2;
     }
     else
     {
@@ -1185,7 +1190,7 @@ pldotnet_CreateCStructLibargs(
     {
         TriggerData *tdata = (TriggerData*) fcinfo->context;
         TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
-        pldotnet_TriggerData *pldotnet_tg_data = nullptr;
+        pldotnet_TriggerInfo *pldotnet_tg_info = nullptr;
         if (pldotnet_TriggerHasOldTuple(tdata->tg_event))
         {
             cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_newtuple, rel_desc, cur_arg);
@@ -1196,8 +1201,8 @@ pldotnet_CreateCStructLibargs(
             cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_trigtuple, rel_desc, cur_arg);
             cur_arg += trigger_tuple_size;
         }
-        pldotnet_tg_data = (pldotnet_TriggerData*) cur_arg;
-        pldotnet_SetTriggerData(tdata, pldotnet_tg_data);
+        pldotnet_tg_info = (pldotnet_TriggerInfo*) cur_arg;
+        pldotnet_SetTriggerData(tdata, pldotnet_tg_info);
     }
     else
         cur_arg = pldotnet_FillNonTriggerValues(

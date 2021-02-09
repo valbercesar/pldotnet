@@ -162,9 +162,9 @@ DROP TRIGGER returnSkipBeforeInsertMyTable ON my_table;
 -- update the tuple and save it.
 --
 CREATE FUNCTION returnModifyBeforeInsertMyTable() RETURNS TRIGGER AS $$
-TD.NEW.x += 101;
-TD.NEW.y += 102;
-TD.NEW.z += 103;
+TD.tg_tuples.NEW.x += 101;
+TD.tg_tuples.NEW.y += 102;
+TD.tg_tuples.NEW.z += 103;
 return "MODIFY";
 $$ LANGUAGE plcsharp;
 --
@@ -213,7 +213,7 @@ DROP TRIGGER returnModifyBeforeInsertMyTable ON my_table;
 -- on some validation step
 --
 CREATE FUNCTION validateBeforeInsertMyTable() RETURNS TRIGGER AS $$
-return (int) TD.NEW.x == (int) 1 ? "SKIP" : null;
+return (int) TD.tg_tuples.NEW.x == (int) 1 ? "SKIP" : null;
 $$ LANGUAGE plcsharp;
 --
 CREATE TRIGGER validateBeforeInsertMyTable
@@ -277,7 +277,7 @@ DROP TRIGGER validateBeforeInsertMyTable ON my_table;
 -- on the value inside a tuple
 --
 CREATE FUNCTION validateBeforeUpdateMyTable() RETURNS TRIGGER AS $$
-return (int) TD.NEW.x == (int) 1 ? "SKIP" : null;
+return (int) TD.tg_tuples.NEW.x == (int) 1 ? "SKIP" : null;
 $$ LANGUAGE plcsharp;
 --
 CREATE TRIGGER validateBeforeUpdateMyTable
@@ -357,8 +357,8 @@ DROP TRIGGER validateBeforeUpdateMyTable ON my_table;
 -- It shows how to access the old tuple
 --
 CREATE FUNCTION verifyOldBeforeUpdateMyTable() RETURNS TRIGGER AS $$
-bool old_y_is_5 = (int) TD.OLD.y == (int) 5;
-bool new_x_is_3 = (int) TD.NEW.x == (int) 3;
+bool old_y_is_5 = (int) TD.tg_tuples.OLD.y == (int) 5;
+bool new_x_is_3 = (int) TD.tg_tuples.NEW.x == (int) 3;
 return old_y_is_5 && new_x_is_3 ? "SKIP" : null;
 $$ LANGUAGE plcsharp;
 --
@@ -496,15 +496,22 @@ DROP TRIGGER registerEventAfterUpdateMyTable ON my_table;
 ------------------- ACCESS TRIGGER VARIABLES ---------------------
 --
 -- This special function will be called before and after INSERT and UPDATES
-CREATE OR REPLACE FUNCTION accessTriggerVariables() RETURNS TRIGGER AS $$
-bool name = TD.tg_name.Contains("accesstriggervariables");
-bool table_schema = "public" == TD.tg_table_schema;
-bool table_name = "my_table" == TD.tg_table_name;
-bool is_row = "ROW" == TD.tg_level;
-bool is_before = "BEFORE" == TD.tg_when;
-bool insertion = "INSERT" == TD.tg_event;
+CREATE FUNCTION accessTriggerVariables() RETURNS TRIGGER AS $$
+bool name = TD.tg_info.tg_name.Contains("accesstriggervariables");
+bool table_schema = "public" == TD.tg_info.tg_table_schema;
+bool table_name = "my_table" == TD.tg_info.tg_table_name;
+bool is_row = "ROW" == TD.tg_info.tg_level;
+bool is_before = "BEFORE" == TD.tg_info.tg_when;
+bool insertion = "INSERT" == TD.tg_info.tg_event;
+bool has_foo = TD.tg_args.Any(
+    a => String.Equals(
+        a,
+        "foo",
+        StringComparison.InvariantCultureIgnoreCase
+    )
+);
 
-if (!(name && table_schema && table_name && is_row))
+if (!(name && table_schema && table_name && is_row) || has_foo)
 {
     return "SKIP";
 }
@@ -512,11 +519,11 @@ if (is_before)
 {
     if (insertion)
     {
-        return TD.NEW.x != 0 ? null : "SKIP";
+        return TD.tg_tuples.NEW.x != 0 ? null : "SKIP";
     }
     else
     {
-        TD.NEW.x += 100;
+        TD.tg_tuples.NEW.x += 100;
         return "MODIFY";
     }
 }
@@ -608,6 +615,70 @@ DROP TRIGGER accessTriggerVariablesBeforeInsert ON my_table;
 DROP TRIGGER accessTriggerVariablesAfterInsert ON my_table;
 DROP TRIGGER accessTriggerVariablesBeforeUpdate ON my_table;
 DROP TRIGGER accessTriggerVariablesAfterUpdate ON my_table;
+--
+-- Create a new trigger with args
+--
+CREATE TRIGGER accessTriggerVariablesWithoutFooBeforeInsert
+BEFORE INSERT ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariables(2, "bar");
+--
+TRUNCATE TABLE my_table;
+TRUNCATE TABLE update_events;
+--
+-- test the simplest insertion of invalid entries, 
+--
+INSERT INTO my_table (x, y, z) VALUES (0, 2, 3), (0, 3, 2);
+--
+-- The insertion above must be discarded
+--
+SELECT 0 = COUNT(*) FROM my_table;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- Test the insertion of valid entries, this time it should work
+-- given that we do not have the foo parameter
+--
+INSERT INTO my_table (x, y, z) VALUES (1, 2, 3), (4, 5, 6);
+--
+-- The insertion above must be ok
+--
+SELECT 2 = COUNT(*) FROM my_table;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+-- remove the current trigger without "foo"
+--
+DROP TRIGGER accessTriggerVariablesWithoutFooBeforeInsert ON my_table;
+--
+TRUNCATE TABLE my_table;
+TRUNCATE TABLE update_events;
+--
+-- create a new trigger with "foo"
+CREATE TRIGGER accessTriggerVariablesWithFooBeforeInsert
+BEFORE INSERT ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerVariables(2, "bar", "foo");
+--
+-- Test the insertion of valid entries, this time it should not work
+-- because we have the foo parameter
+--
+INSERT INTO my_table (x, y, z) VALUES (1, 2, 3), (4, 5, 6);
+--
+-- The insertion above must be discarded
+--
+SELECT 0 = COUNT(*) FROM my_table;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
+DROP TRIGGER accessTriggerVariablesWithFooBeforeInsert ON my_table;
 --
 ------------------- ACCESS TRIGGER VARIABLES ---------------------
 ------------------------------------------------------------------

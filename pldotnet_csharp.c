@@ -164,8 +164,9 @@ const char resu_flag_str[] = "bool resunull;";
 const char arg_flag_str[] = "bool[] argsnull;";
 
 /* C# CODE TEMPLATE */
-static char cs_block_header[] = "            \n\
+static char cs_block_header[] = "           \n\
 using System;                               \n\
+using System.Linq;                          \n\
 using System.Dynamic;                       \n\
 using System.Collections.Generic;           \n\
 using System.Runtime.InteropServices;       \n\
@@ -503,12 +504,8 @@ plcsharp_GetTriggerDataDefinition(void)
 {
     return "\n\
         [StructLayout(LayoutKind.Sequential,Pack=1)]\n\
-        public struct TriggerData\n\
+        public class TriggerInfo\n\
         {\n\
-            [MarshalAs(UnmanagedType.Struct)]\n\
-            public TriggerTuple NEW;\n\
-            [MarshalAs(UnmanagedType.Struct)]\n\
-            public TriggerTuple OLD;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
             public string tg_name;\n\
             [MarshalAs(UnmanagedType.LPUTF8Str)]\n\
@@ -523,16 +520,47 @@ plcsharp_GetTriggerDataDefinition(void)
             public string tg_event;\n\
             [MarshalAs(UnmanagedType.U8)]\n\
             public ulong tg_relid;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public ArrayT<IntPtr> tg_args_array;\n\
+        }\n\
+        [StructLayout(LayoutKind.Sequential,Pack=1)]\n\
+        public class TriggerTuples\n\
+        {\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public TriggerTuple NEW;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public TriggerTuple OLD;\n\
+        }\n\
+        [StructLayout(LayoutKind.Sequential,Pack=1)]\n\
+        public class BaseTriggerData\n\
+        {\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public TriggerTuples tg_tuples;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public TriggerInfo tg_info;\n\
+        \n\
+            public BaseTriggerData(BaseTriggerData btd)\n\
+            {\n\
+                tg_tuples = btd.tg_tuples;\n\
+                tg_info = btd.tg_info;\n\
+            }\n\
+        }\n\
+        public class TriggerData : BaseTriggerData\n\
+        {\n\
+            public string[] tg_args;\n\
+            public TriggerData(BaseTriggerData btd) : base(btd)\n\
+            {\n\
+                tg_args = ArrayToString(btd.tg_info.tg_args_array);\n\
+            }\n\
         }\n";
 }
-
 
 static char*
 plcsharp_BuildTriggerDataArgs(FunctionCallInfo fcinfo)
 {
     return "\n\
 [MarshalAs(UnmanagedType.Struct)]\n\
-public TriggerData TD;";
+public BaseTriggerData TD;";
 }
 
 static char *
@@ -685,19 +713,17 @@ plcsharp_BuildBlockArgsDecl(
 /*
  * This function builds the parameters to the function 
  * or stored procedure. A trigger can call a function and
- * pass some global arguments, not related to the function
- * definition. 
+ * pass some arguments not related to the function
+ * definition.
  * Example: CREATE FUNCTION my_function() RETURNS TRIGGER ...
  * my_function does not accept any argument in its definition
- * but triggers can pass some "global" variables, including both
+ * but triggers can pass some variables, including both
  * NEW and OLD tuples in a typical UPDATE query.
- * This list of special args here is a heterogenous list.
- * TODO: find a way to pass this data to C#
+ * This list of special args here is a list of strings.
  */
 const char*
 plchsarp_GetTriggerArgs(FunctionCallInfo fcinfo)
 {
-    /* TODO */
     return "";
 }
 
@@ -709,13 +735,13 @@ plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
             libargs.resunull = null == libargs.resu;\n";
 
     const char *args = plchsarp_GetTriggerArgs(fcinfo);
-    const char *tg_tuples = "ref libargs.TD";
+    const char *tg_data = "new TriggerData(libargs.TD)";
     char *func = NameStr(procst->proname);
 
     size_t size = strlen(template)
                 + strlen(func)
                 + strlen(args)
-                + strlen(tg_tuples)
+                + strlen(tg_data)
                 + 1;
 
     char *block2str = (char*) palloc0(size);
@@ -726,7 +752,7 @@ plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
         template,
         func,
         args,
-        tg_tuples
+        tg_data
     );
 
     return block2str;
@@ -1014,7 +1040,7 @@ plcsharp_BuildBlockTriggerFuncDecl(
 {
     bool isnull = false;
     const char *template = "\n\
-            %s %s(%s%s)\n\
+            %s %s(%s)\n\
             {\n\
                 %s\n\
             }\n";
@@ -1028,18 +1054,12 @@ plcsharp_BuildBlockTriggerFuncDecl(
         true
     );
 
-    /* TODO
-     * args is a heterogenous list
-     */
-    const char *args = "";
-
-    const char *tg_tuples = "ref TriggerData TD";
+    const char *tg_data = "TriggerData TD";
 
     size_t size = strlen(template)
                 + strlen(rettypname)
                 + strlen(func) * 2
-                + strlen(args)
-                + strlen(tg_tuples)
+                + strlen(tg_data)
                 + strlen(source_text) + 1;
 
     char *block2str = (char*) palloc0(size);
@@ -1050,8 +1070,7 @@ plcsharp_BuildBlockTriggerFuncDecl(
         template,
         rettypname,
         func,
-        args,
-        tg_tuples,
+        tg_data,
         source_text,
         func
     );
