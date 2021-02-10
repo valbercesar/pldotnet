@@ -215,13 +215,17 @@ module Helper =\n\
             | true, v -> Some v\n\
             | _ -> None\n\
     let arrayToString (isnull : bool) (a : ArrayT<'b>) : string [] option =\n\
+        printfn \"is null? %A\" isnull\n\
+        printfn \"array %A\" a\n\
         match isnull with\n\
         | true -> None\n\
         | false ->\n\
             let elsize = typedefof<IntPtr> |> Marshal.SizeOf\n\
             let is = seq { 0..((int)a.BufferSize)-1 }\n\
             let ptrToStr (buffer : IntPtr) (offset : int) : string =\n\
-                Marshal.ReadIntPtr(buffer, offset) |> Marshal.PtrToStringUTF8\n\
+                let str = Marshal.ReadIntPtr(buffer, offset) |> Marshal.PtrToStringUTF8\n\
+                printfn \"SEE THE CURRENT STRING: %A\" str\n\
+                str\n\
             try\n\
                 [|for i in is do yield (ptrToStr a.Buffer (i * elsize))|] |> Some\n\
             with\n\
@@ -519,6 +523,8 @@ type TriggerInfo =\n\
         val mutable tg_relid: uint64\n\
         [<MarshalAs(UnmanagedType.Struct)>]\n\
         val mutable tg_args_array: ArrayT<System.IntPtr>\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable tg_relatts_array: ArrayT<System.IntPtr>\n\
     end\n\
 [<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
 type TriggerTuples =\n\
@@ -537,6 +543,8 @@ type TriggerData =\n\
         val mutable tg_info: TriggerInfo\n\
         member x.tg_args\n\
             with get() = Helper.arrayToString false x.tg_info.tg_args_array\n\
+        member x.tg_relatts\n\
+            with get() = Helper.arrayToString false x.tg_info.tg_relatts_array\n\
     end\n";
 }
 
@@ -1018,7 +1026,7 @@ plfsharp_BuildBlockCompositesFromProcedure(
 
         type = SearchSysCache1(TYPEOID, ObjectIdGetDatum(argtype[i]));
         if (!HeapTupleIsValid(type))
-            elog(ERROR, "[pldotnet]: cache lookup failed for type %u", argtype[i]);
+            elog(ERROR, "[plfsharp_BuildBlockCompositesFromProcedure]: cache lookup failed for type %u", argtype[i]);
 
         typeinfo = (Form_pg_type) GETSTRUCT(type);
         if (typeinfo->typtype == TYPTYPE_COMPOSITE)
@@ -1206,8 +1214,10 @@ plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc)
 
     for (size_t i = 0; i < tupdesc->natts; ++i)
     {
-        type_attr = TupleDescAttr(tupdesc, i)->atttypid;
-        if (InvalidOid != type_attr)
+        Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
+        type_attr = attr->atttypid;
+
+        if (InvalidOid != type_attr && !attr->attisdropped)
         {
             key = NameStr(TupleDescAttr(tupdesc, i)->attname);
             plfsharp_BuildStructField(type_attr, key, buffer);
@@ -1223,9 +1233,10 @@ plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc)
 
     for (size_t i = 0; i < tupdesc->natts; ++i)
     {
-        type_attr = TupleDescAttr(tupdesc, i)->atttypid;
+        Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
+        type_attr = attr->atttypid;
 
-        if (InvalidOid != type_attr)
+        if (InvalidOid != type_attr && !attr->attisdropped)
         {
             key = NameStr(TupleDescAttr(tupdesc, i)->attname);
             plfsharp_BuildStructField(type_attr, key, buffer);

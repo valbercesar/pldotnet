@@ -543,6 +543,46 @@ DROP TRIGGER accessTriggerVariablesWithFooBeforeInsert ON my_table;
 ------------------- ACCESS TRIGGER VARIABLES ---------------------
 ------------------------------------------------------------------
 --
+------------------------------------------------------------------
+------------------- ACCESS TRIGGER RELATTS -----------------------
+--
+-- This function will be called before and after INSERT and UPDATES
+CREATE FUNCTION accessTriggerRelatts() RETURNS TRIGGER AS $$
+bool has_x_column = TD.tg_relatts.Any(
+    a => String.Equals(
+        a,
+        "x",
+        StringComparison.InvariantCultureIgnoreCase
+    )
+);
+return has_x_column ? null : "SKIP";
+$$ LANGUAGE plcsharp;
+--
+CREATE TRIGGER accessTriggerRelatts
+BEFORE INSERT ON my_table
+FOR EACH ROW EXECUTE PROCEDURE accessTriggerRelatts();
+--
+TRUNCATE TABLE my_table;
+TRUNCATE TABLE update_events;
+--
+\set entries_quantity 5
+\set offset_x 0
+\set offset_y 0
+\set offset_z 0
+--
+-- test the simplest insertion of valid entries, 
+--
+EXECUTE insert_my_values(:entries_quantity);
+--
+-- verify if the 5 entries are present in the database
+--
+EXECUTE verify_entries(:entries_quantity, :offset_x, :offset_y, :offset_z);
+--
+DROP TRIGGER accessTriggerRelatts ON my_table;
+--
+------------------- ACCESS TRIGGER RELATTS -----------------------
+------------------------------------------------------------------
+--
 -- enable function body validation again
 --
 SET check_function_bodies = true;

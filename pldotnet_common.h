@@ -160,6 +160,7 @@ typedef struct pldotnet_TriggerInfo
     char *tg_event;
     uint64_t tg_relid;
     pldotnet_ArrayT tg_args_array;
+    pldotnet_ArrayT tg_relatts_array;
 
 } pldotnet_TriggerInfo;
 

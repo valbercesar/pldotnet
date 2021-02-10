@@ -539,6 +539,9 @@ pldotnet_ModifyTuple(
     {
         Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
 
+        if (attr->attisdropped)
+            continue;
+
         modvalues[i] = pldotnet_GetScalarValue(
             (char *) cur_arg,
             nullptr,
@@ -977,6 +980,30 @@ pldotnet_FillTriggerTuple(
     return cur_arg;
 }
 
+static void
+pldotnet_SetRelattsArray(
+    TriggerData *tdata,
+    pldotnet_ArrayT *tg_relatts_array
+)
+{
+    TupleDesc tupdesc = RelationGetDescr(tdata->tg_relation);
+    char **atts = (char**) palloc0(tupdesc->natts * sizeof(char*));
+
+    for (int i = 0; i < tupdesc->natts; i++)
+    {
+        Form_pg_attribute att = TupleDescAttr(tupdesc, i);
+
+        if (!att->attisdropped)
+        {
+            char *attname = NameStr(att->attname);
+            atts[i] = pg_server_to_any(attname, strlen(attname), PG_UTF8);
+        }
+    }
+    tg_relatts_array->buffer = (void*) atts;
+    tg_relatts_array->buffer_size = tupdesc->natts;
+    tg_relatts_array->element_size = sizeof(char*);
+}
+
 void
 pldotnet_SetTriggerData(
     TriggerData *tdata,
@@ -992,6 +1019,8 @@ pldotnet_SetTriggerData(
     pldotnet_tg_info->tg_args_array.buffer = (void *) tg->tgargs;
     pldotnet_tg_info->tg_args_array.element_size = sizeof(char*);
     pldotnet_tg_info->tg_args_array.buffer_size = 0 < tg->tgnargs ? tg->tgnargs : 0;
+
+    pldotnet_SetRelattsArray(tdata, &(pldotnet_tg_info->tg_relatts_array));
 
     if (TRIGGER_FIRED_BEFORE(tdata->tg_event))
         pldotnet_tg_info->tg_when = "BEFORE";
@@ -1153,7 +1182,8 @@ pldotnet_CreateCStructLibargs(
         for (i = 0; i < rel_desc->natts; ++i)
         {
             Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
-            trigger_tuple_size += pldotnet_GetTypeSize(attr->atttypid);
+            if (!attr->attisdropped)
+                trigger_tuple_size += pldotnet_GetTypeSize(attr->atttypid);
         }
 
         func_inout_info->typesize_args += sizeof(pldotnet_TriggerInfo) + trigger_tuple_size * 2;

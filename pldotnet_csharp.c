@@ -375,7 +375,7 @@ pldotnet_PublicDecl(Oid type)
             if (!HeapTupleIsValid(typ))
                 elog(
                     ERROR,
-                    "[pldotnet]: cache lookup failed for type %u",
+                    "[pldotnet_PublicDecl]: cache lookup failed for type %u",
                     type
                 );
             typeinfo = (Form_pg_type) GETSTRUCT(typ);
@@ -456,7 +456,7 @@ plcsharp_BuildBlockCompositesFromProcedure(
         if (!HeapTupleIsValid(type))
             elog(
                 ERROR,
-                "[pldotnet]: cache lookup failed for type %u",
+                "[plcsharp_BuildBlockCompositesFromProcedure]: cache lookup failed for type %u",
                 argtype[i]
             );
         typeinfo = (Form_pg_type) GETSTRUCT(type);
@@ -522,6 +522,8 @@ plcsharp_GetTriggerDataDefinition(void)
             public ulong tg_relid;\n\
             [MarshalAs(UnmanagedType.Struct)]\n\
             public ArrayT<IntPtr> tg_args_array;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public ArrayT<IntPtr> tg_relatts_array;\n\
         }\n\
         [StructLayout(LayoutKind.Sequential,Pack=1)]\n\
         public class TriggerTuples\n\
@@ -548,9 +550,11 @@ plcsharp_GetTriggerDataDefinition(void)
         public class TriggerData : BaseTriggerData\n\
         {\n\
             public string[] tg_args;\n\
+            public string[] tg_relatts;\n\
             public TriggerData(BaseTriggerData btd) : base(btd)\n\
             {\n\
                 tg_args = ArrayToString(btd.tg_info.tg_args_array);\n\
+                tg_relatts = ArrayToString(btd.tg_info.tg_relatts_array);\n\
             }\n\
         }\n";
 }
