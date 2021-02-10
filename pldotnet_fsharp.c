@@ -200,40 +200,21 @@ module SPI =\n\
         | _ -> ()\n\
     let Execute (cmd: string) (limit: int64) : List<ExpandoObject> =\n\
         pldotnet_SPIExecute(cmd, limit) |> ignore\n\
-        FuncExpandDo\n";
-/****** fs_block_args_decl ******
-[<Struct>]
-[<StructLayout (LayoutKind.Sequential, Pack=1)>]
-type LibArgs =
-    struct\n";
- *      val mutable arg1:int
- *      val mutable arg2:int
- *      ...
- *      val mutable resu:int
- */
-static char fs_block_userclass_header[] = "\n\
-type UserClass =\n\
-    static member wrap (isnull: bool) a =\n\
+        FuncExpandDo\n\
+\n\
+module Helper =\n\
+    let wrap (isnull: bool) a =\n\
         match isnull with\n\
         | true -> None\n\
         | false -> Some a\n\
-    static member toDecimal (isnull: bool) (str: string) : decimal option =\n\
+    let toDecimal (isnull: bool) (str: string) : decimal option =\n\
         match isnull with\n\
         | true -> None\n\
         | false ->\n\
             match System.Decimal.TryParse(str) with\n\
             | true, v -> Some v\n\
             | _ -> None\n\
-    static member arrayToDecimal (isnull: bool) (a : ArrayT<'b>) : decimal [] option =\n\
-        match isnull with\n\
-        | true -> None\n\
-        | false ->\n\
-            CultureInfo.CurrentCulture = new CultureInfo(\"en-US\", false) |> ignore\n\
-            match UserClass.arrayToString isnull a with\n\
-            | Some strs ->\n\
-                Array.ConvertAll<string, decimal>(strs, fun item -> Convert.ToDecimal(item)) |> Some\n\
-            | _ -> None\n\
-    static member arrayToString (isnull : bool) (a : ArrayT<'b>) : string [] option =\n\
+    let arrayToString (isnull : bool) (a : ArrayT<'b>) : string [] option =\n\
         match isnull with\n\
         | true -> None\n\
         | false ->\n\
@@ -245,16 +226,37 @@ type UserClass =\n\
                 [|for i in is do yield (ptrToStr a.Buffer (i * elsize))|] |> Some\n\
             with\n\
                 | _ -> None\n\
-    static member fromArrayT<'b> (isnull: bool) (a : ArrayT<'b>) : 'b[] option =\n\
+    let arrayToDecimal (isnull: bool) (a : ArrayT<'b>) : decimal [] option =\n\
         match isnull with\n\
-            | true -> None\n\
-            | false ->\n\
-                let size = (int) (a.BufferSize * a.ElementSize)\n\
-                let mutable input : 'b array = Array.zeroCreate ((int) a.BufferSize)\n\
-                let mutable bytes : byte array = Array.zeroCreate size\n\
-                Marshal.Copy(a.Buffer, bytes, 0, size)\n\
-                System.Buffer.BlockCopy(bytes, 0, input, 0, size)\n\
-                Some input\n";
+        | true -> None\n\
+        | false ->\n\
+            CultureInfo.CurrentCulture = new CultureInfo(\"en-US\", false) |> ignore\n\
+            match arrayToString isnull a with\n\
+            | Some strs ->\n\
+                Array.ConvertAll<string, decimal>(strs, fun item -> Convert.ToDecimal(item)) |> Some\n\
+            | _ -> None\n\
+    let fromArrayT<'b> (isnull: bool) (a : ArrayT<'b>) : 'b[] option =\n\
+        match isnull with\n\
+        | true -> None\n\
+        | false ->\n\
+            let size = (int) (a.BufferSize * a.ElementSize)\n\
+            let mutable input : 'b array = Array.zeroCreate ((int) a.BufferSize)\n\
+            let mutable bytes : byte array = Array.zeroCreate size\n\
+            Marshal.Copy(a.Buffer, bytes, 0, size)\n\
+            System.Buffer.BlockCopy(bytes, 0, input, 0, size)\n\
+            Some input\n";
+/****** fs_block_args_decl ******
+[<Struct>]
+[<StructLayout (LayoutKind.Sequential, Pack=1)>]
+type LibArgs =
+    struct\n";
+ *      val mutable arg1:int
+ *      val mutable arg2:int
+ *      ...
+ *      val mutable resu:int
+ */
+static char fs_block_userclass_header[] = "\n\
+type UserClass =\n";
 
 /********* fs_block_userfunc_decl ******
  *         static member <function_name> =
@@ -499,12 +501,8 @@ plfsharp_GetTriggerDataDefinition(void)
 {
     return "\n\
 [<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
-type TriggerData =\n\
+type TriggerInfo =\n\
     struct\n\
-        [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable NEW: TriggerTuple\n\
-        [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable OLD: TriggerTuple\n\
         [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
         val mutable tg_name: string\n\
         [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
@@ -519,6 +517,26 @@ type TriggerData =\n\
         val mutable tg_event: string\n\
         [<MarshalAs(UnmanagedType.U8)>]\n\
         val mutable tg_relid: uint64\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable tg_args_array: ArrayT<System.IntPtr>\n\
+    end\n\
+[<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
+type TriggerTuples =\n\
+    struct\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable NEW: TriggerTuple\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable OLD: TriggerTuple\n\
+    end\n\
+[<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
+type TriggerData =\n\
+    struct\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable tg_tuples: TriggerTuples\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable tg_info: TriggerInfo\n\
+        member x.tg_args\n\
+            with get() = Helper.arrayToString false x.tg_info.tg_args_array\n\
     end\n";
 }
 
@@ -764,7 +782,7 @@ plfsharp_BuildArrayArgument(
         snprintf(
             str_ptr,
             cursor,
-            " (UserClass.fromArrayT<%s> libargs.argsnull.[%lu] libargs.arg%lu)",
+            " (Helper.fromArrayT<%s> libargs.argsnull.[%lu] libargs.arg%lu)",
             pldotnet_NeedsIntPtr(oid) ?
                 "IntPtr" : pldotnet_GetCompatibleNetTypeName(
                     oid,
@@ -816,7 +834,7 @@ plfsharp_BuildBlockCallNonTrigger(
     static const char *toDecimal = "toDecimal";
     static const char *wrap = "wrap";
     const char *toString = NUMERICOID == procst->prorettype ? ".ToString()" : "";
-    static const char *arg_template = " (UserClass.%s libargs.argsnull.[%d] libargs.arg%d)";
+    static const char *arg_template = " (Helper.%s libargs.argsnull.[%d] libargs.arg%d)";
     size_t arg_size = strlen(arg_template);
     size_t nargs = procst->pronargs;
     size_t cursize = 0;
