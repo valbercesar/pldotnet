@@ -1,9 +1,9 @@
 CREATE OR REPLACE FUNCTION returnCompositeSum() RETURNS integer AS $$
-var exp = SPI.Execute("SELECT 1 as c, 2 as b", 1);
+var records = SPI.Execute("SELECT 1 as c, 2 as b", 1);
 int sum = 0;
-foreach (var row in exp)
+foreach (var record in records)
 {
-    sum += row.b + row.c;
+    sum += record.GetInt32(0) + record.GetInt32(1);
 }
 return sum;
 $$ LANGUAGE plcsharp;
@@ -30,18 +30,18 @@ INSERT INTO pldotnettypes VALUES (
     'StringSample;'
 );
 CREATE OR REPLACE FUNCTION checkTypes() RETURNS boolean AS $$
-var exp = SPI.Execute("SELECT * from pldotnettypes", 1);
-foreach (var row in exp)
+var records = SPI.Execute("SELECT * from pldotnettypes", 1);
+foreach (var record in records)
 {
     if(
-        row.bcol.GetType() != typeof(bool)
-        && row.i2col.GetType() != typeof(short)
-        && row.i4col.GetType() != typeof(int)
-        && row.i8col.GetType() != typeof(long)
-        && row.f4col.GetType() != typeof(float)
-        && row.f8col.GetType() != typeof(double)
-        && row.ncol.GetType() != typeof(decimal)
-        && row.vccol.GetType() != typeof(string)
+        record.GetFieldType(record.GetOrdinal("bcol")) != typeof(bool)
+        && record.GetFieldType(record.GetOrdinal("i2col")) != typeof(short)
+        && record.GetFieldType(record.GetOrdinal("i4col")) != typeof(int)
+        && record.GetFieldType(record.GetOrdinal("i8col")) != typeof(long)
+        && record.GetFieldType(record.GetOrdinal("f4col")) != typeof(float)
+        && record.GetFieldType(record.GetOrdinal("f8col")) != typeof(double)
+        && record.GetFieldType(record.GetOrdinal("ncol")) != typeof(decimal)
+        && record.GetFieldType(record.GetOrdinal("vccol")) != typeof(string)
     )
     {
         return false;
@@ -55,13 +55,16 @@ CREATE TABLE usersavings(ssnum int8, name varchar, sname varchar, balance float4
 INSERT INTO usersavings VALUES (123456789,'Homer','Simpson',2304.55);
 INSERT INTO usersavings VALUES (987654321,'Charles Montgomery','Burns',3000000.65);
 CREATE OR REPLACE FUNCTION getUsersWithBalance(searchbalance real) RETURNS varchar AS $$
-var exp = SPI.Execute("SELECT * from usersavings", 1);
+var users = SPI.Execute("SELECT * from usersavings", 1);
 string res = $"User(s) found with {searchbalance} account balance";
-foreach (var user in exp)
+foreach (var user in users)
 {
-    if(user.balance == searchbalance)
+    if(user.GetFloat(user.GetOrdinal("balance")) == searchbalance)
     {
-       res += $", {user.name} {user.sname} (Social Security Number {user.ssnum})";
+        var name = user.GetString(user.GetOrdinal("name"));
+        var sname = user.GetString(user.GetOrdinal("sname"));
+        var ssnum = user.GetInt64(user.GetOrdinal("ssnum"));
+        res += $", {name} {sname} (Social Security Number {ssnum})";
     }
 }
 res += ".";
@@ -70,13 +73,17 @@ $$ LANGUAGE plcsharp;
 SELECT getUsersWithBalance(2304.55) = varchar 'User(s) found with 2304.55 account balance, Homer Simpson (Social Security Number 123456789).';
 
 CREATE OR REPLACE FUNCTION getUserDescription(ssnum bigint) RETURNS varchar AS $$
-var exp = SPI.Execute($"SELECT * from usersavings WHERE ssnum={ssnum}", 1);
+var users = SPI.Execute($"SELECT * from usersavings WHERE ssnum={ssnum}", 1);
 string res = "No user found";
-foreach (var user in exp)
+foreach (var user in users)
 {
-    if(user.ssnum == ssnum)
+    if(user.GetInt64(user.GetOrdinal("ssnum")) == ssnum)
     {
-        res = $"{user.name} {user.sname}, Social security Number {user.ssnum}, has {user.balance} account balance.";
+        var user_name = user.GetString(user.GetOrdinal("name"));
+        var user_sname = user.GetString(user.GetOrdinal("sname"));
+        var user_ssnum = user.GetInt64(user.GetOrdinal("ssnum"));
+        var user_balance = user.GetFloat(user.GetOrdinal("balance"));
+        res = $"{user_name} {user_sname}, Social security Number {user_ssnum}, has {user_balance} account balance.";
     }
 }
 return res;

@@ -168,6 +168,9 @@ static char cs_block_header[] = "           \n\
 using System;                               \n\
 using System.Linq;                          \n\
 using System.Dynamic;                       \n\
+using System.Data.SqlClient;                \n\
+using System.Data.Common;                   \n\
+using System.Data;                          \n\
 using System.Collections.Generic;           \n\
 using System.Runtime.InteropServices;       \n\
 using System.Globalization;                 \n\

@@ -54,7 +54,7 @@ namespace PlDotNET
             public string SourceCode;
             public Func<IntPtr, int, int> CallFunction;
             public Action<IntPtr, int> AddProperty;
-            public Action ResetFuncExpandDo;
+            public Action ResetFuncRecords;
 
             public bool needsReset;
         }
@@ -78,8 +78,6 @@ namespace PlDotNET
             string spiSrc = @"
 public static class SPI
 {
-    static List<dynamic> funcExpandDo = new List<dynamic>();
-
     [DllImport(""@PKG_LIBDIR/pldotnet.so"")]
     public static extern int pldotnet_SPIExecute (string cmd, long limit);
 
@@ -92,71 +90,143 @@ public static class SPI
          public int nrow;
     }
 
-    public static List<dynamic> Execute(string cmd, long limit)
+    public class PropertyValueReader
+    {
+        public PropertyValueReader() {}
+
+        public object ReadValue<T>(IntPtr handle)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (object) Marshal.PtrToStringUTF8(handle);
+            }
+            if (typeof(T) == typeof(decimal))
+            {
+                return (object) Convert.ToDecimal(Marshal.PtrToStringAnsi(handle));
+            }
+            return (object) Marshal.PtrToStructure<T>(handle);
+        }
+
+        public object Read(PropertyValue prop)
+        {
+            switch((TypeOid) prop.type)
+            {
+                case TypeOid.BOOLOID:
+                    return ReadValue<bool>(prop.value);
+                case TypeOid.INT2OID:
+                    return ReadValue<short>(prop.value);
+                case TypeOid.INT4OID:
+                    return ReadValue<int>(prop.value);
+                case TypeOid.INT8OID:
+                    return ReadValue<long>(prop.value);
+                case TypeOid.FLOAT4OID:
+                    return ReadValue<float>(prop.value);
+                case TypeOid.FLOAT8OID:
+                    return ReadValue<double>(prop.value);
+                case TypeOid.NUMERICOID:
+                    return ReadValue<decimal>(prop.value);
+                case TypeOid.VARCHAROID:
+                    return ReadValue<string>(prop.value);
+                default:
+                    return null;
+            }
+        }
+    }
+
+    public class DbRecord : IDataRecord
+    {
+        private Dictionary<string, object> Record;
+        private List<object> Values;
+        private List<string> ColumnNames;
+        private List<PropertyValue> properties;
+        private PropertyValueReader reader;
+
+        public DbRecord()
+        {
+            Record = new Dictionary<string, object>();
+            Values = new List<object>();
+            ColumnNames = new List<string>();
+            reader = new PropertyValueReader();
+        }
+
+        public void AddProperty(PropertyValue prop)
+        {
+            var value = reader.Read(prop);
+            if (Record.TryAdd(prop.name, value))
+            {
+                Values.Add(value);
+                ColumnNames.Add(prop.name);
+            }
+        }
+
+        public object this[int ordinal] => GetValue(ordinal);
+        public object this[string name] => GetValue(name);
+        public int FieldCount => Values.Count;
+        public bool GetBoolean(int ordinal) => (bool) GetValue(ordinal);
+        public byte GetByte(int ordinal) => (byte) GetValue(ordinal);
+        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+        {
+            throw new NotImplementedException();
+        }
+        public char GetChar(int ordinal) => (char) GetValue(ordinal);
+        public long GetChars(int ordinal, long fieldoffset, char[] buffer, int bufferoffset, int length)
+        {
+            throw new NotImplementedException();
+        }
+        public IDataReader GetData(int ordinal)
+        {
+            throw new NotImplementedException();
+        }
+        public string GetDataTypeName(int ordinal) => GetFieldType(ordinal).ToString();
+        public DateTime GetDateTime(int ordinal) => (DateTime) GetValue(ordinal);
+        public decimal GetDecimal(int ordinal) => (decimal) GetValue(ordinal);
+        public double GetDouble(int ordinal) => (double) GetValue(ordinal);
+        public Type GetFieldType(int ordinal) => GetValue(ordinal).GetType();
+        public float GetFloat(int ordinal) => (float) GetValue(ordinal);
+        public Guid GetGuid(int ordinal) => (Guid) GetValue(ordinal);
+        public short GetInt16(int ordinal) => (short) GetValue(ordinal);
+        public int GetInt32(int ordinal) => (int) GetValue(ordinal);
+        public long GetInt64(int ordinal) => (long) GetValue(ordinal);
+        public string GetName(int ordinal) => ColumnNames[ordinal];
+        public int GetOrdinal(string name) => ColumnNames.IndexOf(name);
+        public string GetString(int ordinal) => (string) GetValue(ordinal);
+        public object GetValue(int ordinal) => Values[ordinal];
+        public object GetValue(string name) => Record[name];
+        public int GetValues(object[] values)
+        {
+            if (values == null)
+                throw new ArgumentNullException(nameof(values));
+            var count = Math.Min(Values.Count, values.Length);
+            for (var ordinal = 0; ordinal < count; ordinal++)
+                values[ordinal] = GetValue(ordinal);
+            return count;
+        }
+
+        public bool IsDBNull(int ordinal) => null == GetValue(ordinal);
+    }
+
+    static List<DbRecord> records = new List<DbRecord>();
+
+    public static List<DbRecord> Execute(string cmd, long limit)
     {
         SPI.pldotnet_SPIExecute(cmd, limit);
-        return SPI.funcExpandDo;
+        return SPI.records;
     }
 
-    public static void ResetFuncExpandDo()
+    public static void ResetFuncRecords()
     {
-        SPI.funcExpandDo = new List<dynamic>();
+        SPI.records = new List<DbRecord>();
     }
 
-    public static T ReadValue<T>(IntPtr handle)
-    {
-        if (typeof(T) == typeof(string))
-        {
-            return (T)(object)Marshal.PtrToStringUTF8(handle);
-        }
-        if (typeof(T) == typeof(decimal))
-        {
-            return (T)(object)Convert.ToDecimal(Marshal.PtrToStringAnsi(handle));
-        }
-        return Marshal.PtrToStructure<T>(handle);
-    }
     public static void AddProperty(IntPtr arg, int funcoid)
     {
         PropertyValue prop = Marshal.PtrToStructure<PropertyValue>(arg);
-        if(SPI.funcExpandDo.Count < prop.nrow + 1)
+        if(SPI.records.Count < prop.nrow + 1)
         {
-            SPI.funcExpandDo.Add(new ExpandoObject());
+            SPI.records.Add(new DbRecord());
         }
-        switch((TypeOid)prop.type)
-        {
-            case TypeOid.BOOLOID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<bool>(prop.value) );
-                break;
-            case TypeOid.INT2OID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<short>(prop.value) );
-                break;
-            case TypeOid.INT4OID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<int>(prop.value) );
-                break;
-            case TypeOid.INT8OID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<long>(prop.value) );
-                break;
-            case TypeOid.FLOAT4OID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<float>(prop.value));
-                        break;
-            case TypeOid.FLOAT8OID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<double>(prop.value));
-                break;
-            case TypeOid.NUMERICOID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<decimal>(prop.value) );
-                break;
-            case TypeOid.VARCHAROID:
-                ((IDictionary<String,Object>)SPI.funcExpandDo[prop.nrow])
-                    .Add(prop.name, SPI.ReadValue<string>(prop.value) );
-                break;
-        }
+        DbRecord record = SPI.records[prop.nrow];
+        record.AddProperty(prop);
     }
 }";
             LibArgs libArgs = Marshal.PtrToStructure<LibArgs>(arg);
@@ -205,6 +275,9 @@ public static class SPI
                 "System.Private.CoreLib",
                 "System.Console",
                 "System.Linq",
+                "System.Data.SqlClient",
+                "System.Data.Common",
+                "System.Data",
                 "System.ObjectModel",      /* For Expando/dynamic */
                 "netstandard",             /* For Expando/dynamic */
                 "System.Linq.Expressions", /* For Expando/dynamic */
@@ -253,7 +326,7 @@ public static class SPI
         {
             if (needsReset)
             {
-                Engine.cachedFunction.ResetFuncExpandDo();
+                Engine.cachedFunction.ResetFuncRecords();
                 needsReset = false;
             }
             Engine.cachedFunction.AddProperty(arg, argLength);
@@ -370,7 +443,7 @@ public static class SPI
             MethodInfo procMethod = procClassType.GetMethod("CallFunction");
             Type procClassType2 = Engine.compiledAssembly.GetType("PlDotNETUserSpace.SPI");
             MethodInfo procMethod2 = procClassType2.GetMethod("AddProperty");
-            MethodInfo procMethod3 = procClassType2.GetMethod("ResetFuncExpandDo");
+            MethodInfo procMethod3 = procClassType2.GetMethod("ResetFuncRecords");
 
             Engine.cachedFunction = new CachedFunction() {
                 SourceCode = sourceCode,
@@ -384,7 +457,7 @@ public static class SPI
                     null,
                     procMethod2
                 ),
-                ResetFuncExpandDo = (Action) Delegate.CreateDelegate(
+                ResetFuncRecords = (Action) Delegate.CreateDelegate(
                     typeof(Action),
                     null,
                     procMethod3
