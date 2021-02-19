@@ -59,7 +59,7 @@ type Engine() =
 
         let procClassType2 = assembly.GetType("PlDotNETUserSpace.SPI")
         let method2 = procClassType2.GetMethod("AddProperty")
-        let method3 = procClassType2.GetMethod("ResetFuncExpandDo")
+        let method3 = procClassType2.GetMethod("ResetFuncRecords")
 
         let userFuncType = typeof<System.Func<IntPtr, int, int>>
         let addPropType = typeof<System.Action<IntPtr, int>>
@@ -67,9 +67,9 @@ type Engine() =
 
         let userFunction = Delegate.CreateDelegate(userFuncType, null, method1) :?> System.Func<IntPtr,int,int>
         let addProperty = Delegate.CreateDelegate(addPropType, null, method2) :?> (System.Action<IntPtr,int>)
-        let resetFuncExpandDo = Delegate.CreateDelegate(rstPropType, null, method3) :?> (System.Action)
+        let resetFuncRecords = Delegate.CreateDelegate(rstPropType, null, method3) :?> (System.Action)
 
-        let cached = new CachedFunction(sourceCode, userFunction, addProperty, resetFuncExpandDo) |> Some
+        let cached = new CachedFunction(sourceCode, userFunction, addProperty, resetFuncRecords) |> Some
 
         FunctionCache.saveCachedFunction functionId cached
         Engine.SendToRemoteStorage sourceCode functionId assembly |> ignore
@@ -125,7 +125,7 @@ type Engine() =
         | Some cached ->
             match FunctionCache.needsReset with
             | true ->
-                cached.resetFuncExpandDo.Invoke()
+                cached.resetFuncRecords.Invoke()
                 FunctionCache.needsReset <- false
             | _ -> ()
             cached.addProperty.Invoke(arg, argLength) |> ignore
@@ -165,6 +165,9 @@ type Engine() =
                  [ sysLib "mscorlib"
                    sysLib "System"
                    sysLib "System.Core"
+                   sysLib "System.Linq"
+                   sysLib "System.Data"
+                   sysLib "System.Data.Common"
                    sysLib "System.Linq.Expressions"
                    sysLib "System.Runtime"
                    sysLib "System.Runtime.Numerics"

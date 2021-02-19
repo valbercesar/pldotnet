@@ -127,6 +127,10 @@ open System.Collections\n\
 open System.Globalization\n\
 open System.Collections.Generic\n\
 open System.Runtime.InteropServices\n\
+open System.Linq\n\
+open System.Data\n\
+open System.Data.Common\n\
+open FSharp.Data\n\
 \n\
 \n\
 [<Struct>]\n\
@@ -157,50 +161,99 @@ module SPI =\n\
             val mutable nrow: int\n\
         end\n\
     \n\
-    let (?) (exp:ExpandoObject) (s : string) = \n\
-        let d = exp :> IDictionary<string, obj>\n\
-        d.[s]\n\
-    let (?<-) (exp: ExpandoObject) (s : string) (o: obj) =\n\
-        let d = exp :> IDictionary<string, obj>\n\
-        d.Remove(s) |> ignore\n\
-        d.Add(s, o)\n\
+    type PropertyValueReader() =\n\
+        class\n\
+            member self.ReadValue<'T> (handle: IntPtr) : obj =\n\
+                match handle with\n\
+                | h when h = IntPtr.Zero -> null\n\
+                | _ ->\n\
+                    match typeof<'T> with\n\
+                    | t when t = typeof<string> -> handle |> Marshal.PtrToStringUTF8 :> obj\n\
+                    | t when t = typeof<decimal> -> handle |> Marshal.PtrToStringAnsi |> Convert.ToDecimal :> obj\n\
+                    | _ -> handle |> Marshal.PtrToStructure<'T> :> obj\n\
+            member self.Read (prop : PropertyValue) : obj =\n\
+                match enum<TypeOid> prop.typ with\n\
+                | TypeOid.BOOLOID -> self.ReadValue<bool> prop.value\n\
+                | TypeOid.INT2OID -> self.ReadValue<int16> prop.value\n\
+                | TypeOid.INT4OID -> self.ReadValue<int> prop.value\n\
+                | TypeOid.INT8OID -> self.ReadValue<int64> prop.value\n\
+                | TypeOid.FLOAT4OID -> self.ReadValue<float32> prop.value\n\
+                | TypeOid.FLOAT8OID -> self.ReadValue<double> prop.value\n\
+                | TypeOid.NUMERICOID -> self.ReadValue<decimal> prop.value\n\
+                | TypeOid.VARCHAROID -> self.ReadValue<string> prop.value\n\
+                | _ -> raise (new NotSupportedException())\n\
+        end\n\
+    type DbRecord() =\n\
+        class\n\
+            let mutable Record : Dictionary<string, obj> = new Dictionary<string, obj>()\n\
+            let mutable Values : List<obj> = new List<obj>()\n\
+            let mutable Reader : PropertyValueReader = new PropertyValueReader()\n\
+            let mutable ColumnNames : List<string> = new List<string>()\n\
+            member self.GetRecord : outref<Dictionary<string, obj>> = &Record\n\
+            member self.AddProperty (prop: PropertyValue) : unit =\n\
+                let value : obj = Reader.Read(prop)\n\
+                match Record.TryAdd(prop.name, value) with\n\
+                | true ->\n\
+                    Values.Add(value)\n\
+                    ColumnNames.Add(prop.name)\n\
+                    ()\n\
+                | _ ->\n\
+                    Record.[prop.name] <- value\n\
+                    Values.[(self :> IDataRecord).GetOrdinal prop.name] <- value\n\
+                    ()\n\
+            member self.GetValue (name: string) : obj = Record.[name]\n\
+            interface IDataRecord with\n\
+                member self.GetValue (ordinal: int) : obj = Values.[ordinal]\n\
+                member self.get_Item (ordinal: int) : obj = ordinal |> (self :> IDataRecord).GetValue\n\
+                member self.get_Item (name: string) : obj = name |> self.GetValue\n\
+                member self.FieldCount : int = Values.Count\n\
+                member self.GetBoolean (ordinal: int) : bool = ordinal |> (self :> IDataRecord).GetValue :?> bool\n\
+                member self.GetByte (ordinal: int) : byte = ordinal |> (self :> IDataRecord).GetValue :?> byte\n\
+                member self.GetDateTime (ordinal: int): DateTime = ordinal |> (self :> IDataRecord).GetValue :?> DateTime\n\
+                member self.GetDecimal (ordinal: int): decimal = ordinal |> (self :> IDataRecord).GetValue :?> decimal\n\
+                member self.GetFieldType (ordinal: int) : Type = (ordinal |> (self :> IDataRecord).GetValue).GetType()\n\
+                member self.GetGuid (ordinal: int) : Guid = ordinal |> (self :> IDataRecord).GetValue :?> Guid\n\
+                member self.GetInt16 (ordinal: int) : int16 = ordinal |> (self :> IDataRecord).GetValue :?> int16\n\
+                member self.GetInt32 (ordinal: int) : int = ordinal |> (self :> IDataRecord).GetValue :?> int\n\
+                member self.GetInt64 (ordinal: int) : int64 = ordinal |> (self :> IDataRecord).GetValue :?> int64\n\
+                member self.GetFloat (ordinal: int) : float32 = ordinal |> (self :> IDataRecord).GetValue :?> float32\n\
+                member self.GetDouble (ordinal: int) : float = ordinal |> (self :> IDataRecord).GetValue :?> float\n\
+                member self.GetName (ordinal: int) : string = ColumnNames.[ordinal]\n\
+                member self.GetDataTypeName (ordinal: int) : string = (ordinal |> (self :> IDataRecord).GetFieldType).ToString()\n\
+                member self.GetChar (ordinal: int) : char = ordinal |> (self :> IDataRecord).GetValue :?> char\n\
+                member self.GetString (ordinal: int) : string = ordinal |> (self :> IDataRecord).GetValue :?> string\n\
+                member self.GetValues (values: obj []) : int =\n\
+                    let count : int = Math.Min(Values.Count, values.Length)\n\
+                    for index in 0 .. count - 1 do\n\
+                        values.[index] <- index |> (self :> IDataRecord).GetValue\n\
+                    count\n\
+                member self.GetOrdinal (name: string) : int = (fun e -> e = name) |> ColumnNames.FindIndex\n\
+                member self.GetBytes (ordinal: int, fieldOffset: int64, buffer: byte [], bufferoffset: int, length: int) : int64 =\n\
+                    raise (new NotImplementedException())\n\
+                member self.GetChars (ordinal: int, fieldoffset: int64, buffer: char [], bufferoffset: int, length: int) : int64 =\n\
+                    raise (new NotImplementedException())\n\
+                member self.GetData (ordinal: int) : IDataReader = raise (new NotImplementedException())\n\
+                member self.IsDBNull (ordinal: int) : bool = null = (ordinal |> (self :> IDataRecord).GetValue)\n\
+        end\n\
 \n\
     [<DllImport(@\"/usr/lib/postgresql/10/lib/pldotnet.so\", CallingConvention=CallingConvention.Cdecl)>]\n\
     extern int pldotnet_SPIExecute(string cmd, int64 limit)\n\
 \n\
-    let mutable FuncExpandDo : List<ExpandoObject> = new List<ExpandoObject>()\n\
-\n\
-    let ResetFuncExpandDo () : unit =\n\
-        FuncExpandDo <- new List<ExpandoObject>()\n\
+    let mutable FuncRecords : List<DbRecord> = new List<DbRecord>()\n\
+    let ResetFuncRecords () : unit =\n\
+        FuncRecords <- new List<DbRecord>()\n\
         ()\n\
-    let ReadValueT<'T> (handle: IntPtr) : obj =\n\
-        match typeof<'T> with\n\
-        | t when t = typeof<string> -> handle |> Marshal.PtrToStringUTF8 :> obj\n\
-        | t when t = typeof<decimal> -> handle |> Marshal.PtrToStringAnsi |> Convert.ToDecimal :> obj\n\
-        | _ -> handle |> Marshal.PtrToStructure<'T> :> obj\n\
-    let ReadValue (prop : PropertyValue) : obj option =\n\
-        match enum<TypeOid> prop.typ with\n\
-            | TypeOid.BOOLOID -> ReadValueT<bool> prop.value |> Some\n\
-            | TypeOid.INT2OID -> ReadValueT<int16> prop.value |> Some\n\
-            | TypeOid.INT4OID -> ReadValueT<int> prop.value |> Some\n\
-            | TypeOid.INT8OID -> ReadValueT<int64> prop.value |> Some\n\
-            | TypeOid.FLOAT4OID -> ReadValueT<float32> prop.value |> Some\n\
-            | TypeOid.FLOAT8OID -> ReadValueT<double> prop.value |> Some\n\
-            | TypeOid.NUMERICOID -> ReadValueT<decimal> prop.value |> Some\n\
-            | TypeOid.VARCHAROID -> ReadValueT<string> prop.value |> Some\n\
-            | _ -> None\n\
+\n\
     let AddProperty (arg: IntPtr) (funcoid: int) : unit =\n\
         let prop : PropertyValue = arg |> Marshal.PtrToStructure<PropertyValue>\n\
-        match ReadValue prop with\n\
-        | Some value ->\n\
-            match FuncExpandDo.Count < prop.nrow + 1 with\n\
-            | true -> FuncExpandDo.Add(new ExpandoObject())\n\
-            | _ -> ()\n\
-            FuncExpandDo.[prop.nrow]?(prop.name) <- value\n\
+        match FuncRecords.Count < prop.nrow + 1 with\n\
+        | true -> FuncRecords.Add(new DbRecord())\n\
         | _ -> ()\n\
-    let Execute (cmd: string) (limit: int64) : List<ExpandoObject> =\n\
+        FuncRecords.[prop.nrow].AddProperty prop\n\
+        ()\n\
+    let Execute (cmd: string) (limit: int64) : List<DbRecord> =\n\
         pldotnet_SPIExecute(cmd, limit) |> ignore\n\
-        FuncExpandDo\n\
+        FuncRecords\n\
 \n\
 module Helper =\n\
     let wrap (isnull: bool) a =\n\
@@ -215,8 +268,6 @@ module Helper =\n\
             | true, v -> Some v\n\
             | _ -> None\n\
     let arrayToString (isnull : bool) (a : ArrayT<'b>) : string [] option =\n\
-        printfn \"is null? %A\" isnull\n\
-        printfn \"array %A\" a\n\
         match isnull with\n\
         | true -> None\n\
         | false ->\n\
@@ -224,7 +275,6 @@ module Helper =\n\
             let is = seq { 0..((int)a.BufferSize)-1 }\n\
             let ptrToStr (buffer : IntPtr) (offset : int) : string =\n\
                 let str = Marshal.ReadIntPtr(buffer, offset) |> Marshal.PtrToStringUTF8\n\
-                printfn \"SEE THE CURRENT STRING: %A\" str\n\
                 str\n\
             try\n\
                 [|for i in is do yield (ptrToStr a.Buffer (i * elsize))|] |> Some\n\

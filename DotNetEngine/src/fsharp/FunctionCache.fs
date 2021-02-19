@@ -10,7 +10,7 @@ type CachedFunction =
         val mutable sourceCode : string
         val mutable userFunction : Func<IntPtr, int, int>
         val mutable addProperty : Action<IntPtr, int>
-        val mutable resetFuncExpandDo : Action
+        val mutable resetFuncRecords : Action
         new(
             src: string,
             userFunc: Func<IntPtr, int, int>,
@@ -19,7 +19,7 @@ type CachedFunction =
                 sourceCode = src;
                 userFunction = userFunc;
                 addProperty = addProp;
-                resetFuncExpandDo = resetFunc
+                resetFuncRecords = resetFunc
             }
     end
 
@@ -39,8 +39,7 @@ let findCachedFunction (fid : uint) : CachedFunction option =
 let addToHashDict (fid : uint) (cached : CachedFunction option) : unit =
     match cached with
     | Some _cached ->
-        funcBuiltCodeDict.Remove fid |> ignore
-        funcBuiltCodeDict.Add(fid, _cached)
+        funcBuiltCodeDict.[fid] <- _cached
     | _ -> ()
 
 let removeFromHashDict (fid : uint) : unit =
