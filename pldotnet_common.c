@@ -520,14 +520,14 @@ pldotnet_ModifyTuple(
     FunctionCallInfo fcinfo,
     HeapTuple tuple,
     TupleDesc rel_desc,
-    int8_t *args
+    pldotnet_ArrayT *tg_new_array
 )
 {
     Datum *modvalues;
     bool *modnulls;
     bool *modrepls;
+    HeapTuple result = nullptr;
 
-    int8_t *cur_arg = args;
     MemoryContext current = CurrentMemoryContext;
     MemoryContextSwitchTo(TopMemoryContext);
 
@@ -535,15 +535,16 @@ pldotnet_ModifyTuple(
     modnulls = (bool *) palloc0(rel_desc->natts * sizeof(bool));
     modrepls = (bool *) palloc0(rel_desc->natts * sizeof(bool));
 
-    for (size_t i = 0; i < rel_desc->natts; ++i)
+    for (size_t i = 0, j = 0; i < rel_desc->natts; ++i)
     {
         Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
+        PropertyValue *property = ((PropertyValue*) tg_new_array->buffer) + j;
 
         if (attr->attisdropped)
             continue;
 
         modvalues[i] = pldotnet_GetScalarValue(
-            (char *) cur_arg,
+            (char*) property->value,
             nullptr,
             fcinfo,
             attr->atttypid
@@ -551,10 +552,10 @@ pldotnet_ModifyTuple(
 
         modrepls[i] = true;
 
-        cur_arg += pldotnet_GetTypeSize(attr->atttypid);
+        ++j;
     }
 
-    tuple = heap_modify_tuple(
+    result = heap_modify_tuple(
         tuple,
         rel_desc,
         modvalues,
@@ -563,8 +564,7 @@ pldotnet_ModifyTuple(
     );
 
     MemoryContextSwitchTo(current);
-
-    return tuple;
+    return result;
 }
 
 /*
@@ -584,7 +584,7 @@ pldotnet_ModifyTuple(
 Datum
 pldotnet_GetTriggerResult(
     FunctionCallInfo fcinfo,
-    int8_t *args,
+    pldotnet_TriggerInfo *tg_info,
     int8_t *result_ptr,
     int8_t *resultnull_ptr
 )
@@ -632,14 +632,14 @@ pldotnet_GetTriggerResult(
                 fcinfo,
                 tdata->tg_trigtuple,
                 rel_desc,
-                args
+                &(tg_info->tg_new_array)
             );
         else if (TRIGGER_FIRED_BY_UPDATE(tdata->tg_event))
             result = pldotnet_ModifyTuple(
                 fcinfo,
                 tdata->tg_newtuple,
                 rel_desc,
-                args
+                &(tg_info->tg_new_array)
             );
         else
             elog(ERROR, "[pldotnet]: Unrecognized trigger action: %u", tdata->tg_event);
@@ -948,36 +948,72 @@ pldotnet_TriggerHasBothTuples(TriggerEvent event)
            pldotnet_TriggerHasNewTuple(event);
 }
 
-int8_t*
+static void
 pldotnet_FillTriggerTuple(
     FunctionCallInfo fcinfo,
     HeapTuple trig_tuple,
     TupleDesc rel_desc,
-    int8_t *cur_arg
+    int nrow,
+    pldotnet_ArrayT *tg_array
 )
 {
+    uint8_t *values = nullptr;
+    size_t trigger_tuple_size = 0;
+    size_t pos = 0;
+    PropertyValue *properties = nullptr;
     Datum argdatum;
+
+    tg_array->buffer_size = 0;
+    tg_array->element_size = sizeof(PropertyValue);
 
     for (int i = 0; i < rel_desc->natts; ++i)
     {
         Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
-        bool isnull = false;
-        argdatum = heap_getattr(trig_tuple, i + 1, rel_desc, &isnull);
-
         if (attr->attisdropped)
             continue;
+        tg_array->buffer_size += 1;
+        trigger_tuple_size += pldotnet_GetTypeSize(attr->atttypid);
+    }
+
+    properties = (PropertyValue*) palloc0(tg_array->buffer_size * sizeof(PropertyValue));
+    values = (uint8_t*) palloc0(trigger_tuple_size);
+
+    for (int i = 0, j = 0; i < rel_desc->natts; ++i)
+    {
+        Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
+        uint8_t *cursor = values + pos;
+        PropertyValue *property = properties + j;
+        bool isnull = false;
+
+        if (attr->attisdropped)
+           continue;
+
+        argdatum = heap_getattr(trig_tuple, i + 1, rel_desc, &isnull);
 
         pldotnet_SetScalarValue(
-            (char*) cur_arg,
+            (char*) cursor,
             argdatum,
             fcinfo,
             i,
             attr->atttypid,
             &isnull
         );
-        cur_arg += pldotnet_GetTypeSize(attr->atttypid);
+
+        property->type = attr->atttypid;
+        property->nrow = nrow;
+        property->value = (Datum) cursor;
+
+        property->name = NameStr(attr->attname);
+        if (strcmp(property->name, "?column?") == 0 ||
+            strcmp(property->name, "bool") == 0
+        )
+            property->name = "column";
+
+        j += 1;
+        pos += pldotnet_GetTypeSize(attr->atttypid);
     }
-    return cur_arg;
+
+    tg_array->buffer = (void*) properties;
 }
 
 static void
@@ -1006,7 +1042,9 @@ pldotnet_SetRelattsArray(
 
 void
 pldotnet_SetTriggerData(
+    FunctionCallInfo fcinfo,
     TriggerData *tdata,
+    TupleDesc rel_desc,
     pldotnet_TriggerInfo *pldotnet_tg_info
 )
 {
@@ -1058,6 +1096,33 @@ pldotnet_SetTriggerData(
     }
     else
         elog(ERROR, "unrecognized LEVEL tg_event: %u", tdata->tg_event);
+
+    if (pldotnet_TriggerHasOldTuple(tdata->tg_event))
+        {
+            pldotnet_FillTriggerTuple(
+                fcinfo,
+                tdata->tg_newtuple,
+                rel_desc,
+                0,
+                &pldotnet_tg_info->tg_new_array
+            );
+            pldotnet_FillTriggerTuple(
+                fcinfo,
+                tdata->tg_trigtuple,
+                rel_desc,
+                1,
+                &pldotnet_tg_info->tg_old_array
+            );
+        }
+        else
+            pldotnet_FillTriggerTuple(
+                fcinfo,
+                tdata->tg_trigtuple,
+                rel_desc,
+                0,
+                &pldotnet_tg_info->tg_new_array
+            );
+
 }
 
 static int8_t*
@@ -1144,6 +1209,136 @@ pldotnet_FillNonTriggerValues(
     return cur_arg;
 }
 
+size_t
+pldotnet_SetFuncInOutValues(
+    Form_pg_proc procst,
+    Oid rettype,
+    int args_size,
+    bool nullable_arg_flag,
+    bool force_nullable_flags,
+    pldotnet_FuncInOutInfo *func_inout_info
+)
+{
+    func_inout_info->typesize_args = args_size;
+    func_inout_info->typesize_nullflags = 0;
+
+    if (nullable_arg_flag || force_nullable_flags)
+        func_inout_info->typesize_nullflags += sizeof(bool) * procst->pronargs;
+    func_inout_info->typesize_nullflags += sizeof(bool);
+    func_inout_info->typesize_result = pldotnet_GetTypeSize(rettype);
+
+    return (size_t) (
+        func_inout_info->typesize_nullflags
+      + func_inout_info->typesize_args
+      + func_inout_info->typesize_result
+    );
+}
+
+
+/*
+ * This function creates a buffer to hold arguments and result data.
+ * The buffer is sent to C#/F#$. The current user function may read
+ * this buffer to obtain the arguments and/or write any ouput data.
+ * This function is used on triggers
+ */
+static int8_t*
+pldotnet_CreateTriggerCStructLibargs(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    pldotnet_FuncInOutInfo *func_inout_info,
+    size_t *default_size
+)
+{
+    TriggerData *tdata = (TriggerData*) fcinfo->context;
+    TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
+    int8_t *libargs_ptr = NULL;
+    int8_t *cur_arg = NULL;
+
+    *default_size = pldotnet_SetFuncInOutValues(
+        procst,
+        procst->prorettype,
+        sizeof(pldotnet_TriggerInfo),
+        false,
+        false,
+        func_inout_info
+    );
+
+    libargs_ptr = (int8_t*) palloc0(*default_size + sizeof(uint32_t));
+    cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
+
+    pldotnet_SetTriggerData(
+        fcinfo,
+        tdata,
+        rel_desc,
+        (pldotnet_TriggerInfo*) cur_arg
+    );
+
+    return libargs_ptr;
+}
+
+/*
+ * This function creates a buffer to hold arguments and result data.
+ * The buffer is sent to C#/F#$. The current user function may read
+ * this buffer to obtain the arguments and/or write any ouput data.
+ * This function is used on normal functions (not triggers)
+ */
+static int8_t*
+pldotnet_CreateNonTriggerCStructLibargs(
+    FunctionCallInfo fcinfo,
+    Form_pg_proc procst,
+    bool force_nullable_flags,
+    pldotnet_FuncInOutInfo *func_inout_info,
+    size_t *default_size
+)
+{
+    int8_t *libargs_ptr = NULL;
+    int8_t *cur_arg = NULL;
+    Oid *argtype = procst->proargtypes.values;
+    Oid rettype = procst->prorettype;
+    size_t args_size = 0;
+
+    /* nullable related */
+    bool *argsnull_ptr;
+    bool nullable_arg_flag = false;
+
+    for (size_t i = 0; i < procst->pronargs; i++)
+    {
+        if (pldotnet_IsArray((int) i, func_inout_info))
+            args_size += sizeof(pldotnet_ArrayT);
+        else
+            args_size += (size_t) pldotnet_GetTypeSize(argtype[i]);
+        if (pldotnet_IsNullable(argtype[i]))
+            nullable_arg_flag = true;
+    }
+
+    *default_size = pldotnet_SetFuncInOutValues(
+        procst,
+        rettype,
+        args_size,
+        nullable_arg_flag,
+        force_nullable_flags,
+        func_inout_info
+    );
+
+    libargs_ptr = (int8_t*) palloc0(*default_size + sizeof(uint32_t));
+    argsnull_ptr = (bool *) libargs_ptr;
+    cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
+
+    cur_arg = pldotnet_FillNonTriggerValues(
+        fcinfo,
+        procst,
+        func_inout_info,
+        argsnull_ptr,
+        cur_arg
+    );
+
+    /* append the function id after usual libargs data */
+    cur_arg = libargs_ptr + *default_size;
+    *((uint32_t*)cur_arg) = (uint32_t) fcinfo->flinfo->fn_oid;
+
+    return libargs_ptr;
+}
+
 /*
  * This function creates a buffer to hold arguments and result data.
  * The buffer is sent to C#/F#$. The current user function may read
@@ -1159,88 +1354,24 @@ pldotnet_CreateCStructLibargs(
     bool force_nullable_flags,
     pldotnet_FuncInOutInfo *func_inout_info)
 {
-    size_t i;
     size_t default_size;
-
-    /* nullable related */
-    bool *argsnull_ptr;
-    bool nullable_arg_flag = false;
-
     int8_t *libargs_ptr = NULL;
     int8_t *cur_arg = NULL;
-    Oid *argtype = procst->proargtypes.values;
-    Oid rettype = procst->prorettype;
-    size_t trigger_tuple_size = 0;
-
-    func_inout_info->typesize_args = 0;
-    func_inout_info->typesize_nullflags = 0;
 
     if (CALLED_AS_TRIGGER(fcinfo))
-    {
-        TriggerData *tdata = (TriggerData*) fcinfo->context;
-        TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
-        for (i = 0; i < rel_desc->natts; ++i)
-        {
-            Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
-            if (!attr->attisdropped)
-                trigger_tuple_size += pldotnet_GetTypeSize(attr->atttypid);
-        }
-
-        func_inout_info->typesize_args += sizeof(pldotnet_TriggerInfo) + trigger_tuple_size * 2;
-    }
-    else
-    {
-        for (i = 0; i < procst->pronargs; i++)
-        {
-            if (pldotnet_IsArray((int) i, func_inout_info))
-                func_inout_info->typesize_args += sizeof(pldotnet_ArrayT);
-            else
-                func_inout_info->typesize_args += pldotnet_GetTypeSize(argtype[i]);
-            if (pldotnet_IsNullable(argtype[i]))
-                nullable_arg_flag = true;
-        }
-    }
-
-    if (nullable_arg_flag || force_nullable_flags)
-        func_inout_info->typesize_nullflags += sizeof(bool) * procst->pronargs;
-    func_inout_info->typesize_nullflags += sizeof(bool);
-    func_inout_info->typesize_result = pldotnet_GetTypeSize(rettype);
-
-    default_size = (size_t) (
-        func_inout_info->typesize_nullflags
-      + func_inout_info->typesize_args
-      + func_inout_info->typesize_result
-    );
-
-    libargs_ptr = (int8_t*) palloc0(default_size + sizeof(uint32_t));
-    argsnull_ptr = (bool *) libargs_ptr;
-    cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
-
-    if (CALLED_AS_TRIGGER(fcinfo))
-    {
-        TriggerData *tdata = (TriggerData*) fcinfo->context;
-        TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
-        pldotnet_TriggerInfo *pldotnet_tg_info = nullptr;
-        if (pldotnet_TriggerHasOldTuple(tdata->tg_event))
-        {
-            cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_newtuple, rel_desc, cur_arg);
-            cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_trigtuple, rel_desc, cur_arg);
-        }
-        else
-        {
-            cur_arg = pldotnet_FillTriggerTuple(fcinfo, tdata->tg_trigtuple, rel_desc, cur_arg);
-            cur_arg += trigger_tuple_size;
-        }
-        pldotnet_tg_info = (pldotnet_TriggerInfo*) cur_arg;
-        pldotnet_SetTriggerData(tdata, pldotnet_tg_info);
-    }
-    else
-        cur_arg = pldotnet_FillNonTriggerValues(
+        libargs_ptr = pldotnet_CreateTriggerCStructLibargs(
             fcinfo,
             procst,
             func_inout_info,
-            argsnull_ptr,
-            cur_arg
+            &default_size
+        );
+    else
+        libargs_ptr = pldotnet_CreateNonTriggerCStructLibargs(
+            fcinfo,
+            procst,
+            force_nullable_flags,
+            func_inout_info,
+            &default_size
         );
 
     /* append the function id after usual libargs data */
@@ -1285,10 +1416,11 @@ pldotnet_GetNetResult(
 
     if (CALLED_AS_TRIGGER(fcinfo))
     {
-        int8_t *args = libargs + func_inout_info->typesize_nullflags;
+        pldotnet_TriggerInfo* tg_info =
+            (pldotnet_TriggerInfo*) (libargs + func_inout_info->typesize_nullflags);
         if (TRIGGEROID != rettype)
             elog(ERROR, "[pldotnet]: Invalid Oid while running trigger");
-        return pldotnet_GetTriggerResult(fcinfo, args, result_ptr, resultnull_ptr);
+        return pldotnet_GetTriggerResult(fcinfo, tg_info, result_ptr, resultnull_ptr);
     }
 
     if (!pldotnet_IsSimpleType(rettype) && !pldotnet_IsTextType(rettype))

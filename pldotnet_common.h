@@ -161,8 +161,18 @@ typedef struct pldotnet_TriggerInfo
     uint64_t tg_relid;
     pldotnet_ArrayT tg_args_array;
     pldotnet_ArrayT tg_relatts_array;
+    pldotnet_ArrayT tg_new_array;
+    pldotnet_ArrayT tg_old_array;
 
 } pldotnet_TriggerInfo;
+
+typedef struct PropertyValue
+{
+    Datum value;
+    char   *name;
+    int    type;
+    int    nrow;
+} PropertyValue;
 
 bool pldotnet_NeedsIntPtr(Oid oid);
 bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *args);
@@ -216,7 +226,7 @@ pldotnet_GetStringValue(char *result_ptr);
 Datum
 pldotnet_GetTriggerResult(
     FunctionCallInfo fcinfo,
-    int8_t *args,
+    pldotnet_TriggerInfo *tg_info,
     int8_t *result_ptr,
     int8_t *resultnull_ptr
 );
@@ -260,18 +270,22 @@ pldotnet_TriggerHasNewTuple(TriggerEvent event);
 bool
 pldotnet_TriggerHasBothTuples(TriggerEvent event);
 
-int8_t*
-pldotnet_FillTriggerTuple(
-    FunctionCallInfo fcinfo,
-    HeapTuple trig_tuple,
-    TupleDesc rel_desc,
-    int8_t *cur_arg
-);
-
 void
 pldotnet_SetTriggerData(
+    FunctionCallInfo fcinfo,
     TriggerData *tdata,
+    TupleDesc rel_desc,
     pldotnet_TriggerInfo *pldotnet_tg_info
+);
+
+size_t
+pldotnet_SetFuncInOutValues(
+    Form_pg_proc procst,
+    Oid rettype,
+    int args_size,
+    bool nullable_arg_flag,
+    bool force_nullable_flags,
+    pldotnet_FuncInOutInfo *func_inout_info
 );
 
 int8_t* pldotnet_CreateCStructLibargs(

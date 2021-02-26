@@ -19,8 +19,7 @@
     <Protobuf Include="Protos\storage.proto" GrpcServices="Client" />
   </ItemGroup>
 
-  <Target Name="SetupForDemo"
-          AfterTargets="Build">
+  <Target Name="SetupForDemo" AfterTargets="Build">
 
     <ItemGroup>
       <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).dll" />
@@ -31,8 +30,7 @@
     </ItemGroup>
 
     <!-- Copy the project outputs to the demo directory -->
-    <Copy SourceFiles="@(AllOutputs)"
-	    DestinationFolder="./" />
+    <Copy SourceFiles="@(AllOutputs)" DestinationFolder="./" />
   </Target>
 
 </Project>

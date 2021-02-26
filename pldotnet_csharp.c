@@ -36,13 +36,6 @@ PGDLLEXPORT Datum plcsharp_inline_handler(PG_FUNCTION_ARGS);
 #endif
 
 static int
-plcsharp_BuildBlockCompositesFromTrigger(
-    char * composite_decls,
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst
-);
-
-static int
 plcsharp_BuildBlockCompositesFromProcedure(
     char * composite_decls,
     FunctionCallInfo fcinfo,
@@ -167,13 +160,13 @@ const char arg_flag_str[] = "bool[] argsnull;";
 static char cs_block_header[] = "           \n\
 using System;                               \n\
 using System.Linq;                          \n\
-using System.Dynamic;                       \n\
 using System.Data.SqlClient;                \n\
 using System.Data.Common;                   \n\
 using System.Data;                          \n\
 using System.Collections.Generic;           \n\
 using System.Runtime.InteropServices;       \n\
 using System.Globalization;                 \n\
+using System.Diagnostics.CodeAnalysis;      \n\
 namespace PlDotNETUserSpace                 \n\
 {                                           \n\
     enum TypeOid                            \n\
@@ -219,6 +212,19 @@ namespace PlDotNETUserSpace                 \n\
                 );\n\
             }\n\
             return strs;\n\
+        }\n\
+        static SPI.BpgsqlDbRecord ArrayToDbRecord(ArrayT<SPI.PropertyValue> array)\n\
+        {\n\
+            if (1 > array.BufferSize)\n\
+                return null;\n\
+            var dbRecord = new SPI.BpgsqlDbRecord();\n\
+            for (int i = 0; i < array.BufferSize; ++i)\n\
+            {\n\
+                var cursor = IntPtr.Add(array.Buffer, ((int) array.ElementSize) * i);\n\
+                var propertyValue = Marshal.PtrToStructure<SPI.PropertyValue>(cursor);\n\
+                dbRecord.AddProperty(propertyValue);\n\
+            }\n\
+            return dbRecord;\n\
         }\n\
         static T[] fromArrayT<T>(ArrayT<T> array)\n\
         {\n\
@@ -397,41 +403,15 @@ plcsharp_BuildBLockCompositesFromTriggerData(
     Form_pg_proc procst
 )
 {
-    size_t len = plcsharp_BuildBlockCompositesFromTrigger(
-        composite_decls,
-        fcinfo,
-        procst
-    );
-
-    char *cursor = composite_decls + len;
     const char *tg_definition = plcsharp_GetTriggerDataDefinition();
 
     snprintf(
-        cursor,
-        8198 - len,
+        composite_decls,
+        8198,
         "%s",
         tg_definition
     );
 
-    return strlen(composite_decls);
-}
-
-static int
-plcsharp_BuildBlockCompositesFromTrigger(
-    char *composite_decls,
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst
-)
-{
-    TriggerData* tdata = (TriggerData*) fcinfo->context;
-    TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
-
-    pldotnet_GetStructFromCompositeTuple(
-        composite_decls,
-        8198,
-        "TriggerTuple",
-        rel_desc
-    );
     return strlen(composite_decls);
 }
 
@@ -527,37 +507,49 @@ plcsharp_GetTriggerDataDefinition(void)
             public ArrayT<IntPtr> tg_args_array;\n\
             [MarshalAs(UnmanagedType.Struct)]\n\
             public ArrayT<IntPtr> tg_relatts_array;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public ArrayT<SPI.PropertyValue> tg_new_array;\n\
+            [MarshalAs(UnmanagedType.Struct)]\n\
+            public ArrayT<SPI.PropertyValue> tg_old_array;\n\
+\n\
+            public TriggerInfo(TriggerInfo td)\n\
+            {\n\
+                tg_name = td.tg_name;\n\
+                tg_table_name = td.tg_table_name;\n\
+                tg_table_schema = td.tg_table_schema;\n\
+                tg_when = td.tg_when;\n\
+                tg_level = td.tg_level;\n\
+                tg_event = td.tg_event;\n\
+                tg_relid = td.tg_relid;\n\
+                tg_args_array = td.tg_args_array;\n\
+                tg_relatts_array = td.tg_relatts_array;\n\
+                tg_new_array = td.tg_new_array;\n\
+                tg_old_array = td.tg_old_array;\n\
+            }\n\
+\n\
         }\n\
-        [StructLayout(LayoutKind.Sequential,Pack=1)]\n\
         public class TriggerTuples\n\
         {\n\
-            [MarshalAs(UnmanagedType.Struct)]\n\
-            public TriggerTuple NEW;\n\
-            [MarshalAs(UnmanagedType.Struct)]\n\
-            public TriggerTuple OLD;\n\
-        }\n\
-        [StructLayout(LayoutKind.Sequential,Pack=1)]\n\
-        public class BaseTriggerData\n\
-        {\n\
-            [MarshalAs(UnmanagedType.Struct)]\n\
-            public TriggerTuples tg_tuples;\n\
-            [MarshalAs(UnmanagedType.Struct)]\n\
-            public TriggerInfo tg_info;\n\
-        \n\
-            public BaseTriggerData(BaseTriggerData btd)\n\
+            public SPI.BpgsqlDbRecord NEW;\n\
+            public SPI.BpgsqlDbRecord OLD;\n\
+            public TriggerTuples(SPI.BpgsqlDbRecord _NEW, SPI.BpgsqlDbRecord _OLD)\n\
             {\n\
-                tg_tuples = btd.tg_tuples;\n\
-                tg_info = btd.tg_info;\n\
+                NEW = _NEW;\n\
+                OLD = _OLD;\n\
             }\n\
         }\n\
-        public class TriggerData : BaseTriggerData\n\
+        public class TriggerData : TriggerInfo\n\
         {\n\
             public string[] tg_args;\n\
             public string[] tg_relatts;\n\
-            public TriggerData(BaseTriggerData btd) : base(btd)\n\
+            public TriggerTuples tg_tuples;\n\
+            public TriggerData(TriggerInfo TgInfo) : base(TgInfo)\n\
             {\n\
-                tg_args = ArrayToString(btd.tg_info.tg_args_array);\n\
-                tg_relatts = ArrayToString(btd.tg_info.tg_relatts_array);\n\
+                tg_args = ArrayToString(TgInfo.tg_args_array);\n\
+                tg_relatts = ArrayToString(TgInfo.tg_relatts_array);\n\
+                var NEW = ArrayToDbRecord(TgInfo.tg_new_array);\n\
+                var OLD = ArrayToDbRecord(TgInfo.tg_old_array);\n\
+                tg_tuples = new TriggerTuples(NEW, OLD);\n\
             }\n\
         }\n";
 }
@@ -567,7 +559,7 @@ plcsharp_BuildTriggerDataArgs(FunctionCallInfo fcinfo)
 {
     return "\n\
 [MarshalAs(UnmanagedType.Struct)]\n\
-public BaseTriggerData TD;";
+public TriggerInfo TgInfo;";
 }
 
 static char *
@@ -742,7 +734,7 @@ plcsharp_BuildBlockTriggerFuncCall(FunctionCallInfo fcinfo, Form_pg_proc procst)
             libargs.resunull = null == libargs.resu;\n";
 
     const char *args = plchsarp_GetTriggerArgs(fcinfo);
-    const char *tg_data = "new TriggerData(libargs.TD)";
+    const char *tg_data = "new TriggerData(libargs.TgInfo)";
     char *func = NameStr(procst->proname);
 
     size_t size = strlen(template)

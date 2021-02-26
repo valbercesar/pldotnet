@@ -30,13 +30,5 @@
 extern int pldotnet_SPIExecute(char* cmd, long limit);
 extern int pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status);
 
-typedef struct PropertyValue
-{
-    Datum value;
-    char   *name;
-    int    type;
-    int    nrow;
-}PropertyValue;
-
 #endif
 
