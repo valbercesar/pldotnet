@@ -28,7 +28,7 @@
 int plcsharp_LoadDotNetEngine(void);
 int plcsharp_CompileFunction(char * src, FunctionCallInfo fcinfo);
 int plcsharp_CompileFunctionNetBuild(char * source_code);
-Datum plcsharp_RunFunction(char * libArgs, FunctionCallInfo fcinfo);
+Datum plcsharp_RunFunction(char * libArgs, FunctionCallInfo fcinfo, pldotnet_FuncInOutInfo *func_inout_info);
 int plcsharp_Run(char * dotnet_type, char * dotnet_type_method, char * libargs,
                                                                 int args_size);
 char * pldotnet_PublicDecl(Oid type);

@@ -125,6 +125,7 @@ typedef struct pldotnet_FunctionDecl
     int8_t *args;
     size_t args_length;
     Oid ret_type;
+    pldotnet_FuncInOutInfo func_inout_info;
     component_entry_point_fn dotnet_method;
 } pldotnet_FunctionDecl;
 
