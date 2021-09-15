@@ -15,14 +15,14 @@ SELECT returnCompositeSumFSharp() = integer '10';
 
 CREATE OR REPLACE FUNCTION checkTypesFSharp() RETURNS boolean AS $$
 let check_type (item : IDataRecord) : int =
-    if item.["bcol"].GetType() = typeof<bool> &&
-       item.["i2col"].GetType() = typeof<int16> &&
-       item.["i4col"].GetType() = typeof<int32> &&
-       item.["i8col"].GetType() = typeof<int64> &&
-       item.["f4col"].GetType() = typeof<float32> &&
-       item.["f8col"].GetType() = typeof<double> &&
-       item.["ncol"].GetType() = typeof<decimal> &&
-       item.["vccol"].GetType()  = typeof<string>
+    if item.["bcol"].GetType() = typeof<System.Boolean> &&
+       item.["i2col"].GetType() = typeof<System.Int16> &&
+       item.["i4col"].GetType() = typeof<System.Int32> &&
+       item.["i8col"].GetType() = typeof<System.Int64> &&
+       item.["f4col"].GetType() = typeof<System.Single> &&
+       item.["f8col"].GetType() = typeof<System.Double> &&
+       item.["ncol"].GetType() = typeof<System.Decimal>  &&
+       item.["vccol"].GetType()  = typeof<System.String>
     then 0
     else 1
 let records: List<SPI.DbRecord> = SPI.Execute "SELECT * from pldotnettypes" 1L

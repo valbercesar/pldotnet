@@ -42,16 +42,16 @@ dpkg -L postgresql-10-pljava
 It will look like this:
 
 ```shell
-/usr/share/postgresql/10/pljava/pljava-api-1.5.5.jar
+/usr/share/postgresql/10/pljava/pljava-api-1.6.2.jar
 ```
 
 Then. add the jar file to the maven package:
 ```shell
 mvn install:install-file \
-   -Dfile=/usr/share/postgresql/10/pljava/pljava-api-1.5.5.jar \
+   -Dfile=/usr/share/postgresql/10/pljava/pljava-api-1.6.2.jar \
    -DgroupId=org.postgresql \
    -DartifactId=pljava-api \
-   -Dversion=1.5.5 \
+   -Dversion=1.6.2 \
    -Dpackaging=jar \
    -DgeneratePom=true
 ```

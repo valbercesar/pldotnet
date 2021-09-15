@@ -350,7 +350,7 @@ public static class SPI
 
         public double GetDouble(int ordinal) => (double) GetValue(ordinal);
 
-        public Type GetFieldType(int ordinal) => GetFieldType(ordinal).GetType();
+        public Type GetFieldType(int ordinal) => GetValue(ordinal).GetType();
 
         public float GetFloat(int ordinal) => (float) GetValue(ordinal);
 

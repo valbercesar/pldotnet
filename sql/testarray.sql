@@ -1,5 +1,9 @@
 CREATE OR REPLACE FUNCTION sumArrayInt(a integer[]) RETURNS integer AS $$
-return a[0] + a[1] + a[2];
+var result = a[0] + a[1] + a[2];
+System.Console.WriteLine("------------------------------------------------------");
+System.Console.WriteLine(result);
+System.Console.WriteLine("------------------------------------------------------");
+return result;
 $$ LANGUAGE plcsharp;
 SELECT sumArrayInt( ARRAY[4,1,5] ) = integer '10';
 

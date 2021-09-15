@@ -22,7 +22,7 @@ SELECT
     plbench('SELECT sumArrayIntLua( ARRAY[4,1,5] )', 1000) as pllua,
     plbench('SELECT sumArrayIntTcl( ARRAY[4,1,5] )', 1000) as pltcl,
     plbench('SELECT sumArrayIntR( ARRAY[4,1,5] )', 1000) as plr,
-    plbench('SELCT sumArrayIntFSharp( ARRAY[4,1,5] )', 100) as plfsharp;
+    plbench('SELECT sumArrayIntFSharp( ARRAY[4,1,5] )', 1000) as plfsharp;
 
 SELECT
     'sumArrayNum',

@@ -21,7 +21,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>pljava-api</artifactId>
-      <version>1.5.5</version>
+      <version>1.6.2</version>
     </dependency>
   </dependencies>
 
