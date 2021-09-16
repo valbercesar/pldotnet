@@ -1150,10 +1150,10 @@ pldotnet_FillNonTriggerValues(
             arr = DatumGetArrayTypeP(argdatum);
             array_p = ARR_DATA_PTR(arr);
 
+            pldotnet_SetArraySize(argdatum, arrinfo);
+
             if (arrinfo->ndim > 1)
                 elog(ERROR, "Multidimensional array not supported.");
-
-            pldotnet_SetArraySize(argdatum, arrinfo);
 
             tmp = (pldotnet_ArrayT*) cur_arg;
 
