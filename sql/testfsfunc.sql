@@ -1,0 +1,38 @@
+CREATE OR REPLACE FUNCTION returnXFSharp() RETURNS integer AS $$
+Some 10
+$$ LANGUAGE plfsharp;
+SELECT returnXFSHarp() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2FSharp(v integer) RETURNS integer AS $$
+match v with
+| Some _v -> ((int) _v + 2) |> Some
+| _ -> None
+$$
+LANGUAGE plfsharp;
+SELECT inc2FSHarp(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum2FSharp(a integer, b integer) RETURNS integer AS $$
+match (a, b) with
+| Some _a, Some _b -> (_a + _b) |> Some
+| _ -> None
+$$
+LANGUAGE plfsharp;
+SELECT sum2FSHarp(3,2) = integer '5';
+
+CREATE OR REPLACE FUNCTION sum3FSharp(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+match (aaa, bbb, ccc) with
+| Some a, Some b, Some c -> (a + b + c) |> Some
+| _ -> None
+$$
+LANGUAGE plfsharp;
+SELECT sum3FSHarp(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4FSharp(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+match (a, b, c, d) with
+| Some _a, Some _b, Some _c, Some _d -> (_a + _b + _c + _d) |> Some
+| _ -> None
+$$
+LANGUAGE plfsharp;
+SELECT sum4FSHarp(4,3,2,1) = integer '10';
+
+

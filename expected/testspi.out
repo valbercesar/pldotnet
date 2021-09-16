@@ -112,3 +112,5 @@ SELECT getUserDescription(987654321) = varchar 'Charles Montgomery Burns, Social
  t
 (1 row)
 
+DROP TABLE pldotnettypes CASCADE;
+DROP TABLE usersavings CASCADE;

@@ -1,3 +1,26 @@
+CREATE TABLE pldotnettypes (
+    bcol  BOOLEAN,
+    i2col SMALLINT,
+    i4col INTEGER,
+    i8col BIGINT,
+    f4col REAL,
+    f8col DOUBLE PRECISION,
+    ncol  NUMERIC,
+    vccol VARCHAR
+);
+INSERT INTO pldotnettypes VALUES (
+    true,
+    CAST(1 as INT2),
+    CAST(32767 as INT4),
+    CAST(9223372036854775707 as BIGINT),
+    CAST(1.4 as REAL),
+    CAST(10.5000000000055 as DOUBLE PRECISION),
+    CAST(1.2 as NUMERIC),
+    'StringSample;'
+);
+CREATE TABLE usersavings(ssnum int8, name varchar, sname varchar, balance float4);
+INSERT INTO usersavings VALUES (123456789,'Homer','Simpson',2304.55);
+INSERT INTO usersavings VALUES (987654321,'Charles Montgomery','Burns',3000000.65);
 CREATE OR REPLACE FUNCTION returnCompositeSumFSharp() RETURNS integer AS $$
 let sum_record_cb (record : SPI.DbRecord) : int =
     let r = (record :> IDataRecord)
@@ -92,3 +115,6 @@ match ssnum with
 $$ LANGUAGE plfsharp;
 SELECT getUserDescriptionFSharp(123456789) = varchar 'Homer Simpson, Social security Number 123456789, has 2304.55 account balance.';
 SELECT getUserDescriptionFSharp(987654321) = varchar 'Charles Montgomery Burns, Social security Number 987654321, has 3000000.75 account balance.';
+
+DROP TABLE pldotnettypes CASCADE;
+DROP TABLE usersavings CASCADE;

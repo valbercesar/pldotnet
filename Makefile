@@ -29,6 +29,7 @@ DATA = pldotnet--0.0.1.sql
 REGRESS = \
 	init-extension \
 	testfunc \
+	testfsfunc \
 	testintegers testnullintegers \
 	testbool testnullbool \
 	testnumeric \
