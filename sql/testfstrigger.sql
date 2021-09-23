@@ -49,9 +49,9 @@ PREPARE verify_entries(int, int, int, int) AS
 --
 -- create dummy trigger function
 -- it always return null
--- so PG must save the NEW tuple in the database
+-- so PG must save the new tuple in the database
 --
-CREATE FUNCTION returnNullBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION returnNullBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
 None
 $$ LANGUAGE plfsharp;
 --
@@ -107,9 +107,9 @@ EXECUTE insert_my_values(:entries_quantity);
 --
 -- create another dummy trigger function
 -- this one, always return "SKIP", so PG must
--- discard the NEW tuple (do not save in DB)
+-- discard the new tuple (do not save in DB)
 --
-CREATE FUNCTION returnSkipBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION returnSkipBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
 Some "SKIP"
 $$ LANGUAGE plfsharp;
 --
@@ -145,14 +145,23 @@ DROP TRIGGER returnSkipBeforeInsertMyTable ON my_table;
 ---------------------- MODIFY BEFORE INSERT ----------------------
 --
 -- create a new trigger function to modify the content
--- inside the NEW tuple and return "MODIFY", so PG must
+-- inside the new tuple and return "MODIFY", so PG must
 -- update the tuple and save it.
 --
-CREATE FUNCTION returnModifyBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
-TD.tg_tuples.NEW.x <- TD.tg_tuples.NEW.x + 101
-TD.tg_tuples.NEW.y <- TD.tg_tuples.NEW.y + 102
-TD.tg_tuples.NEW.z <- TD.tg_tuples.NEW.z + 103.0f
-Some "MODIFY"
+CREATE OR REPLACE FUNCTION returnModifyBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+match TD.tg_tuples.NEW with
+| None -> None
+| Some _NEW ->
+    let ox = (_NEW :> IDataRecord).GetOrdinal("x")
+    let oy = (_NEW :> IDataRecord).GetOrdinal("y")
+    let oz = (_NEW :> IDataRecord).GetOrdinal("z")
+    let x =  (_NEW :> IDataRecord).GetInt32(ox) + 101
+    let y =  (_NEW :> IDataRecord).GetInt32(oy) + 102
+    let z =  (_NEW :> IDataRecord).GetFloat(oz) + 103.0f
+    _NEW.SetInt32 ox x
+    _NEW.SetInt32 oy y
+    _NEW.SetFloat oz z
+    Some "MODIFY"
 $$ LANGUAGE plfsharp;
 --
 -- create a new trigger to call the
@@ -194,10 +203,13 @@ DROP TRIGGER returnModifyBeforeInsertMyTable ON my_table;
 -- It shows how to dynamically avoid an insertion based
 -- on some validation step
 --
-CREATE FUNCTION validateBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
-match TD.tg_tuples.NEW.x with
-| 1 -> Some "SKIP"
-| _ -> None
+CREATE OR REPLACE FUNCTION validateBeforeInsertMyTableFSharp() RETURNS TRIGGER AS $$
+match TD.tg_tuples.NEW with
+| None -> None
+| Some _NEW ->
+    match  (_NEW :> IDataRecord).GetInt32((_NEW :> IDataRecord).GetOrdinal("x")) with
+    | 1 -> Some "SKIP"
+    | _ -> None
 $$ LANGUAGE plfsharp;
 --
 CREATE TRIGGER validateBeforeInsertMyTable
@@ -240,10 +252,13 @@ DROP TRIGGER validateBeforeInsertMyTable ON my_table;
 -- It shows how to dynamically avoid an insertion based
 -- on the value inside a tuple
 --
-CREATE FUNCTION validateBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
-match TD.tg_tuples.NEW.x with
-| 1 -> Some "SKIP"
-| _ -> None
+CREATE OR REPLACE FUNCTION validateBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
+match TD.tg_tuples.NEW with
+| None -> None
+| Some _NEW ->
+    match  (_NEW :> IDataRecord).GetInt32((_NEW :> IDataRecord).GetOrdinal("x")) with
+    | 1 -> Some "SKIP"
+    | _ -> None
 $$ LANGUAGE plfsharp;
 --
 CREATE TRIGGER validateBeforeUpdateMyTable
@@ -302,11 +317,14 @@ DROP TRIGGER validateBeforeUpdateMyTable ON my_table;
 -- create a new function to be called before UPDATE
 -- It shows how to access the old tuple
 --
-CREATE FUNCTION verifyOldBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
-let old_y_is_5 : bool = 5 = TD.tg_tuples.OLD.y
-let new_x_is_3 : bool = 3 = TD.tg_tuples.NEW.x
-match (old_y_is_5, new_x_is_3) with
-| (true, true) -> Some "SKIP"
+CREATE OR REPLACE FUNCTION verifyOldBeforeUpdateMyTableFSharp() RETURNS TRIGGER AS $$
+match (TD.tg_tuples.OLD, TD.tg_tuples.NEW) with
+| Some OLD, Some _NEW ->
+    let old_y_is_5 : bool = 5 = (OLD :> IDataRecord).GetInt32((OLD :> IDataRecord).GetOrdinal("y"))
+    let new_x_is_3 : bool = 3 =  (_NEW :> IDataRecord).GetInt32((_NEW :> IDataRecord).GetOrdinal("x"))
+    match (old_y_is_5,  new_x_is_3) with
+    | (true, true) -> Some "SKIP"
+    | _ -> None
 | _ -> None
 $$ LANGUAGE plfsharp;
 --
@@ -350,7 +368,7 @@ DROP TRIGGER verifyOldBeforeUpdateMyTable ON my_table;
 -- create a new function to update the update_events table
 -- when some change occurs in my_table
 --
-CREATE FUNCTION registerEventAfterUpdateMyTableFSharp() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION registerEventAfterUpdateMyTableFSharp() RETURNS TRIGGER AS $$
 SPI.Execute "INSERT INTO update_events VALUES (now()::timestamptz)" 1L |> ignore
 None
 $$ LANGUAGE plfsharp;
@@ -409,8 +427,8 @@ DROP TRIGGER registerEventAfterUpdateMyTable ON my_table;
 ------------------- ACCESS TRIGGER VARIABLES ---------------------
 --
 -- This special function will be called before and after INSERT and UPDATES
-CREATE FUNCTION accessTriggerVariablesFSharp() RETURNS TRIGGER AS $$
-let name: bool = TD.tg_info.tg_name.Contains("accesstriggervariables")
+CREATE OR REPLACE FUNCTION accessTriggerVariablesFSharp() RETURNS TRIGGER AS $$
+let _name: bool = TD.tg_info.tg_name.Contains("accesstriggervariables")
 let table_schema: bool = "public".Equals TD.tg_info.tg_table_schema
 let table_name: bool = "my_table".Equals TD.tg_info.tg_table_name
 let is_row: bool = "ROW".Equals TD.tg_info.tg_level
@@ -421,16 +439,20 @@ let has_foo: bool =
     | None -> false
     | Some args -> Array.contains "foo" args
 
-match (name && table_schema && table_name && is_row, has_foo, is_before) with
+match (_name && table_schema && table_name && is_row, has_foo, is_before) with
 | false, _, _ -> Some "SKIP"
 | _, true, _ -> Some "SKIP"
 | true, _, true ->
-    match insertion, TD.tg_tuples.NEW.x <> 0 with
-    | true, true -> None
-    | true, false -> Some "SKIP"
-    | false, _ ->
-        TD.tg_tuples.NEW.x <- TD.tg_tuples.NEW.x + 100
-        Some "MODIFY"
+    match TD.tg_tuples.NEW with
+    | None -> None
+    | Some _NEW ->
+        match insertion, (_NEW :> IDataRecord).GetInt32((_NEW :> IDataRecord).GetOrdinal("x")) <> 0 with
+        | true, true -> None
+        | true, false -> Some "SKIP"
+        | false, _ ->
+            let x_pos = (_NEW :> IDataRecord).GetOrdinal("x")
+            _NEW.SetInt32 x_pos ((_NEW :> IDataRecord).GetInt32(x_pos) + 100)
+            Some "MODIFY"
 | _, _, false ->
     SPI.Execute "INSERT INTO update_events VALUES (now()::timestamptz)" 1L |> ignore
     None
@@ -544,7 +566,7 @@ DROP TRIGGER accessTriggerVariablesWithFooBeforeInsert ON my_table;
 ------------------- ACCESS TRIGGER RELATTS -----------------------
 --
 -- This function will be called before and after INSERT and UPDATES
-CREATE FUNCTION accessTriggerRelattsFSharp() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION accessTriggerRelattsFSharp() RETURNS TRIGGER AS $$
 match TD.tg_relatts with
 | None -> None
 | Some relatts ->

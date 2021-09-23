@@ -22,10 +22,10 @@ CREATE TABLE usersavings(ssnum int8, name varchar, sname varchar, balance float4
 INSERT INTO usersavings VALUES (123456789,'Homer','Simpson',2304.55);
 INSERT INTO usersavings VALUES (987654321,'Charles Montgomery','Burns',3000000.65);
 CREATE OR REPLACE FUNCTION returnCompositeSumFSharp() RETURNS integer AS $$
-let sum_record_cb (record : SPI.DbRecord) : int =
+let sum_record_cb (record : SPI.BpgsqlDbRecord) : int =
     let r = (record :> IDataRecord)
     (r.GetInt32(r.GetOrdinal("c"))) + (r.GetInt32(r.GetOrdinal("b")))
-let records: List<SPI.DbRecord> = SPI.Execute "SELECT 3 as c, 7 as b" 1L
+let records: List<SPI.BpgsqlDbRecord> = SPI.Execute "SELECT 3 as c, 7 as b" 1L
 
 [for record in records do
     yield (sum_record_cb record)] |> List.sum |> Some
@@ -48,7 +48,7 @@ let check_type (item : IDataRecord) : int =
        item.["vccol"].GetType()  = typeof<System.String>
     then 0
     else 1
-let records: List<SPI.DbRecord> = SPI.Execute "SELECT * from pldotnettypes" 1L
+let records: List<SPI.BpgsqlDbRecord> = SPI.Execute "SELECT * from pldotnettypes" 1L
 let result: int = [for x in records do yield (check_type x)] |> List.sum
 0 = result |> Some
 $$ LANGUAGE plfsharp;
@@ -81,7 +81,7 @@ let same_balance (user: IDataRecord) : string =
 
 match searchbalance with
 | Some sb ->
-    let records: List<SPI.DbRecord> = SPI.Execute "SELECT * from usersavings" 1L
+    let records: List<SPI.BpgsqlDbRecord> = SPI.Execute "SELECT * from usersavings" 1L
     let res : string = sprintf "User(s) found with %.2f account balance" sb;
     let result : string =  [for record in records do yield (same_balance record)] |> List.fold (+) ""
     res + result + "." |> Some
@@ -118,7 +118,7 @@ let format_str (user: IDataRecord) : string =
 match ssnum with
 | Some _ssnum ->
     let query = sprintf "SELECT * from usersavings WHERE ssnum=%d" _ssnum
-    let records : List<SPI.DbRecord> = SPI.Execute query 1L
+    let records : List<SPI.BpgsqlDbRecord> = SPI.Execute query 1L
     let user = Seq.tryFind (same_ssnum _ssnum) records
     match user with
     | Some u -> u |> format_str |> Some

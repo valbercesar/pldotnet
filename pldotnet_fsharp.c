@@ -65,7 +65,7 @@ static const char *plfsharp_BuildBlockCallFuncCall(
 );
 
 inline static bool plfsharp_BuildPaths(pldotnet_PathConfig *paths);
-char* plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst);
+const char* plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst);
 
 static char* plfsharp_GetUserSourceCode(
     FunctionCallInfo fcinfo,
@@ -164,8 +164,11 @@ module SPI =\n\
     type PropertyValue =\n\
         struct\n\
             val mutable value: IntPtr\n\
+            [<MarshalAs(UnmanagedType.LPUTF8Str)>]\n\
             val mutable name: string\n\
+            [<MarshalAs(UnmanagedType.I4)>]\n\
             val mutable typ: int\n\
+            [<MarshalAs(UnmanagedType.I4)>]\n\
             val mutable nrow: int\n\
         end\n\
     \n\
@@ -191,24 +194,34 @@ module SPI =\n\
                 | TypeOid.VARCHAROID -> self.ReadValue<string> prop.value\n\
                 | _ -> raise (new NotSupportedException())\n\
         end\n\
-    type DbRecord() =\n\
+    type PropertyValueWriter() =\n\
+        class\n\
+            member self.WriteValue (value: 'T) (handle: IntPtr) : Unit =\n\
+                match typeof<'T> with\n\
+                | t when t = typeof<string> -> raise (new NotImplementedException())\n\
+                | t when t = typeof<decimal> -> raise (new NotImplementedException())\n\
+                | _ -> Marshal.StructureToPtr<'T>(value, handle, false)\n\
+            member self.Write (value: obj) (prop: PropertyValue) : Unit =\n\
+                match enum<TypeOid> prop.typ with\n\
+                | TypeOid.BOOLOID -> self.WriteValue (value :?> bool) prop.value\n\
+                | TypeOid.INT2OID -> self.WriteValue (value :?> int16)  prop.value\n\
+                | TypeOid.INT4OID -> self.WriteValue (value :?> int) prop.value\n\
+                | TypeOid.INT8OID -> self.WriteValue (value :?> int64) prop.value\n\
+                | TypeOid.FLOAT4OID -> self.WriteValue (value :?> float32) prop.value\n\
+                | TypeOid.FLOAT8OID -> self.WriteValue (value :?> double) prop.value\n\
+                | TypeOid.NUMERICOID -> self.WriteValue (value :?> decimal) prop.value\n\
+                | TypeOid.VARCHAROID -> self.WriteValue (value :?> string) prop.value\n\
+                | _ -> raise (new NotSupportedException(\"Type not supported\"))\n\
+        end\n\
+    type BpgsqlDbRecord() =\n\
         class\n\
             let mutable Record : Dictionary<string, obj> = new Dictionary<string, obj>()\n\
             let mutable Values : List<obj> = new List<obj>()\n\
             let mutable Reader : PropertyValueReader = new PropertyValueReader()\n\
             let mutable ColumnNames : List<string> = new List<string>()\n\
+            let mutable Writer : PropertyValueWriter = new PropertyValueWriter()\n\
+            let mutable Properties: List<PropertyValue> = new List<PropertyValue>()\n\
             member self.GetRecord : outref<Dictionary<string, obj>> = &Record\n\
-            member self.AddProperty (prop: PropertyValue) : unit =\n\
-                let value : obj = Reader.Read(prop)\n\
-                match Record.TryAdd(prop.name, value) with\n\
-                | true ->\n\
-                    Values.Add(value)\n\
-                    ColumnNames.Add(prop.name)\n\
-                    ()\n\
-                | _ ->\n\
-                    Record.[prop.name] <- value\n\
-                    Values.[(self :> IDataRecord).GetOrdinal prop.name] <- value\n\
-                    ()\n\
             member self.GetValue (name: string) : obj = Record.[name]\n\
             interface IDataRecord with\n\
                 member self.GetValue (ordinal: int) : obj = Values.[ordinal]\n\
@@ -242,24 +255,64 @@ module SPI =\n\
                     raise (new NotImplementedException())\n\
                 member self.GetData (ordinal: int) : IDataReader = raise (new NotImplementedException())\n\
                 member self.IsDBNull (ordinal: int) : bool = null = (ordinal |> (self :> IDataRecord).GetValue)\n\
+\n\
+            member self.GetDbDataReader(ordinal: int) : DbDataReader = raise (new NotSupportedException());\n\
+            member self.SetBoolean (ordinal: int) (value: bool) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetByte (ordinal: int) (value: byte) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetChar (ordinal: int) (value: char) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetDataRecord (ordinal: int) (value: IDataRecord) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetDateTime (ordinal: int) (value: DateTime) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetDecimal (ordinal: int) (value: Decimal) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetDouble (ordinal: int) (value: float) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetFloat (ordinal: int) (value: float32) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetGuid (ordinal: int) (value: Guid) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetInt16 (ordinal: int) (value: int16) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetInt32 (ordinal: int) (value: int) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetInt64 (ordinal: int) (value: int64) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetString (ordinal: int) (value: string) : unit = self.SetValue ordinal (value :> obj)\n\
+            member self.SetValue (ordinal: int) (value: obj) : unit = self.SetRecordValue ordinal value\n\
+            member self.SetValues([<ParamArray>] (values: obj array)) : int =\n\
+                let minValue = Math.Min(values.Length, (self :> IDataRecord).FieldCount)\n\
+                for i in 0..minValue - 1 do\n\
+                    self.SetRecordValue i (values.[i])\n\
+                minValue\n\
+            member self.SetDBNull (ordinal: int) = self.SetRecordValue ordinal DBNull.Value\n\
+            member self.GetDataRecord (ordinal: int) : DbDataRecord  = ordinal |> (self :> IDataRecord).GetValue :?> DbDataRecord\n\
+            member self.GetDataReader(ordinal: int) : DbDataReader = ordinal |> self.GetDbDataReader\n\
+            member self.SetRecordValue (ordinal: int) (value: obj) =\n\
+                Values.[ordinal] <- value\n\
+                Record.[ColumnNames.[ordinal]] <- value\n\
+                Writer.Write value Properties.[ordinal]\n\
+            member self.AddProperty (property: PropertyValue) : unit =\n\
+                let value = Reader.Read property\n\
+                Record.[property.name] <- value\n\
+                ColumnNames.Add(property.name)\n\
+                Values.Add(value)\n\
+                Properties.Add(property)\n\
+                printfn \"Adding a new property: %A for %A\" property.name value\n\
+                ()\n\
         end\n\
 \n\
     [<DllImport(@\"/usr/lib/postgresql/10/lib/pldotnet.so\", CallingConvention=CallingConvention.Cdecl)>]\n\
     extern int pldotnet_SPIExecute(string cmd, int64 limit)\n\
 \n\
-    let mutable FuncRecords : List<DbRecord> = new List<DbRecord>()\n\
+    let mutable FuncRecords : List<BpgsqlDbRecord> = new List<BpgsqlDbRecord>()\n\
     let ResetFuncRecords () : unit =\n\
-        FuncRecords <- new List<DbRecord>()\n\
-        ()\n\
+        match FuncRecords.Count with\n\
+        | 0 -> ()\n\
+        | _ ->\n\
+            FuncRecords <- new List<BpgsqlDbRecord>()\n\
+            ()\n\
 \n\
     let AddProperty (arg: IntPtr) (funcoid: int) : unit =\n\
         let prop : PropertyValue = arg |> Marshal.PtrToStructure<PropertyValue>\n\
         match FuncRecords.Count < prop.nrow + 1 with\n\
-        | true -> FuncRecords.Add(new DbRecord())\n\
+        | true -> FuncRecords.Add(new BpgsqlDbRecord())\n\
         | _ -> ()\n\
+        printfn \"Adding a new property: %A\" prop.name\n\
         FuncRecords.[prop.nrow].AddProperty prop\n\
         ()\n\
-    let Execute (cmd: string) (limit: int64) : List<DbRecord> =\n\
+    let Execute (cmd: string) (limit: int64) : List<BpgsqlDbRecord> =\n\
         pldotnet_SPIExecute(cmd, limit) |> ignore\n\
         FuncRecords\n\
 \n\
@@ -288,6 +341,16 @@ module Helper =\n\
                 [|for i in is do yield (ptrToStr a.Buffer (i * elsize))|] |> Some\n\
             with\n\
                 | _ -> None\n\
+    let arrayToDbRecord (array: ArrayT<SPI.PropertyValue>)  : SPI.BpgsqlDbRecord option =\n\
+        match 1u > array.BufferSize with\n\
+        | true -> None\n\
+        | false ->\n\
+            let mutable dbRecord = new SPI.BpgsqlDbRecord()\n\
+            for i in 0u..array.BufferSize-1u do\n\
+                let cursor = IntPtr.Add(array.Buffer, (int) (array.ElementSize * i))\n\
+                let prop = Marshal.PtrToStructure<SPI.PropertyValue>(cursor)\n\
+                dbRecord.AddProperty(prop)\n\
+            Some dbRecord\n\
     let arrayToDecimal (isnull: bool) (a : ArrayT<'b>) : decimal [] option =\n\
         match isnull with\n\
         | true -> None\n\
@@ -413,7 +476,7 @@ plfsharp_BuildTriggerFields(FunctionCallInfo fcinfo)
 {
     return "\
         [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable TD: TriggerData\n";
+        val mutable tg_info: TriggerInfo\n";
 }
 
 /*
@@ -587,27 +650,24 @@ type TriggerInfo =\n\
         val mutable tg_args_array: ArrayT<System.IntPtr>\n\
         [<MarshalAs(UnmanagedType.Struct)>]\n\
         val mutable tg_relatts_array: ArrayT<System.IntPtr>\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable tg_new_array: ArrayT<SPI.PropertyValue>\n\
+        [<MarshalAs(UnmanagedType.Struct)>]\n\
+        val mutable tg_old_array: ArrayT<SPI.PropertyValue>\n\
     end\n\
-[<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
-type TriggerTuples =\n\
-    struct\n\
-        [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable NEW: TriggerTuple\n\
-        [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable OLD: TriggerTuple\n\
+type TriggerTuples(tg_old_array: ArrayT<SPI.PropertyValue> byref, tg_new_array: ArrayT<SPI.PropertyValue> byref) =\n\
+    class\n\
+        member val NEW = Helper.arrayToDbRecord tg_new_array with get\n\
+        member val OLD = Helper.arrayToDbRecord tg_old_array with get\n\
     end\n\
-[<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
-type TriggerData =\n\
-    struct\n\
-        [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable tg_tuples: TriggerTuples\n\
-        [<MarshalAs(UnmanagedType.Struct)>]\n\
-        val mutable tg_info: TriggerInfo\n\
-        member x.tg_args\n\
-            with get() = Helper.arrayToString false x.tg_info.tg_args_array\n\
-        member x.tg_relatts\n\
-            with get() = Helper.arrayToString false x.tg_info.tg_relatts_array\n\
-    end\n";
+type TriggerData(tg_info: TriggerInfo byref) =\n\
+    class\n\
+        member val tg_args = Helper.arrayToString false tg_info.tg_args_array  with get\n\
+        member val tg_relatts = Helper.arrayToString false tg_info.tg_relatts_array with get\n\
+        member val tg_tuples = new TriggerTuples(ref tg_info.tg_old_array, ref tg_info.tg_new_array) with get\n\
+        member val tg_info = tg_info\n\
+    end\n\
+\n";
 }
 
 static char*
@@ -673,7 +733,7 @@ plfsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
     if (CALLED_AS_TRIGGER(fcinfo))
     {
         return "\
-        let mutable TD : TriggerData = libargs.TD\n";
+        let mutable TD : TriggerData = new TriggerData(ref libargs.tg_info)\n";
     }
 
     return "";
@@ -873,10 +933,8 @@ plfsharp_BuildBlockCallTrigger(
     const char *body_template
 )
 {
-    static const char tg_tuple[] = "libargs.TD <- TD";
     const char *func = NameStr(procst->proname);
     size_t size = strlen(body_template)
-                + strlen(tg_tuple)
                 + strlen(func)
                 + 1;
 
@@ -888,7 +946,7 @@ plfsharp_BuildBlockCallTrigger(
         body_template,
         func,
         "",
-        tg_tuple
+        ""
     );
 
     return block2str;
@@ -1021,35 +1079,6 @@ plfsharp_BuildPaths(pldotnet_PathConfig *paths)
 }
 
 static char*
-plfsharp_BuildBlockCompositesFromTrigger(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst
-)
-{
-    TriggerData* tdata = (TriggerData*) fcinfo->context;
-    TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
-
-    const char *trigger_tuple = plfsharp_GetStructFromComposite(
-        "TriggerTuple",
-        rel_desc
-    );
-
-    const char *trigger_data = plfsharp_GetTriggerDataDefinition();
-
-    size_t len = strlen(trigger_tuple) + strlen(trigger_data) + 1;
-    char *composites = (char*) palloc0(len);
-    SNPRINTF(
-        composites,
-        len,
-        "%s%s",
-        trigger_tuple,
-        trigger_data
-    );
-
-    return composites;
-}
-
-static char*
 plfsharp_BuildBlockCompositesFromProcedure(
     FunctionCallInfo fcinfo,
     Form_pg_proc procst
@@ -1113,14 +1142,11 @@ plfsharp_BuildBlockCompositesFromProcedure(
     return composite;
 }
 
-char*
+const char*
 plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
 {
     if (CALLED_AS_TRIGGER(fcinfo))
-        return plfsharp_BuildBlockCompositesFromTrigger(
-            fcinfo,
-            procst
-        );
+        return plfsharp_GetTriggerDataDefinition();
 
     return plfsharp_BuildBlockCompositesFromProcedure(
         fcinfo,

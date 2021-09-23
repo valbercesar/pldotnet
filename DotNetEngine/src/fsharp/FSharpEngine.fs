@@ -39,6 +39,7 @@ type Engine() =
         match cached with
         | Some _cached ->
             _cached.userFunction.Invoke(args, argLength) |> ignore
+            FunctionCache.needsReset <- true
             0
         | _ -> 1
 
