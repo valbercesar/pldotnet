@@ -40,7 +40,8 @@ pldotnet_FillArgArrayInfo(
     bool swap_variable_decl,
     pldotnet_ArgArrayInfo *parr_info);
 
-bool pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
+bool
+pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
 {
     if (nullptr == source)
         return false;
@@ -137,7 +138,8 @@ pldotnet_FindFunctionDecl(int function_id)
     return nullptr;
 }
 
-void pldotnet_SaveFunction(
+void
+pldotnet_SaveFunction(
     pldotnet_FunctionDecl *function,
     bool insert)
 {
