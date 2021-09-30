@@ -351,6 +351,8 @@ pldotnet_RunUserFunction(
     size_t args_length
 );
 
+extern void pldotnet_ElogWarning(char *message);
+
 /*
  * Directories where C#/F# projects for user code are built when
  * USE_DOTNETBUILD is defined. Otherwise that is where our C#/F# compiler

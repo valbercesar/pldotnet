@@ -1605,3 +1605,10 @@ pldotnet_RunUserFunction(
         0
     );
 }
+
+
+void
+pldotnet_ElogWarning(char *message)
+{
+    elog(WARNING, "%s", message);
+}

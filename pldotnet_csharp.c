@@ -1567,7 +1567,7 @@ plcsharp_BuildFunctionDecl(
         elog(ERROR, "[pldotnet]: Could not obtain the source code");
 
     if (!pldotnet_CompileUserFunction(assembly_loader, &paths, &(function_decl->source)))
-        elog(ERROR, "[pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/");
+        elog(ERROR, "[pldotnet]: Could not compile this function.");
 
     function_decl->dotnet_method = pldotnet_GetUserMethod(assembly_loader, &paths);
 
@@ -1688,7 +1688,7 @@ plcsharp_CompileAndRunUserFunction(
 }
 
 /*
- * This is the main handler functon
+ * This is the main handler function
  * It receives and additional bool is_inline argument
  * to deal with both normal and inline calls
  * This flag is used internally to generate propper source code

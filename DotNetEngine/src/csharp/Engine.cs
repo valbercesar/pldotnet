@@ -38,6 +38,7 @@ using Google.Protobuf;
 using Grpc.Net.Client;
 using System.Data;
 using System.Data.Common;
+using System.Text.RegularExpressions;
 
 namespace PlDotNET
 {
@@ -74,6 +75,9 @@ namespace PlDotNET
         static Func<IntPtr, int, int> userFunction;
 
         static bool needsReset = true;
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern int pldotnet_ElogWarning(string nessage);
 
         public static int Compile(IntPtr arg, int argLength)
         {
@@ -521,7 +525,8 @@ public static class SPI
 
             SyntaxNode node = userTree.GetRoot().ReplaceNode(parentNamespace,parentNamespace.AddMembers(newSPIClassNode).NormalizeWhitespace());
 
-            userTree = SyntaxFactory.ParseSyntaxTree(node.ToFullString());
+            var rawSourceCode = node.ToFullString();
+            userTree = SyntaxFactory.ParseSyntaxTree(rawSourceCode);
 
             var trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
                 .Split(Path.PathSeparator);
@@ -560,12 +565,13 @@ public static class SPI
 
             if(!compileResult.Success)
             {
-                Console.WriteLine("\n********ERROR************\n");
+                var lines = rawSourceCode.Split('\n');
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("\n********ERROR************\n");
                 foreach(var diagnostic in compileResult.Diagnostics)
-                {
-                    Console.WriteLine(diagnostic.ToString());
-                }
-                Console.WriteLine("\n********ERROR************\n");
+                    sb.AppendLine(GetCompilationError(diagnostic, lines));
+                sb.AppendLine("\n********ERROR************\n");
+                pldotnet_ElogWarning(sb.ToString());
                 return 1;
             }
 
@@ -576,6 +582,28 @@ public static class SPI
             Engine.funcBuiltCodeDict[libArgs.FuncOid] = Engine.cachedFunction;
 
             return 0;
+        }
+
+        public static string GetCompilationError(Diagnostic diagnostic, string[] lines)
+        {
+            string pattern = @"\d+,\d+";
+            string message = diagnostic.ToString();
+            Match m = Regex.Match(message, pattern, RegexOptions.IgnoreCase);
+            if (m.Success)
+            {
+                var sb = new System.Text.StringBuilder();
+                var split = m.Value.Split(',');
+                if (split.Length > 0)
+                {
+                    var l0 = Int32.Parse(split[0]);
+                    var line = lines[l0 - 1].TrimEnd();
+                    sb.AppendLine($" > {line}");
+                    sb.AppendLine($" ^ {message}");
+                    return sb.ToString();
+                }
+            }
+
+            return message;
         }
 
         public static int InvokeAddProperty(IntPtr arg, int argLength)

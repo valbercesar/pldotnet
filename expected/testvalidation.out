@@ -1,8 +1,18 @@
 CREATE OR REPLACE FUNCTION returnInvalidBool() RETURNS boolean AS $$
 return True;
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >                 return True;
+ ^ (113,24): error CS0103: The name 'True' does not exist in the current context
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnInvalidBool() is true;
 ERROR:  function returninvalidbool() does not exist
 LINE 1: SELECT returnInvalidBool() is true;
@@ -20,8 +30,18 @@ SELECT returnValidBool() is true;
 CREATE OR REPLACE FUNCTION returnInvalidVoid() RETURNS boolean AS $$
 return;
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >                 return;
+ ^ (113,17): error CS0126: An object of a type convertible to 'bool?' is required
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnInvalidVoid() is true;
 ERROR:  function returninvalidvoid() does not exist
 LINE 1: SELECT returnInvalidVoid() is true;
@@ -29,8 +49,18 @@ LINE 1: SELECT returnInvalidVoid() is true;
 HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 CREATE OR REPLACE FUNCTION returnInvalidBody() RETURNS boolean AS $$
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >             bool? returninvalidbody()
+ ^ (111,19): error CS0161: 'returninvalidbody()': not all code paths return a value
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnInvalidBody() is true;
 ERROR:  function returninvalidbody() does not exist
 LINE 1: SELECT returnInvalidBody() is true;
@@ -40,8 +70,24 @@ CREATE OR REPLACE FUNCTION returnMissing() RETURNS boolean AS $$
 var a = true;
 var b = 2;
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >             bool? returnmissing()
+ ^ (111,19): error CS0161: 'returnmissing()': not all code paths return a value
+
+ >                 var a = true;
+ ^ (113,21): warning CS0219: The variable 'a' is assigned but its value is never used
+
+ >                 var b = 2;
+ ^ (114,21): warning CS0219: The variable 'b' is assigned but its value is never used
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnMissing() is true;
 ERROR:  function returnmissing() does not exist
 LINE 1: SELECT returnMissing() is true;
@@ -51,8 +97,18 @@ CREATE OR REPLACE FUNCTION returnInvalidReturnType(a integer, b integer) RETURNS
 var c = a + b;
 return Convert.ToString(c);
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >                 return Convert.ToString(c);
+ ^ (119,24): error CS0029: Cannot implicitly convert type 'string' to 'int?'
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnInvalidReturnType() is '10';
 ERROR:  syntax error at or near "'10'"
 LINE 1: SELECT returnInvalidReturnType() is '10';
@@ -70,8 +126,18 @@ CREATE OR REPLACE FUNCTION returnMissingComma(a integer, b integer) RETURNS text
 var c = a + b
 return Convert.ToString(c);
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >                 var c = a + b return Convert.ToString(c);
+ ^ (119,31): error CS1002: ; expected
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnMissingComma(10::integer, 20::integer) = 30::integer;
 ERROR:  function returnmissingcomma(integer, integer) does not exist
 LINE 1: SELECT returnMissingComma(10::integer, 20::integer) = 30::in...
@@ -80,8 +146,18 @@ HINT:  No function matches the given name and argument types. You might need to 
 CREATE OR REPLACE FUNCTION returnInvalidOperation(a text, b double precision) RETURNS double precision AS $$
 return Math.Sqrt(a) + b;
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >                 return Math.Sqrt(a) + b;
+ ^ (115,34): error CS1503: Argument 1: cannot convert from 'string' to 'double'
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnInvalidOperation('9', 20::double precision) = 23::double precision;
 ERROR:  function returninvalidoperation(unknown, double precision) does not exist
 LINE 1: SELECT returnInvalidOperation('9', 20::double precision) = 2...
@@ -99,8 +175,18 @@ SELECT returnValidOperation('9', 20::double precision) = 23::double precision;
 CREATE OR REPLACE FUNCTION returnUnknownName(a varchar, b integer) RETURNS varchar AS $$
 return append_integer_to_string(a, b);
 $$ LANGUAGE plcsharp;
+WARNING:  
+********ERROR************
+
+ >                 return append_integer_to_string(a, b);
+ ^ (119,24): error CS0103: The name 'append_integer_to_string' does not exist in the current context
+
+
+********ERROR************
+
+
 WARNING:  [pldotnet]: Exception on PG context
-ERROR:  [pldotnet]: Could not compile this function. See the errors on /var/log/postgresql/
+ERROR:  [pldotnet]: Could not compile this function.
 SELECT returnUnknownName('this is the integer: ', 123::integer) = 'this is the integer: 123';
 ERROR:  function returnunknownname(unknown, integer) does not exist
 LINE 1: SELECT returnUnknownName('this is the integer: ', 123::integ...
