@@ -289,11 +289,10 @@ module SPI =\n\
                 ColumnNames.Add(property.name)\n\
                 Values.Add(value)\n\
                 Properties.Add(property)\n\
-                printfn \"Adding a new property: %A for %A\" property.name value\n\
                 ()\n\
         end\n\
 \n\
-    [<DllImport(@\"/usr/lib/postgresql/10/lib/pldotnet.so\", CallingConvention=CallingConvention.Cdecl)>]\n\
+    [<DllImport(@\"" STR(PKG_LIBDIR) "/pldotnet.so\", CallingConvention=CallingConvention.Cdecl)>]\n\
     extern int pldotnet_SPIExecute(string cmd, int64 limit)\n\
 \n\
     let mutable FuncRecords : List<BpgsqlDbRecord> = new List<BpgsqlDbRecord>()\n\
@@ -309,7 +308,6 @@ module SPI =\n\
         match FuncRecords.Count < prop.nrow + 1 with\n\
         | true -> FuncRecords.Add(new BpgsqlDbRecord())\n\
         | _ -> ()\n\
-        printfn \"Adding a new property: %A\" prop.name\n\
         FuncRecords.[prop.nrow].AddProperty prop\n\
         ()\n\
     let Execute (cmd: string) (limit: int64) : List<BpgsqlDbRecord> =\n\
