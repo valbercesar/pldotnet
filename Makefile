@@ -21,6 +21,7 @@ endif
 
 PG_CONFIG ?= pg_config
 PKG_LIBDIR := $(shell $(PG_CONFIG) --pkglibdir)
+PG_VER = $(shell pg_config --version | grep -Po '(?<=SQL )[0-9]+')
 
 MODULE_big = pldotnet
 EXTENSION = pldotnet
@@ -50,7 +51,7 @@ REGRESS = \
 	testfsarray \
 	testcomposites \
 	testfscomposites \
-	testvalidation \
+	testvalidation_pg$(PG_VER) \
 	testfsvalidation \
 	testtrigger \
 	testfstrigger
