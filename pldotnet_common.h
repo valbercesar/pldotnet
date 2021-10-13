@@ -351,7 +351,7 @@ pldotnet_RunUserFunction(
     size_t args_length
 );
 
-extern void pldotnet_ElogWarning(char *message);
+extern void pldotnet_Elog(int level, char *message);
 
 /*
  * Directories where C#/F# projects for user code are built when

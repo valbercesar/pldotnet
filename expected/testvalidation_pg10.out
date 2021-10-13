@@ -5,7 +5,7 @@ WARNING:
 ********ERROR************
 
  >                 return True;
- ^ (113,24): error CS0103: The name 'True' does not exist in the current context
+ ^ (125,24): error CS0103: The name 'True' does not exist in the current context
 
 
 ********ERROR************
@@ -34,7 +34,7 @@ WARNING:
 ********ERROR************
 
  >                 return;
- ^ (113,17): error CS0126: An object of a type convertible to 'bool?' is required
+ ^ (125,17): error CS0126: An object of a type convertible to 'bool?' is required
 
 
 ********ERROR************
@@ -53,7 +53,7 @@ WARNING:
 ********ERROR************
 
  >             bool? returninvalidbody()
- ^ (111,19): error CS0161: 'returninvalidbody()': not all code paths return a value
+ ^ (123,19): error CS0161: 'returninvalidbody()': not all code paths return a value
 
 
 ********ERROR************
@@ -74,13 +74,13 @@ WARNING:
 ********ERROR************
 
  >             bool? returnmissing()
- ^ (111,19): error CS0161: 'returnmissing()': not all code paths return a value
+ ^ (123,19): error CS0161: 'returnmissing()': not all code paths return a value
 
  >                 var a = true;
- ^ (113,21): warning CS0219: The variable 'a' is assigned but its value is never used
+ ^ (125,21): warning CS0219: The variable 'a' is assigned but its value is never used
 
  >                 var b = 2;
- ^ (114,21): warning CS0219: The variable 'b' is assigned but its value is never used
+ ^ (126,21): warning CS0219: The variable 'b' is assigned but its value is never used
 
 
 ********ERROR************
@@ -101,7 +101,7 @@ WARNING:
 ********ERROR************
 
  >                 return Convert.ToString(c);
- ^ (119,24): error CS0029: Cannot implicitly convert type 'string' to 'int?'
+ ^ (131,24): error CS0029: Cannot implicitly convert type 'string' to 'int?'
 
 
 ********ERROR************
@@ -130,7 +130,7 @@ WARNING:
 ********ERROR************
 
  >                 var c = a + b return Convert.ToString(c);
- ^ (119,31): error CS1002: ; expected
+ ^ (131,31): error CS1002: ; expected
 
 
 ********ERROR************
@@ -150,7 +150,7 @@ WARNING:
 ********ERROR************
 
  >                 return Math.Sqrt(a) + b;
- ^ (115,34): error CS1503: Argument 1: cannot convert from 'string' to 'double'
+ ^ (127,34): error CS1503: Argument 1: cannot convert from 'string' to 'double'
 
 
 ********ERROR************
@@ -179,7 +179,7 @@ WARNING:
 ********ERROR************
 
  >                 return append_integer_to_string(a, b);
- ^ (119,24): error CS0103: The name 'append_integer_to_string' does not exist in the current context
+ ^ (131,24): error CS0103: The name 'append_integer_to_string' does not exist in the current context
 
 
 ********ERROR************

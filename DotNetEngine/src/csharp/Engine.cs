@@ -77,7 +77,17 @@ namespace PlDotNET
         static bool needsReset = true;
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int pldotnet_ElogWarning(string nessage);
+        public static extern void pldotnet_Elog(int level, string nessage);
+
+        public static void pldotnet_Info(string message)
+        {
+            pldotnet_Elog(17, message);
+        }
+
+        public static void pldotnet_Warning(string message)
+        {
+            pldotnet_Elog(19, message);
+        }
 
         public static int Compile(IntPtr arg, int argLength)
         {
@@ -571,7 +581,7 @@ public static class SPI
                 foreach(var diagnostic in compileResult.Diagnostics)
                     sb.AppendLine(GetCompilationError(diagnostic, lines));
                 sb.AppendLine("\n********ERROR************\n");
-                pldotnet_ElogWarning(sb.ToString());
+                pldotnet_Warning(sb.ToString());
                 return 1;
             }
 
@@ -750,6 +760,32 @@ public static class SPI
 
             Engine.userFunction = cachedFunction.CallFunction;
             Engine.funcOid = functionId;
+
+            // Elog functions
+            Engine.SetElogFunctions(procClassType);
+        }
+
+        public static void SetElogFunctions(Type procClassType)
+        {
+            MethodInfo setInfoMethod = procClassType.GetMethod("SetInfo");
+
+            Action<Action<string>> setInfo = (Action<Action<string>>) Delegate.CreateDelegate(
+                typeof(Action<Action<string>>),
+                null,
+                setInfoMethod
+            );
+
+            setInfo((Action<string>) pldotnet_Info);
+
+            MethodInfo setWarningMethod = procClassType.GetMethod("SetWarning");
+
+            Action<Action<string>> setWarning = (Action<Action<string>>) Delegate.CreateDelegate(
+                typeof(Action<Action<string>>),
+                null,
+                setWarningMethod
+            );
+
+            setWarning((Action<string>) pldotnet_Warning);
         }
     }
 }

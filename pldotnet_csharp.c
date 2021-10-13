@@ -185,6 +185,16 @@ namespace PlDotNETUserSpace                 \n\
     }                                       \n\
     public static class UserClass           \n\
     {                                       \n\
+        static public Action<string> pldotnet_Info;\n\
+        static public Action<string> pldotnet_Warning;\n\
+        static public void SetInfo(Action<string> Info)\n\
+        {\n\
+            pldotnet_Info = Info;\n\
+        }\n\
+        static public void SetWarning(Action<string> Warning)\n\
+        {\n\
+            pldotnet_Warning = Warning;\n\
+        }\n\
         [StructLayout(LayoutKind.Sequential, Pack=1)]\n\
         public struct ArrayT<T>\n\
         {\n\

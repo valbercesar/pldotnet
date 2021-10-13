@@ -54,7 +54,8 @@ REGRESS = \
 	testvalidation_pg$(PG_VER) \
 	testfsvalidation \
 	testtrigger \
-	testfstrigger
+	testfstrigger \
+	testelog
 
 OBJS = \
 	pldotnet.o \
