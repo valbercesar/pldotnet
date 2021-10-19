@@ -6,6 +6,7 @@
 *.ko
 *.obj
 *.elf
+*.bc
 
 # Linker output
 *.ilk
@@ -83,3 +84,15 @@ pom.properties
 
 logs/
 results/
+
+# debian build files
+*.log
+*.deb
+*.ddeb
+*.substvars
+debian/postgresql-*-pldotnet/
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/control
+debian/files
+build*/

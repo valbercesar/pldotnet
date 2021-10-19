@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+
+# Starting PG server
+(runuser -u postgres -- initdb) || true
+(runuser -u postgres -- pg_ctl start) || true
+service postgresql start

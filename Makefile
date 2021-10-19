@@ -22,6 +22,7 @@ endif
 PG_CONFIG ?= pg_config
 PKG_LIBDIR := $(shell $(PG_CONFIG) --pkglibdir)
 PG_VER = $(shell pg_config --version | grep -Po '(?<=SQL )[0-9]+')
+PG_10_OR_12PLUS = $(shell if [ ${PG_VER}  -lt "12" ]; then echo '10';  else echo '12plus'; fi)
 
 MODULE_big = pldotnet
 EXTENSION = pldotnet
@@ -51,7 +52,7 @@ REGRESS = \
 	testfsarray \
 	testcomposites \
 	testfscomposites \
-	testvalidation_pg$(PG_VER) \
+	testvalidation_pg$(PG_10_OR_12PLUS) \
 	testfsvalidation \
 	testtrigger \
 	testfstrigger \
@@ -89,5 +90,6 @@ plnet-uninstall: uninstall
 	rm -rf $(PLNET_ENGINE_ROOT)/DotNetEngine
 
 plnet-install-dpkg:
-	install -D -m 0755 -o postgres DotNetEngine/src/csharp/* -t $(DESTDIR)$(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp
-	install -D -m 0755 -o postgres DotNetEngine/src/fsharp/* -t $(DESTDIR)$(PLNET_ENGINE_ROOT)/DotNetEngine/src/fsharp
+	service postgresql start
+	pg_buildext updatecontrol
+	debuild -b -uc -us --lintian-opts --profile debian

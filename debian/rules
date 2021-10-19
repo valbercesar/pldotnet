@@ -1,19 +1,35 @@
 #!/usr/bin/make -f
 
-SRCDIR=$(CURDIR)
-PG_VER=$(shell pg_buildext supported-versions)
+SRCDIR = $(CURDIR)
+PG_VER = $(shell pg_buildext supported-versions)
+DOTNET_VER = $(shell dotnet --info | grep 'Host' -A 3 | sed -n 's/Version: \(.*\)/\1/p' | xargs)
+DOTNET_LIBDIR ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/$(DOTNET_VER)/runtimes/linux-x64/native/
+DOTNET_SRC = DotNetEngine/
+DEBIAN_ROOT_DIR = debian/postgresql-${PG_VER}-pldotnet/
+USR_LIBDIR = var/lib/
 include /usr/share/postgresql-common/pgxs_debian_control.mk
 
 override_dh_auto_build:
 	+pg_buildext build $(CURDIR) build-%v
+	find . -xdev 2>/dev/null -maxdepth 1 -name "build-*" -exec cp *.bc {} \;
 
 override_dh_auto_clean:
 	+pg_buildext clean $(CURDIR) build-%v
-	rm -rf build-*/ regression.* results/ debian/postgresql-*-pldotnet/ debian/*.substvars
+	rm -rf build*/ regression.* results/ debian/postgresql*-pldotnet/ debian/*.substvars
+
+override_dh_shlibdeps:
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -l$(DOTNET_LIBDIR)
 
 override_dh_auto_install:
 	+pg_buildext install $(CURDIR) build-%v postgresql-%v-pldotnet
-	$(MAKE) DESTDIR=debian/postgresql-$(PG_VER)-pldotnet plnet-install-dpkg
+
+override_dh_installdeb:
+	for VER in $(PG_VER); do \
+		mkdir -p "debian/postgresql-"$${VER}"-pldotnet/${USR_LIBDIR}" ; \
+		cp -r ${DOTNET_SRC} "debian/postgresql-"$${VER}"-pldotnet/${USR_LIBDIR}" ; \
+		cp debian/preinst debian/postinst debian/prerm debian/postrm "debian/postgresql-"$${VER}"-pldotnet/DEBIAN/" ; \
+		chmod 755 -R "debian/postgresql-"$${VER}"-pldotnet/DEBIAN/" ; \
+	done
 
 %:
 	dh $@
