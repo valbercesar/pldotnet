@@ -31,6 +31,9 @@ type LibArgs =
 
 type Engine() =
 
+    [<DllImport("@PKG_LIBDIR/pldotnet.so", CallingConvention=CallingConvention.Cdecl)>]
+    static extern void pldotnet_Elog(int level, string nessage)
+
     static member checker = FSharpChecker.Create()
 
     static member RetrieveFromRemoteStorage (sourceCode : string) (functionId : uint) : bool = false
@@ -54,7 +57,15 @@ type Engine() =
                 Engine.RunCachedFunction cached args argLength
         | _ -> Engine.RunCachedFunction FunctionCache.cachedFunction args argLength
 
-    static member SetDelegate (functionId: uint) (sourceCode: string) (assembly : Assembly) : int =
+    static member GetElogDelegates(procClassType: Type) =
+        let setMethodType = typeof<System.Action<System.Action<string>>>
+        let setInfoMethod = procClassType.GetMethod("SetInfo")
+        let setWarningMethod = procClassType.GetMethod("SetWarning")
+        let setInfo = Delegate.CreateDelegate(setMethodType, null, setInfoMethod) :?> (System.Action<System.Action<string>>)
+        let setWarning = Delegate.CreateDelegate(setMethodType, null, setWarningMethod) :?> (System.Action<System.Action<string>>)
+        setInfo, setWarning
+
+    static member GetDelegates (functionId: uint) (sourceCode: string) (assembly : Assembly) =
         let procClassType1 = assembly.GetType("PlDotNETUserSpace.UserClass")
         let method1 = procClassType1.GetMethod("CallFunction")
 
@@ -70,11 +81,9 @@ type Engine() =
         let addProperty = Delegate.CreateDelegate(addPropType, null, method2) :?> (System.Action<IntPtr,int>)
         let resetFuncRecords = Delegate.CreateDelegate(rstPropType, null, method3) :?> (System.Action)
 
-        let cached = new CachedFunction(sourceCode, userFunction, addProperty, resetFuncRecords) |> Some
+        let setInfo, setWarning = Engine.GetElogDelegates procClassType1
 
-        FunctionCache.saveCachedFunction functionId cached
-        Engine.SendToRemoteStorage sourceCode functionId assembly |> ignore
-        0
+        userFunction, addProperty, resetFuncRecords, setInfo, setWarning
 
     static member CompileUserFunction (functionId: uint) (sourceCode: string) : int =
         let fakeInput : string = "/tmp/UserClass.fs"
@@ -89,12 +98,21 @@ type Engine() =
             Engine.checker.CompileToDynamicAssembly(options, execute = None)
              |> Async.RunSynchronously
         match (exitCode, dynAssembly) with
-        | 0, Some assembly -> Engine.SetDelegate functionId sourceCode assembly
+        | 0, Some assembly ->
+            let userFn, addProp, resetFuncRecords, setInfo, setWarning = Engine.GetDelegates functionId sourceCode assembly
+            let cached = new CachedFunction(sourceCode, userFn, addProp, resetFuncRecords) |> Some
+            setInfo.Invoke(fun message -> pldotnet_Elog(17, message))
+            setWarning.Invoke(fun message -> pldotnet_Elog(19, message))
+            FunctionCache.saveCachedFunction functionId cached
+            Engine.SendToRemoteStorage sourceCode functionId assembly |> ignore
+            0
         | _ ->
-            printfn "%s" "\n********ERROR************\n"
+            let sb = new System.Text.StringBuilder()
+            sb.AppendLine("\n********ERROR************\n") |> ignore
             for e in errors do
-                printfn "=======\n%A\n========" e
-            printfn "%s" "\n********ERROR************\n"
+                sb.AppendLine(e.ToString()) |> ignore
+            sb.AppendLine("\n********ERROR************\n") |> ignore
+            pldotnet_Elog(19, sb.ToString())
             1
 
     static member VerifyCachedFunction (functionId: uint) (cached : CachedFunction option) (sourceCode : string) : bool =

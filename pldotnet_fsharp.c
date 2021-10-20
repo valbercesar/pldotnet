@@ -379,7 +379,13 @@ type LibArgs =
  *      val mutable resu:int
  */
 static char fs_block_userclass_header[] = "\n\
-type UserClass =\n";
+type UserClass() =\n\
+    static let mutable pldotnet_InfoAction: System.Action<string> = null\n\
+    static let mutable pldotnet_WarningAction: System.Action<string> = null\n\
+    static member SetInfo(info: System.Action<string>) =\n\
+        pldotnet_InfoAction <- info\n\
+    static member SetWarning(warning: System.Action<string>) =\n\
+        pldotnet_WarningAction <- warning\n";
 
 /********* fs_block_userfunc_decl ******
  *         static member <function_name> =
@@ -387,6 +393,8 @@ type UserClass =\n";
  */
 static char fs_block_callfunc[] = "\n\
     static member CallFunction (arg: System.IntPtr) (argLength: int) = \n\
+        let pldotnet_Info (message: string) = pldotnet_InfoAction.Invoke(message)\n\
+        let pldotnet_Warning (message: string) = pldotnet_WarningAction.Invoke(message)\n\
         let mutable libargs = Marshal.PtrToStructure<LibArgs> arg\n";
 
 static char fs_block_footer[] = "\n\
@@ -1278,7 +1286,7 @@ plfsharp_BuildFunctionDecl(
         elog(ERROR, "[pldotnet]: Could not obtain the source code");
 
     if (!pldotnet_CompileUserFunction(loader, &paths, &(function_decl->source)))
-        elog(ERROR, "[pldotnet]: Could not compile this function. See the errors on /var/log/postgresql");
+        elog(ERROR, "[pldotnet]: Could not compile this function.");
 
     function_decl->dotnet_method = pldotnet_GetUserMethod(loader, &paths);
 
