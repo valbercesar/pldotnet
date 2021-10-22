@@ -62,7 +62,7 @@
 
 extern PGDLLIMPORT bool check_function_bodies;
 
-GHashTable *procedures;
+extern GHashTable *procedures;
 
 #if PG_VERSION_NUM < 110000
     #define TupleDescAttr(tupdesc, i) ((tupdesc)->attrs[(i)])
@@ -358,10 +358,10 @@ extern void pldotnet_Elog(int level, char *message);
  * USE_DOTNETBUILD is defined. Otherwise that is where our C#/F# compiler
  * projects are located. Default for Linux is /var/lib/DotNetEngine/
  */
-char *root_path;
-char *dnldir;
+extern char *root_path;
+extern char *dnldir;
 
-pldotnet_PathConfig *spi_paths;
-dotnet_loader assembly_loader;
+extern pldotnet_PathConfig *spi_paths;
+extern dotnet_loader assembly_loader;
 
 #endif /* PLDOTNETCOMMON_H */

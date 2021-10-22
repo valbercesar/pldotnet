@@ -31,6 +31,10 @@
 char *root_path = NULL;
 char *dnldir = STR(PLNET_ENGINE_DIR);
 
+GHashTable *procedures;
+pldotnet_PathConfig *spi_paths;
+dotnet_loader assembly_loader;
+
 static void
 pldotnet_FillArgArrayInfo(
     Datum datum,

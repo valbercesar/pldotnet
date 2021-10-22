@@ -33,6 +33,8 @@ static hostfxr_set_runtime_property_value_fn set_runtime_properties_ptr;
 static hostfxr_get_runtime_delegate_fn get_delegate_fptr;
 static hostfxr_close_fn close_fptr;
 
+void *nethost_lib;
+
 /* Implementations */
 static void *
 pldotnet_LoadLibrary(const char_t *path)
