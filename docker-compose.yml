@@ -1,15 +1,59 @@
 version: '3.1'
 
 services:
-  pldotnet-devenv:
+  pldotnet-deb:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-deb
     build:
+      dockerfile: Dockerfiles/default_installation/Dockerfile_deb
       context: .
       args:
         DOTNET_VERSION: 3.1
     environment:
       USE_DOTNETBUILD: "FALSE"
-      #Custom location for dotnet compiler/source code -- default = /var/lib
-      #PLNET_ENGINE_ROOT: "/var"
+      PGUSER: postgres
     volumes:
-      - $PWD/:/home/app
+      - $PWD/:/app/pldotnet/
 
+  pldotnet-ubuntu18:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-ubuntu18
+    build:
+      dockerfile: Dockerfiles/default_installation/Dockerfile_ubuntu18
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+    volumes:
+      - $PWD/:/app/pldotnet/
+
+  pldotnet-ubuntu20:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-ubuntu20
+    build:
+      dockerfile: Dockerfiles/default_installation/Dockerfile_ubuntu20
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+    volumes:
+      - $PWD/:/app/pldotnet/
+
+  pldotnet-ubuntu21:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-ubuntu21
+    build:
+      dockerfile: Dockerfiles/default_installation/Dockerfile_ubuntu21
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+    volumes:
+      - $PWD/:/app/pldotnet/

@@ -95,3 +95,5 @@ plnet-install-dpkg:
 	service postgresql start
 	pg_buildext updatecontrol
 	debuild -b -uc -us --lintian-opts --profile debian
+	mkdir -p debian/packages
+	cp ../postgresql-*-pldotnet_*.deb debian/packages/

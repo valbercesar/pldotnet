@@ -1,0 +1,90 @@
+version: '3.1'
+
+services:
+  pldotnet-build:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-build
+    command: sh -c "mkdir -p /var/log/postgresql/data1 && bash /app/pldotnet/Dockerfiles/scripts/build_packages.sh"
+    build:
+      dockerfile: Dockerfiles/deb_package/Dockerfile_deb-build
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+      PGDATA: /var/lib/postgresql/data1/
+      POSTGRES_HOST_AUTH_METHOD: trust
+      # POSTGRES_PASSWORD: # your password
+    volumes:
+      - $PWD/debian/packages:/app/pldotnet/debian/packages
+
+  pldotnet-deb-install:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-deb-install
+    command: sh -c "mkdir -p /var/log/postgresql/data2 && bash /docker-entrypoint.sh && bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    build:
+      dockerfile: Dockerfiles/deb_package/Dockerfile_deb-install
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+      PGDATA: /var/lib/postgresql/data2/
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes_from:
+      - pldotnet-build:ro
+    volumes:
+      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
+
+  pldotnet-ubuntu18-install:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-ubuntu18-install
+    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    build:
+      dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu18-install
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+    volumes_from:
+      - pldotnet-build:ro
+    volumes:
+      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
+
+  pldotnet-ubuntu20-install:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-ubuntu20-install
+    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    build:
+      dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu20-install
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+    volumes_from:
+      - pldotnet-build:ro
+    volumes:
+      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
+
+  pldotnet-ubuntu21-install:
+    tty: true        # docker run -t
+    stdin_open: true # docker run -i
+    container_name: pldotnet-ubuntu21-install
+    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    build:
+      dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu21-install
+      context: .
+      args:
+        DOTNET_VERSION: 3.1
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+    volumes_from:
+      - pldotnet-build:ro
+    volumes:
+      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
