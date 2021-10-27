@@ -1,4 +1,4 @@
-FROM postgres:10-stretch
+FROM ubuntu:18.04
 
 # avoids tzdata prompt
 ARG DEBIAN_FRONTEND=noninteractive
@@ -11,37 +11,26 @@ RUN apt-get update \
         debhelper \
         pkg-config \
         apt-transport-https \
-        curl \
-        libglib2.0-dev \
-        software-properties-common
-
-# DEV
-RUN apt update && \
-    apt install -y \
-        vim \
-        tree \
-        mlocate \
-        tmux
+        libglib2.0-dev
 
 # .NET Core
 RUN wget -q \
-        https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb \
+        https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb \
         -O packages-microsoft-prod.deb \
     && dpkg -i \
         packages-microsoft-prod.deb \
     && apt-get update \
     && apt-get install -y \
-        dotnet-sdk-3.1
+        dotnet-runtime-3.1 \
+        dotnet-sdk-3.1 \
+        dotnet-hostfxr-3.1
 
 # POSTGRESQL
 RUN apt install -y \
+        postgresql \
+        postgresql-common \
         postgresql-server-dev-all
-
-# TEST ENV DIR
-RUN mkdir -p /var/log/postgresql/data1
 
 # PLDOTNET
 COPY . /app/pldotnet/
 WORKDIR /app/pldotnet
-
-ENTRYPOINT []

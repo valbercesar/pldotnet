@@ -1,16 +1,36 @@
-version: '3.1'
+version: '3.4'
+
+x-interactive: &interactive
+  tty: true        # docker run -t
+  stdin_open: true # docker run -i
+
+x-install-command: &install-command
+  command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+
+x-build-args: &build-args
+  context: .
+  args:
+    DOTNET_VERSION: 3.1
+
+x-ubuntu-environment: &ubuntu-environment
+  environment:
+    USE_DOTNETBUILD: "FALSE"
+
+x-install-volumes: &install-volumes
+  volumes_from:
+    - pldotnet-build:ro
+  volumes:
+    - $PWD/installation_test_results/deb/:/app/pldotnet/installation_test_results/deb/
+
 
 services:
   pldotnet-build:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-build
-    command: sh -c "mkdir -p /var/log/postgresql/data1 && bash /app/pldotnet/Dockerfiles/scripts/build_packages.sh"
+    <<: *interactive
+    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/build_packages.sh"
     build:
       dockerfile: Dockerfiles/deb_package/Dockerfile_deb-build
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
+      <<: *build-args
     environment:
       USE_DOTNETBUILD: "FALSE"
       PGDATA: /var/lib/postgresql/data1/
@@ -20,71 +40,44 @@ services:
       - $PWD/debian/packages:/app/pldotnet/debian/packages
 
   pldotnet-deb-install:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-deb-install
-    command: sh -c "mkdir -p /var/log/postgresql/data2 && bash /docker-entrypoint.sh && bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    <<: *interactive
+    <<: *install-command
     build:
       dockerfile: Dockerfiles/deb_package/Dockerfile_deb-install
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
+      <<: *build-args
     environment:
       USE_DOTNETBUILD: "FALSE"
       PGDATA: /var/lib/postgresql/data2/
       POSTGRES_HOST_AUTH_METHOD: trust
-    volumes_from:
-      - pldotnet-build:ro
-    volumes:
-      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
+    <<: *install-volumes
 
   pldotnet-ubuntu18-install:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-ubuntu18-install
-    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    <<: *interactive
+    <<: *install-command
     build:
       dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu18-install
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-    volumes_from:
-      - pldotnet-build:ro
-    volumes:
-      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
+      <<: *build-args
+    <<: *ubuntu-environment
+    <<: *install-volumes
 
   pldotnet-ubuntu20-install:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-ubuntu20-install
-    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    <<: *interactive
+    <<: *install-command
     build:
       dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu20-install
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-    volumes_from:
-      - pldotnet-build:ro
-    volumes:
-      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
+      <<: *build-args
+    <<: *ubuntu-environment
+    <<: *install-volumes
 
   pldotnet-ubuntu21-install:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-ubuntu21-install
-    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
+    <<: *interactive
+    <<: *install-command
     build:
       dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu21-install
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-    volumes_from:
-      - pldotnet-build:ro
-    volumes:
-      - $PWD/debian/test_results:/app/pldotnet/debian/test_results
+      <<: *build-args
+    <<: *ubuntu-environment
+    <<: *install-volumes

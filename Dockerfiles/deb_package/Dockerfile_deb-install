@@ -37,14 +37,11 @@ RUN wget -q \
 RUN apt install -y \
         postgresql-server-dev-10
 
+# TEST ENV DIR
+RUN mkdir -p /var/log/postgresql/data2
+
 # PLDOTNET
 COPY . /app/pldotnet/
 WORKDIR /app/pldotnet
 
 ENTRYPOINT []
-
-
-# ENTRYPOINT ["docker-entrypoint.sh"]
-# STOPSIGNAL SIGINT
-# EXPOSE 5432
-# CMD ["postgres"]

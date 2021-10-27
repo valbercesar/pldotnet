@@ -1,59 +1,61 @@
-version: '3.1'
+version: '3.4'
+
+x-interactive: &interactive
+  tty: true        # docker run -t
+  stdin_open: true # docker run -i
+
+x-command: &command
+  command: sh -c "bash"
+
+x-build-args: &build-args
+  context: .
+  args:
+    DOTNET_VERSION: 3.1
+
+x-ubuntu-environment: &ubuntu-environment
+  environment:
+    USE_DOTNETBUILD: "FALSE"
+
 
 services:
   pldotnet-deb:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-deb
+    <<: *interactive
+    <<: *command
     build:
-      dockerfile: Dockerfiles/default_installation/Dockerfile_deb
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
+      dockerfile: Dockerfiles/default/Dockerfile_deb
+      <<: *build-args
     environment:
       USE_DOTNETBUILD: "FALSE"
       PGUSER: postgres
-    volumes:
-      - $PWD/:/app/pldotnet/
 
   pldotnet-ubuntu18:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-ubuntu18
+    <<: *interactive
+    <<: *command
     build:
-      dockerfile: Dockerfiles/default_installation/Dockerfile_ubuntu18
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-    volumes:
-      - $PWD/:/app/pldotnet/
+      dockerfile: Dockerfiles/default/Dockerfile_ubuntu18
+      <<: *build-args
+    <<: *ubuntu-environment
 
-  pldotnet-ubuntu20:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
+  pldotnet-ubuntu20: &pldotnet-current-container
     container_name: pldotnet-ubuntu20
+    <<: *interactive
+    <<: *command
     build:
-      dockerfile: Dockerfiles/default_installation/Dockerfile_ubuntu20
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-    volumes:
-      - $PWD/:/app/pldotnet/
+      dockerfile: Dockerfiles/default/Dockerfile_ubuntu20
+      <<: *build-args
+    <<: *ubuntu-environment
 
   pldotnet-ubuntu21:
-    tty: true        # docker run -t
-    stdin_open: true # docker run -i
     container_name: pldotnet-ubuntu21
+    <<: *interactive
+    <<: *command
     build:
-      dockerfile: Dockerfiles/default_installation/Dockerfile_ubuntu21
-      context: .
-      args:
-        DOTNET_VERSION: 3.1
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-    volumes:
-      - $PWD/:/app/pldotnet/
+      dockerfile: Dockerfiles/default/Dockerfile_ubuntu21
+      <<: *build-args
+    <<: *ubuntu-environment
+
+  pldotnet-devenv:
+    <<: *pldotnet-current-container
+    container_name: pldotnet-devenv
