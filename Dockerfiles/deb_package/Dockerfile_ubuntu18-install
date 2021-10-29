@@ -7,19 +7,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt install -y \
         wget \
-        devscripts \
-        debhelper \
-        pkg-config \
-        apt-transport-https \
-        libglib2.0-dev
-
-# DEV
-RUN apt update && \
-    apt install -y \
-        vim \
-        tree \
-        mlocate \
-        tmux
+        libglib2.0-dev \
+        apt-transport-https
 
 # .NET Core
 RUN wget -q \
@@ -33,11 +22,14 @@ RUN wget -q \
         dotnet-sdk-3.1 \
         dotnet-hostfxr-3.1
 
-# POSTGRESQL
-RUN apt install -y \
+# POSTGRESQL AND BUILD TOOLS
+RUN apt update \
+    && apt install -y \
         postgresql \
         postgresql-common \
-        postgresql-server-dev-all
+        postgresql-server-dev-all \
+        lsb-release \
+        build-essential
 
 # PLDOTNET
 COPY . /app/pldotnet/
