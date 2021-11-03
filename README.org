@@ -29,16 +29,14 @@ PL/.NET is an open source project developed by
   - Composites
     + Add composites support for plcsharp. Beta version.
   - SPI
-    + Add support to the PostgeSQL SPI (Server Programming API) enabling
-query/plans and database access. Beta version.
+    + Add support to the PostgeSQL SPI (Server Programming API) enabling query/plans and database access. Beta version.
   - Triggers
     + Add trigger writing support in plcsharp. Beta version.
   - F#
     + Basic data types
       * Expand F# basic types support. Beta version.
     + F# Compiler Services
-      * Add [[http://fsharp.github.io/FSharp.Compiler.Service/][F# Compiler Services]]
-API for performance improvement regarding source code compilation.
+      * Add [[http://fsharp.github.io/FSharp.Compiler.Service/][F# Compiler Services]] API for performance improvement regarding source code compilation.
   - Additional data types
     + Add other data types support for F# and C#, like:
       * *binary*
