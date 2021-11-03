@@ -1,18 +1,18 @@
 #+Title: PL/.NET
 
-**ADD PL.NET LOGO HERE**
+[[./PL-NET_LOGO.png]]
 
 * Introduction
 
- PL/.NET a.k.a (***pldotnet***) adds Microsoft's .NET framework to PostgreSQL by
+ PL/.NET a.k.a (*pldotnet*) adds Microsoft's .NET framework to PostgreSQL by
 introducing both the C# and F# as loadable procedural language.
 
  Using PL/.NET developers can enjoy all benefits from .NET and its powerful
 application development environment to write code near the database using cool
 languages like C#. We at [[http://www.brickabode.com][Brick Abode]] love
 strongly-typed functional programming and as so we are also working to support
-F# for writting PostgreSQL functions and triggers in ***pldotnet***
-(check [Future Plans](#future_plans) and [F# sample](#fsharp_sample)).
+F# for writting PostgreSQL functions and triggers in *pldotnet*
+(check Future Plans and F# sample).
 
 PL/.NET is an open source project developed by
 [[http://www.brickabode.com][Brick Abode]]. You are welcome!
@@ -22,7 +22,6 @@ PL/.NET is an open source project developed by
 - [[/documentation/installation.org][Installation]]
 - [[/documentation/examples.org][Examples]]
 - [[./documentation/types-support.org][Types Support]]
-- 
 
 * Future Plans
   - Arrays
@@ -42,13 +41,13 @@ query/plans and database access. Beta version.
 API for performance improvement regarding source code compilation.
   - Additional data types
     + Add other data types support for F# and C#, like:
-      * `binary`
-      * `timezone`
-      * `json`
-      * `range`
-      * `geometry`
-      * `internet`
-      * `bitstring`
+      * *binary*
+      * *timezone*
+      * *json*
+      * *range*
+      * *geometry*
+      * *internet*
+      * *bitstring*
 
 * License
 
