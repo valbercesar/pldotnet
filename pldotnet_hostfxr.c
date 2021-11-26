@@ -1,17 +1,17 @@
-/* 
+/*
  * Work in this file comes from:
  * (https://github.com/dotnet/samples/tree/master/core/hosting/HostWithHostFxr)
- * 
+ *
  * Copyright and LICENSE is accodring to what is found there:
  *
  * Licensed to the .NET Foundation under one or more agreements.
  * The .NET Foundation licenses this file to you under the MIT license.
- * See the LICENSE file of (https://github.com/dotnet/samples) 
+ * See the LICENSE file of (https://github.com/dotnet/samples)
  * for more information.
  *
  * pldotnet_hostfxr.c - .NET Hostfxr and interop functions
  *
- */ 
+ */
 /******************************************************************************
  * Functions used to load and activate .NET Core
  *****************************************************************************/
@@ -36,21 +36,16 @@ static hostfxr_close_fn close_fptr;
 void *nethost_lib;
 
 /* Implementations */
-static void *
-pldotnet_LoadLibrary(const char_t *path)
-{
+static void * pldotnet_LoadLibrary(const char_t *path) {
     fprintf(stderr, "# DEBUG: doing dlopen(%s).\n", path);
     nethost_lib = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
     assert(nethost_lib != nullptr);
     return nethost_lib;
 }
 
-static void *
-pldotnet_GetExport(void *host, const char *name)
-{
+static void * pldotnet_GetExport(void *host, const char *name) {
     void *f = dlsym(host, name);
-    if (f == nullptr)
-    {
+    if (f == nullptr) {
         fprintf(stderr, "Can't dlsym(%s); exiting.\n", name);
         exit(-1);
     }
@@ -58,9 +53,7 @@ pldotnet_GetExport(void *host, const char *name)
 }
 
 /* Using the nethost library, discover the location of hostfxr and get exports */
-int
-pldotnet_LoadHostfxr(void)
-{
+int pldotnet_LoadHostfxr(void) {
     /* Pre-allocate a large buffer for the path to hostfxr */
     char_t buffer[MAX_PATH];
     size_t buffer_size = sizeof(buffer) / sizeof(char_t);
@@ -84,14 +77,13 @@ pldotnet_LoadHostfxr(void)
 
 /* Load and initialize .NET Core and get desired function pointer for scenario */
 load_assembly_and_get_function_pointer_fn
-GetNetLoadAssembly(const char_t *config_path)
-{
+GetNetLoadAssembly(const char_t *config_path) {
     return GetNetLoadAssemblySetup(config_path, nullptr);
 }
 
 load_assembly_and_get_function_pointer_fn
-GetNetLoadAssemblySetup(const char_t *config_path, const char_t *host_base_path)
-{
+GetNetLoadAssemblySetup(const char_t *config_path,
+                        const char_t *host_base_path) {
     /* Load .NET Core */
     int rc;
     static void *load_assembly_and_get_function_pointer = nullptr;
@@ -102,15 +94,16 @@ GetNetLoadAssemblySetup(const char_t *config_path, const char_t *host_base_path)
 
     rc = init_fptr(config_path, nullptr, &cxt);
 
-    if (rc > 1 || rc < 0 || cxt == nullptr)
-    {
+    if (rc > 1 || rc < 0 || cxt == nullptr) {
         fprintf(stderr, "Init failed: %x\n", rc);
         close_fptr(cxt);
         return nullptr;
     }
 
     if (nullptr != host_base_path)
-        set_runtime_properties_ptr(cxt, "APP_CONTEXT_BASE_DIRECTORY", (char*) host_base_path);
+        set_runtime_properties_ptr(cxt,
+            "APP_CONTEXT_BASE_DIRECTORY",
+            (char*) host_base_path);
 
     /* Get the load assembly function pointer */
     rc = get_delegate_fptr(
@@ -123,13 +116,10 @@ GetNetLoadAssemblySetup(const char_t *config_path, const char_t *host_base_path)
     return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
 }
 
-bool
-pldotnet_LoadHostFxrIfNeeded(void)
-{
+bool pldotnet_LoadHostFxrIfNeeded(void) {
     static bool hostfxr_loaded = false;
 
-    if (!hostfxr_loaded)
-    {
+    if (!hostfxr_loaded) {
         hostfxr_loaded = pldotnet_LoadHostfxr();
     }
 

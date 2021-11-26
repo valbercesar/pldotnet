@@ -45,8 +45,7 @@ pldotnet_FillArgArrayInfo(
     pldotnet_ArgArrayInfo *parr_info);
 
 bool
-pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
-{
+pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source) {
     if (nullptr == source)
         return false;
 
@@ -64,8 +63,7 @@ pldotnet_ValidArgsSource(const pldotnet_ArgsSource *source)
 }
 
 void
-pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl)
-{
+pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl) {
     if (nullptr == function_decl)
         return;
     function_decl->source.source_code = nullptr;
@@ -78,8 +76,7 @@ pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl)
 }
 
 bool
-pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl)
-{
+pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl) {
     if (nullptr == function_decl)
         return false;
 
@@ -90,10 +87,8 @@ pldotnet_ValidFunctionDecl(pldotnet_FunctionDecl *function_decl)
 }
 
 bool
-pldotnet_ValidCachedFunction(
-    pldotnet_FunctionDecl *reference,
-    pldotnet_FunctionDecl *candidate)
-{
+pldotnet_ValidCachedFunction(pldotnet_FunctionDecl *reference,
+                             pldotnet_FunctionDecl *candidate) {
     if (nullptr == reference || nullptr == candidate)
         return false;
     if (reference->source.func_oid != candidate->source.func_oid)
@@ -102,7 +97,8 @@ pldotnet_ValidCachedFunction(
         return false;
     if (reference->args_length != candidate->args_length)
         return false;
-    if (nullptr == reference->source.source_code || nullptr == candidate->source.source_code)
+    if (nullptr == reference->source.source_code ||
+        nullptr == candidate->source.source_code)
         return false;
     if (0 != strcmp(reference->source.source_code, candidate->source.source_code))
         return false;
@@ -113,8 +109,7 @@ pldotnet_ValidCachedFunction(
 }
 
 pldotnet_FunctionDecl*
-pldotnet_CreateFunctionDecl(void)
-{
+pldotnet_CreateFunctionDecl(void) {
     pldotnet_FunctionDecl *decl;
     MemoryContext mem = CurrentMemoryContext;
 
@@ -132,9 +127,9 @@ pldotnet_CreateFunctionDecl(void)
 }
 
 pldotnet_FunctionDecl*
-pldotnet_FindFunctionDecl(int function_id)
-{
-    gpointer value = g_hash_table_lookup(procedures, GUINT_TO_POINTER(function_id));
+pldotnet_FindFunctionDecl(int function_id) {
+    gpointer value = g_hash_table_lookup(procedures,
+                                        GUINT_TO_POINTER(function_id));
 
     if (nullptr != value)
         return (pldotnet_FunctionDecl*) value;
@@ -143,27 +138,19 @@ pldotnet_FindFunctionDecl(int function_id)
 }
 
 void
-pldotnet_SaveFunction(
-    pldotnet_FunctionDecl *function,
-    bool insert)
-{
+pldotnet_SaveFunction(pldotnet_FunctionDecl *function, bool insert) {
     if (insert)
-        g_hash_table_insert(
-            procedures,
-            GUINT_TO_POINTER(function->source.func_oid),
-            (gpointer) function
-        );
+        g_hash_table_insert(procedures,
+                            GUINT_TO_POINTER(function->source.func_oid),
+                            (gpointer) function);
     else
-        g_hash_table_replace(
-            procedures,
-            GUINT_TO_POINTER(function->source.func_oid),
-            (gpointer) function
-        );
+        g_hash_table_replace(procedures,
+                            GUINT_TO_POINTER(function->source.func_oid),
+                            (gpointer) function);
 }
 
 void
-pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl, bool insert)
-{
+pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl, bool insert) {
     MemoryContext mem;
     pldotnet_FunctionDecl *decl;
 
@@ -175,17 +162,20 @@ pldotnet_InsertFunctionDecl(pldotnet_FunctionDecl *function_decl, bool insert)
     decl = pldotnet_CopyFunctionDecl(function_decl);
 
     if (insert)
-        g_hash_table_insert(procedures, GUINT_TO_POINTER(decl->source.func_oid), (gpointer) decl);
+        g_hash_table_insert(procedures,
+                            GUINT_TO_POINTER(decl->source.func_oid),
+                            (gpointer) decl);
     else
-        g_hash_table_replace(procedures, GUINT_TO_POINTER(decl->source.func_oid), (gpointer) decl);
+        g_hash_table_replace(procedures,
+                             GUINT_TO_POINTER(decl->source.func_oid),
+                             (gpointer) decl);
 
     /* revert */
     MemoryContextSwitchTo(mem);
 }
 
 pldotnet_FunctionDecl*
-pldotnet_CopyFunctionDecl(const pldotnet_FunctionDecl *function_decl)
-{
+pldotnet_CopyFunctionDecl(const pldotnet_FunctionDecl *function_decl) {
     pldotnet_FunctionDecl *decl;
 
     decl = (pldotnet_FunctionDecl*) palloc(sizeof(pldotnet_FunctionDecl));
@@ -204,11 +194,9 @@ pldotnet_CopyFunctionDecl(const pldotnet_FunctionDecl *function_decl)
 }
 
 void
-pldotnet_SaveFunctionDecl(
-    dotnet_loader loader,
-    pldotnet_PathConfig *paths,
-    pldotnet_FunctionDecl *function_decl)
-{
+pldotnet_SaveFunctionDecl(dotnet_loader loader,
+                          pldotnet_PathConfig *paths,
+                          pldotnet_FunctionDecl *function_decl) {
     bool insert;
     pldotnet_FunctionDecl *decl;
 
@@ -219,8 +207,7 @@ pldotnet_SaveFunctionDecl(
 
     insert = nullptr == decl;
 
-    if (!pldotnet_ValidCachedFunction(function_decl, decl))
-    {
+    if (!pldotnet_ValidCachedFunction(function_decl, decl)) {
         function_decl->dotnet_method = pldotnet_GetUserMethod(loader, paths);
         pldotnet_InsertFunctionDecl(function_decl, insert);
     }
@@ -231,8 +218,7 @@ pldotnet_SaveFunctionDecl(
  * The second argument should never be null, take care o that
  */
 void
-pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
-{
+pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths) {
     char prefix[MAXPGPATH];
     const char json_path_suffix[] = "/PlDotNET.runtimeconfig.json";
     const char src_path_suffix[]  = "/Lib.cs";
@@ -250,10 +236,8 @@ pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths)
 }
 
 bool
-pldotnet_ValidPaths(const pldotnet_PathConfig *paths)
-{
-    if (nullptr == paths)
-    {
+pldotnet_ValidPaths(const pldotnet_PathConfig *paths) {
+    if (nullptr == paths) {
         elog(ERROR, "[pldotnet]:[pldotnet_ValidPaths] Argument 'paths' is null");
         return false;
     }
@@ -266,8 +250,7 @@ pldotnet_ValidPaths(const pldotnet_PathConfig *paths)
 }
 
 void
-pldotnet_StartNewMemoryContext(MemoryContextWrapper *config)
-{
+pldotnet_StartNewMemoryContext(MemoryContextWrapper *config) {
     config->prev = CurrentMemoryContext;
     config->curr = AllocSetContextCreate(TopMemoryContext,
                                     "PL/NET func_exec_ctx",
@@ -280,8 +263,7 @@ pldotnet_StartNewMemoryContext(MemoryContextWrapper *config)
 }
 
 void
-pldotnet_ResetMemoryContext(MemoryContextWrapper *config)
-{
+pldotnet_ResetMemoryContext(MemoryContextWrapper *config) {
     if (nullptr == config) return;
 
     if (config->prev)
@@ -297,14 +279,14 @@ pldotnet_GetNetTypeName(Oid id, bool hastypeconversion) {
 }
 
 const char *
-pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp)
-{
+pldotnet_GetCompatibleNetTypeName(Oid id,
+                                  bool hastypeconversion,
+                                  bool is_csharp) {
     Form_pg_type typeinfo;
     HeapTuple typ;
     char * composite_nm;
 
-    switch (id)
-    {
+    switch (id) {
         case BOOLOID:
             return "bool";   /* System.Boolean */
         case INT4OID:
@@ -327,13 +309,11 @@ pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp
         default:
             typ = SearchSysCache(TYPEOID,
                                   ObjectIdGetDatum(id), 0, 0, 0);
-            if (!HeapTupleIsValid(typ))
-            {
+            if (!HeapTupleIsValid(typ)) {
                 elog(ERROR, "[pldotnet]: cache lookup failed for type %u", id);
             }
             typeinfo = (Form_pg_type) GETSTRUCT(typ);
-            if (typeinfo->typtype == TYPTYPE_COMPOSITE)
-            {
+            if (typeinfo->typtype == TYPTYPE_COMPOSITE) {
                 composite_nm = NameStr(typeinfo->typname);
                 ReleaseSysCache(typ);
                 return composite_nm;
@@ -345,10 +325,8 @@ pldotnet_GetCompatibleNetTypeName(Oid id, bool hastypeconversion, bool is_csharp
 
 /* Native type size in bytes */
 int
-pldotnet_GetTypeSize(Oid id)
-{
-    switch (id)
-    {
+pldotnet_GetTypeSize(Oid id) {
+    switch (id) {
         case BOOLOID:
             return sizeof(bool);
         case INT4OID:
@@ -375,10 +353,8 @@ pldotnet_GetTypeSize(Oid id)
 }
 
 const char *
-pldotnet_GetUnmanagedTypeName(Oid type)
-{
-    switch (type)
-    {
+pldotnet_GetUnmanagedTypeName(Oid type) {
+    switch (type) {
         case BOOLOID:
             return "U1";
         case INT2OID:
@@ -408,14 +384,12 @@ pldotnet_GetUnmanagedTypeName(Oid type)
     return  "";
 }
 
-int pldotnet_SetScalarValue(
-    char *argp,
-    Datum datum,
-    FunctionCallInfo fcinfo,
-    size_t arg_index,
-    Oid type,
-    bool *nullp)
-{
+int pldotnet_SetScalarValue(char *argp,
+                            Datum datum,
+                            FunctionCallInfo fcinfo,
+                            size_t arg_index,
+                            Oid type,
+                            bool *nullp) {
     char * newstr;
     int len;
     bool isnull = false;
@@ -425,11 +399,10 @@ int pldotnet_SetScalarValue(
         isnull = fcinfo->args[arg_index].isnull;
 #else
     if (nullp)
-        isnull=fcinfo->argnull[arg_index];
+        isnull = fcinfo->argnull[arg_index];
 #endif
 
-    switch (type)
-    {
+    switch (type) {
         case BOOLOID:
             *(bool *)(argp) = DatumGetBool(datum);
             if (nullptr != nullp)
@@ -471,22 +444,20 @@ int pldotnet_SetScalarValue(
         case BPCHAROID:
         case TEXTOID:
         case VARCHAROID:
-            if (isnull)
-            {
+            if (isnull) {
                 *(uint64_t *)(argp) = (uint64_t) nullptr;
                 if (nullptr != nullp)
                     *nullp = isnull;
                 break;
             }
             /* UTF8 encoding */
-            len = VARSIZE( DatumGetTextP (datum) ) - VARHDRSZ;
+            len = VARSIZE(DatumGetTextP(datum)) - VARHDRSZ;
             newstr = (char *)palloc0(len+1);
-            memcpy(newstr, VARDATA( DatumGetTextP(datum) ), len);
+            memcpy(newstr, VARDATA(DatumGetTextP(datum)), len);
             *(uint64_t *)(argp) = (uint64_t) pg_do_encoding_conversion(
                 (unsigned char *)newstr,
                 len+1,
-                GetDatabaseEncoding(), PG_UTF8
-            );
+                GetDatabaseEncoding(), PG_UTF8);
 
             /*  If you need C String encoding do like this:
                 *(unsigned long *)argp =
@@ -497,16 +468,13 @@ int pldotnet_SetScalarValue(
     return 0;
 }
 VarChar*
-pldotnet_GetStringValue(char *result_ptr)
-{
+pldotnet_GetStringValue(char *result_ptr) {
     unsigned long *ret = *(unsigned long **) (result_ptr);
     size_t len = strlen((char*) ret);
-    char *encoded = (char *) pg_do_encoding_conversion(
-        (u_char*) ret,
+    char *encoded = (char *) pg_do_encoding_conversion((u_char*) ret,
         len,
         PG_UTF8,
-        GetDatabaseEncoding()
-    );
+        GetDatabaseEncoding());
     VarChar *varchar = (VarChar *) SPI_palloc(len + VARHDRSZ);
 
 #if PG_VERSION_NUM < 80300
@@ -522,13 +490,10 @@ pldotnet_GetStringValue(char *result_ptr)
 }
 
 static HeapTuple
-pldotnet_ModifyTuple(
-    FunctionCallInfo fcinfo,
-    HeapTuple tuple,
-    TupleDesc rel_desc,
-    pldotnet_ArrayT *tg_new_array
-)
-{
+pldotnet_ModifyTuple(FunctionCallInfo fcinfo,
+                     HeapTuple tuple,
+                     TupleDesc rel_desc,
+                     pldotnet_ArrayT *tg_new_array ) {
     Datum *modvalues;
     bool *modnulls;
     bool *modrepls;
@@ -541,33 +506,28 @@ pldotnet_ModifyTuple(
     modnulls = (bool *) palloc0(rel_desc->natts * sizeof(bool));
     modrepls = (bool *) palloc0(rel_desc->natts * sizeof(bool));
 
-    for (size_t i = 0, j = 0; i < rel_desc->natts; ++i)
-    {
+    for (size_t i = 0, j = 0; i < rel_desc->natts; ++i) {
         Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
         PropertyValue *property = ((PropertyValue*) tg_new_array->buffer) + j;
 
         if (attr->attisdropped)
             continue;
 
-        modvalues[i] = pldotnet_GetScalarValue(
-            (char*) property->value,
-            nullptr,
-            fcinfo,
-            attr->atttypid
-        );
+        modvalues[i] = pldotnet_GetScalarValue((char*) property->value,
+                                                nullptr,
+                                                fcinfo,
+                                                attr->atttypid);
 
         modrepls[i] = true;
 
         ++j;
     }
 
-    result = heap_modify_tuple(
-        tuple,
-        rel_desc,
-        modvalues,
-        modnulls,
-        modrepls
-    );
+    result = heap_modify_tuple(tuple,
+                               rel_desc,
+                               modvalues,
+                               modnulls,
+                               modrepls);
 
     MemoryContextSwitchTo(current);
     return result;
@@ -588,13 +548,10 @@ pldotnet_ModifyTuple(
  *
  */
 Datum
-pldotnet_GetTriggerResult(
-    FunctionCallInfo fcinfo,
-    pldotnet_TriggerInfo *tg_info,
-    int8_t *result_ptr,
-    int8_t *resultnull_ptr
-)
-{
+pldotnet_GetTriggerResult(FunctionCallInfo fcinfo,
+                          pldotnet_TriggerInfo *tg_info,
+                          int8_t *result_ptr,
+                          int8_t *resultnull_ptr) {
     VarChar *varchar;
     TriggerData *tdata = (TriggerData *) fcinfo->context;
     TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
@@ -607,8 +564,7 @@ pldotnet_GetTriggerResult(
      * update it to false in order to return the input tuple
      * and perform the current action
      */
-    if (is_null)
-    {
+    if (is_null) {
         fcinfo->isnull = false;
         if (TRIGGER_FIRED_BY_UPDATE(tdata->tg_event))
             return PointerGetDatum(tdata->tg_newtuple);
@@ -622,55 +578,44 @@ pldotnet_GetTriggerResult(
      */
 
     if (0 == strcasecmp((char*) varchar->vl_dat, "SKIP")
-        || TRIGGER_FIRED_FOR_STATEMENT(tdata->tg_event)
-    )
+        || TRIGGER_FIRED_FOR_STATEMENT(tdata->tg_event))
         return (Datum) 0;
 
     if (0 != strcasecmp((char*) varchar->vl_dat, "MODIFY"))
         elog(ERROR, "[pldotnet]: Invalid return for trigger: %u", tdata->tg_event);
 
-    if (TRIGGER_FIRED_FOR_ROW(tdata->tg_event))
-    {
+    if (TRIGGER_FIRED_FOR_ROW(tdata->tg_event)) {
         if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event) ||
-            TRIGGER_FIRED_BY_DELETE(tdata->tg_event)
-        )
-            result = pldotnet_ModifyTuple(
-                fcinfo,
-                tdata->tg_trigtuple,
-                rel_desc,
-                &(tg_info->tg_new_array)
-            );
+            TRIGGER_FIRED_BY_DELETE(tdata->tg_event))
+            result = pldotnet_ModifyTuple(fcinfo,
+                                          tdata->tg_trigtuple,
+                                          rel_desc,
+                                          &(tg_info->tg_new_array));
         else if (TRIGGER_FIRED_BY_UPDATE(tdata->tg_event))
-            result = pldotnet_ModifyTuple(
-                fcinfo,
-                tdata->tg_newtuple,
-                rel_desc,
-                &(tg_info->tg_new_array)
-            );
+            result = pldotnet_ModifyTuple(fcinfo,
+                                          tdata->tg_newtuple,
+                                          rel_desc,
+                                          &(tg_info->tg_new_array));
         else
             elog(ERROR, "[pldotnet]: Unrecognized trigger action: %u", tdata->tg_event);
-    }
-    else
+    } else {
         elog(ERROR, "[pldotnet]: Unrecognized LEVEL event: %u", tdata->tg_event);
+    }
 
     return PointerGetDatum(result);
 }
 
 Datum
-pldotnet_GetScalarValue(
-    char * result_ptr,
-    char * resultnull_ptr,
-    FunctionCallInfo fcinfo,
-    Oid type
-)
-{
+pldotnet_GetScalarValue(char * result_ptr,
+                        char * resultnull_ptr,
+                        FunctionCallInfo fcinfo,
+                        Oid type ) {
     Datum retval = 0;
     VarChar * res_varchar; /* For Unicode/UTF8 support */
     char * str_num;
 
     fcinfo->isnull = nullptr == resultnull_ptr ? false : *(bool *) resultnull_ptr;
-    switch (type)
-    {
+    switch (type) {
         case BOOLOID:
             /* Recover flag for null result */
             if (fcinfo->isnull)
@@ -696,14 +641,11 @@ pldotnet_GetScalarValue(
             if (fcinfo->isnull)
                 return (Datum) 0;
             str_num = (char *)*(unsigned long *)(result_ptr);
-            return NumericGetDatum(
-                DirectFunctionCall3(
-                    numeric_in,
-                    CStringGetDatum(str_num),
-                    ObjectIdGetDatum(InvalidOid),
-                    Int32GetDatum(-1)
-                )
-            );
+            return NumericGetDatum(DirectFunctionCall3(
+                                        numeric_in,
+                                        CStringGetDatum(str_num),
+                                        ObjectIdGetDatum(InvalidOid),
+                                        Int32GetDatum(-1)));
         case TEXTOID:
              /* C String encoding
               * retval = DirectFunctionCall1(textin,
@@ -730,45 +672,36 @@ pldotnet_GetScalarValue(
 }
 
 bool
-pldotnet_TypeSupported(Oid type)
-{
-    return (
-        pldotnet_IsSimpleType(type) ||
-        pldotnet_IsTextType(type) ||
-        pldotnet_IsCompositeType(type) ||
-        TRIGGEROID == type
-    );
+pldotnet_TypeSupported(Oid type) {
+    return (pldotnet_IsSimpleType(type) ||
+            pldotnet_IsTextType(type) ||
+            pldotnet_IsCompositeType(type) ||
+            TRIGGEROID == type);
 }
 
 bool
-pldotnet_IsSimpleType(Oid type)
-{
+pldotnet_IsSimpleType(Oid type) {
     return (type == INT2OID || type == INT4OID || type == INT8OID ||
             type == FLOAT4OID || type == FLOAT8OID || type == BOOLOID);
 }
 
 bool
-pldotnet_IsTextType(Oid type)
-{
+pldotnet_IsTextType(Oid type) {
     /* NUMERIC appears here because it is converted to a CString type */
-    return (
-        TEXTOID == type ||
-        VARCHAROID == type ||
-        BPCHAROID == type ||
-        NUMERICOID == type ||
-        TRIGGEROID == type
-    );
+    return (TEXTOID == type ||
+            VARCHAROID == type ||
+            BPCHAROID == type ||
+            NUMERICOID == type ||
+            TRIGGEROID == type);
 }
 
 bool
-pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info)
-{
+pldotnet_IsArray(int narg, pldotnet_FuncInOutInfo * funinout_info) {
     return (funinout_info->arrayinfo[narg].ixarray == narg);
 }
 
 inline bool
-pldotnet_IsNullable(Oid type)
-{
+pldotnet_IsNullable(Oid type) {
     return
         INT2OID == type ||
         INT4OID == type ||
@@ -777,8 +710,7 @@ pldotnet_IsNullable(Oid type)
 }
 
 bool
-pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index)
-{
+pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index) {
 #if PG_VERSION_NUM > 120000
     return fcinfo->args[index].isnull;
 #else
@@ -787,8 +719,7 @@ pldotnet_IsNullValue(FunctionCallInfo fcinfo, size_t index)
 }
 
 bool
-pldotnet_IsCompositeType(Oid oid)
-{
+pldotnet_IsCompositeType(Oid oid) {
     bool is_composite;
     Form_pg_type typeinfo;
     HeapTuple type = SearchSysCache1(TYPEOID, ObjectIdGetDatum(oid));
@@ -802,8 +733,7 @@ pldotnet_IsCompositeType(Oid oid)
 }
 
 inline Datum
-pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index)
-{
+pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index) {
 #if PG_VERSION_NUM >= 120000
     return fcinfo->args[index].value;
 #else
@@ -812,28 +742,23 @@ pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index)
 }
 
 bool
-pldotnet_NeedsIntPtr(Oid oid)
-{
+pldotnet_NeedsIntPtr(Oid oid) {
     return NUMERICOID == oid || pldotnet_IsTextType(oid);
 }
 
 static void
-pldotnet_FillArgArrayInfo(
-    Datum datum,
-    Form_pg_type typeinfo,
-    uint32_t narg,
-    const char *array_template,
-    bool swap_variable_decl,
-    pldotnet_ArgArrayInfo *parr_info)
-{
+pldotnet_FillArgArrayInfo(Datum datum,
+                          Form_pg_type typeinfo,
+                          uint32_t narg,
+                          const char *array_template,
+                          bool swap_variable_decl,
+                          pldotnet_ArgArrayInfo *parr_info) {
     const char *typename =
         pldotnet_NeedsIntPtr(typeinfo->typelem) ?
         "IntPtr" :
-        pldotnet_GetCompatibleNetTypeName(
-            typeinfo->typelem,
-            true,
-            !swap_variable_decl
-        );
+        pldotnet_GetCompatibleNetTypeName(typeinfo->typelem,
+                                          true,
+                                          !swap_variable_decl);
 
     parr_info->ixarray = narg;
     parr_info->typlen = typeinfo->typlen;
@@ -846,19 +771,16 @@ pldotnet_FillArgArrayInfo(
         sprintf(parr_info->csharpdecl,
                 array_template,
                 narg,
-                typename
-        );
+                typename);
     else
         sprintf(parr_info->csharpdecl,
                 array_template,
                 typename,
-                narg
-        );
+                narg);
 }
 
 bool
-pldotnet_IsPostgresArray(Oid oid)
-{
+pldotnet_IsPostgresArray(Oid oid) {
     Form_pg_type typeinfo;
     bool is_array;
     HeapTuple tuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(oid));
@@ -876,14 +798,12 @@ pldotnet_IsPostgresArray(Oid oid)
 }
 
 bool
-pldotnet_SetArrayInfo(
-    Datum datum,
-    Oid oid,
-    uint32_t narg,
-    const char *array_template,
-    bool swap_variable_decl,
-    pldotnet_FuncInOutInfo *func_inout_info)
-{
+pldotnet_SetArrayInfo(Datum datum,
+                      Oid oid,
+                      uint32_t narg,
+                      const char *array_template,
+                      bool swap_variable_decl,
+                      pldotnet_FuncInOutInfo *func_inout_info) {
     Form_pg_type typeinfo;
     HeapTuple tuple;
     bool isarr = false;
@@ -904,14 +824,12 @@ pldotnet_SetArrayInfo(
     isarr = (typeinfo->typelem != 0 && typeinfo->typlen == -1);
 
     if (isarr)
-        pldotnet_FillArgArrayInfo(
-            datum,
-            typeinfo,
-            narg,
-            array_template,
-            swap_variable_decl,
-            &func_inout_info->arrayinfo[narg]
-        );
+        pldotnet_FillArgArrayInfo(datum,
+                                  typeinfo,
+                                  narg,
+                                  array_template,
+                                  swap_variable_decl,
+                                  &func_inout_info->arrayinfo[narg]);
     else
         func_inout_info->arrayinfo[narg].ixarray = -1;
 
@@ -921,8 +839,7 @@ pldotnet_SetArrayInfo(
 }
 
 void
-pldotnet_SetArraySize(Datum datum, pldotnet_ArgArrayInfo *parr_info)
-{
+pldotnet_SetArraySize(Datum datum, pldotnet_ArgArrayInfo *parr_info) {
     ArrayType *arr = DatumGetArrayTypeP(datum);
     parr_info->ndim = ARR_NDIM(arr);
     parr_info->dims = ARR_DIMS(arr);
@@ -930,39 +847,31 @@ pldotnet_SetArraySize(Datum datum, pldotnet_ArgArrayInfo *parr_info)
 }
 
 bool
-pldotnet_TriggerHasOldTuple(TriggerEvent event)
-{
+pldotnet_TriggerHasOldTuple(TriggerEvent event) {
     return TRIGGER_FIRED_FOR_ROW(event) && (
-        TRIGGER_FIRED_BY_UPDATE(event) ||
-        TRIGGER_FIRED_BY_DELETE(event)
-    );
+           TRIGGER_FIRED_BY_UPDATE(event) ||
+           TRIGGER_FIRED_BY_DELETE(event));
 }
 
 bool
-pldotnet_TriggerHasNewTuple(TriggerEvent event)
-{
+pldotnet_TriggerHasNewTuple(TriggerEvent event) {
     return TRIGGER_FIRED_FOR_ROW(event) && (
-        TRIGGER_FIRED_BY_UPDATE(event) ||
-        TRIGGER_FIRED_BY_INSERT(event)
-    );
+           TRIGGER_FIRED_BY_UPDATE(event) ||
+           TRIGGER_FIRED_BY_INSERT(event));
 }
 
 bool
-pldotnet_TriggerHasBothTuples(TriggerEvent event)
-{
+pldotnet_TriggerHasBothTuples(TriggerEvent event) {
     return pldotnet_TriggerHasOldTuple(event) &&
            pldotnet_TriggerHasNewTuple(event);
 }
 
 static void
-pldotnet_FillTriggerTuple(
-    FunctionCallInfo fcinfo,
-    HeapTuple trig_tuple,
-    TupleDesc rel_desc,
-    int nrow,
-    pldotnet_ArrayT *tg_array
-)
-{
+pldotnet_FillTriggerTuple(FunctionCallInfo fcinfo,
+                          HeapTuple trig_tuple,
+                          TupleDesc rel_desc,
+                          int nrow,
+                          pldotnet_ArrayT *tg_array) {
     uint8_t *values = nullptr;
     size_t trigger_tuple_size = 0;
     size_t pos = 0;
@@ -972,8 +881,7 @@ pldotnet_FillTriggerTuple(
     tg_array->buffer_size = 0;
     tg_array->element_size = sizeof(PropertyValue);
 
-    for (int i = 0; i < rel_desc->natts; ++i)
-    {
+    for (int i = 0; i < rel_desc->natts; ++i) {
         Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
         if (attr->attisdropped)
             continue;
@@ -984,8 +892,7 @@ pldotnet_FillTriggerTuple(
     properties = (PropertyValue*) palloc0(tg_array->buffer_size * sizeof(PropertyValue));
     values = (uint8_t*) palloc0(trigger_tuple_size);
 
-    for (int i = 0, j = 0; i < rel_desc->natts; ++i)
-    {
+    for (int i = 0, j = 0; i < rel_desc->natts; ++i) {
         Form_pg_attribute attr = TupleDescAttr(rel_desc, i);
         uint8_t *cursor = values + pos;
         PropertyValue *property = properties + j;
@@ -996,14 +903,12 @@ pldotnet_FillTriggerTuple(
 
         argdatum = heap_getattr(trig_tuple, i + 1, rel_desc, &isnull);
 
-        pldotnet_SetScalarValue(
-            (char*) cursor,
-            argdatum,
-            fcinfo,
-            i,
-            attr->atttypid,
-            &isnull
-        );
+        pldotnet_SetScalarValue((char*) cursor,
+                                argdatum,
+                                fcinfo,
+                                i,
+                                attr->atttypid,
+                                &isnull);
 
         property->type = attr->atttypid;
         property->nrow = nrow;
@@ -1011,8 +916,7 @@ pldotnet_FillTriggerTuple(
 
         property->name = NameStr(attr->attname);
         if (strcmp(property->name, "?column?") == 0 ||
-            strcmp(property->name, "bool") == 0
-        )
+            strcmp(property->name, "bool") == 0)
             property->name = "column";
 
         j += 1;
@@ -1022,21 +926,15 @@ pldotnet_FillTriggerTuple(
     tg_array->buffer = (void*) properties;
 }
 
-static void
-pldotnet_SetRelattsArray(
-    TriggerData *tdata,
-    pldotnet_ArrayT *tg_relatts_array
-)
-{
+static void pldotnet_SetRelattsArray(TriggerData *tdata,
+                                    pldotnet_ArrayT *tg_relatts_array) {
     TupleDesc tupdesc = RelationGetDescr(tdata->tg_relation);
     char **atts = (char**) palloc0(tupdesc->natts * sizeof(char*));
 
-    for (int i = 0; i < tupdesc->natts; i++)
-    {
+    for (int i = 0; i < tupdesc->natts; i++) {
         Form_pg_attribute att = TupleDescAttr(tupdesc, i);
 
-        if (!att->attisdropped)
-        {
+        if (!att->attisdropped) {
             char *attname = NameStr(att->attname);
             atts[i] = pg_server_to_any(attname, strlen(attname), PG_UTF8);
         }
@@ -1047,13 +945,10 @@ pldotnet_SetRelattsArray(
 }
 
 void
-pldotnet_SetTriggerData(
-    FunctionCallInfo fcinfo,
-    TriggerData *tdata,
-    TupleDesc rel_desc,
-    pldotnet_TriggerInfo *pldotnet_tg_info
-)
-{
+pldotnet_SetTriggerData(FunctionCallInfo fcinfo,
+                        TriggerData *tdata,
+                        TupleDesc rel_desc,
+                        pldotnet_TriggerInfo *pldotnet_tg_info) {
     Trigger *tg = tdata->tg_trigger;
     pldotnet_tg_info->tg_name = tg->tgname;
     pldotnet_tg_info->tg_table_name = SPI_getrelname(tdata->tg_relation);
@@ -1075,8 +970,7 @@ pldotnet_SetTriggerData(
     else
         elog(ERROR, "unrecognized WHEN tg_event: %u", tdata->tg_event);
 
-    if (TRIGGER_FIRED_FOR_ROW(tdata->tg_event))
-    {
+    if (TRIGGER_FIRED_FOR_ROW(tdata->tg_event)) {
         pldotnet_tg_info->tg_level = "ROW";
         if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event))
             pldotnet_tg_info->tg_event = "INSERT";
@@ -1086,9 +980,7 @@ pldotnet_SetTriggerData(
             pldotnet_tg_info->tg_event = "UPDATE";
         else
             elog(ERROR, "unrecognized OP tg_event: %u", tdata->tg_event);
-    }
-    else if (TRIGGER_FIRED_FOR_STATEMENT(tdata->tg_event))
-    {
+    } else if (TRIGGER_FIRED_FOR_STATEMENT(tdata->tg_event)) {
         if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event))
             pldotnet_tg_info->tg_event = "INSERT";
         else if (TRIGGER_FIRED_BY_DELETE(tdata->tg_event))
@@ -1099,47 +991,36 @@ pldotnet_SetTriggerData(
             pldotnet_tg_info->tg_event = "TRUNCATE";
         else
             elog(ERROR, "unrecognized OP tg_event: %u", tdata->tg_event);
-    }
-    else
+    } else {
         elog(ERROR, "unrecognized LEVEL tg_event: %u", tdata->tg_event);
+    }
 
-    if (pldotnet_TriggerHasOldTuple(tdata->tg_event))
-        {
-            pldotnet_FillTriggerTuple(
-                fcinfo,
-                tdata->tg_newtuple,
-                rel_desc,
-                0,
-                &pldotnet_tg_info->tg_new_array
-            );
-            pldotnet_FillTriggerTuple(
-                fcinfo,
-                tdata->tg_trigtuple,
-                rel_desc,
-                1,
-                &pldotnet_tg_info->tg_old_array
-            );
-        }
-        else
-            pldotnet_FillTriggerTuple(
-                fcinfo,
-                tdata->tg_trigtuple,
-                rel_desc,
-                0,
-                &pldotnet_tg_info->tg_new_array
-            );
-
+    if (pldotnet_TriggerHasOldTuple(tdata->tg_event)) {
+        pldotnet_FillTriggerTuple(fcinfo,
+                                  tdata->tg_newtuple,
+                                  rel_desc,
+                                  0,
+                                  &pldotnet_tg_info->tg_new_array);
+        pldotnet_FillTriggerTuple(fcinfo,
+                                  tdata->tg_trigtuple,
+                                  rel_desc,
+                                  1,
+                                  &pldotnet_tg_info->tg_old_array);
+    } else {
+        pldotnet_FillTriggerTuple(fcinfo,
+                                  tdata->tg_trigtuple,
+                                  rel_desc,
+                                  0,
+                                  &pldotnet_tg_info->tg_new_array);
+    }
 }
 
 static int8_t*
-pldotnet_FillNonTriggerValues(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    pldotnet_FuncInOutInfo *func_inout_info,
-    bool *argsnull_ptr,
-    int8_t *cur_arg
-)
-{
+pldotnet_FillNonTriggerValues(FunctionCallInfo fcinfo,
+                              Form_pg_proc procst,
+                              pldotnet_FuncInOutInfo *func_inout_info,
+                              bool *argsnull_ptr,
+                              int8_t *cur_arg) {
     pldotnet_ArgArrayInfo *arrinfo;
     pldotnet_ArrayT *tmp;
     ArrayType *arr;
@@ -1147,11 +1028,9 @@ pldotnet_FillNonTriggerValues(
     Datum array_element;
     Oid *argtype = procst->proargtypes.values;
 
-    for (int16_t i = 0; i < procst->pronargs; i++)
-    {
+    for (int16_t i = 0; i < procst->pronargs; i++) {
         Datum argdatum = pldotnet_GetArgDatum(fcinfo, i);
-        if (pldotnet_IsArray(i, func_inout_info))
-        {
+        if (pldotnet_IsArray(i, func_inout_info)) {
             arrinfo = &(func_inout_info->arrayinfo[i]);
             arr = DatumGetArrayTypeP(argdatum);
             array_p = ARR_DATA_PTR(arr);
@@ -1167,9 +1046,10 @@ pldotnet_FillNonTriggerValues(
             tmp->buffer_size = arrinfo->nelems;
             tmp->buffer = (void*) palloc0(tmp->element_size * tmp->buffer_size);
 
-            for (int j = 0; j < arrinfo->nelems; j++)
-            {
-                array_element = fetch_att(array_p, arrinfo->typbyval, arrinfo->typlen);
+            for (int j = 0; j < arrinfo->nelems; j++) {
+                array_element = fetch_att(array_p,
+                                          arrinfo->typbyval,
+                                          arrinfo->typlen);
 
                 /* This needs to reviewed: why for bittable/simple
                     types we need to pass the value. Makes sense
@@ -1184,31 +1064,30 @@ pldotnet_FillNonTriggerValues(
                         fcinfo,
                         j,
                         arrinfo->typelem,
-                        nullptr
-                );
+                        nullptr);
 
                 /* Iterate array */
                 array_p = att_addlength_pointer(array_p, arrinfo->typlen,
                                                 array_p);
                 array_p = (char *) att_align_nominal(array_p,
-                                                           arrinfo->typalign);
+                                                    arrinfo->typalign);
             }
             /* Iterate CLibargs */
             cur_arg += sizeof(pldotnet_ArrayT);
             continue;
-        }
-        else if ( !pldotnet_IsSimpleType(argtype[i]) &&
-                !pldotnet_IsTextType(argtype[i]) )
-            pldotnet_FillCompositeValues((char*)cur_arg, argdatum, argtype[i], fcinfo, procst);
-        else
+        } else if ( !pldotnet_IsSimpleType(argtype[i]) &&
+                   !pldotnet_IsTextType(argtype[i]) ) {
+            pldotnet_FillCompositeValues((char*)cur_arg, argdatum,
+                                        argtype[i], fcinfo, procst);
+        } else {
             pldotnet_SetScalarValue(
                 (char *)cur_arg,
                 argdatum,
                 fcinfo,
                 i,
                 argtype[i],
-                procst->pronargs + 1 == func_inout_info->typesize_nullflags ? argsnull_ptr + i : nullptr
-            );
+                procst->pronargs + 1 == func_inout_info->typesize_nullflags ? argsnull_ptr + i : nullptr);
+        }
 
         cur_arg += pldotnet_GetTypeSize(argtype[i]);
     }
@@ -1216,15 +1095,12 @@ pldotnet_FillNonTriggerValues(
 }
 
 size_t
-pldotnet_SetFuncInOutValues(
-    Form_pg_proc procst,
-    Oid rettype,
-    int args_size,
-    bool nullable_arg_flag,
-    bool force_nullable_flags,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+pldotnet_SetFuncInOutValues(Form_pg_proc procst,
+                            Oid rettype,
+                            int args_size,
+                            bool nullable_arg_flag,
+                            bool force_nullable_flags,
+                            pldotnet_FuncInOutInfo *func_inout_info) {
     func_inout_info->typesize_args = args_size;
     func_inout_info->typesize_nullflags = 0;
 
@@ -1233,11 +1109,9 @@ pldotnet_SetFuncInOutValues(
     func_inout_info->typesize_nullflags += sizeof(bool);
     func_inout_info->typesize_result = pldotnet_GetTypeSize(rettype);
 
-    return (size_t) (
-        func_inout_info->typesize_nullflags
-      + func_inout_info->typesize_args
-      + func_inout_info->typesize_result
-    );
+    return (size_t) (func_inout_info->typesize_nullflags
+                    + func_inout_info->typesize_args
+                    + func_inout_info->typesize_result);
 }
 
 
@@ -1248,36 +1122,29 @@ pldotnet_SetFuncInOutValues(
  * This function is used on triggers
  */
 static int8_t*
-pldotnet_CreateTriggerCStructLibargs(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    pldotnet_FuncInOutInfo *func_inout_info,
-    size_t *default_size
-)
-{
+pldotnet_CreateTriggerCStructLibargs(FunctionCallInfo fcinfo,
+                                     Form_pg_proc procst,
+                                     pldotnet_FuncInOutInfo *func_inout_info,
+                                     size_t *default_size) {
     TriggerData *tdata = (TriggerData*) fcinfo->context;
     TupleDesc rel_desc = RelationGetDescr(tdata->tg_relation);
     int8_t *libargs_ptr = NULL;
     int8_t *cur_arg = NULL;
 
-    *default_size = pldotnet_SetFuncInOutValues(
-        procst,
-        procst->prorettype,
-        sizeof(pldotnet_TriggerInfo),
-        false,
-        false,
-        func_inout_info
-    );
+    *default_size = pldotnet_SetFuncInOutValues(procst,
+                                                procst->prorettype,
+                                                sizeof(pldotnet_TriggerInfo),
+                                                false,
+                                                false,
+                                                func_inout_info);
 
     libargs_ptr = (int8_t*) palloc0(*default_size + sizeof(uint32_t));
     cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
 
-    pldotnet_SetTriggerData(
-        fcinfo,
-        tdata,
-        rel_desc,
-        (pldotnet_TriggerInfo*) cur_arg
-    );
+    pldotnet_SetTriggerData(fcinfo,
+                            tdata,
+                            rel_desc,
+                            (pldotnet_TriggerInfo*) cur_arg);
 
     return libargs_ptr;
 }
@@ -1289,14 +1156,11 @@ pldotnet_CreateTriggerCStructLibargs(
  * This function is used on normal functions (not triggers)
  */
 static int8_t*
-pldotnet_CreateNonTriggerCStructLibargs(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    bool force_nullable_flags,
-    pldotnet_FuncInOutInfo *func_inout_info,
-    size_t *default_size
-)
-{
+pldotnet_CreateNonTriggerCStructLibargs(FunctionCallInfo fcinfo,
+                                        Form_pg_proc procst,
+                                        bool force_nullable_flags,
+                                        pldotnet_FuncInOutInfo *func_inout_info,
+                                        size_t *default_size) {
     int8_t *libargs_ptr = NULL;
     int8_t *cur_arg = NULL;
     Oid *argtype = procst->proargtypes.values;
@@ -1307,8 +1171,7 @@ pldotnet_CreateNonTriggerCStructLibargs(
     bool *argsnull_ptr;
     bool nullable_arg_flag = false;
 
-    for (size_t i = 0; i < procst->pronargs; i++)
-    {
+    for (size_t i = 0; i < procst->pronargs; i++) {
         if (pldotnet_IsArray((int) i, func_inout_info))
             args_size += sizeof(pldotnet_ArrayT);
         else
@@ -1317,26 +1180,22 @@ pldotnet_CreateNonTriggerCStructLibargs(
             nullable_arg_flag = true;
     }
 
-    *default_size = pldotnet_SetFuncInOutValues(
-        procst,
-        rettype,
-        args_size,
-        nullable_arg_flag,
-        force_nullable_flags,
-        func_inout_info
-    );
+    *default_size = pldotnet_SetFuncInOutValues(procst,
+                                                rettype,
+                                                args_size,
+                                                nullable_arg_flag,
+                                                force_nullable_flags,
+                                                func_inout_info);
 
     libargs_ptr = (int8_t*) palloc0(*default_size + sizeof(uint32_t));
     argsnull_ptr = (bool *) libargs_ptr;
     cur_arg = libargs_ptr + func_inout_info->typesize_nullflags;
 
-    cur_arg = pldotnet_FillNonTriggerValues(
-        fcinfo,
-        procst,
-        func_inout_info,
-        argsnull_ptr,
-        cur_arg
-    );
+    cur_arg = pldotnet_FillNonTriggerValues(fcinfo,
+                                            procst,
+                                            func_inout_info,
+                                            argsnull_ptr,
+                                            cur_arg);
 
     /* append the function id after usual libargs data */
     cur_arg = libargs_ptr + *default_size;
@@ -1354,31 +1213,25 @@ pldotnet_CreateNonTriggerCStructLibargs(
  * DELEGATE. SEE Engine.Run() at Engine.cs;
  */
 int8_t*
-pldotnet_CreateCStructLibargs(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    bool force_nullable_flags,
-    pldotnet_FuncInOutInfo *func_inout_info)
-{
+pldotnet_CreateCStructLibargs(FunctionCallInfo fcinfo,
+                              Form_pg_proc procst,
+                              bool force_nullable_flags,
+                              pldotnet_FuncInOutInfo *func_inout_info) {
     size_t default_size;
     int8_t *libargs_ptr = NULL;
     int8_t *cur_arg = NULL;
 
     if (CALLED_AS_TRIGGER(fcinfo))
-        libargs_ptr = pldotnet_CreateTriggerCStructLibargs(
-            fcinfo,
-            procst,
-            func_inout_info,
-            &default_size
-        );
+        libargs_ptr = pldotnet_CreateTriggerCStructLibargs(fcinfo,
+                                                           procst,
+                                                           func_inout_info,
+                                                           &default_size);
     else
-        libargs_ptr = pldotnet_CreateNonTriggerCStructLibargs(
-            fcinfo,
-            procst,
-            force_nullable_flags,
-            func_inout_info,
-            &default_size
-        );
+        libargs_ptr = pldotnet_CreateNonTriggerCStructLibargs(fcinfo,
+                                                        procst,
+                                                        force_nullable_flags,
+                                                        func_inout_info,
+                                                        &default_size);
 
     /* append the function id after usual libargs data */
     cur_arg = libargs_ptr + default_size;
@@ -1388,8 +1241,9 @@ pldotnet_CreateCStructLibargs(
 }
 
 Oid
-pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index)
-{
+pldotnet_GetTypeAttribute(TupleDesc tupdesc,
+                        HeapTupleHeader tup,
+                        size_t index) {
     bool isnull;
 
     GetAttributeByNum(tup, TupleDescAttr(tupdesc, index)->attnum, &isnull);
@@ -1405,14 +1259,10 @@ pldotnet_GetTypeAttribute(TupleDesc tupdesc, HeapTupleHeader tup, size_t index)
  * This function reads the libargs buffer and retrieves data
  * F# or C#
  */
-Datum
-pldotnet_GetNetResult(
-    int8_t *libargs,
-    Oid rettype,
-    FunctionCallInfo fcinfo,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+Datum pldotnet_GetNetResult(int8_t *libargs,
+                            Oid rettype,
+                            FunctionCallInfo fcinfo,
+                            pldotnet_FuncInOutInfo *func_inout_info) {
     int8_t *result_ptr = libargs
                        + func_inout_info->typesize_args
                        + func_inout_info->typesize_nullflags;
@@ -1420,32 +1270,30 @@ pldotnet_GetNetResult(
     int8_t *resultnull_ptr = libargs
                            + (func_inout_info->typesize_nullflags - sizeof(bool));
 
-    if (CALLED_AS_TRIGGER(fcinfo))
-    {
+    if (CALLED_AS_TRIGGER(fcinfo)) {
         pldotnet_TriggerInfo* tg_info =
             (pldotnet_TriggerInfo*) (libargs + func_inout_info->typesize_nullflags);
         if (TRIGGEROID != rettype)
             elog(ERROR, "[pldotnet]: Invalid Oid while running trigger");
-        return pldotnet_GetTriggerResult(fcinfo, tg_info, result_ptr, resultnull_ptr);
+        return pldotnet_GetTriggerResult(fcinfo, tg_info,
+                                         result_ptr, resultnull_ptr);
     }
 
-    if (!pldotnet_IsSimpleType(rettype) && !pldotnet_IsTextType(rettype))
-    {
+    if (!pldotnet_IsSimpleType(rettype) && !pldotnet_IsTextType(rettype)) {
         /* TODO: review null composite values */
         fcinfo->isnull = *(bool *) (resultnull_ptr);
         if (fcinfo->isnull)
             return (Datum) 0;
-        return pldotnet_CreateCompositeResult((char*) result_ptr, rettype, fcinfo);
+        return pldotnet_CreateCompositeResult((char*) result_ptr,
+                                            rettype, fcinfo);
     }
 
-    return pldotnet_GetScalarValue((char*) result_ptr, (char*) resultnull_ptr, fcinfo, rettype);
+    return pldotnet_GetScalarValue((char*) result_ptr, (char*) resultnull_ptr,
+                                    fcinfo, rettype);
 }
 
-bool
-pldotnet_SPIReady(void)
-{
-    if (SPI_connect() != SPI_OK_CONNECT)
-    {
+bool pldotnet_SPIReady(void) {
+    if (SPI_connect() != SPI_OK_CONNECT) {
         elog(ERROR, "[pldotnet]: could not connect to SPI manager");
         return false;
     }
@@ -1453,27 +1301,20 @@ pldotnet_SPIReady(void)
     return true;
 }
 
-void
-pldotnet_SPIFinish(void)
-{
+void pldotnet_SPIFinish(void) {
     if (SPI_finish() != SPI_OK_FINISH)
         elog(ERROR, "[pldotnet]: could not disconnect from SPI manager");
 }
 
-bool
-pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo)
-{
-    if (CALLED_AS_TRIGGER(fcinfo))
-    {
+bool pldotnet_TriggerNotSupported(FunctionCallInfo fcinfo) {
+    if (CALLED_AS_TRIGGER(fcinfo)) {
         elog(ERROR, "[pldotnet]: dotnet trigger not supported");
         return true;
     }
     return false;
 }
 
-HeapTuple
-pldotnet_GetPostgresHeapTuple(Oid oid)
-{
+HeapTuple pldotnet_GetPostgresHeapTuple(Oid oid) {
     HeapTuple proc = SearchSysCache1(PROCOID, ObjectIdGetDatum(oid));
     if (!HeapTupleIsValid(proc))
         elog(ERROR, "[pldotnet]: Cache lookup failed for function %u", oid);
@@ -1481,14 +1322,12 @@ pldotnet_GetPostgresHeapTuple(Oid oid)
 }
 
 inline void
-pldotnet_ReleasePostgresHeapTuple(HeapTuple proc)
-{
+pldotnet_ReleasePostgresHeapTuple(HeapTuple proc) {
     ReleaseSysCache(proc);
 }
 
 bool
-pldotnet_SetNetLoader(const char *config_path, const char* prefix)
-{
+pldotnet_SetNetLoader(const char *config_path, const char* prefix) {
     if (nullptr != assembly_loader)
         return true;
 
@@ -1497,22 +1336,19 @@ pldotnet_SetNetLoader(const char *config_path, const char* prefix)
 }
 
 component_entry_point_fn
-pldotnet_GetUserMethod(dotnet_loader loader, pldotnet_PathConfig *paths)
-{
+pldotnet_GetUserMethod(dotnet_loader loader, pldotnet_PathConfig *paths) {
     int rc;
     component_entry_point_fn dotnet_method = nullptr;
 
     char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
     char dotnet_type_method[64] = "Run";
 
-    rc = loader(
-        paths->library_path,
-        dotnet_type,
-        dotnet_type_method,
-        nullptr,
-        nullptr,
-        (void**) &dotnet_method
-    );
+    rc = loader(paths->library_path,
+                dotnet_type,
+                dotnet_type_method,
+                nullptr,
+                nullptr,
+                (void**) &dotnet_method);
 
     if (0 != rc || nullptr == dotnet_method)
         elog(ERROR, "[pldotnet]: Could not load_assembly_and_get_function_pointer()");
@@ -1521,25 +1357,21 @@ pldotnet_GetUserMethod(dotnet_loader loader, pldotnet_PathConfig *paths)
 }
 
 bool
-pldotnet_Run(
-    dotnet_loader loader,
-    const char *dotnet_type,
-    const char *dotnet_type_method,
-    const pldotnet_PathConfig *paths,
-    int8_t *libargs,
-    size_t args_length)
-{
+pldotnet_Run(dotnet_loader loader,
+             const char *dotnet_type,
+             const char *dotnet_type_method,
+             const pldotnet_PathConfig *paths,
+             int8_t *libargs,
+             size_t args_length) {
     component_entry_point_fn dotnet_method = nullptr;
 
     /* Function pointer to managed delegate */
-    int rc = loader(
-        paths->library_path,
-        dotnet_type,
-        dotnet_type_method,
-        nullptr,
-        nullptr,
-        (void**) &dotnet_method
-    );
+    int rc = loader(paths->library_path,
+                    dotnet_type,
+                    dotnet_type_method,
+                    nullptr,
+                    nullptr,
+                    (void**) &dotnet_method);
 
     assert(rc == 0 && dotnet_method != nullptr && \
         "Failure: load_assembly_and_get_function_pointer()");
@@ -1547,12 +1379,9 @@ pldotnet_Run(
 }
 
 bool
-pldotnet_CompileUserFunction(
-    dotnet_loader loader,
-    const pldotnet_PathConfig *paths,
-    pldotnet_ArgsSource *source
-)
-{
+pldotnet_CompileUserFunction(dotnet_loader loader,
+                             const pldotnet_PathConfig *paths,
+                             pldotnet_ArgsSource *source) {
     char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
     char dotnet_type_method[64] = "Compile";
 
@@ -1562,23 +1391,19 @@ pldotnet_CompileUserFunction(
     if (!pldotnet_ValidPaths(paths))
         return false;
 
-    return pldotnet_Run(
-        loader,
-        dotnet_type,
-        dotnet_type_method,
-        paths,
-        (int8_t*) source,
-        sizeof(pldotnet_ArgsSource)
-    );
+    return pldotnet_Run(loader,
+                        dotnet_type,
+                        dotnet_type_method,
+                        paths,
+                        (int8_t*) source,
+                        sizeof(pldotnet_ArgsSource));
 }
 
 bool
-pldotnet_RunUserFunction(
-    dotnet_loader loader,
-    const pldotnet_PathConfig *paths,
-    int8_t *libargs,
-    size_t args_length)
-{
+pldotnet_RunUserFunction(dotnet_loader loader,
+                         const pldotnet_PathConfig *paths,
+                         int8_t *libargs,
+                         size_t args_length) {
     char dotnet_type[] = "PlDotNET.Engine, PlDotNET";
     char dotnet_type_method[64] = "Run";
 
@@ -1588,31 +1413,25 @@ pldotnet_RunUserFunction(
     if (!pldotnet_ValidPaths(paths))
         return (Datum) 1;
 
-    if (nullptr != libargs)
-    {
-        return pldotnet_Run(
-            loader,
-            dotnet_type,
-            dotnet_type_method,
-            paths,
-            libargs,
-            args_length
-        );
+    if (nullptr != libargs) {
+        return pldotnet_Run(loader,
+                            dotnet_type,
+                            dotnet_type_method,
+                            paths,
+                            libargs,
+                            args_length);
     }
 
-    return pldotnet_Run(
-        loader,
-        dotnet_type,
-        dotnet_type_method,
-        paths,
-        nullptr,
-        0
-    );
+    return pldotnet_Run(loader,
+                        dotnet_type,
+                        dotnet_type_method,
+                        paths,
+                        nullptr,
+                        0);
 }
 
 
 void
-pldotnet_Elog(int level, char *message)
-{
+pldotnet_Elog(int level, char *message) {
     elog(level, "%s", message);
 }

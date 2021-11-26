@@ -21,14 +21,13 @@
  *
  */
 
-#ifndef _PLDOTNET_SPI_H_
+#ifndef PLDOTNET_SPI_H_
 
-#define _PLDOTNET_SPI_H_
+#define PLDOTNET_SPI_H_
 
 #include "pldotnet_csharp.h"
 
 extern int pldotnet_SPIExecute(char* cmd, long limit);
-extern int pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status);
+extern int pldotnet_SPIFetchResult(SPITupleTable *tuptable, int status);
 
-#endif
-
+#endif // PLDOTNET_SPI_H_

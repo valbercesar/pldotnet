@@ -28,9 +28,7 @@
 extern load_assembly_and_get_function_pointer_fn
 load_assembly_and_get_function_pointer;
 
-int
-pldotnet_SPIExecute(char* cmd, long limit)
-{
+int pldotnet_SPIExecute(char* cmd, long limit) {
     int rv;
 
     PG_TRY();
@@ -50,9 +48,7 @@ pldotnet_SPIExecute(char* cmd, long limit)
     return 0;
 }
 
-int
-pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
-{
+int pldotnet_SPIFetchResult(SPITupleTable *tuptable, int status) {
     Datum attr_val;
     bool is_null;
     TupleDesc tupdesc = tuptable->tupdesc;
@@ -63,8 +59,7 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
     char dotnet_type_method[64] = "InvokeAddProperty";
     dotnet_loader loader = GetNetLoadAssemblySetup(
         spi_paths->config_path,
-        spi_paths->prefix
-    );
+        spi_paths->prefix);
 
     /* Auxiliary vars for obtaining the correct pointer
      * TODO: Remove it for a generic one, maybe union?
@@ -76,12 +71,9 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
     char *newargvl;
     int num_row;
 
-    if(status > 0 && tuptable != NULL)
-    {
-        for (num_row = 0; num_row < SPI_processed; num_row++)
-        {
-            for (int i = 0; i < tupdesc->natts; i++)
-            {
+    if (status > 0 && tuptable != NULL) {
+        for (num_row = 0; num_row < SPI_processed; num_row++) {
+            for (int i = 0; i < tupdesc->natts; i++) {
                 attr = TupleDescAttr(tuptable->tupdesc, i);
                 val.name = NameStr(attr->attname);
                 val.type = attr->atttypid;
@@ -89,9 +81,8 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
 
                 /* Edge cases for special character
                  * in column name from SELECT X command */
-                if(strcmp(val.name,"?column?") == 0 ||
-                   strcmp(val.name,"bool") == 0
-                )
+                if (strcmp(val.name, "?column?") == 0 ||
+                   strcmp(val.name, "bool") == 0)
                     val.name = "column";
 
                 attr_val = heap_getattr(
@@ -100,8 +91,7 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
                                tuptable->tupdesc,
                                &is_null);
 
-                switch (val.type)
-                {
+                switch (val.type) {
                     case INT2OID:
                     case INT4OID:
                     case INT8OID:
@@ -121,27 +111,22 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
                         break;
                     case NUMERICOID:
                         val.value = (Datum) DatumGetCString(
-                            DirectFunctionCall1(
-                                numeric_out,
-                                attr_val
-                            )
-                        );
+                                                DirectFunctionCall1(
+                                                    numeric_out,
+                                                    attr_val));
                         break;
                     case VARCHAROID:
                         buff_len = VARSIZE(DatumGetTextP(attr_val)) - VARHDRSZ;
                         newargvl = (char *)palloc0(buff_len + 1);
-                        memcpy(
-                            newargvl,
+                        memcpy(newargvl,
                             VARDATA(DatumGetTextP(attr_val)),
-                            buff_len
-                        );
+                            buff_len);
                         val.value = (Datum)
                             pg_do_encoding_conversion(
                                 (unsigned char*)newargvl,
                                 buff_len+1,
                                 GetDatabaseEncoding(),
-                                PG_UTF8
-                            );
+                                PG_UTF8);
                         break;
                 }
                 pldotnet_Run(
@@ -149,8 +134,7 @@ pldotnet_SPIFetchResult (SPITupleTable *tuptable, int status)
                     dotnet_type,
                     dotnet_type_method,
                     spi_paths,
-                    (int8_t*) &val, sizeof(PropertyValue)
-                );
+                    (int8_t*) &val, sizeof(PropertyValue));
             }
         }
     }

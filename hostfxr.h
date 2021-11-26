@@ -1,10 +1,13 @@
-/* Licensed to the .NET Foundation under one or more agreements.
+/*
+ * Copyright and LICENSE is accodring to what is found there:
+ *
+ * Licensed to the .NET Foundation under one or more agreements.
  * The .NET Foundation licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
  */
 
-#ifndef __HOSTFXR_H__
-#define __HOSTFXR_H__
+#ifndef HOSTFXR_H_
+#define HOSTFXR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,8 +24,7 @@
     typedef char char_t;
 #endif
 
-enum hostfxr_delegate_type
-{
+enum hostfxr_delegate_type {
     hdt_com_activation,
     hdt_load_in_memory_assembly,
     hdt_winrt_activation,
@@ -48,8 +50,7 @@ typedef hostfxr_error_writer_fn
 (HOSTFXR_CALLTYPE *hostfxr_set_error_writer_fn)(hostfxr_error_writer_fn error_writer);
 
 typedef void* hostfxr_handle;
-typedef struct hostfxr_initialize_parameters
-{
+typedef struct hostfxr_initialize_parameters {
     size_t size;
     const char_t *host_path;
     const char_t *dotnet_root;
@@ -89,4 +90,4 @@ typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_get_runtime_delegate_fn)(
 
 typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_close_fn)(const hostfxr_handle host_context_handle);
 
-#endif /* __HOSTFXR_H__ */
+#endif /* HOSTFXR_H_ */

@@ -35,45 +35,39 @@ static char* plfsharp_BuildBlockUserFuncDecl(
     FunctionCallInfo fcinfo,
     Form_pg_proc procst,
     HeapTuple proc,
-    pldotnet_FuncInOutInfo *func_inout_info
-);
+    pldotnet_FuncInOutInfo *func_inout_info);
 
-static void
-plfsharp_BuildArrayArgument(
+static void plfsharp_BuildArrayArgument(
     const Oid oid,
     const size_t i,
     const size_t cursor,
     const char *template,
-    char *str_ptr
-);
+    char *str_ptr);
 
-static const char*
-plfsharp_GetTriggerDataDefinition(void);
+static const char* plfsharp_GetTriggerDataDefinition(void);
 
 static char *plfsharp_BuildBlockArgsDecl(
     FunctionCallInfo fcinfo,
     HeapTuple proc,
     Form_pg_proc procst,
     bool validation,
-    pldotnet_FuncInOutInfo *func_inout_info
-);
+    pldotnet_FuncInOutInfo *func_inout_info);
 
 static const char *plfsharp_BuildBlockCallFuncCall(
     FunctionCallInfo fcinfo,
     Form_pg_proc procst,
-    pldotnet_FuncInOutInfo *func_inout_info
-);
+    pldotnet_FuncInOutInfo *func_inout_info);
 
 inline static bool plfsharp_BuildPaths(pldotnet_PathConfig *paths);
-const char* plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst);
+const char* plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo,
+                                          Form_pg_proc procst);
 
 static char* plfsharp_GetUserSourceCode(
     FunctionCallInfo fcinfo,
     HeapTuple proc,
     Form_pg_proc procst,
     bool validation,
-    pldotnet_FuncInOutInfo *func_inout_info
-);
+    pldotnet_FuncInOutInfo *func_inout_info);
 
 static char* plfsharp_GetInlineSourceCode(FunctionCallInfo fcinfo);
 
@@ -83,49 +77,44 @@ static bool plfsharp_GetSourceCode(
     Form_pg_proc procst,
     bool is_inline,
     bool validation,
-    pldotnet_FunctionDecl *function_decl
-);
-static bool plfsharp_CreateStructLibargs(const FunctionCallInfo fcinfo, const Form_pg_proc procst, pldotnet_FunctionDecl *function_decl);
-
-static pldotnet_FunctionDecl*
-plfsharp_GetFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation
-);
-
-static bool
-plfsharp_BuildFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation,
     pldotnet_FunctionDecl *function_decl);
+static bool plfsharp_CreateStructLibargs(const FunctionCallInfo fcinfo,
+                                        const Form_pg_proc procst,
+                                        pldotnet_FunctionDecl *function_decl);
 
-static void plfsharp_ValidateUserFunction(const Oid oid, const FunctionCallInfo fcinfo);
-static Datum plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo, bool is_inline);
+static pldotnet_FunctionDecl* plfsharp_GetFunctionDecl(Oid oid,
+                                                        FunctionCallInfo fcinfo,
+                                                        HeapTuple proc,
+                                                        bool is_inline,
+                                                        bool validation);
+
+static bool plfsharp_BuildFunctionDecl(Oid oid,
+                                    FunctionCallInfo fcinfo,
+                                    HeapTuple proc,
+                                    bool is_inline,
+                                    bool validation,
+                                    pldotnet_FunctionDecl *function_decl);
+
+static void plfsharp_ValidateUserFunction(const Oid oid,
+                                        const FunctionCallInfo fcinfo);
+static Datum plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
+                                                bool is_inline);
 
 static char* plfsharp_BuildNullFlagArray(uint32_t elems);
 static void plfsharp_BuildStructField(Oid type, const char *key, char *currval);
-static char* plfsharp_BuildStructFields(
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool validation,
-    pldotnet_FuncInOutInfo *func_inout_info
-);
+static char* plfsharp_BuildStructFields(FunctionCallInfo fcinfo,
+                                    HeapTuple proc,
+                                    Form_pg_proc procst,
+                                    bool validation,
+                                    pldotnet_FuncInOutInfo *func_inout_info);
 
 static char* plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc);
 void plfsharp_BuildKeyFromIndex(size_t index, char *key);
 
-static char*
-plfsharp_GetStructFromComposite(const char *typname, TupleDesc tupdesc);
+static char* plfsharp_GetStructFromComposite(const char *typname,
+                                            TupleDesc tupdesc);
 
-Datum
-plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline);
+Datum plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline);
 
 static char fs_block_header[] = "\n\
 namespace PlDotNETUserSpace\n\
@@ -401,9 +390,7 @@ static char fs_block_footer[] = "\n\
         Marshal.StructureToPtr(libargs, arg, false)\n\
         0";
 
-static void
-plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix)
-{
+static void plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix) {
     static const char unmanaged_template[] = "\
         [<MarshalAs(UnmanagedType.%s)>]\n%s";
 
@@ -430,9 +417,7 @@ plfsharp_GetStructFieldPrefix(Oid type, char *field_prefix)
  * @param [out] currval A buffer to hold the current field
  * @return Nothing
  */
-static void
-plfsharp_BuildStructField(Oid type, const char *key, char *currval)
-{
+static void plfsharp_BuildStructField(Oid type, const char *key, char *currval) {
     size_t length;
 
     plfsharp_GetStructFieldPrefix(type, currval);
@@ -444,19 +429,14 @@ plfsharp_BuildStructField(Oid type, const char *key, char *currval)
         length + 1,
         "%s: %s\n",
         key,
-        pldotnet_GetCompatibleNetTypeName(type, true, false)
-    );
+        pldotnet_GetCompatibleNetTypeName(type, true, false));
 }
 
-void
-plfsharp_BuildKeyFromIndex(size_t index, char *key)
-{
+void plfsharp_BuildKeyFromIndex(size_t index, char *key) {
     SNPRINTF(key, 128, "arg%lu", index);
 }
 
-static void
-plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
-{
+static void plfsharp_BuildStructValue(Oid type, size_t index, char *currval) {
     char key[128];
     plfsharp_BuildKeyFromIndex(index, key);
     plfsharp_BuildStructField(type, key, currval);
@@ -477,9 +457,7 @@ plfsharp_BuildStructValue(Oid type, size_t index, char *currval)
  * @param [in] validation a boolean to indicate it we are in the validation mode
  * @return a pointer to palloced string which contains the struct fields
  */
-static char*
-plfsharp_BuildTriggerFields(FunctionCallInfo fcinfo)
-{
+static char* plfsharp_BuildTriggerFields(FunctionCallInfo fcinfo) {
     return "\
         [<MarshalAs(UnmanagedType.Struct)>]\n\
         val mutable tg_info: TriggerInfo\n";
@@ -501,15 +479,11 @@ plfsharp_BuildTriggerFields(FunctionCallInfo fcinfo)
  * @param [in] validation a boolean to indicate it we are in the validation mode
  * @return a pointer to palloced string which contains the struct fields
  */
-static char*
-plfsharp_BuildNonTriggerFields(
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool validation,
-    pldotnet_FuncInOutInfo *func_inout_info
-    )
-{
+static char* plfsharp_BuildNonTriggerFields(FunctionCallInfo fcinfo,
+                                    HeapTuple proc,
+                                    Form_pg_proc procst,
+                                    bool validation,
+                                    pldotnet_FuncInOutInfo *func_inout_info) {
     char *block2str;
     char *cursor;
     uint32_t i;
@@ -526,15 +500,13 @@ plfsharp_BuildNonTriggerFields(
         [<MarshalAs(UnmanagedType.Struct)>]\n\
         val mutable arg%u : ArrayT<%s>\n";
 
-    if (0 == nargs)
-    {
+    if (0 == nargs) {
         block2str = (char *) palloc0(1);
         SNPRINTF(block2str, 1, "%s", "\0");
         return block2str;
     }
 
-    for (i = 0; i < nargs; ++i)
-    {
+    for (i = 0; i < nargs; ++i) {
         argdatum = pldotnet_GetArgDatum(fcinfo, i);
         isarr = pldotnet_SetArrayInfo(
             argdatum,
@@ -542,15 +514,13 @@ plfsharp_BuildNonTriggerFields(
             i,
             array_template,
             true,
-            func_inout_info
-        );
+            func_inout_info);
 
         type = isarr ? func_inout_info->arrayinfo[i].typelem : argtype[i];
 
-        if (isarr)
+        if (isarr) {
             totalsize += strlen(func_inout_info->arrayinfo[i].csharpdecl) + 1;
-        else
-        {
+        } else {
             plfsharp_BuildStructValue(type, i, currval);
             totalsize += strlen(currval) + 1;
         }
@@ -558,15 +528,12 @@ plfsharp_BuildNonTriggerFields(
 
     block2str = (char*) palloc0(totalsize);
 
-    for (i = 0; i < nargs; ++i)
-    {
+    for (i = 0; i < nargs; ++i) {
         cursor = block2str + pos;
-        if (pldotnet_IsArray(i, func_inout_info))
-        {
-            SNPRINTF(cursor, totalsize - pos, "%s", func_inout_info->arrayinfo[i].csharpdecl);
-        }
-        else
-        {
+        if (pldotnet_IsArray(i, func_inout_info)) {
+            SNPRINTF(cursor, totalsize - pos, "%s",
+                    func_inout_info->arrayinfo[i].csharpdecl);
+        } else {
             plfsharp_BuildStructValue(argtype[i], i, currval);
             SNPRINTF(cursor, totalsize - pos, "%s", currval);
         }
@@ -577,29 +544,22 @@ plfsharp_BuildNonTriggerFields(
 }
 
 static char*
-plfsharp_BuildStructFields(
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool validation,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+plfsharp_BuildStructFields(FunctionCallInfo fcinfo,
+                        HeapTuple proc,
+                        Form_pg_proc procst,
+                        bool validation,
+                        pldotnet_FuncInOutInfo *func_inout_info) {
     if (CALLED_AS_TRIGGER(fcinfo))
         return plfsharp_BuildTriggerFields(fcinfo);
 
-    return plfsharp_BuildNonTriggerFields(
-        fcinfo,
-        proc,
-        procst,
-        validation,
-        func_inout_info
-    );
+    return plfsharp_BuildNonTriggerFields(fcinfo,
+                                        proc,
+                                        procst,
+                                        validation,
+                                        func_inout_info);
 }
 
-static char*
-plfsharp_BuildNullFlagArray(uint32_t elems)
-{
+static char* plfsharp_BuildNullFlagArray(uint32_t elems) {
     size_t size;
     char *null_flag_array;
     const char *type_name;
@@ -607,8 +567,7 @@ plfsharp_BuildNullFlagArray(uint32_t elems)
         [<MarshalAs(UnmanagedType.ByValArray,ArraySubType=UnmanagedType.U1,SizeConst=%u)>]\n\
         val argsnull: %s array";
 
-    if (0 == elems)
-    {
+    if (0 == elems) {
         null_flag_array = (char*) palloc0(1);
         null_flag_array[0] = '\0';
         return null_flag_array;
@@ -625,15 +584,12 @@ plfsharp_BuildNullFlagArray(uint32_t elems)
         size,
         array_template,
         elems,
-        type_name
-    );
+        type_name);
 
     return null_flag_array;
 }
 
-static const char*
-plfsharp_GetTriggerDataDefinition(void)
-{
+static const char* plfsharp_GetTriggerDataDefinition(void) {
     return "\n\
 [<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
 type TriggerInfo =\n\
@@ -676,15 +632,11 @@ type TriggerData(tg_info: TriggerInfo byref) =\n\
 \n";
 }
 
-static char*
-plfsharp_BuildBlockArgsDecl(
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool validation,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+static char* plfsharp_BuildBlockArgsDecl(FunctionCallInfo fcinfo,
+                                    HeapTuple proc,
+                                    Form_pg_proc procst,
+                                    bool validation,
+                                    pldotnet_FuncInOutInfo *func_inout_info ) {
     char *values;
     char *block2string;
     char *null_flag_array;
@@ -720,24 +672,19 @@ type LibArgs =\n\
 
     block2string = (char*) palloc0(totalsize);
 
-    snprintf(
-        block2string,
-        totalsize,
-        struct_template,
-        null_flag_array,
-        bool_name,
-        values,
-        result
-    );
+    snprintf(block2string,
+            totalsize,
+            struct_template,
+            null_flag_array,
+            bool_name,
+            values,
+            result);
 
     return block2string;
 }
 
-static const char*
-plfsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
-{
-    if (CALLED_AS_TRIGGER(fcinfo))
-    {
+static const char* plfsharp_GetTriggerTuples(FunctionCallInfo fcinfo) {
+    if (CALLED_AS_TRIGGER(fcinfo)) {
         return "\
         let mutable TD : TriggerData = new TriggerData(ref libargs.tg_info)\n";
     }
@@ -745,14 +692,10 @@ plfsharp_GetTriggerTuples(FunctionCallInfo fcinfo)
     return "";
 }
 
-static char *
-plfsharp_BuildBlockUserFuncDecl(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    HeapTuple proc,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+static char * plfsharp_BuildBlockUserFuncDecl(FunctionCallInfo fcinfo,
+                                Form_pg_proc procst,
+                                HeapTuple proc,
+                                pldotnet_FuncInOutInfo *func_inout_info) {
     char *block2str, *str_ptr, *argnm, *source_text;
     int argnm_size, i, nnames, cursize=0, totalsize;
     bool isnull;
@@ -798,8 +741,7 @@ plfsharp_BuildBlockUserFuncDecl(
               + strlen(func)
               + strlen(" ");
 
-    for (i = 0; i < nargs; i++)
-    {
+    for (i = 0; i < nargs; i++) {
         argnm = DatumGetCString(DirectFunctionCall1(textout, argname[i]));
 
         type = pldotnet_IsArray(i, func_inout_info) ? func_inout_info->arrayinfo[i].typelem : argtypes[i];
@@ -812,8 +754,7 @@ plfsharp_BuildBlockUserFuncDecl(
     user_line = source_text;
 
     /* tokenizes source_code into its lines for indentation insertion */
-    while (*(user_line += strspn(user_line, "\n")) != '\0')
-    {
+    while (*(user_line += strspn(user_line, "\n")) != '\0') {
         line_length = strcspn(user_line, "\n");
         totalsize += body_indent_size + line_length + 1;
         user_line += line_length;
@@ -823,20 +764,17 @@ plfsharp_BuildBlockUserFuncDecl(
 
     block2str = (char *)palloc0(totalsize);
 
-    SNPRINTF(
-        block2str,
-        totalsize - cursize,
-        "%s%s%s%s",
-        tg_tuples,
-        func_signature_indent,
-        let,
-        func
-    );
+    SNPRINTF(block2str,
+            totalsize - cursize,
+            "%s%s%s%s",
+            tg_tuples,
+            func_signature_indent,
+            let,
+            func);
 
     cursize = strlen(block2str);
 
-    for (i = 0; i < nargs; i++)
-    {
+    for (i = 0; i < nargs; i++) {
         argnm = DatumGetCString(DirectFunctionCall1(textout, argname[i]));
 
         argnm_size = strlen(argnm);
@@ -844,14 +782,16 @@ plfsharp_BuildBlockUserFuncDecl(
 
         type_name = pldotnet_GetCompatibleNetTypeName(argtypes[i], false, false);
 
-        if (pldotnet_IsArray(i, func_inout_info))
-        {
-            type_name = pldotnet_GetCompatibleNetTypeName(func_inout_info->arrayinfo[i].typelem, false, false);
-            SNPRINTF(str_ptr, totalsize - cursize, " (%s: %s [] option)", argnm, type_name);
-        }
-        else
-        {
-            SNPRINTF(str_ptr, totalsize - cursize, " (%s: %s option)", argnm, type_name);
+        if (pldotnet_IsArray(i, func_inout_info)) {
+            type_name = pldotnet_GetCompatibleNetTypeName(
+                                func_inout_info->arrayinfo[i].typelem,
+                                false,
+                                false);
+            SNPRINTF(str_ptr, totalsize - cursize,
+                    " (%s: %s [] option)", argnm, type_name);
+        } else {
+            SNPRINTF(str_ptr, totalsize - cursize,
+                    " (%s: %s option)", argnm, type_name);
         }
         cursize = strlen(block2str);
     }
@@ -863,8 +803,7 @@ plfsharp_BuildBlockUserFuncDecl(
     user_line = source_text;
 
     /* tokenizes source_code into its lines for indentation insertion */
-    while (*(user_line += strspn(user_line, "\n")) != '\0')
-    {
+    while (*(user_line += strspn(user_line, "\n")) != '\0') {
         line_length = strcspn(user_line, "\n");
         str_ptr = (char *)(block2str + cursize);
 
@@ -887,14 +826,11 @@ plfsharp_BuildBlockUserFuncDecl(
     return block2str;
 }
 
-static void
-plfsharp_BuildArrayArgument(
-    const Oid oid,
-    const size_t i,
-    const size_t cursor,
-    const char *template,
-    char *str_ptr)
-{
+static void plfsharp_BuildArrayArgument(const Oid oid,
+                                        const size_t i,
+                                        const size_t cursor,
+                                        const char *template,
+                                        char *str_ptr) {
     static const char *arrayToDecimal = "arrayToDecimal";
     static const char *arrayToString = "arrayToString";
 
@@ -905,8 +841,7 @@ plfsharp_BuildArrayArgument(
             template,
             arrayToDecimal,
             i,
-            i
-        );
+            i);
     else if (pldotnet_IsTextType(oid))
         snprintf(
             str_ptr,
@@ -914,8 +849,7 @@ plfsharp_BuildArrayArgument(
             template,
             arrayToString,
             i,
-            i
-        );
+            i);
     else
         snprintf(
             str_ptr,
@@ -925,20 +859,14 @@ plfsharp_BuildArrayArgument(
                 "IntPtr" : pldotnet_GetCompatibleNetTypeName(
                     oid,
                     true,
-                    false
-                ),
+                    false),
             i,
-            i
-        );
+            i);
 }
 
-static const char*
-plfsharp_BuildBlockCallTrigger(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    const char *body_template
-)
-{
+static const char* plfsharp_BuildBlockCallTrigger(FunctionCallInfo fcinfo,
+                                                Form_pg_proc procst,
+                                                const char *body_template) {
     const char *func = NameStr(procst->proname);
     size_t size = strlen(body_template)
                 + strlen(func)
@@ -952,20 +880,15 @@ plfsharp_BuildBlockCallTrigger(
         body_template,
         func,
         "",
-        ""
-    );
+        "");
 
     return block2str;
 }
 
-static const char*
-plfsharp_BuildBlockCallNonTrigger(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    const char *body_template,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+static const char* plfsharp_BuildBlockCallNonTrigger(FunctionCallInfo fcinfo,
+                                    Form_pg_proc procst,
+                                    const char *body_template,
+                                    pldotnet_FuncInOutInfo *func_inout_info) {
     /* Function name */
     const char *func = NameStr(procst->proname);
     static const char *toDecimal = "toDecimal";
@@ -981,8 +904,7 @@ plfsharp_BuildBlockCallNonTrigger(
     size_t i, totalsize, call_func_size;
 
     /* TODO:  review for nargs > 9 */
-    if (0 == nargs)
-    {
+    if (0 == nargs) {
         totalsize = strlen(body_template)
                    + strlen(func)
                    + 1;
@@ -993,8 +915,7 @@ plfsharp_BuildBlockCallNonTrigger(
             body_template,
             func,
             "",
-            ""
-        );
+            "");
         return block2str;
     }
 
@@ -1005,8 +926,7 @@ plfsharp_BuildBlockCallNonTrigger(
     SNPRINTF(func_call, call_func_size, "%s", func);
     cursize = strlen(func_call);
 
-    for (i = 0; i < nargs; ++i)
-    {
+    for (i = 0; i < nargs; ++i) {
         str_ptr = (char*) (func_call + cursize);
         if (pldotnet_IsArray(i, func_inout_info))
             plfsharp_BuildArrayArgument(
@@ -1014,8 +934,7 @@ plfsharp_BuildBlockCallNonTrigger(
                 i,
                 call_func_size - cursize,
                 arg_template,
-                str_ptr
-            );
+                str_ptr);
         else if (NUMERICOID == procst->proargtypes.values[i])
             snprintf(str_ptr, call_func_size - cursize, arg_template, toDecimal, i, i);
         else
@@ -1035,19 +954,14 @@ plfsharp_BuildBlockCallNonTrigger(
         body_template,
         func_call,
         toString,
-        ""
-    );
+        "");
 
     return block2str;
 }
 
-static const char *
-plfsharp_BuildBlockCallFuncCall(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+static const char * plfsharp_BuildBlockCallFuncCall(FunctionCallInfo fcinfo,
+                                    Form_pg_proc procst,
+                                    pldotnet_FuncInOutInfo *func_inout_info) {
     static const char *body_template = "\
         let res =\n\
             try\n\
@@ -1065,16 +979,14 @@ plfsharp_BuildBlockCallFuncCall(
     if (CALLED_AS_TRIGGER(fcinfo))
         return plfsharp_BuildBlockCallTrigger(fcinfo, procst, body_template);
     else
-        return plfsharp_BuildBlockCallNonTrigger(fcinfo, procst, body_template, func_inout_info);
+        return plfsharp_BuildBlockCallNonTrigger(fcinfo, procst,
+                                                body_template, func_inout_info);
 }
 
-inline static bool
-plfsharp_BuildPaths(pldotnet_PathConfig *paths)
-{
+inline static bool plfsharp_BuildPaths(pldotnet_PathConfig *paths) {
     static bool built = false;
 
-    if (!built)
-    {
+    if (!built) {
         pldotnet_BuildPaths(false, paths);
         built = true;
     }
@@ -1084,12 +996,8 @@ plfsharp_BuildPaths(pldotnet_PathConfig *paths)
     return built;
 }
 
-static char*
-plfsharp_BuildBlockCompositesFromProcedure(
-    FunctionCallInfo fcinfo,
-    Form_pg_proc procst
-)
-{
+static char* plfsharp_BuildBlockCompositesFromProcedure(FunctionCallInfo fcinfo,
+                                                        Form_pg_proc procst) {
     HeapTuple type;
     Form_pg_type typeinfo;
     TupleDesc tupdesc;
@@ -1101,8 +1009,7 @@ plfsharp_BuildBlockCompositesFromProcedure(
 
     GSList *composite_list = nullptr, *next = nullptr;
 
-    for (size_t i = 0; i < procst->pronargs; ++i)
-    {
+    for (size_t i = 0; i < procst->pronargs; ++i) {
         /* TODO: review this */
         if (pldotnet_IsSimpleType(argtype[i]) || pldotnet_IsTextType(argtype[i]))
             continue;
@@ -1112,13 +1019,11 @@ plfsharp_BuildBlockCompositesFromProcedure(
             elog(ERROR, "[plfsharp_BuildBlockCompositesFromProcedure]: cache lookup failed for type %u", argtype[i]);
 
         typeinfo = (Form_pg_type) GETSTRUCT(type);
-        if (typeinfo->typtype == TYPTYPE_COMPOSITE)
-        {
+        if (typeinfo->typtype == TYPTYPE_COMPOSITE) {
             tupdesc = lookup_rowtype_tupdesc(argtype[i], typeinfo->typtypmod);
             composite = plfsharp_GetStructFromComposite(
                 NameStr(typeinfo->typname),
-                tupdesc
-            );
+                tupdesc);
             composite_size += strlen(composite) + 1;
             composite_list = g_slist_prepend(composite_list, composite);
 
@@ -1129,13 +1034,11 @@ plfsharp_BuildBlockCompositesFromProcedure(
         ReleaseSysCache(type);
     }
 
-    if (0 < elems && nullptr != composite_list)
-    {
+    if (0 < elems && nullptr != composite_list) {
         composite = (char*) palloc0(composite_size) + 1;
 
         next = g_slist_reverse(composite_list);
-        while(nullptr != next)
-        {
+        while (nullptr != next) {
             SNPRINTF(composite, composite_size - pos, "%s", (char*) next->data);
             next = next->next;
         }
@@ -1149,26 +1052,20 @@ plfsharp_BuildBlockCompositesFromProcedure(
 }
 
 const char*
-plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst)
-{
+plfsharp_BuildBlockComposites(FunctionCallInfo fcinfo, Form_pg_proc procst) {
     if (CALLED_AS_TRIGGER(fcinfo))
         return plfsharp_GetTriggerDataDefinition();
 
     return plfsharp_BuildBlockCompositesFromProcedure(
         fcinfo,
-        procst
-    );
+        procst);
 }
 
-static char*
-plfsharp_GetUserSourceCode(
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool validation,
-    pldotnet_FuncInOutInfo *func_inout_info
-)
-{
+static char* plfsharp_GetUserSourceCode(FunctionCallInfo fcinfo,
+                                    HeapTuple proc,
+                                    Form_pg_proc procst,
+                                    bool validation,
+                                    pldotnet_FuncInOutInfo *func_inout_info) {
     char *source_code = nullptr;
     const char * fs_block_composite_decl = plfsharp_BuildBlockComposites(fcinfo, procst);
     const char * fs_block_args_decl = plfsharp_BuildBlockArgsDecl(
@@ -1176,10 +1073,12 @@ plfsharp_GetUserSourceCode(
         proc,
         procst,
         validation,
-        func_inout_info
-    );
-    const char * fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(fcinfo, procst, proc, func_inout_info);
-    const char * fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(fcinfo, procst, func_inout_info);
+        func_inout_info);
+    const char * fs_block_userfunc_decl = plfsharp_BuildBlockUserFuncDecl(
+                                                        fcinfo, procst,
+                                                        proc, func_inout_info);
+    const char * fs_block_callfunc_call = plfsharp_BuildBlockCallFuncCall(
+                                            fcinfo, procst, func_inout_info);
 
     size_t source_code_size = strlen(fs_block_header)
                      + strlen(fs_block_composite_decl)
@@ -1203,27 +1102,24 @@ plfsharp_GetUserSourceCode(
     return source_code;
 }
 
-static char*
-plfsharp_GetInlineSourceCode(FunctionCallInfo fcinfo)
-{
+static char* plfsharp_GetInlineSourceCode(FunctionCallInfo fcinfo) {
     /* TODO implement inline code handler */
     return nullptr;
 }
 
-static bool
-plfsharp_GetSourceCode(
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool is_inline,
-    bool validation,
-    pldotnet_FunctionDecl *function_decl)
-{
+static bool plfsharp_GetSourceCode(FunctionCallInfo fcinfo,
+                                    HeapTuple proc,
+                                    Form_pg_proc procst,
+                                    bool is_inline,
+                                    bool validation,
+                                    pldotnet_FunctionDecl *function_decl) {
     if (nullptr == function_decl)
         elog(ERROR, "[pldotnet]: Invalid argument: function_decl is null");
 
     if (nullptr != function_decl->source.source_code)
-        elog(ERROR, "[pldotnet]: ArgSouce.source code should be null at this point: \n%s", function_decl->source.source_code);
+        elog(ERROR,
+        "[pldotnet]: ArgSouce.source code should be null at this point: \n%s",
+        function_decl->source.source_code);
 
     if (is_inline)
         function_decl->source.source_code = plfsharp_GetInlineSourceCode(fcinfo);
@@ -1232,21 +1128,17 @@ plfsharp_GetSourceCode(
             fcinfo,
             proc, procst,
             validation,
-            &(function_decl->func_inout_info)
-        );
+            &(function_decl->func_inout_info));
 
     return nullptr != function_decl->source.source_code;
 }
 
-static bool
-plfsharp_CreateStructLibargs(
-    const FunctionCallInfo fcinfo,
-    const Form_pg_proc procst,
-    pldotnet_FunctionDecl *function_decl
-)
-{
+static bool plfsharp_CreateStructLibargs(const FunctionCallInfo fcinfo,
+                                        const Form_pg_proc procst,
+                                        pldotnet_FunctionDecl *function_decl) {
     pldotnet_FuncInOutInfo *func_inout_info = &(function_decl->func_inout_info);
-    function_decl->args = pldotnet_CreateCStructLibargs(fcinfo, procst, true, func_inout_info);
+    function_decl->args = pldotnet_CreateCStructLibargs(fcinfo, procst,
+                                                        true, func_inout_info);
     function_decl->args_length = func_inout_info->typesize_nullflags +
                                  func_inout_info->typesize_args +
                                  func_inout_info->typesize_result;
@@ -1254,15 +1146,12 @@ plfsharp_CreateStructLibargs(
     return nullptr != function_decl->args && function_decl->args_length > 0;
 }
 
-static bool
-plfsharp_BuildFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation,
-    pldotnet_FunctionDecl *function_decl)
-{
+static bool plfsharp_BuildFunctionDecl(Oid oid,
+                                    FunctionCallInfo fcinfo,
+                                    HeapTuple proc,
+                                    bool is_inline,
+                                    bool validation,
+                                    pldotnet_FunctionDecl *function_decl) {
     Form_pg_proc procst;
     static pldotnet_PathConfig paths;
     static dotnet_loader loader = nullptr;
@@ -1293,9 +1182,7 @@ plfsharp_BuildFunctionDecl(
     return nullptr != function_decl->dotnet_method;
 }
 
-static char*
-plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc)
-{
+static char* plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc) {
     const char *key;
     Oid type_attr;
     char *cursor;
@@ -1306,13 +1193,11 @@ plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc)
 
     buffer[0] = 0;
 
-    for (size_t i = 0; i < tupdesc->natts; ++i)
-    {
+    for (size_t i = 0; i < tupdesc->natts; ++i) {
         Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
         type_attr = attr->atttypid;
 
-        if (InvalidOid != type_attr && !attr->attisdropped)
-        {
+        if (InvalidOid != type_attr && !attr->attisdropped) {
             key = NameStr(TupleDescAttr(tupdesc, i)->attname);
             plfsharp_BuildStructField(type_attr, key, buffer);
             totalsize += strlen(buffer) + 1;
@@ -1325,13 +1210,11 @@ plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc)
 
     cursor = fields;
 
-    for (size_t i = 0; i < tupdesc->natts; ++i)
-    {
+    for (size_t i = 0; i < tupdesc->natts; ++i) {
         Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
         type_attr = attr->atttypid;
 
-        if (InvalidOid != type_attr && !attr->attisdropped)
-        {
+        if (InvalidOid != type_attr && !attr->attisdropped) {
             key = NameStr(TupleDescAttr(tupdesc, i)->attname);
             plfsharp_BuildStructField(type_attr, key, buffer);
             SNPRINTF(cursor, totalsize - pos, "%s", buffer);
@@ -1343,9 +1226,8 @@ plfsharp_BuildStructFieldsFromTuple(TupleDesc tupdesc)
     return fields;
 }
 
-static char*
-plfsharp_GetStructFromComposite(const char* typname, TupleDesc tupdesc)
-{
+static char* plfsharp_GetStructFromComposite(const char* typname,
+                                            TupleDesc tupdesc) {
     const char *template = "\n\
 [<Struct>]\n\
 [<StructLayout(LayoutKind.Sequential,Pack=1)>]\n\
@@ -1367,9 +1249,8 @@ type %s =\n\
     return output;
 }
 
-static void
-plfsharp_ValidateUserFunction(const Oid oid, const FunctionCallInfo fcinfo)
-{
+static void plfsharp_ValidateUserFunction(const Oid oid,
+                                        const FunctionCallInfo fcinfo) {
     HeapTuple proc = SearchSysCache1(PROCOID, ObjectIdGetDatum(oid));
 
     /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END IF PROC != nullptr */
@@ -1382,19 +1263,14 @@ plfsharp_ValidateUserFunction(const Oid oid, const FunctionCallInfo fcinfo)
         fcinfo,
         proc,
         false,
-        true
-    );
+        true);
 
     /* END */
     pldotnet_ReleasePostgresHeapTuple(proc);
 }
 
-static Datum
-plfsharp_CompileAndRunUserFunction(
-    const FunctionCallInfo fcinfo,
-    bool is_inline
-)
-{
+static Datum plfsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
+                                                bool is_inline ) {
     HeapTuple proc;
     Form_pg_proc procst;
     pldotnet_FunctionDecl *function_decl = nullptr;
@@ -1408,12 +1284,12 @@ plfsharp_CompileAndRunUserFunction(
         fcinfo,
         proc,
         is_inline,
-        false
-    );
+        false);
 
     procst = (Form_pg_proc) GETSTRUCT(proc);
 
-    if (!is_inline && !plfsharp_CreateStructLibargs(fcinfo, procst, function_decl))
+    if (!is_inline && !plfsharp_CreateStructLibargs(fcinfo, procst,
+                                                    function_decl))
         elog(ERROR, "[pldotnet]: Could not create struct buffer");
 
     /* END */
@@ -1422,25 +1298,23 @@ plfsharp_CompileAndRunUserFunction(
     if (nullptr == function_decl || nullptr == function_decl->dotnet_method)
         elog(ERROR, "[pldotnet]: Could not load function_decl");
 
-    function_decl->dotnet_method(function_decl->args, function_decl->args_length);
+    function_decl->dotnet_method(function_decl->args,
+                                function_decl->args_length);
 
     return pldotnet_GetNetResult(
         function_decl->args,
         function_decl->ret_type,
-        fcinfo, 
-        &(function_decl->func_inout_info)
-    );
+        fcinfo,
+        &(function_decl->func_inout_info));
 }
 
-Datum
-plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline)
-{
+Datum plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline) {
     MemoryContextWrapper memory_context;
     Datum retval = 0;
 
     pldotnet_LoadHostFxrIfNeeded();
 
-    if (!pldotnet_SPIReady()) 
+    if (!pldotnet_SPIReady())
         return retval;
 
     PG_TRY();
@@ -1452,7 +1326,6 @@ plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline)
 
         /* REVERT PREV MEM CONTEXT */
         pldotnet_ResetMemoryContext(&memory_context);
-
     }
     PG_CATCH();
     {
@@ -1469,19 +1342,15 @@ plfsharp_generic_handler(PG_FUNCTION_ARGS, bool is_inline)
 
 /****** FSharp handlers ******/
 PG_FUNCTION_INFO_V1(plfsharp_call_handler);
-Datum plfsharp_call_handler(PG_FUNCTION_ARGS)
-{
+Datum plfsharp_call_handler(PG_FUNCTION_ARGS) {
     return plfsharp_generic_handler(fcinfo, false);
 }
 
-static pldotnet_FunctionDecl*
-plfsharp_GetFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation)
-{
+static pldotnet_FunctionDecl* plfsharp_GetFunctionDecl(Oid oid,
+                                                    FunctionCallInfo fcinfo,
+                                                    HeapTuple proc,
+                                                    bool is_inline,
+                                                    bool validation) {
     pldotnet_FunctionDecl *decl = pldotnet_FindFunctionDecl(oid);
     bool found = nullptr != decl;
 
@@ -1496,20 +1365,17 @@ plfsharp_GetFunctionDecl(
         proc,
         is_inline,
         validation,
-        decl
-    );
+        decl);
 
     pldotnet_SaveFunction(
         decl,
-        !found
-    );
+        !found);
 
     return decl;
 }
 
 PG_FUNCTION_INFO_V1(plfsharp_validator);
-Datum plfsharp_validator(PG_FUNCTION_ARGS)
-{
+Datum plfsharp_validator(PG_FUNCTION_ARGS) {
     MemoryContextWrapper memory_context;
     HeapTuple tuple;
     Oid funcoid = PG_GETARG_OID(0);
@@ -1529,8 +1395,8 @@ Datum plfsharp_validator(PG_FUNCTION_ARGS)
         pldotnet_StartNewMemoryContext(&memory_context);
 
         tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(funcoid));
-	    if (!HeapTupleIsValid(tuple))
-		    elog(ERROR, "cache lookup failed for function %u", funcoid);
+        if (!HeapTupleIsValid(tuple))
+            elog(ERROR, "cache lookup failed for function %u", funcoid);
 
         ReleaseSysCache(tuple);
 
@@ -1547,12 +1413,11 @@ Datum plfsharp_validator(PG_FUNCTION_ARGS)
     }
     PG_END_TRY();
 
-	PG_RETURN_VOID();
+    PG_RETURN_VOID();
 }
 
 PG_FUNCTION_INFO_V1(plfsharp_inline_handler);
-Datum plfsharp_inline_handler(PG_FUNCTION_ARGS)
-{
+Datum plfsharp_inline_handler(PG_FUNCTION_ARGS) {
     /*  return DotNET_inlinehandler( additional args,CODEBLOCK); */
     if (SPI_connect() != SPI_OK_CONNECT)
         elog(ERROR, "[plldotnet]: could not connect to SPI manager");
@@ -1572,4 +1437,3 @@ Datum plfsharp_inline_handler(PG_FUNCTION_ARGS)
         elog(ERROR, "[pldotnet]: could not disconnect from SPI manager");
     PG_RETURN_VOID();
 }
-
