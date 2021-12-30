@@ -8,18 +8,28 @@ x-command: &command
   # command: sh -c "make installcheck"
   command: sh -c "bash"
 
+x-pgdata: &pgdata
+  PGDATA: /var/lib/postgresql/data
+
 x-build-args: &build-args
   context: .
   args:
-    DOTNET_VERSION: 3.1
+    <<: *pgdata
 
-x-ubuntu-environment: &ubuntu-environment
+x-environment: &environment
   environment:
     USE_DOTNETBUILD: "FALSE"
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    <<: *pgdata
 
-x-volumes: &volumes
-  volumes:
-    - $PWD/:/app/pldotnet/
+x-ports: &ports
+  ports:
+    - "5432:5432"
+
+networks:
+  db_network:
+    name: pldotnet_network
 
 
 services:
@@ -31,10 +41,13 @@ services:
     build:
       dockerfile: Dockerfiles/default/Dockerfile_deb
       <<: *build-args
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-      PGUSER: postgres
-    <<: *volumes
+    <<: *environment
+    <<: *ports
+    networks:
+      db_network:
+    volumes:
+      - $PWD/:/app/pldotnet/
+      - $PWD/postgres-data/deb:/var/lib/postgresql/data
 
   pldotnet-ubuntu18:
     container_name: pldotnet-ubuntu18
@@ -44,8 +57,13 @@ services:
     build:
       dockerfile: Dockerfiles/default/Dockerfile_ubuntu18
       <<: *build-args
-    <<: *ubuntu-environment
-    <<: *volumes
+    <<: *environment
+    <<: *ports
+    networks:
+      db_network:
+    volumes:
+      - $PWD/:/app/pldotnet/
+      - $PWD/postgres-data/ubuntu18:/var/lib/postgresql/data
 
   pldotnet-ubuntu20: &pldotnet-current-container
     container_name: pldotnet-ubuntu20
@@ -55,8 +73,13 @@ services:
     build:
       dockerfile: Dockerfiles/default/Dockerfile_ubuntu20
       <<: *build-args
-    <<: *ubuntu-environment
-    <<: *volumes
+    <<: *environment
+    <<: *ports
+    networks:
+      db_network:
+    volumes:
+      - $PWD/:/app/pldotnet/
+      - $PWD/postgres-data/ubuntu20:/var/lib/postgresql/data
 
   pldotnet-ubuntu21:
     container_name: pldotnet-ubuntu21
@@ -66,8 +89,13 @@ services:
     build:
       dockerfile: Dockerfiles/default/Dockerfile_ubuntu21
       <<: *build-args
-    <<: *ubuntu-environment
-    <<: *volumes
+    <<: *environment
+    <<: *ports
+    networks:
+      db_network:
+    volumes:
+      - $PWD/:/app/pldotnet/
+      - $PWD/postgres-data/ubuntu21:/var/lib/postgresql/data
 
   pldotnet-devenv:
     <<: *pldotnet-current-container

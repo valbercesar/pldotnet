@@ -5,7 +5,7 @@ x-interactive: &interactive
   stdin_open: true # docker run -i
 
 x-install-command: &install-command
-  command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/install_make.sh && bash /app/pldotnet/Dockerfiles/scripts/test_make.sh"
+  command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/start_pg_non_persistent.sh && bash /app/pldotnet/Dockerfiles/scripts/install_make.sh && bash /app/pldotnet/Dockerfiles/scripts/test_make.sh"
 
 x-build-args: &build-args
   context: .

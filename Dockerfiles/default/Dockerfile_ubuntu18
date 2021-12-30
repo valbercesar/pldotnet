@@ -32,17 +32,31 @@ RUN apt update \
         build-essential
 
 # PLDOTNET
+# cluster creation requirements; locale settings
+RUN apt update \
+    && apt install -y \
+        locales \
+        rsync \
+    && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+# pgdata
+ARG PGDATA
+ENV PGDATA=${PGDATA}
+
+# app files
 COPY . /app/pldotnet/
 WORKDIR /app/pldotnet
 
-RUN service postgresql start \
-    && runuser \
-        -u postgres -- \
-        psql -c \
-        "DO \$\$ BEGIN CREATE ROLE root superuser createdb login createrole replication bypassrls; EXCEPTION WHEN duplicate_object THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE; END \$\$;" \
-    && make clean \
-    && make \
-    && make plnet-install \
-    && service postgresql stop
+# creating persistent cluster and installing extension
+RUN bash /app/pldotnet/Dockerfiles/scripts/create_pg_cluster.sh \
+    && bash /app/pldotnet/Dockerfiles/scripts/start_pg_cluster.sh \
+    && bash /app/pldotnet/Dockerfiles/scripts/install_make.sh \
+    && service postgresql stop \
+    && rsync -a \
+        ${PGDATA}/* /var/lib/postgresql/pgnet_backup_cluster
 
-ENTRYPOINT [ "bash", "/app/pldotnet/Dockerfiles/scripts/start_pg.sh" ]
+ENTRYPOINT [ "bash", "/app/pldotnet/Dockerfiles/scripts/start_pg_cluster.sh" ]
