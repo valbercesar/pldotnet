@@ -26,6 +26,7 @@ x-install-volumes: &install-volumes
 services:
   pldotnet-build:
     container_name: pldotnet-build
+    image: pldotnet:build
     <<: *interactive
     command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/build_packages.sh"
     build:
@@ -39,8 +40,9 @@ services:
     volumes:
       - $PWD/debian/packages:/app/pldotnet/debian/packages
 
-  pldotnet-deb-install:
+  pldotnet-deb:
     container_name: pldotnet-deb-install
+    image: pldotnet:deb-install
     <<: *interactive
     <<: *install-command
     build:
@@ -52,8 +54,9 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     <<: *install-volumes
 
-  pldotnet-ubuntu18-install:
+  pldotnet-ubuntu18:
     container_name: pldotnet-ubuntu18-install
+    image: pldotnet:ubuntu18-install
     <<: *interactive
     <<: *install-command
     build:
@@ -62,8 +65,9 @@ services:
     <<: *ubuntu-environment
     <<: *install-volumes
 
-  pldotnet-ubuntu20-install:
+  pldotnet-ubuntu20:
     container_name: pldotnet-ubuntu20-install
+    image: pldotnet:ubuntu20-install
     <<: *interactive
     <<: *install-command
     build:
@@ -72,8 +76,9 @@ services:
     <<: *ubuntu-environment
     <<: *install-volumes
 
-  pldotnet-ubuntu21-install:
+  pldotnet-ubuntu21:
     container_name: pldotnet-ubuntu21-install
+    image: pldotnet:ubuntu21-install
     <<: *interactive
     <<: *install-command
     build:

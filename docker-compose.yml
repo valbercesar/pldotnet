@@ -5,6 +5,7 @@ x-interactive: &interactive
   stdin_open: true # docker run -i
 
 x-command: &command
+  # command: sh -c "make installcheck"
   command: sh -c "bash"
 
 x-build-args: &build-args
@@ -16,7 +17,7 @@ x-ubuntu-environment: &ubuntu-environment
   environment:
     USE_DOTNETBUILD: "FALSE"
 
-x-install-volumes: &volumes
+x-volumes: &volumes
   volumes:
     - $PWD/:/app/pldotnet/
 
@@ -24,6 +25,7 @@ x-install-volumes: &volumes
 services:
   pldotnet-deb:
     container_name: pldotnet-deb
+    image: pldotnet:deb
     <<: *interactive
     <<: *command
     build:
@@ -36,6 +38,7 @@ services:
 
   pldotnet-ubuntu18:
     container_name: pldotnet-ubuntu18
+    image: pldotnet:ubuntu18
     <<: *interactive
     <<: *command
     build:
@@ -46,6 +49,7 @@ services:
 
   pldotnet-ubuntu20: &pldotnet-current-container
     container_name: pldotnet-ubuntu20
+    image: pldotnet:ubuntu20
     <<: *interactive
     <<: *command
     build:
@@ -56,6 +60,7 @@ services:
 
   pldotnet-ubuntu21:
     container_name: pldotnet-ubuntu21
+    image: pldotnet:ubuntu21
     <<: *interactive
     <<: *command
     build:
@@ -67,3 +72,4 @@ services:
   pldotnet-devenv:
     <<: *pldotnet-current-container
     container_name: pldotnet-devenv
+    image: pldotnet:devenv

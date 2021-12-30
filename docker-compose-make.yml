@@ -24,6 +24,7 @@ x-install-volumes: &volumes
 services:
   pldotnet-deb:
     container_name: pldotnet-deb-make
+    image: pldotnet:deb-make
     <<: *interactive
     <<: *install-command
     build:
@@ -36,6 +37,7 @@ services:
 
   pldotnet-ubuntu18:
     container_name: pldotnet-ubuntu18-make
+    image: pldotnet:ubuntu18-make
     <<: *interactive
     <<: *install-command
     build:
@@ -46,6 +48,7 @@ services:
 
   pldotnet-ubuntu20:
     container_name: pldotnet-ubuntu20-make
+    image: pldotnet:ubuntu20-make
     <<: *interactive
     <<: *install-command
     build:
@@ -56,6 +59,7 @@ services:
 
   pldotnet-ubuntu21:
     container_name: pldotnet-ubuntu21-make
+    image: pldotnet:ubuntu21-make
     <<: *interactive
     <<: *install-command
     build:
