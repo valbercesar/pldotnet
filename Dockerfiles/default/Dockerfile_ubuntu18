@@ -3,42 +3,17 @@ FROM ubuntu:18.04
 # avoids tzdata prompt
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Requirements
-RUN apt-get update \
-    && apt install -y \
-        wget \
-        libglib2.0-dev \
-        apt-transport-https
+# app files
+COPY . /app/pldotnet/
+WORKDIR /app/pldotnet
 
-# .NET Core
-RUN wget -q \
-        https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb \
-        -O packages-microsoft-prod.deb \
-    && dpkg -i \
-        packages-microsoft-prod.deb \
-    && apt-get update \
-    && apt-get install -y \
-        dotnet-runtime-3.1 \
-        dotnet-sdk-3.1 \
-        dotnet-hostfxr-3.1
+# Do all the things
+RUN apt update &&  apt install make
+RUN make -f /app/pldotnet/Dockerfiles/scripts/Makefile-builder ubuntu18_install
 
-# POSTGRESQL AND BUILD TOOLS
-RUN apt update \
-    && apt install -y \
-        postgresql \
-        postgresql-common \
-        postgresql-server-dev-all \
-        lsb-release \
-        build-essential
-
-# PLDOTNET
 # cluster creation requirements; locale settings
-RUN apt update \
-    && apt install -y \
-        locales \
-        rsync \
-    && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
-    && locale-gen
+RUN make -f /app/pldotnet/Dockerfiles/scripts/Makefile-builder install_cluster_requirements
+
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -47,16 +22,7 @@ ENV LC_ALL en_US.UTF-8
 ARG PGDATA
 ENV PGDATA=${PGDATA}
 
-# app files
-COPY . /app/pldotnet/
-WORKDIR /app/pldotnet
-
 # creating persistent cluster and installing extension
-RUN bash /app/pldotnet/Dockerfiles/scripts/create_pg_cluster.sh \
-    && bash /app/pldotnet/Dockerfiles/scripts/start_pg_cluster.sh \
-    && bash /app/pldotnet/Dockerfiles/scripts/install_make.sh \
-    && service postgresql stop \
-    && rsync -a \
-        ${PGDATA}/* /var/lib/postgresql/pgnet_backup_cluster
+RUN make -f /app/pldotnet/Dockerfiles/scripts/Makefile-builder create_cluster_and_install_extension
 
 ENTRYPOINT [ "bash", "/app/pldotnet/Dockerfiles/scripts/start_pg_cluster.sh" ]

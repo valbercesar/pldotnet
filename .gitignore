@@ -90,9 +90,10 @@ results/
 *.deb
 *.ddeb
 *.substvars
-debian/postgresql-*-pldotnet/
-debian/.debhelper/
-debian/debhelper-build-stamp
-debian/control
-debian/files
 build*/
+
+.gitignore
+sql/*
+results/*
+expected/*
+documentation/*

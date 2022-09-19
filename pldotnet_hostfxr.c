@@ -15,76 +15,90 @@
 /******************************************************************************
  * Functions used to load and activate .NET Core
  *****************************************************************************/
-#include <postgres.h>
+#include "pldotnet_hostfxr.h"
+
 #include <assert.h>
 #include <dlfcn.h>
 #include <limits.h>
-#include "pldotnet_hostfxr.h"
+#include <postgres.h>
 
-#define nullptr ((void*)0)
+#define nullptr ((void *)0)
 #define MAX_PATH PATH_MAX
 
-/* Forward declarations */
-static void *pldotnet_LoadLibrary(const char_t *);
-static void *pldotnet_GetExport(void *, const char *);
+/*
+ * START: declaring functions
+ */
+
+/** @brief Loads dotnet using the HostFXR.  HostFXR "finds and resolves
+ * the runtime and all the frameworks the app needs", which in our
+ * case is via `nethost`, "which is used by native apps (any app
+ * which is not .NET Core) to load .NET Core code dynamically"
+ *
+ * See these URLs for more background:
+ * https://github.com/dotnet/runtime/blob/main/docs/design/features/host-components.md
+ * https://github.com/dotnet/runtime/blob/main/docs/design/features/sharedfx-lookup.md
+ *
+ * @return 1 on success, 0 on failure
+ */
+extern int pldotnet_LoadHostfxr(void);
+
+/*
+ * END: declaring functions
+ */
+
+/*
+ * START: declaring variables
+ */
 
 static hostfxr_initialize_for_runtime_config_fn init_fptr;
 static hostfxr_set_runtime_property_value_fn set_runtime_properties_ptr;
 static hostfxr_get_runtime_delegate_fn get_delegate_fptr;
 static hostfxr_close_fn close_fptr;
 
-void *nethost_lib;
+/*
+ * END: declaring variables
+ */
 
-/* Implementations */
-static void * pldotnet_LoadLibrary(const char_t *path) {
-    fprintf(stderr, "# DEBUG: doing dlopen(%s).\n", path);
-    nethost_lib = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
-    assert(nethost_lib != nullptr);
-    return nethost_lib;
+/*
+ * START: implementing functions
+ */
+
+static void *pldotnet_dlopen(const char *path) {
+    /* Allows us to add windows support later */
+    return dlopen(path, RTLD_LAZY | RTLD_LOCAL);
 }
 
-static void * pldotnet_GetExport(void *host, const char *name) {
-    void *f = dlsym(host, name);
-    if (f == nullptr) {
-        fprintf(stderr, "Can't dlsym(%s); exiting.\n", name);
-        exit(-1);
-    }
-    return f;
+static void *pldotnet_dlsym(void *handle, const char *symbol) {
+    /* Allows us to add windows support later */
+    return dlsym(handle, symbol);
 }
 
-/* Using the nethost library, discover the location of hostfxr and get exports */
 int pldotnet_LoadHostfxr(void) {
-    /* Pre-allocate a large buffer for the path to hostfxr */
-    char_t buffer[MAX_PATH];
-    size_t buffer_size = sizeof(buffer) / sizeof(char_t);
-    int rc = get_hostfxr_path(buffer, &buffer_size, nullptr);
     void *lib;
-    if (rc != 0)
+    /* Pre-allocate a large buffer for the path to hostfxr */
+    char_t hostfxr_path[MAX_PATH];
+    size_t buffer_size = sizeof(hostfxr_path) / sizeof(char_t);
+
+    if (get_hostfxr_path(hostfxr_path, &buffer_size, nullptr) != 0)
         return 0;
 
     /* Load hostfxr and get desired exports */
-    lib = pldotnet_LoadLibrary(buffer);
-    init_fptr = (hostfxr_initialize_for_runtime_config_fn)pldotnet_GetExport( \
+    lib = pldotnet_dlopen(hostfxr_path);
+    init_fptr = (hostfxr_initialize_for_runtime_config_fn)pldotnet_dlsym(
         lib, "hostfxr_initialize_for_runtime_config");
-    get_delegate_fptr = (hostfxr_get_runtime_delegate_fn)pldotnet_GetExport( \
+    get_delegate_fptr = (hostfxr_get_runtime_delegate_fn)pldotnet_dlsym(
         lib, "hostfxr_get_runtime_delegate");
-    set_runtime_properties_ptr = (hostfxr_set_runtime_property_value_fn) pldotnet_GetExport( \
-        lib, "hostfxr_set_runtime_property_value");
-    close_fptr = (hostfxr_close_fn)pldotnet_GetExport(lib, "hostfxr_close");
+    set_runtime_properties_ptr =
+        (hostfxr_set_runtime_property_value_fn)pldotnet_dlsym(
+            lib, "hostfxr_set_runtime_property_value");
+    close_fptr = (hostfxr_close_fn)pldotnet_dlsym(lib, "hostfxr_close");
 
-    return (init_fptr && get_delegate_fptr && set_runtime_properties_ptr && close_fptr);
+    return (init_fptr && get_delegate_fptr && set_runtime_properties_ptr &&
+            close_fptr);
 }
 
-/* Load and initialize .NET Core and get desired function pointer for scenario */
-load_assembly_and_get_function_pointer_fn
-GetNetLoadAssembly(const char_t *config_path) {
-    return GetNetLoadAssemblySetup(config_path, nullptr);
-}
-
-load_assembly_and_get_function_pointer_fn
-GetNetLoadAssemblySetup(const char_t *config_path,
-                        const char_t *host_base_path) {
-    /* Load .NET Core */
+load_assembly_and_get_function_pointer_fn GetNetLoadAssemblySetup(
+    const char_t *config_path, const char_t *host_base_path) {
     int rc;
     static void *load_assembly_and_get_function_pointer = nullptr;
     hostfxr_handle cxt = nullptr;
@@ -94,26 +108,27 @@ GetNetLoadAssemblySetup(const char_t *config_path,
 
     rc = init_fptr(config_path, nullptr, &cxt);
 
-    if (rc > 1 || rc < 0 || cxt == nullptr) {
+    if (rc != 1 || cxt == nullptr) {
         fprintf(stderr, "Init failed: %x\n", rc);
         close_fptr(cxt);
         return nullptr;
     }
 
     if (nullptr != host_base_path)
-        set_runtime_properties_ptr(cxt,
-            "APP_CONTEXT_BASE_DIRECTORY",
-            (char*) host_base_path);
+        set_runtime_properties_ptr(
+            cxt, "APP_CONTEXT_BASE_DIRECTORY", (char *)host_base_path);
 
     /* Get the load assembly function pointer */
-    rc = get_delegate_fptr(
-        cxt,
-        hdt_load_assembly_and_get_function_pointer,
-        &load_assembly_and_get_function_pointer);
-    if (rc != 0 || load_assembly_and_get_function_pointer == nullptr)
-        fprintf(stderr, "Get delegate failed: %x\n", rc);
+    rc = get_delegate_fptr(cxt,
+                           hdt_load_assembly_and_get_function_pointer,
+                           &load_assembly_and_get_function_pointer);
     close_fptr(cxt);
-    return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
+
+    if (rc != 0 || load_assembly_and_get_function_pointer == nullptr)
+        elog(ERROR, "Get delegate failed: %x\n", rc);
+
+    return (load_assembly_and_get_function_pointer_fn)
+        load_assembly_and_get_function_pointer;
 }
 
 bool pldotnet_LoadHostFxrIfNeeded(void) {
@@ -125,3 +140,7 @@ bool pldotnet_LoadHostFxrIfNeeded(void) {
 
     return hostfxr_loaded;
 }
+
+/*
+ * END: implementing functions
+ */

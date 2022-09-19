@@ -3,34 +3,10 @@ FROM ubuntu:20.04
 # avoids tzdata prompt
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Requirements
-RUN apt-get update \
-    && apt install -y \
-        wget \
-        libglib2.0-dev \
-        apt-transport-https
-
-# .NET Core
-RUN wget -q \
-        https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb \
-        -O packages-microsoft-prod.deb \
-    && dpkg -i \
-        packages-microsoft-prod.deb \
-    && apt-get update \
-    && apt-get install -y \
-        dotnet-runtime-3.1 \
-        dotnet-sdk-3.1 \
-        dotnet-hostfxr-3.1
-
-# POSTGRESQL AND BUILD TOOLS
-RUN apt update \
-    && apt install -y \
-        postgresql \
-        postgresql-common \
-        postgresql-server-dev-all \
-        lsb-release \
-        build-essential
-
 # PLDOTNET
 COPY . /app/pldotnet/
 WORKDIR /app/pldotnet
+
+# Do all the things
+RUN apt update &&  apt install make
+RUN make -f /app/pldotnet/Dockerfiles/scripts/Makefile-builder ubuntu20_install
