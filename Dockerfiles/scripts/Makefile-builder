@@ -23,7 +23,7 @@ install_dotnet: add_dotnet
 
 install_requirements: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential
+	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential sudo
 
 install_pg_dev: install_requirements
 	# installs postgresql dev packages
@@ -53,10 +53,10 @@ create_cluster_and_install_extension:
 	# creating persistent cluster and installing extension
 	echo "# ENVIRONMENT SETUP: running $@"
 	bash /app/pldotnet/Dockerfiles/scripts/create_pg_cluster.sh
-    bash /app/pldotnet/Dockerfiles/scripts/start_pg_cluster.sh
-    bash /app/pldotnet/Dockerfiles/scripts/install_make.sh
-    service postgresql stop
-    rsync -a ${PGDATA}/* /var/lib/postgresql/pgnet_backup_cluster
+	bash /app/pldotnet/Dockerfiles/scripts/start_pg_cluster.sh
+	bash /app/pldotnet/Dockerfiles/scripts/install_make.sh
+	service postgresql stop
+	rsync -a ${PGDATA}/* /var/lib/postgresql/pgnet_backup_cluster
 
 # these targets correspond to the original Dockerfiles which this Makefile replaces
 deb_build: install_pg_dev install_dotnet

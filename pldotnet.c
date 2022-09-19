@@ -20,12 +20,12 @@
  * pldotnet.c - Postgres pldotnet extension init and deinit routines
  *
  */
-#include <postgres.h>
-#include <funcapi.h>
+#include <coreclr_delegates.h>
 #include <dlfcn.h>
+#include <funcapi.h>
 #include <glib.h>
 #include <glib/ghash.h>
-#include <coreclr_delegates.h>
+#include <postgres.h>
 
 #define QUOTE(s) #s
 #define DIR_SEPARATOR '/'
@@ -49,23 +49,23 @@ PGDLLEXPORT Datum _PG_fini(PG_FUNCTION_ARGS);
 
 #if PG_VERSION_NUM >= 90000
 #define CODEBLOCK \
-  ((InlineCodeBlock *) DatumGetPointer(PG_GETARG_DATUM(0)))->source_text
+    ((InlineCodeBlock *)DatumGetPointer(PG_GETARG_DATUM(0)))->source_text
 PG_FUNCTION_INFO_V1(_PG_init);
+
+/**
+ * @brief On startup, pldotnet initializes the function cache.
+ * 
+ * @return Datum 
+ */
 Datum _PG_init(PG_FUNCTION_ARGS) {
-    /* 
-     * @brief On startup, pldotnet initializes the function cache.
-     */
     elog(LOG, "[plldotnet]: _PG_init");
 
     root_path = strdup(dnldir);
     if (root_path[strlen(root_path) - 1] == DIR_SEPARATOR)
         root_path[strlen(root_path) - 1] = 0;
 
-    procedures = g_hash_table_new_full(
-        g_direct_hash,
-        g_direct_equal,
-        NULL,
-        NULL);
+    procedures =
+        g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
 
     /* reset the assembly loader */
     assembly_loader = (load_assembly_and_get_function_pointer_fn)NULL;
@@ -73,12 +73,13 @@ Datum _PG_init(PG_FUNCTION_ARGS) {
     PG_RETURN_VOID();
 }
 
+/**
+ * @brief On startup, pldotnet removes the function cache.
+ * 
+ * @return Datum 
+ */
 PG_FUNCTION_INFO_V1(_PG_fini);
 Datum _PG_fini(PG_FUNCTION_ARGS) {
-    /* 
-     * @brief On startup, pldotnet removes the function cache.
-     */
-
     /* destroys the global hash table */
     g_hash_table_destroy(procedures);
 
