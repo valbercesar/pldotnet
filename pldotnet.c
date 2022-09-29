@@ -26,8 +26,8 @@
 #include <glib.h>
 #include <glib/ghash.h>
 #include <coreclr_delegates.h>
+#include "pldotnet_common.h"
 
-#define QUOTE(s) #s
 #define DIR_SEPARATOR '/'
 
 /*
@@ -37,7 +37,7 @@
  */
 
 char *root_path = NULL;
-char *dnldir = QUOTE(PLNET_ENGINE_DIR);
+// char *dnldir = QUOTE(PLNET_ENGINE_DIR);
 GHashTable *procedures;
 load_assembly_and_get_function_pointer_fn assembly_loader;
 

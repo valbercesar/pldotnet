@@ -23,4 +23,6 @@
 #ifndef PLDOTNET_CSHARP_H_
 #define PLDOTNET_CSHARP_H_
 
+#include "pldotnet_common.h"
+
 #endif  // PLDOTNET_CSHARP_H_

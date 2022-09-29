@@ -108,7 +108,7 @@ load_assembly_and_get_function_pointer_fn GetNetLoadAssemblySetup(
 
     rc = init_fptr(config_path, nullptr, &cxt);
 
-    if (rc != 1 || cxt == nullptr) {
+    if (rc > 1 || rc < 0 || cxt == nullptr) {
         fprintf(stderr, "Init failed: %x\n", rc);
         close_fptr(cxt);
         return nullptr;

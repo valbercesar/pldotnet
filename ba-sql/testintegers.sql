@@ -1,0 +1,59 @@
+DROP TABLE integersResults;
+CREATE TABLE integersResults(testName varchar(255), result boolean);
+
+CREATE OR REPLACE FUNCTION maxSmallInt() RETURNS smallint AS $$
+return (short)32767;
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: maxSmallInt', maxSmallInt() = integer '32767';
+
+
+CREATE OR REPLACE FUNCTION sum2SmallInt(a smallint, b smallint) RETURNS smallint AS $$
+return (short)(a+b); //C# requires short cast
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: sum2SmallInt', sum2SmallInt(CAST(100 AS smallint), CAST(101 AS smallint)) = smallint '201';
+
+CREATE OR REPLACE FUNCTION maxInteger() RETURNS integer AS $$
+return 2147483647;
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: maxInteger', maxInteger() = integer '2147483647';
+
+CREATE OR REPLACE FUNCTION sum2Integer(a integer, b integer) RETURNS integer AS $$
+return a+b;
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: sum2Integer', sum2Integer(32770, 100) = bigint '32870';
+
+CREATE OR REPLACE FUNCTION maxBigInt() RETURNS bigint AS $$
+return 9223372036854775807;
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: maxBigInt', maxBigInt() = bigint '9223372036854775807';
+
+CREATE OR REPLACE FUNCTION sum2BigInt(a bigint, b bigint) RETURNS bigint AS $$
+return a+b;
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: sum2BigInt', sum2BigInt(9223372036854775707, 100) = bigint '9223372036854775807';
+
+CREATE OR REPLACE FUNCTION mixedBigInt(a integer, b integer, c bigint) RETURNS bigint AS $$
+return (long)a+(long)b+c;
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: mixedBigInt', mixedBigInt(32767,  2147483647, 100) = bigint '2147516514';
+
+CREATE OR REPLACE FUNCTION mixedInt(a smallint, b smallint, c integer) RETURNS integer AS $$
+return (int)a+(int)b+c;
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: mixedInt', mixedInt(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100) = integer '65634';
+
+CREATE OR REPLACE FUNCTION mixedBigInt8(b smallint, c bigint) RETURNS smallint AS $$
+return (short)(b+c);
+$$ LANGUAGE plcsharp;
+INSERT INTO integersResults (testName, result)
+SELECT 'TEST: mixedInt', mixedBigInt8(CAST(32 AS SMALLINT), CAST(100 AS BIGINT)) = smallint '132';
+
+select testName, result from integersResults;

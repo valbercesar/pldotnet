@@ -23,7 +23,7 @@ install_dotnet: add_dotnet
 
 install_requirements: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential sudo
+	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential sudo vim
 
 install_pg_dev: install_requirements
 	# installs postgresql dev packages
@@ -42,7 +42,7 @@ install_misc:
 	echo "# ENVIRONMENT SETUP: running $@"
 	apt install -y sudo vim cdecl strace
 
-install_cluster_requirements:
+install_cluster_requirements: install_misc
 	# cluster creation requirements; locale settings
 	echo "# ENVIRONMENT SETUP: running $@"
 	apt install -y locales rsync

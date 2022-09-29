@@ -92,8 +92,9 @@ results/
 *.substvars
 build*/
 
-.gitignore
 sql/*
 results/*
 expected/*
 documentation/*
+
+regression.*

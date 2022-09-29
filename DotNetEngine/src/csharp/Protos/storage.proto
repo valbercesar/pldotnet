@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option csharp_namespace = "PlDotNET";
+
+package storage;
+
+service Storage {
+  // sends a source code
+  rpc Save (StorageRequest) returns (StorageResult);
+  rpc Retrieve (ProcedureInfo) returns (StreamContent);
+}
+
+message ProcedureInfo {
+  uint32 functionId = 1;
+  string source = 2;
+}
+
+message StreamContent {
+  bytes asm = 1;
+}
+
+message StorageRequest {
+  ProcedureInfo procedure = 1;
+  StreamContent content = 2;
+}
+
+message StorageResult {
+  bool result = 1;
+}

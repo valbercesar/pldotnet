@@ -22,12 +22,11 @@
  */
 #include "pldotnet_csharp.h"
 #include "pldotnet_hostfxr.h"
-#include "postgres.h"
-#include "fmgr.h"
-#include "access/htup.h"
-#include "access/htup_details.h"
-#include "catalog/pg_proc.h"
-#include "utils/syscache.h"
+#include <postgres.h>
+#include <access/htup.h>
+#include <access/htup_details.h>
+#include <catalog/pg_proc.h>
+#include <utils/syscache.h>
 
 /*
  * Exported functions
@@ -115,6 +114,90 @@ static Datum plcsharp_CompileAndRunUserFunction(
     const FunctionCallInfo fcinfo,
     bool is_inline);
 
+/**
+ * @brief Call the pldotnet_BuildPaths function (from pldotnet_common.c) if 
+ * the paths related to dotnet were not created yet.
+ * 
+ * @param paths the pldotnet config paths.
+ * @return true the paths were created.
+ * @return false the paths could not be created.
+ */
+inline static bool plcsharp_BuildPaths(pldotnet_PathConfig *paths);
+
+/**
+ * @brief Returns the declared function or creates one.
+ * 
+ * @param oid the function ID.
+ * @param fcinfo 
+ * @param proc 
+ * @param is_inline whether it is a inline function or not
+ * @param validation whether the function should be validated.
+ * @return pldotnet_FunctionDecl*  the function created by the user.
+ */
+static pldotnet_FunctionDecl* plcsharp_GetFunctionDecl(
+    Oid oid,
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    bool is_inline,
+    bool validation
+);
+
+/**
+ * @brief This function tries to build a valid pldotnet_FunctionDecl.
+ * It searchs for information on PG SysCache and it stores the required data
+ * into the last argument (pldotnet_FunctionDecl *function_decl) this structure
+ * is meant to be saved into a hash table.
+ * 
+ * @param oid the function ID.
+ * @param fcinfo 
+ * @param proc 
+ * @param is_inline whether it is a inline function or not.
+ * @param validation whether the function should be validated.
+ * @param function_decl 
+ * @return true it it succeeds.
+ * @return false otherwise.
+ */
+static bool plcsharp_BuildFunctionDecl(
+    Oid oid,
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    bool is_inline,
+    bool validation,
+    pldotnet_FunctionDecl *function_decl
+);
+
+
+/**
+ * @brief Validate the user function. This function is called in 
+ * plcsharp_validator(PG_FUNCTION_ARGS) function, which is executed after the
+ * user creates a SQL function on PostgreSQL.
+ * 
+ * @param oid The function ID
+ * @param fcinfo The function information
+ */
+static void plcsharp_ValidateUserFunction(const Oid oid,
+    const FunctionCallInfo fcinfo);
+
+/**
+ * @brief Set the function information to the plcsharp_GetSourceCode object
+ * if the function is not null.
+ * 
+ * @param fcinfo the function information
+ * @param proc 
+ * @param procst 
+ * @param is_inline whether the functions is inline
+ * @param validation whetter the function should be validated
+ * @param user_function_decl the object that stores the function information
+ * @return true if the process was successful
+ * @return false if the source code could not be obtained
+ */
+static bool plcsharp_GetSourceCode(FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst,
+    bool is_inline,
+    bool validation,
+    pldotnet_UserFunctionDeclaration *user_function_decl);
+
 /*
  * END: declaring functions
  */
@@ -132,19 +215,19 @@ Datum plcsharp_inline_handler(PG_FUNCTION_ARGS) {
 }
 
 Datum plcsharp_validator(PG_FUNCTION_ARGS) {
-    // MemoryContextWrapper memory_context;
+    MemoryContextWrapper memory_context;
     HeapTuple tuple;
     Oid funcoid = PG_GETARG_OID(0);
 
-    //     if (!check_function_bodies)
-    //         return (Datum)0;
+    if (!check_function_bodies)
+        return (Datum)0;
 
     pldotnet_LoadHostFxrIfNeeded();
 
     PG_TRY();
     {
         /* START NEW MEM CONTEXT */
-        //         pldotnet_StartNewMemoryContext(&memory_context);
+        pldotnet_StartNewMemoryContext(&memory_context);
 
         tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(funcoid));
         if (!HeapTupleIsValid(tuple))
@@ -152,10 +235,10 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS) {
 
         ReleaseSysCache(tuple);
 
-        //         plcsharp_ValidateUserFunction(funcoid, fcinfo);
+        plcsharp_ValidateUserFunction(funcoid, fcinfo);
 
         /* REVERT PREV MEM CONTEXT */
-        //         pldotnet_ResetMemoryContext(&memory_context);
+        pldotnet_ResetMemoryContext(&memory_context);
     }
     PG_CATCH();
     {
@@ -168,26 +251,25 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS) {
     PG_RETURN_VOID();
 }
 
-static Datum
-plcsharp_generic_handler(FunctionCallInfo fcinfo,
+static Datum plcsharp_generic_handler(FunctionCallInfo fcinfo,
                          bool is_inline) {
-    // MemoryContextWrapper memory_context;
+    MemoryContextWrapper memory_context;
     Datum retval = 0;
 
     pldotnet_LoadHostFxrIfNeeded();
 
-    // if (!pldotnet_SPIReady())
-    //     return retval;
+    if (!pldotnet_SPIReady())
+        return retval;
 
     PG_TRY();
     {
         /* START NEW MEM CONTEXT */
-        // pldotnet_StartNewMemoryContext(&memory_context);
+        pldotnet_StartNewMemoryContext(&memory_context);
 
         retval = plcsharp_CompileAndRunUserFunction(fcinfo, is_inline);
 
         /* REVERT PREV MEM CONTEXT */
-        // pldotnet_ResetMemoryContext(&memory_context);
+        pldotnet_ResetMemoryContext(&memory_context);
     }
     PG_CATCH();
     {
@@ -197,18 +279,181 @@ plcsharp_generic_handler(FunctionCallInfo fcinfo,
 
     PG_END_TRY();
 
-    // pldotnet_SPIFinish();
+    pldotnet_SPIFinish();
 
     return retval;
 }
 
-static Datum
-plcsharp_CompileAndRunUserFunction(
+static Datum plcsharp_CompileAndRunUserFunction(
     const FunctionCallInfo fcinfo,
     bool is_inline) {
-    /// TESTING
-    perror("CompileAndRunUserFunction can not be executed now.\n");
-    exit(EXIT_SUCCESS);
+    HeapTuple proc;
+    Form_pg_proc procst;
+    pldotnet_FunctionDecl *function_decl = nullptr;
+    pldotnet_Result output;
+    output.value = (Datum) 0;
+
+    /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END
+     * IF PROC != nullptr */
+    /* START */
+    proc = pldotnet_GetPostgresHeapTuple(fcinfo->flinfo->fn_oid);
+
+    function_decl = plcsharp_GetFunctionDecl(
+        fcinfo->flinfo->fn_oid,
+        fcinfo,
+        proc,
+        is_inline,
+        false);
+
+    procst = (Form_pg_proc) GETSTRUCT(proc);
+    /* END */
+
+    pldotnet_ReleasePostgresHeapTuple(proc);
+
+    if (nullptr == function_decl ||
+        nullptr == function_decl->call_user_method)
+        elog(ERROR, "[pldotnet]: Could not load function_decl");
+
+    function_decl->call_user_method(fcinfo->flinfo->fn_oid,
+                pldotnet_BuildArgumentList(fcinfo, procst), (void*) &output);
+
+    return output.value;
+}
+
+inline static bool plcsharp_BuildPaths(pldotnet_PathConfig *paths) {
+    static bool built = false;
+
+    if (!built) {
+        pldotnet_BuildPaths(true, paths);
+        built = true;
+    }
+
+    // spi_paths = paths;
+
+    return built;
+}
+
+static pldotnet_FunctionDecl* plcsharp_GetFunctionDecl(
+    Oid oid,
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    bool is_inline,
+    bool validation) {
+    pldotnet_FunctionDecl *decl = pldotnet_FindFunctionDecl(oid);
+    bool found = nullptr != decl;
+
+    if (found && !validation)
+        return decl;
+
+    decl = pldotnet_CreateFunctionDecl();
+
+    plcsharp_BuildFunctionDecl(
+        oid,
+        fcinfo,
+        proc,
+        is_inline,
+        validation,
+        decl);
+
+    pldotnet_SaveFunction(decl, !found);
+
+    return decl;
+}
+
+
+static bool plcsharp_BuildFunctionDecl(
+    Oid oid,
+    FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    bool is_inline,
+    bool validation,
+    pldotnet_FunctionDecl *function_decl) {
+    Form_pg_proc procst;
+    static pldotnet_PathConfig paths;
+
+    if (nullptr == function_decl)
+        elog(ERROR, "[pldotnet]: Invalid argument, function_decl is null");
+
+    if (!plcsharp_BuildPaths(&paths))
+        elog(ERROR, "[pldotnet]: Could not build paths");
+
+    if (!pldotnet_SetNetLoader(paths.config_path, paths.prefix))
+        elog(ERROR, "[pldotnet]: Could not obtain .NET Loader");
+    procst = (Form_pg_proc) GETSTRUCT(proc);
+
+    if (!pldotnet_SetDotNetMethods(assembly_loader, paths.library_path))
+        elog(ERROR, "[pldotnet]: Could not obtain C# Methods");
+
+    /* save some basic data */
+    function_decl->source.func_oid = (uint32_t) oid;
+    function_decl->ret_type = procst->prorettype;
+
+    if (!plcsharp_GetSourceCode(fcinfo,
+                                proc,
+                                procst,
+                                is_inline,
+                                validation,
+                                &(function_decl->user_decl)))
+        elog(ERROR, "[pldotnet]: Could not obtain the source code");
+
+    if (!pldotnet_CompileUserFunction(assembly_loader,
+                                      fcinfo->flinfo->fn_oid,
+                                      &(function_decl->user_decl)))
+        elog(ERROR, "[pldotnet]: Could not compile this "
+        "function using the new method.");
+
+    function_decl->call_user_method =
+        pldotnet_GetUserDirectMethod(assembly_loader, &paths);
+
+    return nullptr != function_decl->call_user_method;
+}
+
+static void plcsharp_ValidateUserFunction(const Oid oid,
+    const FunctionCallInfo fcinfo) {
+    HeapTuple proc = SearchSysCache1(PROCOID, ObjectIdGetDatum(oid));
+
+    /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END IF PROC != nullptr */
+    /* START */
+    if (!HeapTupleIsValid(proc))
+        elog(ERROR, "[pldotnet]: Could not obtain info about %u", oid);
+
+    plcsharp_GetFunctionDecl(
+        oid,
+        fcinfo,
+        proc,
+        false,
+        true);
+
+    /* END */
+    pldotnet_ReleasePostgresHeapTuple(proc);
+}
+
+static bool plcsharp_GetSourceCode(FunctionCallInfo fcinfo,
+    HeapTuple proc,
+    Form_pg_proc procst,
+    bool is_inline,
+    bool validation,
+    pldotnet_UserFunctionDeclaration *user_function_decl) {
+
+    // TODO(rosicley) - Check the TODOs Josias listed here...
+    if (nullptr == user_function_decl)
+        elog(ERROR, "[pldotnet]: Invalid argument: user_function_decl is null");
+
+    if (is_inline) {
+        elog(ERROR, "[pldotnet]: Inline functions are not supported yet");
+    } else {
+        /* TODO(josias) get the real data here */
+        user_function_decl->language = "csharp";
+        user_function_decl->func_name = NameStr(procst->proname);;
+        user_function_decl->func_rettype = pldotnet_GetCompatibleNetTypeName(
+            procst->prorettype, false, true);
+        user_function_decl->func_body = pldotnet_GetFunctionBody(proc, procst);
+        user_function_decl->func_params = pldotnet_GetSqlParams(
+            proc, procst, true);
+    }
+
+    /* TODO(josias) Validate the user_function_decl here*/
+    return true;
 }
 
 /*

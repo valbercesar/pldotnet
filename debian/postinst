@@ -6,13 +6,16 @@ DOTNET_VERSION=$(dotnet --info | grep 'Host' -A 3 | grep Version:|awk '{print $2
 DOTNET_LIBDIR=/usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/${DOTNET_VERSION}/runtimes/linux-x64/native/
 PLNET_ENGINE_DIR=/var/lib/DotNetEngine
 PKG_LIBDIR=$(pg_config --pkglibdir | sed 's/\//\\\//g')
-# sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/Engine.cs
-# sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/fsharp/FSharpEngine.fs
-# dotnet build ${PLNET_ENGINE_DIR}/src/csharp
-# dotnet build ${PLNET_ENGINE_DIR}/src/fsharp
 echo "${DOTNET_LIBDIR}" > /etc/ld.so.conf.d/nethost_pldotnet.conf
+sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/Engine.cs
+sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/templates/csharp.tcs
+CSHARP_TEMPLATE_DIR=/var/lib/DotNetEngine/src/csharp/templates
+# sed -i "s/@CSHARP_TEMPLATE_DIR/${CSHARP_TEMPLATE_DIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/Engine.cs
+cat  /var/lib/DotNetEngine/src/csharp/Engine.cs | perl -ane "s#\@CSHARP_TEMPLATE_DIR#/var/lib/DotNetEngine/src/csharp/templates#g; print" > q && mv q /var/lib/DotNetEngine/src/csharp/Engine.cs
+# # sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/fsharp/FSharpEngine.fs
+dotnet build ${PLNET_ENGINE_DIR}/src/csharp -c Release
+# # dotnet build ${PLNET_ENGINE_DIR}/src/fsharp
 ldconfig -v &> /dev/null # We need -v for ldconfig otherwise it won't work
-
 runuser -u postgres -- psql -c "DROP EXTENSION IF EXISTS pldotnet CASCADE;"
 runuser -u postgres -- psql -c "CREATE EXTENSION pldotnet;"
 runuser -u postgres -- psql -c "DO \$\$ BEGIN CREATE ROLE root superuser createdb login createrole replication bypassrls; EXCEPTION WHEN duplicate_object THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE; END \$\$;"

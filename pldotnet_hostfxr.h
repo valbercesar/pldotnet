@@ -18,10 +18,67 @@
 #include <nethost.h>
 #include <stdbool.h>
 
+#if defined(_WIN32)
+#define CORECLR_DELEGATE_CALLTYPE __stdcall
+#ifdef _WCHAR_T_DEFINED
+typedef wchar_t char_t;
+#else
+typedef unsigned short char_t;
+#endif
+#else
+#define CORECLR_DELEGATE_CALLTYPE
+typedef char char_t;
+#endif
+
 // Header files copied from https://github.com/dotnet/core-setup
 #include "coreclr_delegates.h"
 // #include <experimental_coreclr_delegates.h>
 #include "hostfxr.h"
+
+typedef load_assembly_and_get_function_pointer_fn dotnet_loader;
+
+typedef int
+(CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
+    uint32_t functionId,
+    char *func_name,
+    char *func_rettype,
+    char *func_params,
+    char *func_body
+);
+
+typedef int
+(CORECLR_DELEGATE_CALLTYPE *user_method_delegate)(
+    uint32_t functionId,
+    void *arguments,
+    void *output
+);
+
+typedef void*
+(CORECLR_DELEGATE_CALLTYPE *build_generic_list)(void);
+
+typedef void*
+(CORECLR_DELEGATE_CALLTYPE *add_integer_to_generic_list)(
+    void *list, int32_t item);
+
+typedef void*
+(CORECLR_DELEGATE_CALLTYPE *add_small_integer_to_generic_list)(
+    void *list, int16_t item);
+
+typedef void*
+(CORECLR_DELEGATE_CALLTYPE *add_big_integer_to_generic_list)(
+    void *list, int64_t item);
+
+typedef void*
+(CORECLR_DELEGATE_CALLTYPE *add_float_to_generic_list)(
+    void *list, float item);
+
+typedef void*
+(CORECLR_DELEGATE_CALLTYPE *add_double_to_generic_list)(
+    void *list, double item);
+
+typedef void*
+(CORECLR_DELEGATE_CALLTYPE *add_boolean_to_generic_list)(
+    void *list, bool item);
 
 /** @brief Loads dotnet using the HostFXR.  HostFXR "finds and resolves
  * the runtime and all the frameworks the app needs", which in our
