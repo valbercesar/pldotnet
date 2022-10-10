@@ -27,13 +27,11 @@ char *dnldir = STR(PLNET_ENGINE_DIR);
 
 dotnet_loader assembly_loader;
 compile_user_fn compile_user_function;
-build_generic_list generic_list_constructor;
-add_integer_to_generic_list add_integer_to_list;
-add_small_integer_to_generic_list add_small_integer_to_list;
-add_big_integer_to_generic_list add_big_integer_to_list;
-add_float_to_generic_list add_float_to_list;
-add_double_to_generic_list add_double_to_list;
-add_boolean_to_generic_list add_boolean_to_list;
+build_datum_list_t build_datum_list;  // DONUT => BuildDatumList
+add_datum_to_list_t add_datum_to_list;  // DONUT => AddDatumToList
+
+// TODO(rosicley) - check where we will use this function pointer
+void (*free_generic_gchandle)(void*);
 
 /*
  * START: implementing functions
@@ -69,70 +67,32 @@ bool pldotnet_SetDotNetMethods(dotnet_loader loader, const char *library_path) {
         "PlDotNET.Engine, PlDotNET",
         "CompileUserFunction",
         "PlDotNET.Engine+DelCompileUserFunction, PlDotNET");
-    // TODO(rosicley) -- add the others methods here!
 
-    generic_list_constructor = (build_generic_list) pldotnet_GetDotNetMethod(
+    build_datum_list = (build_datum_list_t) pldotnet_GetDotNetMethod(
         assembly_loader,
         library_path,
-        "PlDotNET.ExperimentalBridge, PlDotNET",
-        "BuildGenericList",
-        "PlDotNET.ExperimentalBridge+DelBuildGenericList, PlDotNET");
+        "PlDotNET.DotNetBridge, PlDotNET",
+        "BuildDatumList",
+        "PlDotNET.DotNetBridge+DelBuildDatumList, PlDotNET");
 
-    add_integer_to_list =
-    (add_integer_to_generic_list) pldotnet_GetDotNetMethod(
+    add_datum_to_list = (add_datum_to_list_t) pldotnet_GetDotNetMethod(
         assembly_loader,
         library_path,
-        "PlDotNET.ExperimentalBridge, PlDotNET",
-        "AddIntegerToList",
-        "PlDotNET.ExperimentalBridge+DelAddIntegerToList, PlDotNET");
+        "PlDotNET.DotNetBridge, PlDotNET",
+        "AddDatumToList",
+        "PlDotNET.DotNetBridge+DelAddDatumToList, PlDotNET");
 
-    add_small_integer_to_list =
-    (add_small_integer_to_generic_list) pldotnet_GetDotNetMethod(
+    free_generic_gchandle = (void (*)(void*)) pldotnet_GetDotNetMethod(
         assembly_loader,
         library_path,
-        "PlDotNET.ExperimentalBridge, PlDotNET",
-        "AddSmallIntegerToList",
-        "PlDotNET.ExperimentalBridge+DelAddSmallIntegerToList, PlDotNET");
-
-    add_big_integer_to_list =
-    (add_big_integer_to_generic_list) pldotnet_GetDotNetMethod(
-        assembly_loader,
-        library_path,
-        "PlDotNET.ExperimentalBridge, PlDotNET",
-        "AddBigIntegerToList",
-        "PlDotNET.ExperimentalBridge+DelAddBigIntegerToList, PlDotNET");
-
-    add_float_to_list =
-    (add_float_to_generic_list) pldotnet_GetDotNetMethod(
-        assembly_loader,
-        library_path,
-        "PlDotNET.ExperimentalBridge, PlDotNET",
-        "AddFloatToList",
-        "PlDotNET.ExperimentalBridge+DelAddFloatToList, PlDotNET");
-
-    add_double_to_list =
-    (add_double_to_generic_list) pldotnet_GetDotNetMethod(
-        assembly_loader,
-        library_path,
-        "PlDotNET.ExperimentalBridge, PlDotNET",
-        "AddDoubleToList",
-        "PlDotNET.ExperimentalBridge+DelAddDoubleToList, PlDotNET");
-
-    add_boolean_to_list =
-    (add_boolean_to_generic_list) pldotnet_GetDotNetMethod(
-        assembly_loader,
-        library_path,
-        "PlDotNET.ExperimentalBridge, PlDotNET",
-        "AddBooleanToList",
-        "PlDotNET.ExperimentalBridge+DelAddBooleanToList, PlDotNET");
+        "PlDotNET.DotNetBridge, PlDotNET",
+        "FreeGenericGCHandle",
+        "PlDotNET.DotNetBridge+DelFreeGenericGCHandle, PlDotNET");
 
     return nullptr != compile_user_function
-    && nullptr != add_small_integer_to_list
-    && nullptr != generic_list_constructor
-    && nullptr != add_integer_to_list
-    && nullptr != add_big_integer_to_list
-    && nullptr != add_float_to_list
-    && nullptr != add_double_to_list;
+    && nullptr != build_datum_list
+    && nullptr != add_datum_to_list
+    && nullptr != free_generic_gchandle;
 }
 
 void *pldotnet_GetDotNetMethod(dotnet_loader loader,
@@ -150,11 +110,15 @@ void *pldotnet_GetDotNetMethod(dotnet_loader loader,
               nullptr, (void **)&dotnet_method);
 
   if (nullptr == dotnet_method)
-      elog(ERROR, "[pldotnet]: Could not get_function_pointer()");
+    elog(ERROR,
+                         "[pldotnet]: Could not get_function_pointer(%s)",
+                         delegate_type_name);
 
   if (0 != rc)
-      elog(ERROR, "[pldotnet]: Could not "
-        "load_assembly_and_get_function_pointer()");
+      elog(ERROR,
+              "[pldotnet]: Could not "
+              "load_assembly_and_get_function_pointer(%s)",
+              delegate_type_name);
 
   return dotnet_method;
 }
@@ -410,49 +374,17 @@ user_method_delegate pldotnet_GetUserDirectMethod(dotnet_loader loader,
         "PlDotNET.Engine+DelRunUserFunction, PlDotNET");
 }
 
+// DONUT: build arg list; much simpler!
 void* pldotnet_BuildArgumentList(FunctionCallInfo fcinfo,
  Form_pg_proc procst) {
-    void *argument;
-    void *list = generic_list_constructor();
+    void *list = build_datum_list();
 
+    // this might seem silly, but it saves us having to
+    // pass nargs to the invocation
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         Datum argdatum = pldotnet_GetArgDatum(fcinfo, i);
-
-        switch (procst->proargtypes.values[i]) {
-            case INT4OID:
-                add_integer_to_list(list, DatumGetInt32(argdatum));
-                break;
-            case INT2OID:
-                add_small_integer_to_list(list, DatumGetInt16(argdatum));
-                break;
-            case INT8OID:
-                add_big_integer_to_list(list, DatumGetInt64(argdatum));
-                break;
-            case FLOAT4OID:
-                add_float_to_list(list, DatumGetFloat4(argdatum));
-                break;
-            case FLOAT8OID:
-                add_double_to_list(list, DatumGetFloat8(argdatum));
-                break;
-            case BOOLOID:
-                add_boolean_to_list(list, DatumGetBool(argdatum));
-                break;
-            // case POINTOID:
-            // {
-            //     Point *point;
-            //     point = DatumGetPointP(argdatum);
-            //     argument = point_constructor(point->x, point->y);
-            //     add_element_to_list(list, argument);
-            //     break;
-            // }
-            default:
-                elog(ERROR, "[pldotnet]: Unsupported argument type. "
-                    "Check the pldotnet_BuildArgumentList function. "
-                    "The defined type is %d\n", procst->proargtypes.values[i]);
-                break;
-        }
+        add_datum_to_list(list, (void*)argdatum);
     }
-
     return list;
 }
 
@@ -468,56 +400,15 @@ inline Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index) {
 #endif
 }
 
-/* The following functions should be called from .NET */
-/* It is used to set the result from the user function */
-
-void pldotnet_SetInt32Result(int32_t value, bool isnull, void *native_result) {
+// DONUT
+// Allows stored procedure to return its Datum
+void pldotnet_SetDatumResult(void* value, bool isnull, void *native_result) {
     pldotnet_Result *result = (pldotnet_Result*) native_result;
 
-    elog(INFO, "SetInt32Result: %d", value);
     result->is_null = isnull;
-    result->value = Int32GetDatum(value);
+    result->value = (Datum)value;
 }
 
-void pldotnet_SetInt16Result(int16_t value, bool isnull, void *native_result) {
-    pldotnet_Result *result = (pldotnet_Result*) native_result;
-
-    elog(INFO, "SetInt16Result: %d", value);
-    result->is_null = isnull;
-    result->value = Int16GetDatum(value);
-}
-
-void pldotnet_SetInt64Result(int64_t value, bool isnull, void *native_result) {
-    pldotnet_Result *result = (pldotnet_Result*) native_result;
-
-    elog(INFO, "SetInt64Result: %ld", (long)value);
-    result->is_null = isnull;
-    result->value = Int64GetDatum(value);
-}
-
-void pldotnet_SetFloatResult(float value, bool isnull, void *native_result) {
-    pldotnet_Result *result = (pldotnet_Result*) native_result;
-
-    elog(INFO, "SetFloatResult: %f", value);
-    result->is_null = isnull;
-    result->value = Float4GetDatum(value);
-}
-
-void pldotnet_SetDoubleResult(double value, bool isnull, void *native_result) {
-    pldotnet_Result *result = (pldotnet_Result*) native_result;
-
-    elog(INFO, "SetDoubleResult: %f", value);
-    result->is_null = isnull;
-    result->value = Float8GetDatum(value);
-}
-
-void pldotnet_SetBooleanResult(bool value, bool isnull, void *native_result) {
-    pldotnet_Result *result = (pldotnet_Result*) native_result;
-
-    elog(INFO, "SetBooleanResult: %s", value ? "true" : "false");
-    result->is_null = isnull;
-    result->value = BoolGetDatum(value);
-}
 /*
  * END: implementing functions
  */

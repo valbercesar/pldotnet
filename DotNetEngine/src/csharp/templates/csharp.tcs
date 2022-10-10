@@ -7,220 +7,82 @@ namespace PlDotNETUserSpace
 {
     public static class UserClass
     {
-        /// SEND THE FINAL DATUM TO POSTGRES
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - value: an integer value
-        ///     - is_null: a boolean value to indicate if the result is null
-        ///     - result: a pointer to a result structure
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetInt32Result(int value, bool isnull, IntPtr native_result);
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - value: an short value
-        ///     - is_null: a boolean value to indicate if the result is null
-        ///     - result: a pointer to a result structure
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetInt16Result(short value, bool isnull, IntPtr native_result);
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - value: an long value
-        ///     - is_null: a boolean value to indicate if the result is null
-        ///     - result: a pointer to a result structure
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetInt64Result(long value, bool isnull, IntPtr native_result);
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - value: an float value
-        ///     - is_null: a boolean value to indicate if the result is null
-        ///     - result: a pointer to a result structure
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetFloatResult(float value, bool isnull, IntPtr native_result);
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - value: an double value
-        ///     - is_null: a boolean value to indicate if the result is null
-        ///     - result: a pointer to a result structure
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetDoubleResult(double value, bool isnull, IntPtr native_result);
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - value: an integer value
-        ///     - is_null: a boolean value to indicate if the result is null
-        ///     - result: a pointer to a result structure
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetBooleanResult(bool value, bool isnull, IntPtr native_result);
-
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - value: an integer value
-        ///     - is_null: a boolean value to indicate if the result is null
-        ///     - result: a pointer to a result structure
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetPointResult(IntPtr point, bool isnull, IntPtr native_result);
+        ////////////////////////////
+        /// DATUM -> DOTNET TYPE ///
+        ////////////////////////////
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetBoxResult(IntPtr box, bool isnull, IntPtr native_result);
+        public static extern short pldotnet_getInt16(IntPtr datum);
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetPolygonResult(IntPtr polygon, bool isnull, IntPtr raw_result);
+        public static extern int pldotnet_getInt32(IntPtr datum);
 
-        /// CONSTRUCTORS
-
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - x: a float value
-        ///     - y: a float value
-        /// Returns: a Datum representing the memory address storing the new Postgres Point
-        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_NewPoint(double x, double y);
+        public static extern long pldotnet_getInt64(IntPtr datum);
 
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - high_: the upper left corner of the rectangle
-        ///     - low_: the lower right corner of the rectangle
-        /// Returns: a Datum representing the memory address storing the new Postgres BOX
-        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_NewBox(IntPtr high_, IntPtr low_);
+        public static extern float pldotnet_getFloat(IntPtr datum);
 
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current .NET result back to C
-        /// This implementation is not generic for now, but it should be easy to make it generic
-        /// Parameters:
-        ///     - npts: the number of points
-        ///     - boundbox: a pointer to a boundbox structure
-        ///     - points: a pointer to a list of points
-        /// Returns: a Datum representing the memory address storing the new Postgres Point
-        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_NewPolygon(int npts, IntPtr boundbox, IntPtr[] points);
+        public static extern double pldotnet_getDouble(IntPtr datum);
 
-        /// HELPERS
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool pldotnet_getBoolean(IntPtr datum);
 
-        /// <summary>
-        /// Note: this function should be loaded outside Roslyn (e.g Engine.cs) and then shared here through a delegate
-        /// This function is responsible for sending the current NpgsqlPolygon back to C/Postgres
-        /// Parameters:
-        ///     - polygon: a NpgsqlPolygon structure
-        ///     - output: the native memory to store the result
-        /// </summary>
-        public static void SetPolygonResult(NpgsqlPolygon polygon, IntPtr output)
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumPointAttributes(IntPtr datum, ref double x,  ref double y);
+
+        public static NpgsqlPoint pldotnet_BuildNpgsqlPoint(IntPtr datum)
         {
-            if (polygon != null && 2 < polygon.Count)
-            {
-                var npts = polygon.Count;
-
-                var first = polygon[0];
-                var last = polygon[npts - 1];
-
-                NpgsqlPoint lowerLeft = new NpgsqlPoint(first.X, first.Y);
-                NpgsqlPoint upperRight = new NpgsqlPoint(last.X, last.Y);
-
-                var points = new IntPtr[npts];
-
-                for (var i = 0; i < npts; i++)
-                {
-                    NpgsqlPoint point = polygon[i];
-
-                    if (point.X < lowerLeft.X)
-                    {
-                        lowerLeft.X = point.X;
-                    }
-
-                    if (point.Y < lowerLeft.Y)
-                    {
-                        lowerLeft.Y = point.Y;
-                    }
-
-                    if (point.X > upperRight.X)
-                    {
-                        upperRight.X = point.X;
-                    }
-
-                    if (point.Y > upperRight.Y)
-                    {
-                        upperRight.Y = point.Y;
-                    }
-
-                    points[i] = pldotnet_NewPoint(point.X, point.Y);
-                }
-
-                // build the boundbox points
-                var pgLowerLeft = pldotnet_NewPoint(lowerLeft.X, lowerLeft.Y);
-                var pgUpperRight = pldotnet_NewPoint(upperRight.X, upperRight.Y);
-
-                // create the bounding box
-                var boundbox = pldotnet_NewBox(pgUpperRight, pgLowerLeft);
-
-                // build the polygon
-                var pgPolygon = pldotnet_NewPolygon(npts, boundbox, points);
-
-                // send the result back to Postgres
-                pldotnet_SetPolygonResult(pgPolygon, false, output);
-            }
-            else
-            {
-                pldotnet_SetPolygonResult(IntPtr.Zero, true, output);
-            }
+            double x=0.0, y=0.0;
+            pldotnet_getDatumPointAttributes(datum, ref x, ref y);
+            return new NpgsqlPoint(x,y);
         }
+
+        ////////////////////////////
+        /// DOTNET TYPE -> DATUM ///
+        ////////////////////////////
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumInt16(short dotnetValue);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumInt32(int dotnetValue);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumInt64(long dotnetValue);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumFloat(float dotnetValue);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumDouble(double dotnetValue);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumBoolean(bool dotnetValue);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumPoint(double x, double y);
+        
+        /// SEND THE FINAL DATUM TO POSTGRES
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_SetDatumResult(IntPtr value, bool isnull, IntPtr native_result);
 
         // $trigger_data_definition$
 
         // $user_function_declaration$
 
-        public static void CallUserFunction(IntPtr arguments, IntPtr output)
+        // DONUT: convert arguments to Datum[]
+        public static void CallUserFunction(List<IntPtr> arguments, IntPtr output)
         {
-            GCHandle gch = GCHandle.FromIntPtr(arguments);
-
-            var argsList = (List<object>) gch.Target;
+            // $create_arguments
 
             var result = // $user_function_call$
 
             System.Console.WriteLine($"-----> UserClass: {result}");
+
+            // $free_arguments
 
             // $call_set_result$
 

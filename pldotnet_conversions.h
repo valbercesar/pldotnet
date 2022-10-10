@@ -1,0 +1,65 @@
+/*
+ * PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+ *             procedural languages (PL)
+ *
+ *
+ * Copyright 2019-2020 Brick Abode
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * pldotnet_conversion.h
+ *
+ */
+
+#ifndef PLDOTNET_CONVERSIONS_H_
+#define PLDOTNET_CONVERSIONS_H_
+
+#include "pldotnet_common.h"
+
+////////////////////////////////////
+//// Datum -> Npgsql or C# type ////
+////////////////////////////////////
+
+extern int16_t pldotnet_getInt16(void* datum);
+
+extern int32_t pldotnet_getInt32(void* datum);
+
+extern int64_t pldotnet_getInt64(void* datum);
+
+extern float pldotnet_getFloat(void* datum);
+
+extern double pldotnet_getDouble(void* datum);
+
+extern bool pldotnet_getBoolean(void* datum);
+
+extern void pldotnet_getDatumPointAttributes(void* datum, double *x,  double *y);
+
+////////////////////////////////////
+//// Npgsql or C# type -> Datum ////
+////////////////////////////////////
+
+extern Datum pldotnet_createDatumInt16(int16_t dotnetValue);
+
+extern Datum pldotnet_createDatumInt32(int32_t dotnetValue);
+
+extern Datum pldotnet_createDatumInt64(int64_t dotnetValue);
+
+extern Datum pldotnet_createDatumFloat(float dotnetValue);
+
+extern Datum pldotnet_createDatumDouble(double dotnetValue);
+
+extern Datum pldotnet_createDatumBoolean(bool dotnetValue);
+
+extern Datum pldotnet_createDatumPoint(double x, double y);
+
+#endif  // PLDOTNET_CONVERSIONS_H_

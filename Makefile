@@ -20,6 +20,7 @@ ifeq ("$(shell echo $(USE_DOTNETBUILD) | tr A-Z a-z)", "true")
 else
 	GENERATE_CSHARP_BUILD_FILES := dotnet build $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp -c Release
 	GENERATE_FSHARP_BUILD_FILES := dotnet build $(PLNET_ENGINE_ROOT)/DotNetEngine/src/fsharp -c Release
+#	ADD_NPGSQL_PACKAGE := dotnet add $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp package Npgsql --version 6.0.7
 endif
 
 PG_CONFIG ?= pg_config
@@ -62,7 +63,7 @@ DATA = pldotnet--0.0.1.sql
 	testelog \
 	testfselog
 
-OBJS = pldotnet_csharp.o pldotnet_hostfxr.o pldotnet.o pldotnet_common.o
+OBJS = pldotnet_csharp.o pldotnet_hostfxr.o pldotnet.o pldotnet_common.o pldotnet_conversions.o
 
 PG_CPPFLAGS = -I$(DOTNET_INCHOSTDIR) \
 			  -Iinc -D LINUX $(DEFINE_DOTNET_BUILD) $(PLNET_ENGINE_DIR) \
@@ -84,6 +85,7 @@ plnet-install: install
 #	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/NewEngine.cs
 	sed -i 's/@CSHARP_TEMPLATE_DIR/$(shell echo $(CSHARP_TEMPLATE_DIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/Engine.cs
 #	sed -i 's/@CSHARP_TEMPLATE_DIR/$(shell echo $(CSHARP_TEMPLATE_DIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/NewEngine.cs
+#	$(ADD_NPGSQL_PACKAGE)
 	$(GENERATE_CSHARP_BUILD_FILES)
 #	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/fsharp/FSharpEngine.fs
 #	$(GENERATE_FSHARP_BUILD_FILES)
@@ -92,6 +94,7 @@ plnet-install: install
 # 	rm -rf $(PLNET_ENGINE_ROOT)/DotNetEngine
 
 plnet-install-dpkg:
+	sudo -u postgres pg_createcluster 14 default
 	service postgresql start
 	pg_buildext updatecontrol
 	debuild -b -uc -us --lintian-opts --profile debian
@@ -132,3 +135,17 @@ copy-packages:
 	$(eval IMAGE_ID=$(shell echo `docker images|grep pldotnet|awk '{print $$3}'`))
 	$(eval CONTAINER_ID=$(shell echo `docker ps -a|grep $(IMAGE_ID)|awk '{print $$1}'`))
 	docker cp debian/packages $(CONTAINER_ID):/app/pldotnet/debian
+
+build-package-bash:
+	docker-compose -f docker-compose-build.yml up pldotnet-build
+	docker-compose -f docker-compose-build.yml run --rm pldotnet-build bash
+
+tests:
+	rm -rf results
+	mkdir results
+	echo 'DROP TABLE results;CREATE TABLE results(testName varchar(255), result boolean);' | (sudo -u postgres  psql)
+	cat ba-sql/testintegers.sql | (sudo -u postgres  psql 2>&1) | tee results/testintegers.out
+	cat ba-sql/testfloats.sql | (sudo -u postgres  psql 2>&1) | tee results/testfloats.out
+	cat ba-sql/testbool.sql | (sudo -u postgres  psql 2>&1) | tee results/testbool.out
+	cat ba-sql/testpoint.sql | (sudo -u postgres  psql 2>&1) | tee results/testpoint.out
+	echo 'SELECT testName, result from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out

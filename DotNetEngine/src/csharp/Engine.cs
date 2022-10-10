@@ -33,7 +33,7 @@ using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
+using System.Runtime.Loader;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Google.Protobuf;
@@ -51,14 +51,14 @@ namespace PlDotNET
         public struct CachedFunction
         {
             public string SourceCode;
-            public Action<IntPtr, IntPtr> UserProcedure;
+            public Action<List<IntPtr>, IntPtr> UserProcedure;
         }
 
         static uint FunctionId;
         static MemoryStream MemStream;
         static IDictionary<uint, CachedFunction> FuncBuiltCodeDict;
         static CachedFunction Cached;
-        static Action<IntPtr, IntPtr> UserProcedure;
+        static Action<List<IntPtr>, IntPtr> UserProcedure;
 
         static string CSharpTemplatePath = "@CSHARP_TEMPLATE_DIR/csharp.tcs";
 
@@ -92,21 +92,74 @@ namespace PlDotNET
             return string.Join(", ", sqlParams.Select((p) => $"{p.Item1} {p.Item2}").ToList());
         }
 
-        public static string ParseTemplate(string rawFunctionDecl, string funcName, List<Tuple<string, string>> sqlParams, string returnType)
+        public static string GetDatumConversionFunction(string dotnet_type)
         {
-            if (File.Exists(CSharpTemplatePath))
+            switch (dotnet_type)
             {
-                pldotnet_Info($"Loading template from {CSharpTemplatePath}");
-                var template = File.ReadAllText(CSharpTemplatePath);
-                var withFunctionDecl = template.Replace("// $user_function_declaration$", rawFunctionDecl);
-                var withFunctionCall = withFunctionDecl.Replace("// $user_function_call$", BuildFunctionCall(funcName, sqlParams));
-                return withFunctionCall.Replace("// $call_set_result$", BuildCallSetResult(returnType));
+                case "short":
+                    return "pldotnet_getInt16";
+                case "int":
+                    return "pldotnet_getInt32";
+                case "long":
+                    return "pldotnet_getInt64";
+                case "float":
+                    return "pldotnet_getFloat";
+                case "double":
+                    return "pldotnet_getDouble";
+                case "bool":
+                    return "pldotnet_getBoolean";
+                case "NpgsqlPoint":
+                    return "pldotnet_BuildNpgsqlPoint";
+                default:
+                    throw new NotImplementedException($"Datum to {dotnet_type} is not supported! Check GetDatumConversionFunction");
             }
-            else
+        }
+
+        // DONUT
+        public static string BuildCreateArguments(string funcName, List<Tuple<string, string>> sqlParams)
+        {
+            // WARNING: this is completely wrong.  
+            // - the individual IntPtr are not GCHandles, only Datum
+            // - creating a GCHandle from it is wrong
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"// BEGIN create arguments for {funcName}");
+            int argc = sqlParams.Count;
+
+            for (int i = 0; i < argc; i++)
             {
-                pldotnet_Info($"Template file {CSharpTemplatePath} not found");
+                var argname = $"argument_{i}";
+                var value = $"arguments[{i}]";
+                var dotnet_type = sqlParams[i].Item1;
+                var datum_conversion_function = GetDatumConversionFunction(dotnet_type);
+
+                sb.AppendLine($"var {argname} = {datum_conversion_function}({value});");
+
             }
-            return rawFunctionDecl;
+            sb.Append($"// END create arguments for {funcName}");
+            return sb.ToString();
+        }
+
+        // DONUT
+        public static string BuildFreeArguments(string funcName, List<Tuple<string, string>> sqlParams)
+        {
+            // TODO(rosicley/todd) - we need to check how we will free the list...
+            //     // WARNING: this is completely wrong.  
+            // // - the individual IntPtr are not GCHandles, so there's nothing to free
+            // // - The list needs to be pinned (currently is not)
+            // // - Only the list needs to be freed
+            //     var sb = new System.Text.StringBuilder();
+            //     sb.AppendLine($"// BEGIN free arguments for {funcName}");
+            //     int argc = sqlParams.Count;
+
+            //     for (int i = 0; i < argc; i++)
+            //     {
+            //         var argname = $"argument_{i}";
+            //         sb.AppendLine($"gch_{argname}.Free();");
+            //     }
+
+            //     sb.AppendLine($"// END free arguments for {funcName}");
+            //     return sb.ToString();
+            return "";
         }
 
         public static string BuildFunctionCall(string funcName, List<Tuple<string, string>> sqlParams)
@@ -117,7 +170,7 @@ namespace PlDotNET
 
             for (int i = 0; i < argc; i++)
             {
-                sb.Append($"({sqlParams[i].Item1}) argsList[{i}]");
+                sb.Append($"({sqlParams[i].Item1}) argument_{i}");
                 if (i < argc - 1)
                 {
                     sb.Append(", ");
@@ -129,43 +182,40 @@ namespace PlDotNET
 
         public static string BuildCallSetResult(string returnType)
         {
-            if (returnType == "int")
+            string setResult = "var result_datum = ";
+            switch (returnType)
             {
-                return "pldotnet_SetInt32Result(result, result == null, output);";
+                case "short":
+                    setResult += $"pldotnet_createDatumInt16(({returnType})result);\n";
+                    break;
+                case "int":
+                    setResult += $"pldotnet_createDatumInt32(({returnType})result);\n";
+                    break;
+                case "long":
+                    setResult += $"pldotnet_createDatumInt64(({returnType})result);\n";
+                    break;
+                case "float":
+                    setResult += $"pldotnet_createDatumFloat(({returnType})result);\n";
+                    break;
+                case "double":
+                    setResult += $"pldotnet_createDatumDouble(({returnType})result);\n";
+                    break;
+                case "bool":
+                    setResult += $"pldotnet_createDatumBoolean(({returnType})result);\n";
+                    break;
+                case "NpgsqlPoint":
+                    setResult += $"pldotnet_createDatumPoint((double)result.X,(double)result.Y);\n";
+                    break;
+                default:
+                    throw new NotImplementedException($"It is not possible to return a {returnType} type! Check BuildCallSetResult.");
             }
-            else if (returnType == "bool")
-            {
-                return "pldotnet_SetBooleanResult(result, result == null, output);";
-            }
-            else if (returnType == "NpgsqlPolygon")
-            {
-                return "SetPolygonResult(result, output);";
-            }
-            else if(returnType == "short")
-            {
-                return "pldotnet_SetInt16Result(result, result == null, output);";
-            }
-            else if(returnType == "long")
-            {
-                return "pldotnet_SetInt64Result(result, result == null, output);";
-            }
-            else if(returnType == "float")
-            {
-                return "pldotnet_SetFloatResult(result, result == null, output);";
-            }
-            else if(returnType == "double")
-            {
-                return "pldotnet_SetDoubleResult(result, result == null, output);";
-            }
-            else
-            {
-                throw new NotImplementedException("Only int and boolean return types are supported");
-            }
+            setResult += "pldotnet_SetDatumResult(result_datum, result_datum == null, output);";
+            return setResult;
         }
 
         public static string BuildSourceCode(IntPtr Name, IntPtr ReturnType, IntPtr Params, IntPtr Body)
         {
-            string name = Marshal.PtrToStringAuto(Name);
+            string funcName = Marshal.PtrToStringAuto(Name);
             string returnType = Marshal.PtrToStringAuto(ReturnType);
 
             var sqlParams = GetSqlParamsFromString(Marshal.PtrToStringAuto(Params));
@@ -174,16 +224,30 @@ namespace PlDotNET
 
             string body = Marshal.PtrToStringAuto(Body);
 
-            pldotnet_Info($"Compiling function {name}");
+            pldotnet_Info($"Compiling function {funcName}");
             pldotnet_Info($"Return type: {returnType}");
             pldotnet_Info($"Params: {paramsStr}");
             pldotnet_Info($"Body: {body}");
 
             // dummy template, we need to use a real template later
             // including the boilerplate code for the user function
-            string rawFunctionDecl = $"public static {returnType} {name}({paramsStr}) {{\n{body}\n}}";
+            string rawFunctionDecl = $"public static {returnType} {funcName}({paramsStr}) {{\n{body}\n}}";
 
-            return ParseTemplate(rawFunctionDecl, name, sqlParams, returnType);
+            if (!File.Exists(CSharpTemplatePath))
+            {
+                string msg = $"Csharp template file '{CSharpTemplatePath}' not found";
+                pldotnet_Info(msg);
+                throw new SystemException(msg);
+            }
+
+            pldotnet_Info($"Loading template from {CSharpTemplatePath}");
+            var template = File.ReadAllText(CSharpTemplatePath);
+            var withArgumentsCreated = template.Replace("// $create_arguments", BuildCreateArguments(funcName, sqlParams));
+            var withFunctionDecl = withArgumentsCreated.Replace("// $user_function_declaration$", rawFunctionDecl);
+            var withFunctionCall = withFunctionDecl.Replace("// $user_function_call$", BuildFunctionCall(funcName, sqlParams));
+            var withArgumentsDeleted = withFunctionCall.Replace("// $free_arguments", BuildFreeArguments(funcName, sqlParams));
+            var withResultsSet = withArgumentsDeleted.Replace("// $call_set_result$", BuildCallSetResult(returnType));
+            return withResultsSet;
         }
 
         public static string GetCompilationError(Diagnostic diagnostic, string[] lines)
@@ -217,8 +281,10 @@ namespace PlDotNET
 
             var userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
 
-            var trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
-                .Split(Path.PathSeparator);
+            var trustedAssembliesPathsArray = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
+            List<string> trustedAssembliesPaths = new();
+            trustedAssembliesPaths.AddRange(trustedAssembliesPathsArray);
+            trustedAssembliesPaths.Add(typeof(NpgsqlPoint).Assembly.Location);
 
             var neededAssemblies = new[]
             {
@@ -235,20 +301,18 @@ namespace PlDotNET
                 "Npgsql"
             };
 
-            List<PortableExecutableReference> references = trustedAssembliesPaths
-                .Where(p => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
-                .Select(p => MetadataReference.CreateFromFile(p))
-                .ToList();
-
-            references.Add(
-                MetadataReference.CreateFromFile(
-                    typeof(NpgsqlPoint).Assembly.Location
-                )
-            );
-
-            foreach (var refer in references)
+            List<PortableExecutableReference> references = new List<PortableExecutableReference>();
+            foreach (var na in neededAssemblies)
             {
-                pldotnet_Info($"Reference: {refer.Display}");
+                foreach (var tap in trustedAssembliesPaths)
+                {
+                    if (Path.GetFileNameWithoutExtension(tap) == na)
+                    {
+                        var mr = MetadataReference.CreateFromFile(tap);
+                        pldotnet_Info($"trustedAssembliesPath {tap} matches neededAssembly {na}; adding MetadataReference {mr}");
+                        references.Add(mr);
+                    }
+                }
             }
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
@@ -260,7 +324,6 @@ namespace PlDotNET
                 options: compilationOptions,
                 syntaxTrees: new[] { userTree },
                 references: references);
-
 
             Microsoft.CodeAnalysis.Emit.EmitResult compileResult = compilation.Emit(MemStream);
 
@@ -275,6 +338,8 @@ namespace PlDotNET
                 pldotnet_Warning(sb.ToString());
                 return null;
             }
+
+            Assembly myAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location);
 
             return compileResult;
         }
@@ -332,7 +397,7 @@ namespace PlDotNET
             return 0;
         }
 
-        public static Action<IntPtr, IntPtr> GetDirectDelegate(MemoryStream memoryStream)
+        public static Action<List<IntPtr>, IntPtr> GetDirectDelegate(MemoryStream memoryStream)
         {
             var compiledAssembly = Assembly.Load(memoryStream.GetBuffer());
 
@@ -346,8 +411,8 @@ namespace PlDotNET
 
             MethodInfo procMethod = procClassType.GetMethod("CallUserFunction");
 
-            return (Action<IntPtr, IntPtr>)Delegate.CreateDelegate(
-                typeof(Action<IntPtr, IntPtr>),
+            return (Action<List<IntPtr>, IntPtr>)Delegate.CreateDelegate(
+                typeof(Action<List<IntPtr>, IntPtr>),
                 null,
                 procMethod
             );
@@ -387,7 +452,9 @@ namespace PlDotNET
             // }
 
             // not hread safe for now
-            Engine.Cached.UserProcedure(arguments, output);
+            GCHandle gch_list = GCHandle.FromIntPtr(arguments);
+            var argument_list = (List<IntPtr>)gch_list.Target;
+            Engine.Cached.UserProcedure(argument_list, output);
 
             return 0;
         }

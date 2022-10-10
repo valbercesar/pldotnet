@@ -56,29 +56,17 @@ typedef int
 typedef void*
 (CORECLR_DELEGATE_CALLTYPE *build_generic_list)(void);
 
+// DONUT
+// public static unsafe System.IntPtr BuildDatumList()
 typedef void*
-(CORECLR_DELEGATE_CALLTYPE *add_integer_to_generic_list)(
-    void *list, int32_t item);
+(CORECLR_DELEGATE_CALLTYPE *build_datum_list_t)(void);
 
-typedef void*
-(CORECLR_DELEGATE_CALLTYPE *add_small_integer_to_generic_list)(
-    void *list, int16_t item);
-
-typedef void*
-(CORECLR_DELEGATE_CALLTYPE *add_big_integer_to_generic_list)(
-    void *list, int64_t item);
-
-typedef void*
-(CORECLR_DELEGATE_CALLTYPE *add_float_to_generic_list)(
-    void *list, float item);
-
-typedef void*
-(CORECLR_DELEGATE_CALLTYPE *add_double_to_generic_list)(
-    void *list, double item);
-
-typedef void*
-(CORECLR_DELEGATE_CALLTYPE *add_boolean_to_generic_list)(
-    void *list, bool item);
+// DONUT
+// public static unsafe System.IntPtr AddDatumToList(
+//         System.IntPtr list, System.IntPtr element)
+typedef void
+(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_t)(
+    void *list, void* datum);
 
 /** @brief Loads dotnet using the HostFXR.  HostFXR "finds and resolves
  * the runtime and all the frameworks the app needs", which in our

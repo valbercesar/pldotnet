@@ -27,6 +27,7 @@
 #include <glib/ghash.h>
 #include <coreclr_delegates.h>
 #include "pldotnet_common.h"
+#include "pldotnet_conversions.h"
 
 #define DIR_SEPARATOR '/'
 

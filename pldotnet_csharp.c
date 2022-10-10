@@ -24,7 +24,6 @@
 #include "pldotnet_hostfxr.h"
 #include <postgres.h>
 #include <access/htup.h>
-#include <access/htup_details.h>
 #include <catalog/pg_proc.h>
 #include <utils/syscache.h>
 
@@ -34,6 +33,8 @@
 PG_FUNCTION_INFO_V1(plcsharp_call_handler);
 PG_FUNCTION_INFO_V1(plcsharp_inline_handler);
 PG_FUNCTION_INFO_V1(plcsharp_validator);
+
+extern void (*free_generic_gchandle)(void*);
 
 /*
  * START: declaring functions
@@ -314,8 +315,13 @@ static Datum plcsharp_CompileAndRunUserFunction(
         nullptr == function_decl->call_user_method)
         elog(ERROR, "[pldotnet]: Could not load function_decl");
 
+    // DONUT: create arglist as List<IntPtr>, which is really Datum[]
+    void* arglist = pldotnet_BuildArgumentList(fcinfo, procst);
     function_decl->call_user_method(fcinfo->flinfo->fn_oid,
-                pldotnet_BuildArgumentList(fcinfo, procst), (void*) &output);
+    arglist, (void*) &output);
+
+    // DONUT: free arg list
+    free_generic_gchandle(arglist);
 
     return output.value;
 }

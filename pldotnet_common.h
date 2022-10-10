@@ -1,6 +1,6 @@
 /* 
  * PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as 
- * 			procedural languages (PL)
+ *             procedural languages (PL)
  * 
  * 
  * Copyright 2019-2020 Brick Abode
@@ -39,6 +39,8 @@
 #include <utils/numeric.h>
 #include <utils/fmgrprotos.h>
 #include <utils/array.h>
+#include <utils/geo_decls.h>
+#include <access/htup_details.h>
 
 extern PGDLLIMPORT bool check_function_bodies;
 
@@ -171,20 +173,6 @@ void* pldotnet_GetDotNetMethod(
     const char *dotnet_type_method,
     const char *delegate_type_name
 );
-
-/**
- * @brief This function is used to instantiate the arguments of the user
- * function. It builds a generic list on .NET side and append each element to
- * the list.The list is then passed to the user function and some code
- * generation will be responsible for the correct casting of the arguments.
- *
- * @param fcinfo the function information.
- * @param procst corresponds to a pointer to a tuple with the format of pg_proc 
- * relation (see pg_proc.h from postgresql).
- * @return void* the generated list the arguments.
- */
-extern void* pldotnet_BuildArgumentList(FunctionCallInfo fcinfo,
-    Form_pg_proc procst);
 
 /**
  * @brief Build the config paths related do .NET.
@@ -332,58 +320,14 @@ extern void pldotnet_Elog(int level, char *message);
  * @param isnull 
  * @param native_result 
  */
-extern void
-pldotnet_SetInt32Result(int32_t value, bool isnull, void *native_result);
+extern void pldotnet_SetDatumResult(void* value, bool isnull, void *native_result);
 
 /**
  * @brief 
  * 
- * @param value 
- * @param isnull 
- * @param native_result 
+ * @return void* 
  */
-extern void
-pldotnet_SetInt16Result(int16_t value, bool isnull, void *native_result);
-
-/**
- * @brief 
- * 
- * @param value 
- * @param isnull 
- * @param native_result 
- */
-extern void
-pldotnet_SetInt64Result(int64_t value, bool isnull, void *native_result);
-
-/**
- * @brief 
- * 
- * @param value 
- * @param isnull 
- * @param native_result 
- */
-extern void
-pldotnet_SetFloatResult(float value, bool isnull, void *native_result);
-
-/**
- * @brief 
- * 
- * @param value 
- * @param isnull 
- * @param native_result 
- */
-extern void
-pldotnet_SetDoubleResult(double value, bool isnull, void *native_result);
-
-/**
- * @brief 
- * 
- * @param value 
- * @param isnull 
- * @param native_result 
- */
-extern void
-pldotnet_SetBooleanResult(bool value, bool isnull, void *native_result);
+void* pldotnet_BuildArgumentList(FunctionCallInfo, Form_pg_proc);
 
 extern char *root_path;
 extern char *dnldir;

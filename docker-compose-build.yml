@@ -38,6 +38,47 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       # POSTGRES_PASSWORD: # your password
     volumes:
+      - ./pldotnet.c:/app/pldotnet/pldotnet.c
+      - ./pldotnet_common.c:/app/pldotnet/pldotnet_common.c
+      - ./pldotnet_csharp.c:/app/pldotnet/pldotnet_csharp.c
+      - ./pldotnet_hostfxr.c:/app/pldotnet/pldotnet_hostfxr.c
+      - ./hostfxr.h:/app/pldotnet/hostfxr.h
+      - ./pldotnet_common.h:/app/pldotnet/pldotnet_common.h
+      - ./pldotnet_conversions.h:/app/pldotnet/pldotnet_conversions.h
+      - ./pldotnet_conversions.c:/app/pldotnet/pldotnet_conversions.c
+      - ./pldotnet_csharp.h:/app/pldotnet/pldotnet_csharp.h
+      - ./pldotnet_hostfxr.h:/app/pldotnet/pldotnet_hostfxr.h
+      - ./Makefile:/app/pldotnet/Makefile
+      - ./DotNetEngine:/app/pldotnet/DotNetEngine/
+      - ./ba-sql:/app/pldotnet/ba-sql/
+      - $PWD/debian/packages:/app/pldotnet/debian/packages
+
+  pldotnet-test:
+    container_name: pldotnet-build
+    image: pldotnet:build
+    <<: *interactive
+    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/build_packages.sh && bash"
+    build:
+      dockerfile: Dockerfiles/deb_package/Dockerfile_deb-build
+      <<: *build-args
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+      PGDATA: /var/lib/postgresql/data1/
+      POSTGRES_HOST_AUTH_METHOD: trust
+      # POSTGRES_PASSWORD: # your password
+    volumes:
+      - ./pldotnet.c:/app/pldotnet/pldotnet.c
+      - ./pldotnet_common.c:/app/pldotnet/pldotnet_common.c
+      - ./pldotnet_csharp.c:/app/pldotnet/pldotnet_csharp.c
+      - ./pldotnet_hostfxr.c:/app/pldotnet/pldotnet_hostfxr.c
+      - ./hostfxr.h:/app/pldotnet/hostfxr.h
+      - ./pldotnet_common.h:/app/pldotnet/pldotnet_common.h
+      - ./pldotnet_csharp.h:/app/pldotnet/pldotnet_csharp.h
+      - ./pldotnet_hostfxr.h:/app/pldotnet/pldotnet_hostfxr.h
+      - ./pldotnet_conversions.h:/app/pldotnet/pldotnet_conversions.h
+      - ./pldotnet_conversions.c:/app/pldotnet/pldotnet_conversions.c
+      - ./Makefile:/app/pldotnet/Makefile
+      - ./DotNetEngine:/app/pldotnet/DotNetEngine/
       - $PWD/debian/packages:/app/pldotnet/debian/packages
 
   pldotnet-deb:

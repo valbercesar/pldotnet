@@ -3,12 +3,12 @@ using System.Net;
 using NpgsqlTypes;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using Npgsql.Internal.TypeHandlers.GeometricHandlers;
 
 namespace PlDotNET
 {
-    public static class ExperimentalBridge
-    {
+    public static class DotNetBridge
+    {   
+        // TODO(rosicley) - check if we need this function in the future
         public static NpgsqlPoint AddOne(NpgsqlPoint point)
         {
             return new NpgsqlPoint(point.X + 1, point.Y + 1);
@@ -19,6 +19,7 @@ namespace PlDotNET
         /// Just for prototyping, we can have a way to load this from C, without having to
         /// deal with the function overloarding issue.
         /// </summary>
+        // TODO(rosicley) - check if we need this function in the future
         public static NpgsqlPoint AddOneNpgsqlPoint(NpgsqlPoint point)
         {
             return AddOne(point);
@@ -27,6 +28,7 @@ namespace PlDotNET
         /// <summary>
         /// Free memmory pointed by a IntPtr
         /// </summary>
+        // TODO(rosicley) - check if we need this function in the future
         public static unsafe void FreeGenericGCHandle(IntPtr p)
         {
             GCHandle gch = GCHandle.FromIntPtr(p);
@@ -38,6 +40,7 @@ namespace PlDotNET
         /// <summary>
         /// This function is responsible to build a NpgsqlPoint and return a pointer
         /// </summary>
+        // TODO(rosicley) - check if we need this function in the future
         public static unsafe System.IntPtr BuildNpgsqlPoint(double x, double y)
         {
             var point = new NpgsqlPoint(x, y);
@@ -50,6 +53,7 @@ namespace PlDotNET
         /// <summary>
         /// This function is responsible to build a NpsqlBox and return a pointer
         /// </summary>
+        // TODO(rosicley) - check if we need this function in the future
         public static unsafe System.IntPtr BuildNpgsqlBox(System.IntPtr _p1, System.IntPtr _p2)
         {
             GCHandle gch_p1 = GCHandle.FromIntPtr(_p1);
@@ -70,6 +74,7 @@ namespace PlDotNET
             return GCHandle.ToIntPtr(handle);
         }
 
+        // TODO(rosicley) - check if we need this function in the future
         public delegate System.IntPtr DelBuildNpgsqlBox(System.IntPtr _p1, System.IntPtr _p2);
 
         /// <summary>
@@ -77,6 +82,7 @@ namespace PlDotNET
         /// Just for prototyping, we can have a way to load this from C, without having to
         /// deal with the function overloarding issue.
         /// </summary>
+        // TODO(rosicley) - check if we need this function in the future
         public static unsafe System.IntPtr AddOneNpgsqlBox(System.IntPtr _box)
         {
             GCHandle gch_box = GCHandle.FromIntPtr(_box);
@@ -94,6 +100,7 @@ namespace PlDotNET
 
         public delegate System.IntPtr DelAddOneNpgsqlBox(System.IntPtr _box);
 
+        // TODO(rosicley) - check if we need this function in the future
         public static unsafe System.IntPtr UnpackBox(System.IntPtr _box)
         {
             // TODO
@@ -106,13 +113,16 @@ namespace PlDotNET
             return _box;
         }
 
+        // TODO(rosicley) - check if we need this function in the future
         public delegate System.IntPtr DelUnpackBox(System.IntPtr _box);
 
+        // TODO(rosicley) - check if we need this function in the future
         public static void PrintNpgsqlPoint(NpgsqlPoint p)
         {
             Engine.pldotnet_Info($"This is the point {p.X}, {p.Y}");
         }
 
+        // TODO(rosicley) - check if we need this function in the future
         public static unsafe void PrintNpgsqlBox(System.IntPtr _box)
         {
             GCHandle gch_box = GCHandle.FromIntPtr(_box);
@@ -125,15 +135,7 @@ namespace PlDotNET
 
         public delegate void DelPrintNpgsqlBox(System.IntPtr _box);
 
-        public static unsafe System.IntPtr BuildGenericList()
-        {
-            var l = new List<object>();
-            GCHandle handle = GCHandle.Alloc(l, GCHandleType.Normal);
-            return GCHandle.ToIntPtr(handle);
-        }
-
-        public delegate System.IntPtr DelBuildGenericList();
-
+        // TODO(rosicley) - check if we need this function in the future
         public static unsafe void DeleteGenericList(System.IntPtr _list)
         {
             throw new NotImplementedException();
@@ -141,89 +143,26 @@ namespace PlDotNET
 
         public delegate void DelDeleteGenericList(System.IntPtr _list);
 
-        public static unsafe void AddElementToGenericList(System.IntPtr _list, System.IntPtr _element)
+        // DONUT
+        // Create a new list of IntPtr
+        // Intended for pldotnet to pass an array of Datum's to Engine.cs
+        public static unsafe System.IntPtr BuildDatumList()
+        {
+            var l = new List<IntPtr>();
+            GCHandle handle = GCHandle.Alloc(l, GCHandleType.Normal);
+            return GCHandle.ToIntPtr(handle);
+        }
+        public delegate System.IntPtr DelBuildDatumList();
+
+        // DONUT
+        // Add an IntPtr(Datum) to a list of IntPtr
+        // Intended for pldotnet to pass an array of Datum's to Engine.cs
+        public static unsafe void AddDatumToList(System.IntPtr _list, System.IntPtr _datum)
         {
             GCHandle gch_list = GCHandle.FromIntPtr(_list);
-            GCHandle gch_element = GCHandle.FromIntPtr(_element);
-
-            var list = (List<object>)gch_list.Target;
-            var element = (object)gch_element.Target;
-
-            list.Add(element);
+            var list = (List<IntPtr>)gch_list.Target;
+            list.Add(_datum);
         }
-
-        public delegate void DelAddElementToGenericList(System.IntPtr _list, System.IntPtr _element);
-
-        public static unsafe void AddIntegerToList(System.IntPtr _list, int _element)
-        {
-            GCHandle gch_list = GCHandle.FromIntPtr(_list);
-
-            Engine.pldotnet_Info($"Adding {_element} to the list");
-
-            var list = (List<object>)gch_list.Target;
-            list.Add(_element);
-        }
-
-        public delegate void DelAddIntegerToList(System.IntPtr _list, int _element);
-
-        public static unsafe void AddSmallIntegerToList(System.IntPtr _list, short _element)
-        {
-            GCHandle gch_list = GCHandle.FromIntPtr(_list);
-
-            Engine.pldotnet_Info($"Adding {_element} to the list");
-
-            var list = (List<object>)gch_list.Target;
-            list.Add(_element);
-        }
-
-        public delegate void DelAddSmallIntegerToList(System.IntPtr _list, short _element);
-
-        public static unsafe void AddBigIntegerToList(System.IntPtr _list, long _element)
-        {
-            GCHandle gch_list = GCHandle.FromIntPtr(_list);
-
-            Engine.pldotnet_Info($"Adding {_element} to the list");
-
-            var list = (List<object>)gch_list.Target;
-            list.Add(_element);
-        }
-
-        public delegate void DelAddBigIntegerToList(System.IntPtr _list, long _element);
-
-        public static unsafe void AddFloatToList(System.IntPtr _list, float _element)
-        {
-            GCHandle gch_list = GCHandle.FromIntPtr(_list);
-
-            Engine.pldotnet_Info($"Adding {_element} to the list");
-
-            var list = (List<object>)gch_list.Target;
-            list.Add(_element);
-        }
-
-        public delegate void DelAddFloatToList(System.IntPtr _list, float _element);
-
-        public static unsafe void AddDoubleToList(System.IntPtr _list, double _element)
-        {
-            GCHandle gch_list = GCHandle.FromIntPtr(_list);
-
-            Engine.pldotnet_Info($"Adding {_element} to the list");
-
-            var list = (List<object>)gch_list.Target;
-            list.Add(_element);
-        }
-
-        public delegate void DelAddDoubleToList(System.IntPtr _list, double _element);
-
-        public static unsafe void AddBooleanToList(System.IntPtr _list, bool _element)
-        {
-            GCHandle gch_list = GCHandle.FromIntPtr(_list);
-
-            Engine.pldotnet_Info($"Adding {_element} to the list");
-
-            var list = (List<object>)gch_list.Target;
-            list.Add(_element);
-        }
-
-        public delegate void DelAddBooleanToList(System.IntPtr _list, bool _element);
+        public delegate void DelAddDatumToList(System.IntPtr _list, System.IntPtr _datum);
     }
 }
