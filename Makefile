@@ -148,4 +148,6 @@ tests:
 	cat ba-sql/testfloats.sql | (sudo -u postgres  psql 2>&1) | tee results/testfloats.out
 	cat ba-sql/testbool.sql | (sudo -u postgres  psql 2>&1) | tee results/testbool.out
 	cat ba-sql/testpoint.sql | (sudo -u postgres  psql 2>&1) | tee results/testpoint.out
+	cat ba-sql/testline.sql | (sudo -u postgres  psql 2>&1) | tee results/testline.out
+	cat ba-sql/testbox.sql | (sudo -u postgres  psql 2>&1) | tee results/testbox.out
 	echo 'SELECT testName, result from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out

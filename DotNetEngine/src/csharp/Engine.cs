@@ -110,6 +110,12 @@ namespace PlDotNET
                     return "pldotnet_getBoolean";
                 case "NpgsqlPoint":
                     return "pldotnet_BuildNpgsqlPoint";
+                case "NpgsqlLine":
+                    return "pldotnet_BuildNpgsqlLine";
+                case "NpgsqlLSeg":
+                    return "pldotnet_BuildNpgsqlLSeg";
+                case "NpgsqlBox":
+                    return "pldotnet_BuildNpgsqlBox";
                 default:
                     throw new NotImplementedException($"Datum to {dotnet_type} is not supported! Check GetDatumConversionFunction");
             }
@@ -118,7 +124,7 @@ namespace PlDotNET
         // DONUT
         public static string BuildCreateArguments(string funcName, List<Tuple<string, string>> sqlParams)
         {
-            // WARNING: this is completely wrong.  
+            // WARNING: this is completely wrong.
             // - the individual IntPtr are not GCHandles, only Datum
             // - creating a GCHandle from it is wrong
             var sb = new System.Text.StringBuilder();
@@ -143,7 +149,7 @@ namespace PlDotNET
         public static string BuildFreeArguments(string funcName, List<Tuple<string, string>> sqlParams)
         {
             // TODO(rosicley/todd) - we need to check how we will free the list...
-            //     // WARNING: this is completely wrong.  
+            //     // WARNING: this is completely wrong.
             // // - the individual IntPtr are not GCHandles, so there's nothing to free
             // // - The list needs to be pinned (currently is not)
             // // - Only the list needs to be freed
@@ -186,25 +192,50 @@ namespace PlDotNET
             switch (returnType)
             {
                 case "short":
-                    setResult += $"pldotnet_createDatumInt16(({returnType})result);\n";
+                    setResult +=
+                    $"pldotnet_createDatumInt16(({returnType})result);\n";
                     break;
                 case "int":
-                    setResult += $"pldotnet_createDatumInt32(({returnType})result);\n";
+                    setResult +=
+                    $"pldotnet_createDatumInt32(({returnType})result);\n";
                     break;
                 case "long":
-                    setResult += $"pldotnet_createDatumInt64(({returnType})result);\n";
+                    setResult +=
+                    $"pldotnet_createDatumInt64(({returnType})result);\n";
                     break;
                 case "float":
-                    setResult += $"pldotnet_createDatumFloat(({returnType})result);\n";
+                    setResult +=
+                    $"pldotnet_createDatumFloat(({returnType})result);\n";
                     break;
                 case "double":
-                    setResult += $"pldotnet_createDatumDouble(({returnType})result);\n";
+                    setResult +=
+                    $"pldotnet_createDatumDouble(({returnType})result);\n";
                     break;
                 case "bool":
-                    setResult += $"pldotnet_createDatumBoolean(({returnType})result);\n";
+                    setResult +=
+                    $"pldotnet_createDatumBoolean(({returnType})result);\n";
                     break;
                 case "NpgsqlPoint":
-                    setResult += $"pldotnet_createDatumPoint((double)result.X,(double)result.Y);\n";
+                    setResult +=
+                    $"pldotnet_createDatumPoint((double)result.X, "
+                    + "(double)result.Y);\n";
+                    break;
+                case "NpgsqlLine":
+                    setResult +=
+                    $"pldotnet_createDatumLine((double)result.A, "
+                    + "(double)result.B,(double)result.C);\n";
+                    break;
+                case "NpgsqlLSeg":
+                    setResult +=
+                    $"pldotnet_createDatumLineSegment((double)result.Start.X,"
+                    + "(double)result.Start.Y, (double)result.End.X, "
+                    + "(double)result.End.Y);\n";
+                    break;
+                case "NpgsqlBox":
+                    setResult +=
+                    $"pldotnet_createDatumBox((double)result.UpperRight.X, "
+                    +"(double)result.UpperRight.Y, (double)result.LowerLeft.X, "
+                    + "(double)result.LowerLeft.Y);\n";
                     break;
                 default:
                     throw new NotImplementedException($"It is not possible to return a {returnType} type! Check BuildCallSetResult.");

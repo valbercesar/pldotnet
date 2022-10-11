@@ -30,19 +30,29 @@
 //// Datum -> Npgsql or C# type ////
 ////////////////////////////////////
 
-extern int16_t pldotnet_getInt16(void* datum);
+extern int16_t pldotnet_getInt16(void *datum);
 
-extern int32_t pldotnet_getInt32(void* datum);
+extern int32_t pldotnet_getInt32(void *datum);
 
-extern int64_t pldotnet_getInt64(void* datum);
+extern int64_t pldotnet_getInt64(void *datum);
 
-extern float pldotnet_getFloat(void* datum);
+extern float pldotnet_getFloat(void *datum);
 
-extern double pldotnet_getDouble(void* datum);
+extern double pldotnet_getDouble(void *datum);
 
-extern bool pldotnet_getBoolean(void* datum);
+extern bool pldotnet_getBoolean(void *datum);
 
-extern void pldotnet_getDatumPointAttributes(void* datum, double *x,  double *y);
+extern void pldotnet_getDatumPointAttributes(void *datum, double *x, double *y);
+
+extern void pldotnet_getDatumLineAttributes(void *datum, double *a, double *b,
+                                            double *c);
+
+extern void pldotnet_getDatumLineSegmentAttributes(void *datum, double *x1,
+                                                   double *y1, double *x2,
+                                                   double *y2);
+
+extern void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
+                                           double *x2, double *y2);
 
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
@@ -61,5 +71,13 @@ extern Datum pldotnet_createDatumDouble(double dotnetValue);
 extern Datum pldotnet_createDatumBoolean(bool dotnetValue);
 
 extern Datum pldotnet_createDatumPoint(double x, double y);
+
+extern Datum pldotnet_createDatumLine(double a, double b, double c);
+
+extern Datum pldotnet_createDatumLineSegment(double x1, double y1, double x2,
+                                             double y2);
+
+extern Datum pldotnet_createDatumBox(double x1, double y1, double x2,
+                                     double y2);
 
 #endif  // PLDOTNET_CONVERSIONS_H_

@@ -40,6 +40,38 @@ namespace PlDotNETUserSpace
             return new NpgsqlPoint(x,y);
         }
 
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumLineAttributes(IntPtr datum, ref double a,  ref double b,  ref double c);
+
+        public static NpgsqlLine pldotnet_BuildNpgsqlLine(IntPtr datum)
+        {
+            double a=0.0, b=0.0, c=0.0;
+            pldotnet_getDatumLineAttributes(datum, ref a, ref b, ref c);
+            return new NpgsqlLine(a, b, c);
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumLineSegmentAttributes(IntPtr datum, ref double x1,  ref double y1,  ref double x2,  ref double y2);
+
+        public static NpgsqlLSeg pldotnet_BuildNpgsqlLSeg(IntPtr datum)
+        {
+            double x1=0.0, y1=0.0, x2=0.0, y2=0.0;
+            pldotnet_getDatumLineSegmentAttributes(datum, ref x1, ref y1, ref x2, ref y2);
+            return new NpgsqlLSeg(x1, y1, x2, y2);
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumBoxAttributes(IntPtr datum, ref double x1,  ref double y1,  ref double x2,  ref double y2);
+
+        public static NpgsqlBox pldotnet_BuildNpgsqlBox(IntPtr datum)
+        {
+            double x1=0.0, y1=0.0, x2=0.0, y2=0.0;
+            pldotnet_getDatumBoxAttributes(datum, ref x1, ref y1, ref x2, ref y2);
+            NpgsqlPoint upperRight = new NpgsqlPoint(x1, y1);
+            NpgsqlPoint lowerLeft = new NpgsqlPoint(x2, y2);
+            return new NpgsqlBox(upperRight, lowerLeft);
+        }
+
         ////////////////////////////
         /// DOTNET TYPE -> DATUM ///
         ////////////////////////////
@@ -64,6 +96,15 @@ namespace PlDotNETUserSpace
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumPoint(double x, double y);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumLine(double a, double b, double c);
+        
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumLineSegment(double x1, double y1,  double x2, double y2);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumBox(double x1, double y1,  double x2, double y2);
         
         /// SEND THE FINAL DATUM TO POSTGRES
         [DllImport("@PKG_LIBDIR/pldotnet.so")]

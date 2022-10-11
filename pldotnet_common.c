@@ -264,6 +264,12 @@ const char* pldotnet_GetCompatibleNetTypeName(Oid id,
             return "string"; /* System.String */
         case POINTOID:
             return "NpgsqlPoint";
+        case LINEOID:
+            return "NpgsqlLine";
+        case LSEGOID:
+            return "NpgsqlLSeg";
+        case BOXOID:
+            return "NpgsqlBox";
         case POLYGONOID:
             return "NpgsqlPolygon";
         default:
