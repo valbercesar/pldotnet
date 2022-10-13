@@ -2,6 +2,9 @@ using System;
 using NpgsqlTypes;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Buffers;
+using System.Text.Unicode;
 
 namespace PlDotNETUserSpace
 {
@@ -72,6 +75,23 @@ namespace PlDotNETUserSpace
             return new NpgsqlBox(upperRight, lowerLeft);
         }
 
+        // needed for string conversion
+        static UTF8Encoding utf8_e = new UTF8Encoding();
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern unsafe void pldotnet_getDatumTextAttributes(IntPtr datum, int* len, byte** buf);
+
+        public static unsafe String pldotnet_BuildString(IntPtr datum)
+        {
+            int strlen;
+            byte* str_p;
+
+            pldotnet_getDatumTextAttributes(datum, &strlen, &str_p);
+            ReadOnlySpan<byte> nativeSpan = new ReadOnlySpan<byte>(str_p, strlen);
+            String s1 = utf8_e.GetString(nativeSpan.ToArray(), 0, strlen);
+            return s1;
+        }
+
         ////////////////////////////
         /// DOTNET TYPE -> DATUM ///
         ////////////////////////////
@@ -105,7 +125,22 @@ namespace PlDotNETUserSpace
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumBox(double x1, double y1,  double x2, double y2);
-        
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern unsafe IntPtr pldotnet_createDatumText(int len, byte* buf);
+
+        public static unsafe IntPtr pldotnet_createDatumTextInternal(string s)
+        {
+            IntPtr datum;
+            byte[] encodedBytes = utf8_e.GetBytes(s);
+            int len = encodedBytes.Length;
+            fixed (byte* buf = &encodedBytes[0])
+            {
+                datum = pldotnet_createDatumText(len, buf);
+            }
+            return datum;
+        }
+
         /// SEND THE FINAL DATUM TO POSTGRES
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_SetDatumResult(IntPtr value, bool isnull, IntPtr native_result);

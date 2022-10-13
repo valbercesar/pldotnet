@@ -41,8 +41,9 @@ typedef int
 (CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
     uint32_t functionId,
     char *func_name,
-    char *func_rettype,
-    char *func_params,
+    int func_rettype,
+    char *func_paramsName,
+    int *func_paramsType,
     char *func_body
 );
 

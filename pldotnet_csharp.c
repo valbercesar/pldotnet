@@ -451,11 +451,11 @@ static bool plcsharp_GetSourceCode(FunctionCallInfo fcinfo,
         /* TODO(josias) get the real data here */
         user_function_decl->language = "csharp";
         user_function_decl->func_name = NameStr(procst->proname);;
-        user_function_decl->func_rettype = pldotnet_GetCompatibleNetTypeName(
-            procst->prorettype, false, true);
+        user_function_decl->func_rettype = procst->prorettype;
         user_function_decl->func_body = pldotnet_GetFunctionBody(proc, procst);
-        user_function_decl->func_params = pldotnet_GetSqlParams(
+        user_function_decl->func_paramsName = pldotnet_GetSqlParamsName(
             proc, procst, true);
+        user_function_decl->func_paramsType = pldotnet_GetSqlParamsType(proc, procst);
     }
 
     /* TODO(josias) Validate the user_function_decl here*/

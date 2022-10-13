@@ -194,8 +194,9 @@ void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl) {
     /* this is the new user declaration */
     function_decl->user_decl.language = nullptr;
     function_decl->user_decl.func_name = nullptr;
-    function_decl->user_decl.func_rettype = nullptr;
-    function_decl->user_decl.func_params = nullptr;
+    function_decl->user_decl.func_rettype = 0;
+    function_decl->user_decl.func_paramsName = nullptr;
+    function_decl->user_decl.func_paramsType = nullptr;
     function_decl->user_decl.func_body = nullptr;
 }
 
@@ -234,61 +235,6 @@ void pldotnet_SaveFunction(pldotnet_FunctionDecl *function, bool insert) {
             (gpointer) function);
 }
 
-
-const char* pldotnet_GetCompatibleNetTypeName(Oid id,
-                                              bool hastypeconversion,
-                                              bool is_csharp) {
-    Form_pg_type typeinfo;
-    HeapTuple typ;
-    char * composite_nm;
-
-    switch (id) {
-        case BOOLOID:
-            return "bool";   /* System.Boolean */
-        case INT4OID:
-            return "int";    /* System.Int32 */
-        case INT8OID:
-            return is_csharp ? "long" : "int64";   /* System.Int64 */
-        case INT2OID:
-            return is_csharp ? "short" : "int16";  /* System.Int16 */
-        case FLOAT4OID:
-            return is_csharp ? "float" : "float32";  /* System.Single */
-        case FLOAT8OID:
-            return "double"; /* System.Double */
-        case NUMERICOID:     /* System.Decimal */
-            return hastypeconversion ? "string" : "decimal";
-        case BPCHAROID:
-        case TEXTOID:
-        case VARCHAROID:
-        case TRIGGEROID:
-            return "string"; /* System.String */
-        case POINTOID:
-            return "NpgsqlPoint";
-        case LINEOID:
-            return "NpgsqlLine";
-        case LSEGOID:
-            return "NpgsqlLSeg";
-        case BOXOID:
-            return "NpgsqlBox";
-        case POLYGONOID:
-            return "NpgsqlPolygon";
-        default:
-            typ = SearchSysCache(TYPEOID,
-                                  ObjectIdGetDatum(id), 0, 0, 0);
-            if (!HeapTupleIsValid(typ)) {
-                elog(ERROR, "[pldotnet]: cache lookup failed for type %u", id);
-            }
-            typeinfo = (Form_pg_type) GETSTRUCT(typ);
-            if (typeinfo->typtype == TYPTYPE_COMPOSITE) {
-                composite_nm = NameStr(typeinfo->typname);
-                ReleaseSysCache(typ);
-                return composite_nm;
-            }
-            ReleaseSysCache(typ);
-    }
-    return "";
-}
-
 const char* pldotnet_GetFunctionBody(HeapTuple proc, Form_pg_proc procst) {
     bool isnull = false;
     Datum prosrc = SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_prosrc, &isnull);
@@ -296,7 +242,7 @@ const char* pldotnet_GetFunctionBody(HeapTuple proc, Form_pg_proc procst) {
     return body;
 }
 
-const char* pldotnet_GetSqlParams(HeapTuple proc,
+const char* pldotnet_GetSqlParamsName(HeapTuple proc,
                                   Form_pg_proc procst,
                                   bool is_csharp) {
     int nnames = 0;
@@ -308,7 +254,6 @@ const char* pldotnet_GetSqlParams(HeapTuple proc,
         proc,
         Anum_pg_proc_proargnames,
         &isnull);
-    Oid *argtypes = procst->proargtypes.values;
     size_t buffer_size = 0;
 
     if (!isnull)
@@ -324,22 +269,16 @@ const char* pldotnet_GetSqlParams(HeapTuple proc,
         return nullptr;
 
     argnames_array = (const char**)
-        palloc0(sizeof(char*) * procst->pronargs * 2);
+        palloc0(sizeof(char*) * procst->pronargs);
 
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         /* get the arg name */
         const char *name = DatumGetCString(DirectFunctionCall1(textout,
             argnames[i]));
 
-        /* get the arg type name without the type converstion */
-        const char *type = pldotnet_GetCompatibleNetTypeName(argtypes[i],
-            false,
-            is_csharp);
-
         argnames_array[i * 2] = name;
-        argnames_array[i * 2 + 1] = type;
 
-        buffer_size += strlen(name) + strlen(type) + 3;
+        buffer_size += strlen(name) + 3;
     }
 
     sql_params = (char*) palloc0(buffer_size);
@@ -347,14 +286,41 @@ const char* pldotnet_GetSqlParams(HeapTuple proc,
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         /* copy the arg name */
         strcat(sql_params, argnames_array[i * 2]);
-            strcat(sql_params, " ");
-
-        /* copy the arg type name */
-        strcat(sql_params, argnames_array[i * 2 + 1]);
         if (i < procst->pronargs - 1)
-            strcat(sql_params, ",");
+            strcat(sql_params, " ");
     }
     return sql_params;
+}
+
+const int* pldotnet_GetSqlParamsType(HeapTuple proc,
+                                  Form_pg_proc procst) {
+    int nnames = 0;
+    bool isnull = false;
+    Datum *argnames = nullptr;
+    Datum argname = SysCacheGetAttr(PROCOID,
+        proc,
+        Anum_pg_proc_proargnames,
+        &isnull);
+    Oid *argtypes = procst->proargtypes.values;
+
+    if (!isnull)
+        deconstruct_array(DatumGetArrayTypeP(argname),
+        TEXTOID,
+        -1,
+        false,
+        'i',
+        &argnames,
+        NULL,
+        &nnames);
+    else
+        return nullptr;
+
+    int *sql_types = (int*) palloc0(sizeof(int) * procst->pronargs);
+
+    for (int16_t i = 0; i < procst->pronargs; ++i) {
+        sql_types[i] = argtypes[i];
+    }
+    return sql_types;                    
 }
 
 bool pldotnet_CompileUserFunction(dotnet_loader loader,
@@ -363,8 +329,9 @@ bool pldotnet_CompileUserFunction(dotnet_loader loader,
     int test = compile_user_function(
         function_id,
         (void*) declaration->func_name,
-        (void*) declaration->func_rettype,
-        (void*) declaration->func_params,
+        (int) declaration->func_rettype,
+        (void*) declaration->func_paramsName,
+        (int*) declaration->func_paramsType,
         (void*) declaration->func_body);
     return 0 == test;
 }

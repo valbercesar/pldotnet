@@ -150,4 +150,5 @@ tests:
 	cat ba-sql/testpoint.sql | (sudo -u postgres  psql 2>&1) | tee results/testpoint.out
 	cat ba-sql/testline.sql | (sudo -u postgres  psql 2>&1) | tee results/testline.out
 	cat ba-sql/testbox.sql | (sudo -u postgres  psql 2>&1) | tee results/testbox.out
+	cat ba-sql/teststring.sql | (sudo -u postgres  psql 2>&1) | tee results/teststring.out
 	echo 'SELECT testName, result from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out

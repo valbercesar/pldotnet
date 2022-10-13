@@ -91,6 +91,14 @@ void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
   *y2 = orig_b->low.y;
 }
 
+void pldotnet_getDatumTextAttributes(void *datum, int* len, char** buf) {
+  text     *t = DatumGetTextPP(datum);
+  const size_t datum_len = VARSIZE_ANY_EXHDR(t);
+
+  *len = datum_len;
+  *buf = VARDATA_ANY(t);
+}
+
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
 ////////////////////////////////////
@@ -157,4 +165,13 @@ Datum pldotnet_createDatumBox(double x1, double y1, double x2, double y2) {
   new_b->low.x = x2;
   new_b->low.y = y2;
   return BoxPGetDatum(new_b);
+}
+
+Datum pldotnet_createDatumText(int len, char* buf) {
+  const size_t new_size = VARHDRSZ + len;
+  text* new_t = (text*)palloc(new_size);
+
+  SET_VARSIZE(new_t, new_size);
+  memcpy((void *) VARDATA(new_t), buf, len);
+  PG_RETURN_TEXT_P(new_t);
 }

@@ -54,6 +54,216 @@ namespace PlDotNET
             public Action<List<IntPtr>, IntPtr> UserProcedure;
         }
 
+        enum OID : int
+        {
+            BOOLOID = 16,
+            BYTEAOID = 17,
+            CHAROID = 18,
+            NAMEOID = 19,
+            INT8OID = 20,
+            INT2OID = 21,
+            INT2VECTOROID = 22,
+            INT4OID = 23,
+            REGPROCOID = 24,
+            TEXTOID = 25,
+            OIDOID = 26,
+            TIDOID = 27,
+            XIDOID = 28,
+            CIDOID = 29,
+            OIDVECTOROID = 30,
+            JSONOID = 114,
+            XMLOID = 142,
+            PG_NODE_TREEOID = 194,
+            PG_NDISTINCTOID = 3361,
+            PG_DEPENDENCIESOID = 3402,
+            PG_MCV_LISTOID = 5017,
+            PG_DDL_COMMANDOID = 32,
+            XID8OID = 5069,
+            POINTOID = 600,
+            LSEGOID = 601,
+            PATHOID = 602,
+            BOXOID = 603,
+            POLYGONOID = 604,
+            LINEOID = 628,
+            FLOAT4OID = 700,
+            FLOAT8OID = 701,
+            UNKNOWNOID = 705,
+            CIRCLEOID = 718,
+            MONEYOID = 790,
+            MACADDROID = 829,
+            INETOID = 869,
+            CIDROID = 650,
+            MACADDR8OID = 774,
+            ACLITEMOID = 1033,
+            BPCHAROID = 1042,
+            VARCHAROID = 1043,
+            DATEOID = 1082,
+            TIMEOID = 1083,
+            TIMESTAMPOID = 1114,
+            TIMESTAMPTZOID = 1184,
+            INTERVALOID = 1186,
+            TIMETZOID = 1266,
+            BITOID = 1560,
+            VARBITOID = 1562,
+            NUMERICOID = 1700,
+            REFCURSOROID = 1790,
+            REGPROCEDUREOID = 2202,
+            REGOPEROID = 2203,
+            REGOPERATOROID = 2204,
+            REGCLASSOID = 2205,
+            REGCOLLATIONOID = 4191,
+            REGTYPEOID = 2206,
+            REGROLEOID = 4096,
+            REGNAMESPACEOID = 4089,
+            UUIDOID = 2950,
+            PG_LSNOID = 3220,
+            TSVECTOROID = 3614,
+            GTSVECTOROID = 3642,
+            TSQUERYOID = 3615,
+            REGCONFIGOID = 3734,
+            REGDICTIONARYOID = 3769,
+            JSONBOID = 3802,
+            JSONPATHOID = 4072,
+            TXID_SNAPSHOTOID = 2970,
+            PG_SNAPSHOTOID = 5038,
+            INT4RANGEOID = 3904,
+            NUMRANGEOID = 3906,
+            TSRANGEOID = 3908,
+            TSTZRANGEOID = 3910,
+            DATERANGEOID = 3912,
+            INT8RANGEOID = 3926,
+            INT4MULTIRANGEOID = 4451,
+            NUMMULTIRANGEOID = 4532,
+            TSMULTIRANGEOID = 4533,
+            TSTZMULTIRANGEOID = 4534,
+            DATEMULTIRANGEOID = 4535,
+            INT8MULTIRANGEOID = 4536,
+            RECORDOID = 2249,
+            RECORDARRAYOID = 2287,
+            CSTRINGOID = 2275,
+            ANYOID = 2276,
+            ANYARRAYOID = 2277,
+            VOIDOID = 2278,
+            TRIGGEROID = 2279,
+            EVENT_TRIGGEROID = 3838,
+            LANGUAGE_HANDLEROID = 2280,
+            INTERNALOID = 2281,
+            ANYELEMENTOID = 2283,
+            ANYNONARRAYOID = 2776,
+            ANYENUMOID = 3500,
+            FDW_HANDLEROID = 3115,
+            INDEX_AM_HANDLEROID = 325,
+            TSM_HANDLEROID = 3310,
+            TABLE_AM_HANDLEROID = 269,
+            ANYRANGEOID = 3831,
+            ANYCOMPATIBLEOID = 5077,
+            ANYCOMPATIBLEARRAYOID = 5078,
+            ANYCOMPATIBLENONARRAYOID = 5079,
+            ANYCOMPATIBLERANGEOID = 5080,
+            ANYMULTIRANGEOID = 4537,
+            ANYCOMPATIBLEMULTIRANGEOID = 4538,
+            PG_BRIN_BLOOM_SUMMARYOID = 4600,
+            PG_BRIN_MINMAX_MULTI_SUMMARYOID = 4601,
+            BOOLARRAYOID = 1000,
+            BYTEAARRAYOID = 1001,
+            CHARARRAYOID = 1002,
+            NAMEARRAYOID = 1003,
+            INT8ARRAYOID = 1016,
+            INT2ARRAYOID = 1005,
+            INT2VECTORARRAYOID = 1006,
+            INT4ARRAYOID = 1007,
+            REGPROCARRAYOID = 1008,
+            TEXTARRAYOID = 1009,
+            OIDARRAYOID = 1028,
+            TIDARRAYOID = 1010,
+            XIDARRAYOID = 1011,
+            CIDARRAYOID = 1012,
+            OIDVECTORARRAYOID = 1013,
+            PG_TYPEARRAYOID = 210,
+            PG_ATTRIBUTEARRAYOID = 270,
+            PG_PROCARRAYOID = 272,
+            PG_CLASSARRAYOID = 273,
+            JSONARRAYOID = 199,
+            XMLARRAYOID = 143,
+            XID8ARRAYOID = 271,
+            POINTARRAYOID = 1017,
+            LSEGARRAYOID = 1018,
+            PATHARRAYOID = 1019,
+            BOXARRAYOID = 1020,
+            POLYGONARRAYOID = 1027,
+            LINEARRAYOID = 629,
+            FLOAT4ARRAYOID = 1021,
+            FLOAT8ARRAYOID = 1022,
+            CIRCLEARRAYOID = 719,
+            MONEYARRAYOID = 791,
+            MACADDRARRAYOID = 1040,
+            INETARRAYOID = 1041,
+            CIDRARRAYOID = 651,
+            MACADDR8ARRAYOID = 775,
+            ACLITEMARRAYOID = 1034,
+            BPCHARARRAYOID = 1014,
+            VARCHARARRAYOID = 1015,
+            DATEARRAYOID = 1182,
+            TIMEARRAYOID = 1183,
+            TIMESTAMPARRAYOID = 1115,
+            TIMESTAMPTZARRAYOID = 1185,
+            INTERVALARRAYOID = 1187,
+            TIMETZARRAYOID = 1270,
+            BITARRAYOID = 1561,
+            VARBITARRAYOID = 1563,
+            NUMERICARRAYOID = 1231,
+            REFCURSORARRAYOID = 2201,
+            REGPROCEDUREARRAYOID = 2207,
+            REGOPERARRAYOID = 2208,
+            REGOPERATORARRAYOID = 2209,
+            REGCLASSARRAYOID = 2210,
+            REGCOLLATIONARRAYOID = 4192,
+            REGTYPEARRAYOID = 2211,
+            REGROLEARRAYOID = 4097,
+            REGNAMESPACEARRAYOID = 4090,
+            UUIDARRAYOID = 2951,
+            PG_LSNARRAYOID = 3221,
+            TSVECTORARRAYOID = 3643,
+            GTSVECTORARRAYOID = 3644,
+            TSQUERYARRAYOID = 3645,
+            REGCONFIGARRAYOID = 3735,
+            REGDICTIONARYARRAYOID = 3770,
+            JSONBARRAYOID = 3807,
+            JSONPATHARRAYOID = 4073,
+            TXID_SNAPSHOTARRAYOID = 2949,
+            PG_SNAPSHOTARRAYOID = 5039,
+            INT4RANGEARRAYOID = 3905,
+            NUMRANGEARRAYOID = 3907,
+            TSRANGEARRAYOID = 3909,
+            TSTZRANGEARRAYOID = 3911,
+            DATERANGEARRAYOID = 3913,
+            INT8RANGEARRAYOID = 3927,
+            INT4MULTIRANGEARRAYOID = 6150,
+            NUMMULTIRANGEARRAYOID = 6151,
+            TSMULTIRANGEARRAYOID = 6152,
+            TSTZMULTIRANGEARRAYOID = 6153,
+            DATEMULTIRANGEARRAYOID = 6155,
+            INT8MULTIRANGEARRAYOID = 6157,
+            CSTRINGARRAYOID = 1263
+        }
+
+        static Dictionary<OID, string> OID_TYPES =
+                       new Dictionary<OID, string>()
+        {
+            {OID.BOOLOID,"bool"},
+            {OID.INT2OID, "short"},
+            {OID.INT4OID, "int"},
+            {OID.INT8OID, "long"},
+            {OID.FLOAT4OID, "float"},
+            {OID.FLOAT8OID, "double"},
+            {OID.POINTOID, "NpgsqlPoint"},
+            {OID.LINEOID, "NpgsqlLine"},
+            {OID.LSEGOID, "NpgsqlLSeg"},
+            {OID.BOXOID, "NpgsqlBox"},
+            {OID.POLYGONOID, "NpgsqlPolygon"},
+            {OID.TEXTOID, "string"}
+        };
+
         static uint FunctionId;
         static MemoryStream MemStream;
         static IDictionary<uint, CachedFunction> FuncBuiltCodeDict;
@@ -75,6 +285,7 @@ namespace PlDotNET
             pldotnet_Elog(19, message);
         }
 
+        // TODO - delete
         public static List<Tuple<string, string>> GetSqlParamsFromString(string paramsStr)
         {
             string parameters = paramsStr == null ? "" : paramsStr;
@@ -87,55 +298,68 @@ namespace PlDotNET
                 }).ToList();
         }
 
+        public static List<Tuple<string, string>> GetSqlParams(List<string> paramNames, List<int> paramTypes)
+        {
+            List<Tuple<string, string>> arguments = new List<Tuple<string, string>>();
+            for (int i = 0; i < paramNames.Count(); i++)
+            {
+                pldotnet_Info($"THE TYPE : {paramTypes[i]}");
+                arguments.Add(new Tuple<string, string>(OID_TYPES[(OID)paramTypes[i]], paramNames[i]));
+            }
+            return arguments;
+        }
+
         public static string GetParamsString(List<Tuple<string, string>> sqlParams)
         {
             return string.Join(", ", sqlParams.Select((p) => $"{p.Item1} {p.Item2}").ToList());
         }
 
-        public static string GetDatumConversionFunction(string dotnet_type)
+        public static string GetDatumConversionFunction(int id)
         {
-            switch (dotnet_type)
+            switch (id)
             {
-                case "short":
+                case (int)OID.INT2OID:
                     return "pldotnet_getInt16";
-                case "int":
+                case (int)OID.INT4OID:
                     return "pldotnet_getInt32";
-                case "long":
+                case (int)OID.INT8OID:
                     return "pldotnet_getInt64";
-                case "float":
+                case (int)OID.FLOAT4OID:
                     return "pldotnet_getFloat";
-                case "double":
+                case (int)OID.FLOAT8OID:
                     return "pldotnet_getDouble";
-                case "bool":
+                case (int)OID.BOOLOID:
                     return "pldotnet_getBoolean";
-                case "NpgsqlPoint":
+                case (int)OID.POINTOID:
                     return "pldotnet_BuildNpgsqlPoint";
-                case "NpgsqlLine":
+                case (int)OID.LINEOID:
                     return "pldotnet_BuildNpgsqlLine";
-                case "NpgsqlLSeg":
+                case (int)OID.LSEGOID:
                     return "pldotnet_BuildNpgsqlLSeg";
-                case "NpgsqlBox":
+                case (int)OID.BOXOID:
                     return "pldotnet_BuildNpgsqlBox";
+                case (int)OID.TEXTOID:
+                    return "pldotnet_BuildString";
                 default:
-                    throw new NotImplementedException($"Datum to {dotnet_type} is not supported! Check GetDatumConversionFunction");
+                    throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetDatumConversionFunction");
             }
         }
 
         // DONUT
-        public static string BuildCreateArguments(string funcName, List<Tuple<string, string>> sqlParams)
+        public static string BuildCreateArguments(string funcName, List<int> paramTypes)
         {
             // WARNING: this is completely wrong.
             // - the individual IntPtr are not GCHandles, only Datum
             // - creating a GCHandle from it is wrong
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
-            int argc = sqlParams.Count;
+            int argc = paramTypes.Count;
 
             for (int i = 0; i < argc; i++)
             {
                 var argname = $"argument_{i}";
                 var value = $"arguments[{i}]";
-                var dotnet_type = sqlParams[i].Item1;
+                var dotnet_type = paramTypes[i];
                 var datum_conversion_function = GetDatumConversionFunction(dotnet_type);
 
                 sb.AppendLine($"var {argname} = {datum_conversion_function}({value});");
@@ -186,56 +410,59 @@ namespace PlDotNET
             return sb.ToString();
         }
 
-        public static string BuildCallSetResult(string returnType)
+        public static string BuildCallSetResult(int id, string returnType)
         {
             string setResult = "var result_datum = ";
-            switch (returnType)
+            switch (id)
             {
-                case "short":
+                case (int)OID.INT2OID:
                     setResult +=
                     $"pldotnet_createDatumInt16(({returnType})result);\n";
                     break;
-                case "int":
+                case (int)OID.INT4OID:
                     setResult +=
                     $"pldotnet_createDatumInt32(({returnType})result);\n";
                     break;
-                case "long":
+                case (int)OID.INT8OID:
                     setResult +=
                     $"pldotnet_createDatumInt64(({returnType})result);\n";
                     break;
-                case "float":
+                case (int)OID.FLOAT4OID:
                     setResult +=
                     $"pldotnet_createDatumFloat(({returnType})result);\n";
                     break;
-                case "double":
+                case (int)OID.FLOAT8OID:
                     setResult +=
                     $"pldotnet_createDatumDouble(({returnType})result);\n";
                     break;
-                case "bool":
+                case (int)OID.BOOLOID:
                     setResult +=
                     $"pldotnet_createDatumBoolean(({returnType})result);\n";
                     break;
-                case "NpgsqlPoint":
+                case (int)OID.POINTOID:
                     setResult +=
                     $"pldotnet_createDatumPoint((double)result.X, "
                     + "(double)result.Y);\n";
                     break;
-                case "NpgsqlLine":
+                case (int)OID.LINEOID:
                     setResult +=
                     $"pldotnet_createDatumLine((double)result.A, "
                     + "(double)result.B,(double)result.C);\n";
                     break;
-                case "NpgsqlLSeg":
+                case (int)OID.LSEGOID:
                     setResult +=
                     $"pldotnet_createDatumLineSegment((double)result.Start.X,"
                     + "(double)result.Start.Y, (double)result.End.X, "
                     + "(double)result.End.Y);\n";
                     break;
-                case "NpgsqlBox":
+                case (int)OID.BOXOID:
                     setResult +=
                     $"pldotnet_createDatumBox((double)result.UpperRight.X, "
-                    +"(double)result.UpperRight.Y, (double)result.LowerLeft.X, "
+                    + "(double)result.UpperRight.Y, (double)result.LowerLeft.X, "
                     + "(double)result.LowerLeft.Y);\n";
+                    break;
+                case (int)OID.TEXTOID:
+                    setResult += "pldotnet_createDatumTextInternal(result);";
                     break;
                 default:
                     throw new NotImplementedException($"It is not possible to return a {returnType} type! Check BuildCallSetResult.");
@@ -244,15 +471,23 @@ namespace PlDotNET
             return setResult;
         }
 
-        public static string BuildSourceCode(IntPtr Name, IntPtr ReturnType, IntPtr Params, IntPtr Body)
+        public static unsafe string BuildSourceCode(IntPtr Name, int returnTypeID, IntPtr ParamNames, int* ParamTypes, IntPtr Body)
         {
             string funcName = Marshal.PtrToStringAuto(Name);
-            string returnType = Marshal.PtrToStringAuto(ReturnType);
-
-            var sqlParams = GetSqlParamsFromString(Marshal.PtrToStringAuto(Params));
-
+            string returnType = OID_TYPES[(OID)returnTypeID];
+            string parameters = Marshal.PtrToStringAuto(ParamNames);
+            List<string> paramNameList = new List<string>();
+            List<int> paramTypeList = new List<int>();
+            if (parameters != null)
+            {
+                paramNameList.AddRange(parameters.Split(" "));
+                for (int i = 0; i < paramNameList.Count(); i++)
+                {
+                    paramTypeList.Add(ParamTypes[i]);
+                }
+            }
+            var sqlParams = GetSqlParams(paramNameList, paramTypeList);
             string paramsStr = GetParamsString(sqlParams);
-
             string body = Marshal.PtrToStringAuto(Body);
 
             pldotnet_Info($"Compiling function {funcName}");
@@ -273,11 +508,11 @@ namespace PlDotNET
 
             pldotnet_Info($"Loading template from {CSharpTemplatePath}");
             var template = File.ReadAllText(CSharpTemplatePath);
-            var withArgumentsCreated = template.Replace("// $create_arguments", BuildCreateArguments(funcName, sqlParams));
+            var withArgumentsCreated = template.Replace("// $create_arguments", BuildCreateArguments(funcName, paramTypeList));
             var withFunctionDecl = withArgumentsCreated.Replace("// $user_function_declaration$", rawFunctionDecl);
             var withFunctionCall = withFunctionDecl.Replace("// $user_function_call$", BuildFunctionCall(funcName, sqlParams));
             var withArgumentsDeleted = withFunctionCall.Replace("// $free_arguments", BuildFreeArguments(funcName, sqlParams));
-            var withResultsSet = withArgumentsDeleted.Replace("// $call_set_result$", BuildCallSetResult(returnType));
+            var withResultsSet = withArgumentsDeleted.Replace("// $call_set_result$", BuildCallSetResult(returnTypeID, returnType));
             return withResultsSet;
         }
 
@@ -329,7 +564,10 @@ namespace PlDotNET
                 "System.Collections.Generic",
                 "System.Diagnostics.CodeAnalysis",
                 "System.Globalization",
-                "Npgsql"
+                "Npgsql",
+                "System.Text",
+                "System.Buffers",
+                "System.Text.Unicode",
             };
 
             List<PortableExecutableReference> references = new List<PortableExecutableReference>();
@@ -348,7 +586,7 @@ namespace PlDotNET
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithOptimizationLevel(OptimizationLevel.Release)
-                .WithConcurrentBuild(true);
+                .WithConcurrentBuild(true).WithAllowUnsafe(true);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 "plnetproc.dll",
@@ -375,11 +613,11 @@ namespace PlDotNET
             return compileResult;
         }
 
-        public delegate int DelCompileUserFunction(uint FunctionId, IntPtr Name, IntPtr ReturnType, IntPtr Params, IntPtr Body);
+        public unsafe delegate int DelCompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body);
 
-        public static int CompileUserFunction(uint FunctionId, IntPtr Name, IntPtr ReturnType, IntPtr Params, IntPtr Body)
+        public static unsafe int CompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body)
         {
-            string sourceCode = BuildSourceCode(Name, ReturnType, Params, Body);
+            string sourceCode = BuildSourceCode(Name, ReturnType, ParamNames, ParamTypes, Body);
 
             if (Engine.FuncBuiltCodeDict == null)
                 Engine.FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();

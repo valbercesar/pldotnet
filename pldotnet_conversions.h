@@ -54,6 +54,8 @@ extern void pldotnet_getDatumLineSegmentAttributes(void *datum, double *x1,
 extern void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
                                            double *x2, double *y2);
 
+extern void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf);
+
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
 ////////////////////////////////////
@@ -79,5 +81,7 @@ extern Datum pldotnet_createDatumLineSegment(double x1, double y1, double x2,
 
 extern Datum pldotnet_createDatumBox(double x1, double y1, double x2,
                                      double y2);
+
+extern Datum pldotnet_createDatumText(int len, char* buf);
 
 #endif  // PLDOTNET_CONVERSIONS_H_

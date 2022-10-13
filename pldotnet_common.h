@@ -101,8 +101,9 @@ typedef struct pldotnet_FuncInOutInfo {
 typedef struct pldotnet_UserFunctionDeclaration {
     const char *language;
     const char *func_name;
-    const char *func_rettype;
-    const char *func_params;
+    int func_rettype;
+    const char *func_paramsName;
+    const int *func_paramsType;
     const char *func_body;
 } pldotnet_UserFunctionDeclaration;
 
@@ -279,9 +280,19 @@ const char* pldotnet_GetFunctionBody(HeapTuple proc, Form_pg_proc procst);
  * @param is_csharp 
  * @return const char* the SQL parameters.
  */
-const char* pldotnet_GetSqlParams(HeapTuple proc,
+const char* pldotnet_GetSqlParamsName(HeapTuple proc,
                                   Form_pg_proc procst,
                                   bool is_csharp);
+
+/**
+ * @brief 
+ * 
+ * @param proc 
+ * @param procst 
+ * @return 
+ */
+const int* pldotnet_GetSqlParamsType(HeapTuple proc,
+                                  Form_pg_proc procst);
 
 /**
  * @brief 
