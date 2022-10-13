@@ -320,7 +320,7 @@ const int* pldotnet_GetSqlParamsType(HeapTuple proc,
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         sql_types[i] = argtypes[i];
     }
-    return sql_types;                    
+    return sql_types;
 }
 
 bool pldotnet_CompileUserFunction(dotnet_loader loader,

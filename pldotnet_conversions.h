@@ -56,6 +56,21 @@ extern void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
 
 extern void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf);
 
+extern void pldotnet_getDatumPathAttributes(void *datum, int *pointNumber,
+                                            int *closed);
+
+extern void pldotnet_getDatumPathCoordinates(void *datum, double *xCoordinates,
+                                             double *yCoordinates);
+
+extern void pldotnet_getDatumPolygonAttributes(void *datum, int *pointNumber);
+
+extern void pldotnet_getDatumPolygonCoordinates(void *datum,
+                                                double *xCoordinates,
+                                                double *yCoordinates);
+
+extern void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
+                                              double *r);
+
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
 ////////////////////////////////////
@@ -82,6 +97,15 @@ extern Datum pldotnet_createDatumLineSegment(double x1, double y1, double x2,
 extern Datum pldotnet_createDatumBox(double x1, double y1, double x2,
                                      double y2);
 
-extern Datum pldotnet_createDatumText(int len, char* buf);
+extern Datum pldotnet_createDatumText(int len, char *buf);
+
+extern Datum pldotnet_createDatumPath(int pointNumber, int closed,
+                                      double *xCoordinates,
+                                      double *yCoordinates);
+
+extern Datum pldotnet_createDatumPolygon(int pointNumber, double *xCoordinates,
+                                         double *yCoordinates);
+
+extern Datum pldotnet_createDatumCircle(double x, double y, double r);
 
 #endif  // PLDOTNET_CONVERSIONS_H_

@@ -91,12 +91,50 @@ void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
   *y2 = orig_b->low.y;
 }
 
-void pldotnet_getDatumTextAttributes(void *datum, int* len, char** buf) {
-  text     *t = DatumGetTextPP(datum);
+void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf) {
+  text *t = DatumGetTextPP(datum);
   const size_t datum_len = VARSIZE_ANY_EXHDR(t);
 
   *len = datum_len;
   *buf = VARDATA_ANY(t);
+}
+
+void pldotnet_getDatumPathAttributes(void *datum, int *pointNumber,
+                                     int *closed) {
+  PATH *orig_p = DatumGetPathP(datum);
+  *pointNumber = orig_p->npts;
+  *closed = orig_p->closed;
+}
+
+void pldotnet_getDatumPathCoordinates(void *datum, double *xCoordinates,
+                                      double *yCoordinates) {
+  PATH *orig_p = DatumGetPathP(datum);
+  for (int i = 0, npts = orig_p->npts; i < npts; i++) {
+    xCoordinates[i] = orig_p->p[i].x;
+    yCoordinates[i] = orig_p->p[i].y;
+  }
+}
+
+void pldotnet_getDatumPolygonAttributes(void *datum, int *pointNumber) {
+  POLYGON *orig_p = DatumGetPolygonP(datum);
+  *pointNumber = orig_p->npts;
+}
+
+void pldotnet_getDatumPolygonCoordinates(void *datum, double *xCoordinates,
+                                         double *yCoordinates) {
+  POLYGON *orig_p = DatumGetPolygonP(datum);
+  for (int i = 0, npts = orig_p->npts; i < npts; i++) {
+    xCoordinates[i] = orig_p->p[i].x;
+    yCoordinates[i] = orig_p->p[i].y;
+  }
+}
+
+void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
+                                       double *r) {
+  CIRCLE *orig_c = DatumGetCircleP(datum);
+  *x = orig_c->center.x;
+  *y = orig_c->center.y;
+  *r = orig_c->radius;
 }
 
 ////////////////////////////////////
@@ -167,11 +205,47 @@ Datum pldotnet_createDatumBox(double x1, double y1, double x2, double y2) {
   return BoxPGetDatum(new_b);
 }
 
-Datum pldotnet_createDatumText(int len, char* buf) {
+Datum pldotnet_createDatumText(int len, char *buf) {
   const size_t new_size = VARHDRSZ + len;
-  text* new_t = (text*)palloc(new_size);
+  text *new_t = (text *)palloc(new_size);
 
   SET_VARSIZE(new_t, new_size);
-  memcpy((void *) VARDATA(new_t), buf, len);
+  memcpy((void *)VARDATA(new_t), buf, len);
   PG_RETURN_TEXT_P(new_t);
+}
+
+Datum pldotnet_createDatumPath(int npts, int closed, double *xCoordinates,
+                               double *yCoordinates) {
+  size_t path_size = sizeof(PATH) + ((size_t)npts * sizeof(Point));
+  PATH *new_p = (PATH *)palloc(path_size);
+  SET_VARSIZE(new_p, path_size);
+  new_p->npts = npts;
+  new_p->closed = closed;
+  new_p->dummy = 0;
+  for (int i = 0; i < npts; i++) {
+    new_p->p[i].x = xCoordinates[i];
+    new_p->p[i].y = yCoordinates[i];
+  }
+  return PathPGetDatum(new_p);
+}
+
+Datum pldotnet_createDatumPolygon(int npts, double *xCoordinates,
+                                  double *yCoordinates) {
+  size_t poly_size = sizeof(POLYGON) + ((size_t)npts * sizeof(Point));
+  POLYGON *new_p = (POLYGON *)palloc(poly_size);
+  SET_VARSIZE(new_p, poly_size);
+  new_p->npts = npts;
+  for (int i = 0; i < npts; i++) {
+    new_p->p[i].x = xCoordinates[i];
+    new_p->p[i].y = yCoordinates[i];
+  }
+  return PolygonPGetDatum(new_p);
+}
+
+Datum pldotnet_createDatumCircle(double x, double y, double r) {
+  CIRCLE *new_c = (CIRCLE *)palloc(sizeof(CIRCLE));
+  new_c->center.x = x;
+  new_c->center.y = y;
+  new_c->radius = r;
+  return CirclePGetDatum(new_c);
 }

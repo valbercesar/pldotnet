@@ -455,7 +455,8 @@ static bool plcsharp_GetSourceCode(FunctionCallInfo fcinfo,
         user_function_decl->func_body = pldotnet_GetFunctionBody(proc, procst);
         user_function_decl->func_paramsName = pldotnet_GetSqlParamsName(
             proc, procst, true);
-        user_function_decl->func_paramsType = pldotnet_GetSqlParamsType(proc, procst);
+        user_function_decl->func_paramsType = pldotnet_GetSqlParamsType(
+            proc, procst);
     }
 
     /* TODO(josias) Validate the user_function_decl here*/

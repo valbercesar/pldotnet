@@ -331,7 +331,8 @@ extern void pldotnet_Elog(int level, char *message);
  * @param isnull 
  * @param native_result 
  */
-extern void pldotnet_SetDatumResult(void* value, bool isnull, void *native_result);
+extern void pldotnet_SetDatumResult(void* value,
+    bool isnull, void *native_result);
 
 /**
  * @brief 

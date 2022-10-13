@@ -261,7 +261,9 @@ namespace PlDotNET
             {OID.LSEGOID, "NpgsqlLSeg"},
             {OID.BOXOID, "NpgsqlBox"},
             {OID.POLYGONOID, "NpgsqlPolygon"},
-            {OID.TEXTOID, "string"}
+            {OID.TEXTOID, "string"},
+            {OID.PATHOID, "NpgsqlPath"},
+            {OID.CIRCLEOID, "NpgsqlCircle"}
         };
 
         static uint FunctionId;
@@ -340,6 +342,12 @@ namespace PlDotNET
                     return "pldotnet_BuildNpgsqlBox";
                 case (int)OID.TEXTOID:
                     return "pldotnet_BuildString";
+                case (int)OID.PATHOID:
+                    return "pldotnet_BuildNpgsqlPath";
+                case (int)OID.POLYGONOID:
+                    return "pldotnet_BuildNpgsqlPolygon";
+                case (int)OID.CIRCLEOID:
+                    return "pldotnet_BuildNpgsqlCircle";
                 default:
                     throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetDatumConversionFunction");
             }
@@ -463,6 +471,16 @@ namespace PlDotNET
                     break;
                 case (int)OID.TEXTOID:
                     setResult += "pldotnet_createDatumTextInternal(result);";
+                    break;
+                case (int)OID.PATHOID:
+                    setResult += "pldotnet_createDatumPath(result);\n";
+                    break;
+                case (int)OID.POLYGONOID:
+                    setResult += "pldotnet_createDatumPolygon(result);\n";
+                    break;
+                case (int)OID.CIRCLEOID:
+                    setResult += "pldotnet_createDatumCircle(result.Center.X, "
+                    + "result.Center.Y, result.Radius);\n";
                     break;
                 default:
                     throw new NotImplementedException($"It is not possible to return a {returnType} type! Check BuildCallSetResult.");
