@@ -263,7 +263,13 @@ namespace PlDotNET
             {OID.POLYGONOID, "NpgsqlPolygon"},
             {OID.TEXTOID, "string"},
             {OID.PATHOID, "NpgsqlPath"},
-            {OID.CIRCLEOID, "NpgsqlCircle"}
+            {OID.CIRCLEOID, "NpgsqlCircle"},
+            {OID.DATEOID, "DateOnly"},
+            {OID.TIMEOID, "TimeOnly"},
+            {OID.TIMETZOID, "DateTimeOffset"},
+            {OID.TIMESTAMPOID, "DateTime"},
+            {OID.TIMESTAMPTZOID, "DateTime"},
+            {OID.INTERVALOID, "NpgsqlInterval"}
         };
 
         static uint FunctionId;
@@ -305,7 +311,6 @@ namespace PlDotNET
             List<Tuple<string, string>> arguments = new List<Tuple<string, string>>();
             for (int i = 0; i < paramNames.Count(); i++)
             {
-                pldotnet_Info($"THE TYPE : {paramTypes[i]}");
                 arguments.Add(new Tuple<string, string>(OID_TYPES[(OID)paramTypes[i]], paramNames[i]));
             }
             return arguments;
@@ -348,6 +353,18 @@ namespace PlDotNET
                     return "pldotnet_BuildNpgsqlPolygon";
                 case (int)OID.CIRCLEOID:
                     return "pldotnet_BuildNpgsqlCircle";
+                case (int)OID.DATEOID:
+                    return "pldotnet_BuildDate";
+                case (int)OID.TIMEOID:
+                    return "pldotnet_BuildTime";
+                case (int)OID.TIMETZOID:
+                    return "pldotnet_BuildTimeTz";
+                case (int)OID.TIMESTAMPOID:
+                    return "pldotnet_BuildTimestamp";
+                case (int)OID.TIMESTAMPTZOID:
+                    return "pldotnet_BuildTimestampTz";
+                case (int)OID.INTERVALOID:
+                    return "pldotnet_BuildNpgsqlInterval";
                 default:
                     throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetDatumConversionFunction");
             }
@@ -482,6 +499,24 @@ namespace PlDotNET
                     setResult += "pldotnet_createDatumCircle(result.Center.X, "
                     + "result.Center.Y, result.Radius);\n";
                     break;
+                case (int)OID.DATEOID:
+                    setResult += "pldotnet_createDatumDate(result.DayNumber-730119);\n";
+                    break;
+                case (int)OID.TIMEOID:
+                    setResult += "pldotnet_createDatumTime(result.Ticks/10);\n";
+                    break;
+                case (int)OID.TIMETZOID:
+                    setResult += "pldotnet_createDatumTimeTz(result.TimeOfDay.Ticks / 10, -(int) (result.Offset.Ticks / TimeSpan.TicksPerSecond));\n";
+                    break;
+                case (int)OID.TIMESTAMPOID:
+                    setResult += "pldotnet_createDatumTimestamp(result);\n";
+                    break;   
+                case (int)OID.TIMESTAMPTZOID:
+                    setResult += "pldotnet_createDatumTimestampTz(result);\n";
+                    break;
+                case (int)OID.INTERVALOID:
+                    setResult += "pldotnet_createDatumInterval(result.Time, result.Days, result.Months);\n";
+                    break;    
                 default:
                     throw new NotImplementedException($"It is not possible to return a {returnType} type! Check BuildCallSetResult.");
             }
@@ -586,6 +621,7 @@ namespace PlDotNET
                 "System.Text",
                 "System.Buffers",
                 "System.Text.Unicode",
+                "System.Diagnostics"
             };
 
             List<PortableExecutableReference> references = new List<PortableExecutableReference>();

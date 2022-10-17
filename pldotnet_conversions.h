@@ -25,6 +25,8 @@
 #define PLDOTNET_CONVERSIONS_H_
 
 #include "pldotnet_common.h"
+#include <utils/date.h>
+#include "utils/timestamp.h"
 
 ////////////////////////////////////
 //// Datum -> Npgsql or C# type ////
@@ -71,6 +73,21 @@ extern void pldotnet_getDatumPolygonCoordinates(void *datum,
 extern void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
                                               double *r);
 
+extern void pldotnet_getDatumDateAttributes(void *datum, int *date);
+
+extern void pldotnet_getDatumTimeAttributes(void *datum, long *time);
+
+extern void pldotnet_getDatumTimeTzAttributes(void *datum, long *time,
+                                                int *zone);
+
+extern void pldotnet_getDatumTimestampAttributes(void *datum, long *timestamp);
+
+extern void pldotnet_getDatumTimestampTzAttributes(void *datum,
+                                                   long *timestamp);
+
+extern void pldotnet_getDatumIntervalAttributes(void *datum, long *time,
+                                                int *day, int *month);
+
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
 ////////////////////////////////////
@@ -107,5 +124,17 @@ extern Datum pldotnet_createDatumPolygon(int pointNumber, double *xCoordinates,
                                          double *yCoordinates);
 
 extern Datum pldotnet_createDatumCircle(double x, double y, double r);
+
+extern Datum pldotnet_createDatumDate(int date);
+
+extern Datum pldotnet_createDatumTime(long time);
+
+extern Datum pldotnet_createDatumTimeTz(long time, int zone);
+
+extern Datum pldotnet_createDatumTimestamp(long timestamp);
+
+extern Datum pldotnet_createDatumTimestampTz(long timestamp);
+
+extern Datum pldotnet_createDatumInterval(long time, int day, int month);
 
 #endif  // PLDOTNET_CONVERSIONS_H_

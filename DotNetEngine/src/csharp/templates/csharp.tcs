@@ -5,11 +5,21 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Buffers;
 using System.Text.Unicode;
+using System.Diagnostics;
 
 namespace PlDotNETUserSpace
 {
     public static class UserClass
     {
+        ////////////////////////////
+        ////////// CONFIG //////////
+        ////////////////////////////
+
+        static readonly bool DisableDateTimeInfinityConversions = true;
+        static readonly bool LegacyTimestampBehavior = true;
+        static readonly string InfinityExceptionMessage =
+        "Can't read infinity value since UserClass.DisableDateTimeInfinityConversions is enabled";
+
         ////////////////////////////
         /// DATUM -> DOTNET TYPE ///
         ////////////////////////////
@@ -145,6 +155,96 @@ namespace PlDotNETUserSpace
             return s1;
         }
 
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumDateAttributes(IntPtr datum, ref int date);
+
+        public static DateOnly pldotnet_BuildDate(IntPtr datum)
+        {
+            int date = 0;
+            pldotnet_getDatumDateAttributes(datum, ref date);
+            return date switch
+            {
+                int.MaxValue => DisableDateTimeInfinityConversions ?
+                    throw new InvalidCastException(InfinityExceptionMessage) : DateOnly.MaxValue,
+                int.MinValue => DisableDateTimeInfinityConversions ?
+                    throw new InvalidCastException(InfinityExceptionMessage) : DateOnly.MinValue,
+                var value => DateOnly.FromDayNumber(value + 730119)
+            };
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumTimeAttributes(IntPtr datum, ref long time);
+
+        public static TimeOnly pldotnet_BuildTime(IntPtr datum)
+        {
+            long time = 0;
+            pldotnet_getDatumTimeAttributes(datum, ref time);
+            return new TimeOnly(time*10);
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumTimeTzAttributes(IntPtr datum, ref long time, ref int zone);
+
+        public static DateTimeOffset pldotnet_BuildTimeTz(IntPtr datum)
+        {
+            long time = 0;
+            int zone = 0;
+            pldotnet_getDatumTimeTzAttributes(datum, ref time, ref zone);
+            return new DateTimeOffset(time*10 + TimeSpan.TicksPerDay, new TimeSpan(0, 0, -zone));
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumTimestampAttributes(IntPtr datum, ref long timestamp);
+
+        static readonly long PostgresTimestampOffsetTicks = 630822816000000000L;
+        public static DateTime createDateTimeObject(long timestamp, DateTimeKind kind)
+        {
+            try
+            {
+                return timestamp switch
+                {
+                    long.MaxValue => DisableDateTimeInfinityConversions ? throw new InvalidCastException(InfinityExceptionMessage) : DateTime.MaxValue,
+                    long.MinValue => DisableDateTimeInfinityConversions ? throw new InvalidCastException(InfinityExceptionMessage) : DateTime.MinValue,
+                    var value => new DateTime(value * 10 + PostgresTimestampOffsetTicks, kind)
+                };
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                throw new InvalidCastException("Out of the range of DateTime (year must be between 1 and 9999)", e);
+            }
+        }
+
+        public static DateTime pldotnet_BuildTimestamp(IntPtr datum)
+        {
+            long timestamp = 0;
+            pldotnet_getDatumTimestampAttributes(datum, ref timestamp);
+            return createDateTimeObject(timestamp, DateTimeKind.Unspecified);
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumTimestampTzAttributes(IntPtr datum, ref long timestamp);
+
+        public static DateTime pldotnet_BuildTimestampTz(IntPtr datum)
+        {
+            long timestamp = 0;
+            pldotnet_getDatumTimestampTzAttributes(datum, ref timestamp);
+            DateTime dateTime = createDateTimeObject(timestamp, DateTimeKind.Utc);
+            return LegacyTimestampBehavior && (DisableDateTimeInfinityConversions || dateTime != DateTime.MaxValue && dateTime != DateTime.MinValue)
+            ? dateTime.ToLocalTime()
+            : dateTime;
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumIntervalAttributes(IntPtr datum, ref long time, ref int day, ref int month);
+
+        public static NpgsqlInterval pldotnet_BuildNpgsqlInterval(IntPtr datum)
+        {
+            long time = 0;
+            int day = 0, month = 0;
+            pldotnet_getDatumIntervalAttributes(datum, ref time, ref day, ref month);
+            return new NpgsqlInterval(month, day, time);
+        }
+
         ////////////////////////////
         /// DOTNET TYPE -> DATUM ///
         ////////////////////////////
@@ -236,6 +336,72 @@ namespace PlDotNETUserSpace
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumCircle(double x, double y, double r);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumDate(int date);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumTime(long time);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumTimeTz(long time, int zone);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumTimestamp(long timestamp);
+        
+        public static IntPtr pldotnet_createDatumTimestamp(DateTime value)
+        {
+            if (!DisableDateTimeInfinityConversions)
+            {
+                if (value == DateTime.MaxValue)
+                {
+                    return pldotnet_createDatumTimestamp(long.MaxValue);
+                }
+                if (value == DateTime.MinValue)
+                {
+                    return pldotnet_createDatumTimestamp(long.MinValue);
+                }
+            }
+            return pldotnet_createDatumTimestamp((long)((value.Ticks - PostgresTimestampOffsetTicks) / 10));
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumTimestampTz(long timestamp);
+        
+        public static IntPtr pldotnet_createDatumTimestampTz(DateTime value)
+        {
+            if (LegacyTimestampBehavior)
+            {
+                switch (value.Kind)
+                {
+                case DateTimeKind.Unspecified:
+                case DateTimeKind.Utc:
+                    break;
+                case DateTimeKind.Local:
+                    value = value.ToUniversalTime();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Internal Npgsql bug: unexpected value {value.Kind} of enum {nameof(DateTimeKind)}. Please file a bug.");
+                }
+            }
+            else
+                Debug.Assert(value.Kind == DateTimeKind.Utc || value == DateTime.MinValue || value == DateTime.MaxValue);
+            if (!DisableDateTimeInfinityConversions)
+            {
+                if (value == DateTime.MaxValue)
+                {
+                    return pldotnet_createDatumTimestampTz(long.MaxValue);
+                }
+                if (value == DateTime.MinValue)
+                {
+                    return pldotnet_createDatumTimestampTz(long.MinValue);
+                }
+            }
+            return pldotnet_createDatumTimestampTz((long)((value.Ticks - PostgresTimestampOffsetTicks) / 10));
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumInterval(long time, int day, int month);
 
         /// SEND THE FINAL DATUM TO POSTGRES
         [DllImport("@PKG_LIBDIR/pldotnet.so")]

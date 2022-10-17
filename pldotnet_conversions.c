@@ -55,7 +55,7 @@ double pldotnet_getDouble(void *datum) {
 }
 
 bool pldotnet_getBoolean(void *datum) {
-  bool value = DatumGetBool(datum);
+  bool value = DatumGetBool((Datum)datum);
   return value;
 }
 
@@ -75,7 +75,7 @@ void pldotnet_getDatumLineAttributes(void *datum, double *a, double *b,
 
 void pldotnet_getDatumLineSegmentAttributes(void *datum, double *x1, double *y1,
                                             double *x2, double *y2) {
-  LSEG *orig_l = DatumGetLsegP(datum);
+  LSEG *orig_l = DatumGetLsegP((Datum)datum);
   *x1 = orig_l->p[0].x;
   *y1 = orig_l->p[0].y;
   *x2 = orig_l->p[1].x;
@@ -84,7 +84,7 @@ void pldotnet_getDatumLineSegmentAttributes(void *datum, double *x1, double *y1,
 
 void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
                                     double *x2, double *y2) {
-  BOX *orig_b = DatumGetBoxP(datum);
+  BOX *orig_b = DatumGetBoxP((Datum)datum);
   *x1 = orig_b->high.x;
   *y1 = orig_b->high.y;
   *x2 = orig_b->low.x;
@@ -92,7 +92,7 @@ void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
 }
 
 void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf) {
-  text *t = DatumGetTextPP(datum);
+  text *t = DatumGetTextPP((Datum)datum);
   const size_t datum_len = VARSIZE_ANY_EXHDR(t);
 
   *len = datum_len;
@@ -101,14 +101,14 @@ void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf) {
 
 void pldotnet_getDatumPathAttributes(void *datum, int *pointNumber,
                                      int *closed) {
-  PATH *orig_p = DatumGetPathP(datum);
+  PATH *orig_p = DatumGetPathP((Datum)datum);
   *pointNumber = orig_p->npts;
   *closed = orig_p->closed;
 }
 
 void pldotnet_getDatumPathCoordinates(void *datum, double *xCoordinates,
                                       double *yCoordinates) {
-  PATH *orig_p = DatumGetPathP(datum);
+  PATH *orig_p = DatumGetPathP((Datum)datum);
   for (int i = 0, npts = orig_p->npts; i < npts; i++) {
     xCoordinates[i] = orig_p->p[i].x;
     yCoordinates[i] = orig_p->p[i].y;
@@ -116,13 +116,13 @@ void pldotnet_getDatumPathCoordinates(void *datum, double *xCoordinates,
 }
 
 void pldotnet_getDatumPolygonAttributes(void *datum, int *pointNumber) {
-  POLYGON *orig_p = DatumGetPolygonP(datum);
+  POLYGON *orig_p = DatumGetPolygonP((Datum)datum);
   *pointNumber = orig_p->npts;
 }
 
 void pldotnet_getDatumPolygonCoordinates(void *datum, double *xCoordinates,
                                          double *yCoordinates) {
-  POLYGON *orig_p = DatumGetPolygonP(datum);
+  POLYGON *orig_p = DatumGetPolygonP((Datum)datum);
   for (int i = 0, npts = orig_p->npts; i < npts; i++) {
     xCoordinates[i] = orig_p->p[i].x;
     yCoordinates[i] = orig_p->p[i].y;
@@ -131,10 +131,44 @@ void pldotnet_getDatumPolygonCoordinates(void *datum, double *xCoordinates,
 
 void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
                                        double *r) {
-  CIRCLE *orig_c = DatumGetCircleP(datum);
+  CIRCLE *orig_c = DatumGetCircleP((Datum)datum);
   *x = orig_c->center.x;
   *y = orig_c->center.y;
   *r = orig_c->radius;
+}
+
+void pldotnet_getDatumDateAttributes(void *datum, int *date) {
+  DateADT orig_d = DatumGetDateADT((Datum)datum);
+  *date = orig_d;
+}
+
+void pldotnet_getDatumTimeAttributes(void *datum, long *time) {
+  TimeADT orig_t = DatumGetTimeADT((Datum)datum);
+  *time = orig_t;
+}
+
+void pldotnet_getDatumTimeTzAttributes(void *datum, long *time, int *zone) {
+  TimeTzADT *orig_tz = DatumGetTimeTzADTP((Datum)datum);
+  *time = orig_tz->time;
+  *zone = orig_tz->zone;
+}
+
+void pldotnet_getDatumTimestampAttributes(void *datum, long *timestamp) {
+  Timestamp orig_ts = DatumGetTimestamp((Datum)datum);
+  *timestamp = orig_ts;
+}
+
+void pldotnet_getDatumTimestampTzAttributes(void *datum, long *timestamp) {
+  TimestampTz orig_ts = DatumGetTimestampTz((Datum)datum);
+  *timestamp = orig_ts;
+}
+
+void pldotnet_getDatumIntervalAttributes(void *datum, long *time, int *day,
+                                         int *month) {
+  Interval *orig_i = DatumGetIntervalP((Datum)datum);
+  *time = orig_i->time;
+  *day = orig_i->day;
+  *month = orig_i->month;
 }
 
 ////////////////////////////////////
@@ -248,4 +282,31 @@ Datum pldotnet_createDatumCircle(double x, double y, double r) {
   new_c->center.y = y;
   new_c->radius = r;
   return CirclePGetDatum(new_c);
+}
+
+Datum pldotnet_createDatumDate(int date) { return DateADTGetDatum(date); }
+
+Datum pldotnet_createDatumTime(long time) { return TimeADTGetDatum(time); }
+
+Datum pldotnet_createDatumTimeTz(long time, int zone) {
+  TimeTzADT *new_tz = (TimeTzADT *)palloc(sizeof(TimeTzADT));
+  new_tz->time = time;
+  new_tz->zone = zone;
+  return TimeTzADTPGetDatum(new_tz);
+}
+
+Datum pldotnet_createDatumTimestamp(long timestamp) {
+  return TimestampGetDatum(timestamp);
+}
+
+Datum pldotnet_createDatumTimestampTz(long timestamp) {
+  return TimestampTzGetDatum(timestamp);
+}
+
+Datum pldotnet_createDatumInterval(long time, int day, int month) {
+  Interval *new_i = (Interval *)palloc(sizeof(Interval));
+  new_i->time = time;
+  new_i->day = day;
+  new_i->month = month;
+  return IntervalPGetDatum(new_i);
 }
