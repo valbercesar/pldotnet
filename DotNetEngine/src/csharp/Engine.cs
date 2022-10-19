@@ -269,7 +269,11 @@ namespace PlDotNET
             {OID.TIMETZOID, "DateTimeOffset"},
             {OID.TIMESTAMPOID, "DateTime"},
             {OID.TIMESTAMPTZOID, "DateTime"},
-            {OID.INTERVALOID, "NpgsqlInterval"}
+            {OID.INTERVALOID, "NpgsqlInterval"},
+            {OID.MACADDROID, "PhysicalAddress"},
+            {OID.MACADDR8OID, "PhysicalAddress"},
+            {OID.INETOID, "(IPAddress Address, int Netmask)"},
+            {OID.CIDROID, "(IPAddress Address, int Netmask)"}
         };
 
         static uint FunctionId;
@@ -365,6 +369,14 @@ namespace PlDotNET
                     return "pldotnet_BuildTimestampTz";
                 case (int)OID.INTERVALOID:
                     return "pldotnet_BuildNpgsqlInterval";
+                case (int)OID.MACADDROID:
+                    return "pldotnet_BuildMacAddress";
+                case (int)OID.MACADDR8OID:
+                    return "pldotnet_BuildMacAddress8";
+                case (int)OID.INETOID:
+                    return "pldotnet_BuildInet";
+                case (int)OID.CIDROID:
+                    return "pldotnet_BuildInet";
                 default:
                     throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetDatumConversionFunction");
             }
@@ -510,13 +522,25 @@ namespace PlDotNET
                     break;
                 case (int)OID.TIMESTAMPOID:
                     setResult += "pldotnet_createDatumTimestamp(result);\n";
-                    break;   
+                    break;
                 case (int)OID.TIMESTAMPTZOID:
                     setResult += "pldotnet_createDatumTimestampTz(result);\n";
                     break;
                 case (int)OID.INTERVALOID:
                     setResult += "pldotnet_createDatumInterval(result.Time, result.Days, result.Months);\n";
-                    break;    
+                    break;
+                case (int)OID.MACADDROID:
+                    setResult += "pldotnet_createDatumMacAddress(6, result.GetAddressBytes());";
+                    break;
+                case (int)OID.MACADDR8OID:
+                    setResult += "pldotnet_createDatumMacAddress(8, result.GetAddressBytes());";
+                    break;
+                case (int)OID.INETOID:
+                    setResult += "pldotnet_createDatumInet(result.Address.GetAddressBytes().Length, result.Address.GetAddressBytes(), result.Netmask);";
+                    break;
+                case (int)OID.CIDROID:
+                    setResult += "pldotnet_createDatumInet(result.Address.GetAddressBytes().Length, result.Address.GetAddressBytes(), result.Netmask);";
+                    break;
                 default:
                     throw new NotImplementedException($"It is not possible to return a {returnType} type! Check BuildCallSetResult.");
             }
@@ -621,7 +645,9 @@ namespace PlDotNET
                 "System.Text",
                 "System.Buffers",
                 "System.Text.Unicode",
-                "System.Diagnostics"
+                "System.Diagnostics",
+                "System.Net.NetworkInformation",
+                "System.Net.Primitives"
             };
 
             List<PortableExecutableReference> references = new List<PortableExecutableReference>();

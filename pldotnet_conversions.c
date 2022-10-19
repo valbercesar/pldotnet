@@ -23,6 +23,10 @@
 
 #include "pldotnet_conversions.h"
 
+#include <utils/date.h>
+#include <utils/inet.h>
+#include <utils/timestamp.h>
+
 #include "pldotnet_common.h"
 
 ////////////////////////////////////
@@ -171,6 +175,46 @@ void pldotnet_getDatumIntervalAttributes(void *datum, long *time, int *day,
   *month = orig_i->month;
 }
 
+void pldotnet_getDatumMacAddressAttributes(void *datum, int length,
+                                           unsigned char *bytes) {
+  if (length == 6) {
+    macaddr *orig_ma = DatumGetMacaddrP((Datum)datum);
+    bytes[0] = orig_ma->a;
+    bytes[1] = orig_ma->b;
+    bytes[2] = orig_ma->c;
+    bytes[3] = orig_ma->d;
+    bytes[4] = orig_ma->e;
+    bytes[5] = orig_ma->f;
+    return;
+  }
+  macaddr8 *orig_ma8 = DatumGetMacaddr8P((Datum)datum);
+  bytes[0] = orig_ma8->a;
+  bytes[1] = orig_ma8->b;
+  bytes[2] = orig_ma8->c;
+  bytes[3] = orig_ma8->d;
+  bytes[4] = orig_ma8->e;
+  bytes[5] = orig_ma8->f;
+  bytes[6] = orig_ma8->g;
+  bytes[7] = orig_ma8->h;
+}
+
+void pldotnet_getDatumInetAttributes(void *datum, int *nelem,
+                                     unsigned char *bytes, int *netmask) {
+  inet *orig_i = DatumGetInetP((Datum)datum);
+  if (orig_i->inet_data.family == PGSQL_AF_INET)
+    *nelem = 4;
+  else if (orig_i->inet_data.family == PGSQL_AF_INET6)
+    *nelem = 16;
+  else
+    elog(ERROR, "Unrecognized Inet family: %u", orig_i->inet_data.family);
+
+  *netmask = orig_i->inet_data.bits;
+
+  for (int i = 0; i < *nelem; i++) {
+    bytes[i] = orig_i->inet_data.ipaddr[i];
+  }
+}
+
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
 ////////////////////////////////////
@@ -309,4 +353,46 @@ Datum pldotnet_createDatumInterval(long time, int day, int month) {
   new_i->day = day;
   new_i->month = month;
   return IntervalPGetDatum(new_i);
+}
+
+Datum pldotnet_createDatumMacAddress(int length, unsigned char *bytes) {
+  if (length == 6) {
+    macaddr *new_ma = (macaddr *)palloc(sizeof(macaddr));
+    new_ma->a = bytes[0];
+    new_ma->b = bytes[1];
+    new_ma->c = bytes[2];
+    new_ma->d = bytes[3];
+    new_ma->e = bytes[4];
+    new_ma->f = bytes[5];
+    return MacaddrPGetDatum(new_ma);
+  }
+  macaddr8 *new_ma8 = (macaddr8 *)palloc(sizeof(macaddr8));
+  new_ma8->a = bytes[0];
+  new_ma8->b = bytes[1];
+  new_ma8->c = bytes[2];
+  new_ma8->d = bytes[3];
+  new_ma8->e = bytes[4];
+  new_ma8->f = bytes[5];
+  new_ma8->g = bytes[6];
+  new_ma8->h = bytes[7];
+  return Macaddr8PGetDatum(new_ma8);
+}
+
+// TODO(rosicley) - Add an argument to check if the Datum is a `CIDR`.
+// If so, check if the address has nonzero bits to the right of the netmask.
+Datum pldotnet_createDatumInet(int length, unsigned char *bytes, int netmask) {
+  inet *new_i = (inet *)palloc(sizeof(inet));
+  SET_VARSIZE(new_i, sizeof(inet));
+  if (length == 4)
+    new_i->inet_data.family = PGSQL_AF_INET;
+  else if (length == 16)
+    new_i->inet_data.family = PGSQL_AF_INET6;
+  else
+    elog(ERROR, "Unrecognized Inet family with %d items.", length);
+
+  new_i->inet_data.bits = netmask;
+  for (int i = 0; i < length; i++) {
+    new_i->inet_data.ipaddr[i] = bytes[i];
+  }
+  return InetPGetDatum(new_i);
 }

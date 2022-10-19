@@ -25,8 +25,6 @@
 #define PLDOTNET_CONVERSIONS_H_
 
 #include "pldotnet_common.h"
-#include <utils/date.h>
-#include "utils/timestamp.h"
 
 ////////////////////////////////////
 //// Datum -> Npgsql or C# type ////
@@ -78,7 +76,7 @@ extern void pldotnet_getDatumDateAttributes(void *datum, int *date);
 extern void pldotnet_getDatumTimeAttributes(void *datum, long *time);
 
 extern void pldotnet_getDatumTimeTzAttributes(void *datum, long *time,
-                                                int *zone);
+                                              int *zone);
 
 extern void pldotnet_getDatumTimestampAttributes(void *datum, long *timestamp);
 
@@ -87,6 +85,12 @@ extern void pldotnet_getDatumTimestampTzAttributes(void *datum,
 
 extern void pldotnet_getDatumIntervalAttributes(void *datum, long *time,
                                                 int *day, int *month);
+
+extern void pldotnet_getDatumMacAddressAttributes(void *datum, int length,
+                                                  unsigned char *bytes);
+
+extern void pldotnet_getDatumInetAttributes(void *datum, int *nelem,
+                                            unsigned char *bytes, int *netmask);
 
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
@@ -136,5 +140,10 @@ extern Datum pldotnet_createDatumTimestamp(long timestamp);
 extern Datum pldotnet_createDatumTimestampTz(long timestamp);
 
 extern Datum pldotnet_createDatumInterval(long time, int day, int month);
+
+extern Datum pldotnet_createDatumMacAddress(int length, unsigned char *bytes);
+
+extern Datum pldotnet_createDatumInet(int length, unsigned char *bytes,
+                                      int netmask);
 
 #endif  // PLDOTNET_CONVERSIONS_H_

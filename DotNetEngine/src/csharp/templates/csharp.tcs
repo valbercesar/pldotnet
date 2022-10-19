@@ -6,6 +6,8 @@ using System.Text;
 using System.Buffers;
 using System.Text.Unicode;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
+using System.Net;
 
 namespace PlDotNETUserSpace
 {
@@ -245,6 +247,39 @@ namespace PlDotNETUserSpace
             return new NpgsqlInterval(month, day, time);
         }
 
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern unsafe void pldotnet_getDatumMacAddressAttributes(IntPtr datum, int length, [Out] byte[] bytes);
+
+        public static PhysicalAddress pldotnet_BuildMacAddress(IntPtr datum)
+        {
+            byte[] bytes = new byte[6];
+            pldotnet_getDatumMacAddressAttributes(datum, 6, bytes);
+            return new PhysicalAddress(bytes);
+        }
+
+        public static PhysicalAddress pldotnet_BuildMacAddress8(IntPtr datum)
+        {
+            byte[] bytes = new byte[8];
+            pldotnet_getDatumMacAddressAttributes(datum, 8, bytes);
+            return new PhysicalAddress(bytes);
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern unsafe void pldotnet_getDatumInetAttributes(IntPtr datum, ref int nelem, [Out] byte[] bytes, ref int netmask);
+
+        public static (IPAddress, int) pldotnet_BuildInet(IntPtr datum)
+        {
+            int nelem = 0, netmask = 0;
+            byte[] bytes = new byte[16];
+            pldotnet_getDatumInetAttributes(datum, ref nelem, bytes, ref netmask);
+            byte[] new_bytes = new byte[nelem];
+            for(int i = 0; i<nelem; i++)
+            {
+                new_bytes[i]=bytes[i];
+            }
+            return (new IPAddress(new_bytes), netmask);
+        }
+
         ////////////////////////////
         /// DOTNET TYPE -> DATUM ///
         ////////////////////////////
@@ -403,6 +438,12 @@ namespace PlDotNETUserSpace
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumInterval(long time, int day, int month);
 
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumMacAddress(int length, byte[] bytes);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumInet(int length, byte[] bytes, int netmask);
+
         /// SEND THE FINAL DATUM TO POSTGRES
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_SetDatumResult(IntPtr value, bool isnull, IntPtr native_result);
@@ -423,7 +464,6 @@ namespace PlDotNETUserSpace
             // $free_arguments
 
             // $call_set_result$
-
         }
     }
 }

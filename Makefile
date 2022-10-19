@@ -150,4 +150,5 @@ tests:
 	cat ba-sql/testgeometric.sql | (sudo -u postgres  psql 2>&1) | tee results/testgeometric.out
 	cat ba-sql/teststring.sql | (sudo -u postgres  psql 2>&1) | tee results/teststring.out
 	cat ba-sql/testdatetime.sql | (sudo -u postgres  psql 2>&1) | tee results/testdatetime.out
+	cat ba-sql/testnetwork.sql | (sudo -u postgres  psql 2>&1) | tee results/testnetwork.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out
