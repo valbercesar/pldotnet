@@ -44,27 +44,24 @@ typedef int
     int func_rettype,
     char *func_paramsName,
     int *func_paramsType,
-    char *func_body
+    char *func_body,
+    bool support_null_input
 );
 
 typedef int
 (CORECLR_DELEGATE_CALLTYPE *user_method_delegate)(
     uint32_t functionId,
     void *arguments,
+    bool *nullmap,
     void *output
 );
 
 typedef void*
 (CORECLR_DELEGATE_CALLTYPE *build_generic_list)(void);
 
-// DONUT
-// public static unsafe System.IntPtr BuildDatumList()
 typedef void*
 (CORECLR_DELEGATE_CALLTYPE *build_datum_list_t)(void);
 
-// DONUT
-// public static unsafe System.IntPtr AddDatumToList(
-//         System.IntPtr list, System.IntPtr element)
 typedef void
 (CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_t)(
     void *list, void* datum);

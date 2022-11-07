@@ -5,455 +5,77 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Buffers;
 using System.Text.Unicode;
+using System.Linq;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Net;
+using System.Collections;
+using PlDotNET;
+using PlDotNET_Handler;
 
 namespace PlDotNETUserSpace
 {
     public static class UserClass
     {
-        ////////////////////////////
-        ////////// CONFIG //////////
-        ////////////////////////////
-
-        static readonly bool DisableDateTimeInfinityConversions = true;
-        static readonly bool LegacyTimestampBehavior = true;
-        static readonly string InfinityExceptionMessage =
-        "Can't read infinity value since UserClass.DisableDateTimeInfinityConversions is enabled";
-
-        ////////////////////////////
-        /// DATUM -> DOTNET TYPE ///
-        ////////////////////////////
-
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern short pldotnet_getInt16(IntPtr datum);
+        public static extern void pldotnet_Elog(int level, string message);
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int pldotnet_getInt32(IntPtr datum);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern long pldotnet_getInt64(IntPtr datum);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern float pldotnet_getFloat(IntPtr datum);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern double pldotnet_getDouble(IntPtr datum);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool pldotnet_getBoolean(IntPtr datum);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPointAttributes(IntPtr datum, ref double x,  ref double y);
-
-        public static NpgsqlPoint pldotnet_BuildNpgsqlPoint(IntPtr datum)
+        public static void pldotnet_Info(string message)
         {
-            double x=0.0, y=0.0;
-            pldotnet_getDatumPointAttributes(datum, ref x, ref y);
-            return new NpgsqlPoint(x,y);
+            pldotnet_Elog(17, message);
         }
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumLineAttributes(IntPtr datum, ref double a,  ref double b,  ref double c);
-
-        public static NpgsqlLine pldotnet_BuildNpgsqlLine(IntPtr datum)
+        public static void pldotnet_Warning(string message)
         {
-            double a=0.0, b=0.0, c=0.0;
-            pldotnet_getDatumLineAttributes(datum, ref a, ref b, ref c);
-            return new NpgsqlLine(a, b, c);
+            pldotnet_Elog(19, message);
         }
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumLineSegmentAttributes(IntPtr datum, ref double x1,  ref double y1,  ref double x2,  ref double y2);
-
-        public static NpgsqlLSeg pldotnet_BuildNpgsqlLSeg(IntPtr datum)
-        {
-            double x1=0.0, y1=0.0, x2=0.0, y2=0.0;
-            pldotnet_getDatumLineSegmentAttributes(datum, ref x1, ref y1, ref x2, ref y2);
-            return new NpgsqlLSeg(x1, y1, x2, y2);
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumBoxAttributes(IntPtr datum, ref double x1,  ref double y1,  ref double x2,  ref double y2);
-
-        public static NpgsqlBox pldotnet_BuildNpgsqlBox(IntPtr datum)
-        {
-            double x1=0.0, y1=0.0, x2=0.0, y2=0.0;
-            pldotnet_getDatumBoxAttributes(datum, ref x1, ref y1, ref x2, ref y2);
-            NpgsqlPoint upperRight = new NpgsqlPoint(x1, y1);
-            NpgsqlPoint lowerLeft = new NpgsqlPoint(x2, y2);
-            return new NpgsqlBox(upperRight, lowerLeft);
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPathAttributes(IntPtr datum, ref int pointNumber, ref int closed);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumPathCoordinates(IntPtr datum, [Out] double[] xCoordinates, [Out] double [] yCoordinates);
-
-        public static NpgsqlPath pldotnet_BuildNpgsqlPath(IntPtr datum)
-        {
-            int npts=0, closed = 0;
-            pldotnet_getDatumPathAttributes(datum, ref npts, ref closed);
-            double[] xCoordinates = new double[npts];
-            double[] yCoordinates = new double[npts];
-            bool open = closed == 0 ? true : false;
-            NpgsqlPath orig_path = new NpgsqlPath(npts, open);
-            pldotnet_getDatumPathCoordinates(datum, xCoordinates, yCoordinates);
-            for(int i = 0; i< npts; i++)
-            {
-                orig_path.Add(new NpgsqlPoint(xCoordinates[i],yCoordinates[i]));
-            }
-            return orig_path;
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPolygonAttributes(IntPtr datum, ref int pointNumber);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumPolygonCoordinates(IntPtr datum, [Out] double[] xCoordinates, [Out] double [] yCoordinates);
-
-        public static NpgsqlPolygon pldotnet_BuildNpgsqlPolygon(IntPtr datum)
-        {
-            int npts=0;
-            pldotnet_getDatumPolygonAttributes(datum, ref npts);
-            double[] xCoordinates = new double[npts];
-            double[] yCoordinates = new double[npts];
-            NpgsqlPolygon orig_polygon = new NpgsqlPolygon(npts);
-            pldotnet_getDatumPolygonCoordinates(datum, xCoordinates, yCoordinates);
-            for(int i = 0; i< npts; i++)
-            {
-                orig_polygon.Add(new NpgsqlPoint(xCoordinates[i],yCoordinates[i]));
-            }
-            return orig_polygon;
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumCircleAttributes(IntPtr datum, ref double x, ref double y, ref double r);
-
-        public static NpgsqlCircle pldotnet_BuildNpgsqlCircle(IntPtr datum)
-        {
-            double x=0.0, y=0.0, r=0.0;
-            pldotnet_getDatumCircleAttributes(datum, ref x, ref y, ref r);
-            return new NpgsqlCircle(x, y, r);
-        }
-
-        // needed for string conversion
-        static UTF8Encoding utf8_e = new UTF8Encoding();
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumTextAttributes(IntPtr datum, int* len, byte** buf);
-
-        public static unsafe String pldotnet_BuildString(IntPtr datum)
-        {
-            int strlen;
-            byte* str_p;
-
-            pldotnet_getDatumTextAttributes(datum, &strlen, &str_p);
-            ReadOnlySpan<byte> nativeSpan = new ReadOnlySpan<byte>(str_p, strlen);
-            String s1 = utf8_e.GetString(nativeSpan.ToArray(), 0, strlen);
-            return s1;
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumDateAttributes(IntPtr datum, ref int date);
-
-        public static DateOnly pldotnet_BuildDate(IntPtr datum)
-        {
-            int date = 0;
-            pldotnet_getDatumDateAttributes(datum, ref date);
-            return date switch
-            {
-                int.MaxValue => DisableDateTimeInfinityConversions ?
-                    throw new InvalidCastException(InfinityExceptionMessage) : DateOnly.MaxValue,
-                int.MinValue => DisableDateTimeInfinityConversions ?
-                    throw new InvalidCastException(InfinityExceptionMessage) : DateOnly.MinValue,
-                var value => DateOnly.FromDayNumber(value + 730119)
-            };
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimeAttributes(IntPtr datum, ref long time);
-
-        public static TimeOnly pldotnet_BuildTime(IntPtr datum)
-        {
-            long time = 0;
-            pldotnet_getDatumTimeAttributes(datum, ref time);
-            return new TimeOnly(time*10);
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimeTzAttributes(IntPtr datum, ref long time, ref int zone);
-
-        public static DateTimeOffset pldotnet_BuildTimeTz(IntPtr datum)
-        {
-            long time = 0;
-            int zone = 0;
-            pldotnet_getDatumTimeTzAttributes(datum, ref time, ref zone);
-            return new DateTimeOffset(time*10 + TimeSpan.TicksPerDay, new TimeSpan(0, 0, -zone));
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimestampAttributes(IntPtr datum, ref long timestamp);
-
-        static readonly long PostgresTimestampOffsetTicks = 630822816000000000L;
-        public static DateTime createDateTimeObject(long timestamp, DateTimeKind kind)
-        {
-            try
-            {
-                return timestamp switch
-                {
-                    long.MaxValue => DisableDateTimeInfinityConversions ? throw new InvalidCastException(InfinityExceptionMessage) : DateTime.MaxValue,
-                    long.MinValue => DisableDateTimeInfinityConversions ? throw new InvalidCastException(InfinityExceptionMessage) : DateTime.MinValue,
-                    var value => new DateTime(value * 10 + PostgresTimestampOffsetTicks, kind)
-                };
-            }
-            catch (ArgumentOutOfRangeException e)
-            {
-                throw new InvalidCastException("Out of the range of DateTime (year must be between 1 and 9999)", e);
-            }
-        }
-
-        public static DateTime pldotnet_BuildTimestamp(IntPtr datum)
-        {
-            long timestamp = 0;
-            pldotnet_getDatumTimestampAttributes(datum, ref timestamp);
-            return createDateTimeObject(timestamp, DateTimeKind.Unspecified);
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimestampTzAttributes(IntPtr datum, ref long timestamp);
-
-        public static DateTime pldotnet_BuildTimestampTz(IntPtr datum)
-        {
-            long timestamp = 0;
-            pldotnet_getDatumTimestampTzAttributes(datum, ref timestamp);
-            DateTime dateTime = createDateTimeObject(timestamp, DateTimeKind.Utc);
-            return LegacyTimestampBehavior && (DisableDateTimeInfinityConversions || dateTime != DateTime.MaxValue && dateTime != DateTime.MinValue)
-            ? dateTime.ToLocalTime()
-            : dateTime;
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumIntervalAttributes(IntPtr datum, ref long time, ref int day, ref int month);
-
-        public static NpgsqlInterval pldotnet_BuildNpgsqlInterval(IntPtr datum)
-        {
-            long time = 0;
-            int day = 0, month = 0;
-            pldotnet_getDatumIntervalAttributes(datum, ref time, ref day, ref month);
-            return new NpgsqlInterval(month, day, time);
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumMacAddressAttributes(IntPtr datum, int length, [Out] byte[] bytes);
-
-        public static PhysicalAddress pldotnet_BuildMacAddress(IntPtr datum)
-        {
-            byte[] bytes = new byte[6];
-            pldotnet_getDatumMacAddressAttributes(datum, 6, bytes);
-            return new PhysicalAddress(bytes);
-        }
-
-        public static PhysicalAddress pldotnet_BuildMacAddress8(IntPtr datum)
-        {
-            byte[] bytes = new byte[8];
-            pldotnet_getDatumMacAddressAttributes(datum, 8, bytes);
-            return new PhysicalAddress(bytes);
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumInetAttributes(IntPtr datum, ref int nelem, [Out] byte[] bytes, ref int netmask);
-
-        public static (IPAddress, int) pldotnet_BuildInet(IntPtr datum)
-        {
-            int nelem = 0, netmask = 0;
-            byte[] bytes = new byte[16];
-            pldotnet_getDatumInetAttributes(datum, ref nelem, bytes, ref netmask);
-            byte[] new_bytes = new byte[nelem];
-            for(int i = 0; i<nelem; i++)
-            {
-                new_bytes[i]=bytes[i];
-            }
-            return (new IPAddress(new_bytes), netmask);
-        }
-
-        ////////////////////////////
-        /// DOTNET TYPE -> DATUM ///
-        ////////////////////////////
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInt16(short dotnetValue);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInt32(int dotnetValue);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInt64(long dotnetValue);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumFloat(float dotnetValue);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumDouble(double dotnetValue);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumBoolean(bool dotnetValue);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumPoint(double x, double y);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumLine(double a, double b, double c);
-        
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumLineSegment(double x1, double y1,  double x2, double y2);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumBox(double x1, double y1,  double x2, double y2);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe IntPtr pldotnet_createDatumText(int len, byte* buf);
-
-        public static unsafe IntPtr pldotnet_createDatumTextInternal(string s)
-        {
-            IntPtr datum;
-            byte[] encodedBytes = utf8_e.GetBytes(s);
-            int len = encodedBytes.Length;
-            fixed (byte* buf = &encodedBytes[0])
-            {
-                datum = pldotnet_createDatumText(len, buf);
-            }
-            return datum;
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe IntPtr pldotnet_createDatumPath(int npts, int closed, double *xCoordinates, double *yCoordinates);
-
-        public static unsafe IntPtr pldotnet_createDatumPath(NpgsqlPath path)
-        {
-            int npts = path.Count;
-            bool open = path.Open;
-            int closed = open ? 0 : 1;
-            double[] xCoordinates = new double[npts];
-            double[] yCoordinates = new double[npts];
-            for(int i = 0; i<npts;i++)
-            {
-                xCoordinates[i] = path[i].X;
-                yCoordinates[i] = path[i].Y;
-            }
-            fixed (double* x = &xCoordinates[0], y = &yCoordinates[0])
-			{
-				return pldotnet_createDatumPath(npts, closed, x, y);
-			}
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe IntPtr pldotnet_createDatumPolygon(int npts, double *xCoordinates, double *yCoordinates);
-
-        public static unsafe IntPtr pldotnet_createDatumPolygon(NpgsqlPolygon path)
-        {
-            int npts = path.Count;
-            double[] xCoordinates = new double[npts];
-            double[] yCoordinates = new double[npts];
-            for(int i = 0; i<npts;i++)
-            {
-                xCoordinates[i] = path[i].X;
-                yCoordinates[i] = path[i].Y;
-            }
-            fixed (double* x = &xCoordinates[0], y = &yCoordinates[0])
-			{
-				return pldotnet_createDatumPolygon(npts, x, y);
-			}
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumCircle(double x, double y, double r);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumDate(int date);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTime(long time);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTimeTz(long time, int zone);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTimestamp(long timestamp);
-        
-        public static IntPtr pldotnet_createDatumTimestamp(DateTime value)
-        {
-            if (!DisableDateTimeInfinityConversions)
-            {
-                if (value == DateTime.MaxValue)
-                {
-                    return pldotnet_createDatumTimestamp(long.MaxValue);
-                }
-                if (value == DateTime.MinValue)
-                {
-                    return pldotnet_createDatumTimestamp(long.MinValue);
-                }
-            }
-            return pldotnet_createDatumTimestamp((long)((value.Ticks - PostgresTimestampOffsetTicks) / 10));
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTimestampTz(long timestamp);
-        
-        public static IntPtr pldotnet_createDatumTimestampTz(DateTime value)
-        {
-            if (LegacyTimestampBehavior)
-            {
-                switch (value.Kind)
-                {
-                case DateTimeKind.Unspecified:
-                case DateTimeKind.Utc:
-                    break;
-                case DateTimeKind.Local:
-                    value = value.ToUniversalTime();
-                    break;
-                default:
-                    throw new InvalidOperationException($"Internal Npgsql bug: unexpected value {value.Kind} of enum {nameof(DateTimeKind)}. Please file a bug.");
-                }
-            }
-            else
-                Debug.Assert(value.Kind == DateTimeKind.Utc || value == DateTime.MinValue || value == DateTime.MaxValue);
-            if (!DisableDateTimeInfinityConversions)
-            {
-                if (value == DateTime.MaxValue)
-                {
-                    return pldotnet_createDatumTimestampTz(long.MaxValue);
-                }
-                if (value == DateTime.MinValue)
-                {
-                    return pldotnet_createDatumTimestampTz(long.MinValue);
-                }
-            }
-            return pldotnet_createDatumTimestampTz((long)((value.Ticks - PostgresTimestampOffsetTicks) / 10));
-        }
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInterval(long time, int day, int month);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumMacAddress(int length, byte[] bytes);
-
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInet(int length, byte[] bytes, int netmask);
+        public static bool_handler bool_handler_obj = new bool_handler();
+        public static short_handler short_handler_obj = new short_handler();
+        public static int_handler int_handler_obj = new int_handler();
+        public static long_handler long_handler_obj = new long_handler();
+        public static float_handler float_handler_obj = new float_handler();
+        public static double_handler double_handler_obj = new double_handler();
+        public static point_handler point_handler_obj = new point_handler();
+        public static line_handler line_handler_obj = new line_handler();
+        public static lseg_handler lseg_handler_obj = new lseg_handler();
+        public static box_handler box_handler_obj = new box_handler();
+        public static path_handler path_handler_obj = new path_handler();
+        public static polygon_handler polygon_handler_obj = new polygon_handler();
+        public static circle_handler circle_handler_obj = new circle_handler();
+        public static date_handler date_handler_obj = new date_handler();
+        public static time_handler time_handler_obj = new time_handler();
+        public static timetz_handler timetz_handler_obj = new timetz_handler();
+        public static timestamp_handler timestamp_handler_obj = new timestamp_handler();
+        public static timestamptz_handler timestamptz_handler_obj = new timestamptz_handler();
+        public static interval_handler interval_handler_obj = new interval_handler();
+        public static macaddr_handler macaddr_handler_obj = new macaddr_handler();
+        public static macaddr8_handler macaddr8_handler_obj = new macaddr8_handler();
+        public static inet_handler inet_handler_obj = new inet_handler();
+        public static cidr_handler cidr_handler_obj = new cidr_handler();
+        public static text_handler text_handler_obj = new text_handler();
+        public static money_handler money_handler_obj = new money_handler();
+        public static varbit_handler varbit_handler_obj = new varbit_handler();
+        // public static bit_handler bit_handler_obj = new bit_handler();
+        public static bytea_handler bytea_handler_obj = new bytea_handler();
+        public static bpchar_handler bpchar_handler_obj = new bpchar_handler();
+        public static varchar_handler varchar_handler_obj = new varchar_handler();
+        public static xml_handler xml_handler_obj = new xml_handler();
+        public static int_range_handler int_range_handler_obj = new int_range_handler();
+        public static long_range_handler long_range_handler_obj = new long_range_handler();
+        public static time_range_handler time_range_handler_obj = new time_range_handler();
+        public static timetz_range_handler timetz_range_handler_obj = new timetz_range_handler();
+        public static date_range_handler date_range_handler_obj = new date_range_handler();
 
         /// SEND THE FINAL DATUM TO POSTGRES
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetDatumResult(IntPtr value, bool isnull, IntPtr native_result);
+        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isnull, IntPtr native_result);
 
         // $trigger_data_definition$
 
         // $user_function_declaration$
 
-        // DONUT: convert arguments to Datum[]
-        public static void CallUserFunction(List<IntPtr> arguments, IntPtr output)
+        public static unsafe void CallUserFunction(List<IntPtr> arguments, IntPtr output, bool[] isnull)
         {
             // $create_arguments
 

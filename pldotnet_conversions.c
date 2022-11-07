@@ -23,9 +23,13 @@
 
 #include "pldotnet_conversions.h"
 
+#include <utils/cash.h>
 #include <utils/date.h>
 #include <utils/inet.h>
+#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
+#include <utils/varbit.h>
+#include <utils/xml.h>
 
 #include "pldotnet_common.h"
 
@@ -95,14 +99,6 @@ void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
   *y2 = orig_b->low.y;
 }
 
-void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf) {
-  text *t = DatumGetTextPP((Datum)datum);
-  const size_t datum_len = VARSIZE_ANY_EXHDR(t);
-
-  *len = datum_len;
-  *buf = VARDATA_ANY(t);
-}
-
 void pldotnet_getDatumPathAttributes(void *datum, int *pointNumber,
                                      int *closed) {
   PATH *orig_p = DatumGetPathP((Datum)datum);
@@ -139,6 +135,37 @@ void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
   *x = orig_c->center.x;
   *y = orig_c->center.y;
   *r = orig_c->radius;
+}
+
+void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf) {
+  text *t = DatumGetTextPP((Datum)datum);
+  const size_t datum_len = VARSIZE_ANY_EXHDR(t);
+  *len = datum_len;
+  *buf = VARDATA_ANY(t);
+}
+
+void pldotnet_getDatumCharAttributes(void *datum, int *len, char **buf) {
+  BpChar *orig_bpc = DatumGetBpCharPP((Datum)datum);
+  *len = VARSIZE_ANY_EXHDR(orig_bpc);
+  *buf = VARDATA_ANY(orig_bpc);
+}
+
+void pldotnet_getDatumVarCharAttributes(void *datum, int *len, char **buf) {
+  VarChar *orig_bpc = DatumGetVarCharPP((Datum)datum);
+  *len = VARSIZE_ANY_EXHDR(orig_bpc);
+  *buf = VARDATA_ANY(orig_bpc);
+}
+
+void pldotnet_getDatumByteaAttributes(void *datum, int *len, char **buf) {
+  bytea *orig_b = DatumGetByteaPP((Datum)datum);
+  *len = VARSIZE_ANY_EXHDR(orig_b);
+  *buf = VARDATA_ANY(orig_b);
+}
+
+void pldotnet_getDatumXmlAttributes(void *datum, int *len, char **buf) {
+  xmltype *orig_x = DatumGetXmlP((Datum)datum);
+  *len = VARSIZE_ANY_EXHDR(orig_x);
+  *buf = VARDATA_ANY(orig_x);
 }
 
 void pldotnet_getDatumDateAttributes(void *datum, int *date) {
@@ -215,6 +242,126 @@ void pldotnet_getDatumInetAttributes(void *datum, int *nelem,
   }
 }
 
+void pldotnet_getDatumMoneyAttributes(void *datum, long *value) {
+  Cash orig_c = DatumGetCash((Datum)datum);
+  *value = orig_c;
+}
+
+void pldotnet_getDatumVarBitAttributes(void *datum, int *len, bits8 **dat) {
+  VarBit *orig_vb = DatumGetVarBitP((Datum)datum);
+  *len = orig_vb->bit_len;
+  *dat = &orig_vb->bit_dat[0];
+}
+
+void pldotnet_getDatumRangeAttributes(Datum input_datum, bool *is_empty,
+                                      RangeBound **lower_range,
+                                      RangeBound **upper_range) {
+  RangeType *orig_r = DatumGetRangeTypeP(input_datum);
+  Oid rt_oid = RangeTypeGetOid(orig_r);
+  // Oid             ul_oid = range_underlying(rt_oid);
+  TypeCacheEntry *typcache;
+
+  *lower_range = palloc(sizeof(RangeBound));
+  *upper_range = palloc(sizeof(RangeBound));
+
+  elog(INFO, "# DEBUG(C): lower_range is %p, upper_range is %p.\n", lower_range,
+       upper_range);
+
+  typcache = lookup_type_cache(rt_oid, TYPECACHE_RANGE_INFO);
+  range_deserialize(typcache, orig_r, *lower_range, *upper_range, is_empty);
+
+  elog(INFO,
+       "# DEBUG(C): after range_deserialize, lower_range is %p, upper_range is "
+       "%p, is_empty is %d.\n",
+       *lower_range, *upper_range, is_empty);
+}
+
+void pldotnet_getDatumRangeBoundAttributes(RangeBound *input_range,
+                                           Datum *range_datum, bool *infinite,
+                                           bool *inclusive, bool *lower) {
+  fprintf(stderr,
+          "# START DEBUG[before](C:pldotnet_getDatumRangeBoundAttributes)\n");
+  fprintf(stderr, "# *range_datum = %p\n", range_datum);
+  fprintf(stderr, "# *infinite = %d\n", *infinite);
+  fprintf(stderr, "# *inclusive = %d\n", *inclusive);
+  fprintf(stderr, "# *lower = %d\n", *lower);
+  fprintf(stderr, "# END DEBUG(C:pldotnet_getDatumRangeBoundAttributes)\n");
+
+  *range_datum = input_range->val;
+  *infinite = input_range->infinite;
+  *inclusive = input_range->inclusive;
+  *lower = input_range->lower;
+
+  fprintf(stderr,
+          "# START DEBUG[after](C:pldotnet_getDatumRangeBoundAttributes)\n");
+  fprintf(stderr, "# *range_datum = %p\n", range_datum);
+  fprintf(stderr, "# *infinite = %d\n", *infinite);
+  fprintf(stderr, "# *inclusive = %d\n", *inclusive);
+  fprintf(stderr, "# *lower = %d\n", *lower);
+  fprintf(stderr, "# END DEBUG(C:pldotnet_getDatumRangeBoundAttributes)\n");
+}
+
+int get_maxdim(void) { return MAXDIM; }
+
+void pldotnet_getArrayAttributes(void *datum, int *element_typeid, int *ndims,
+                                 int *dims, uint8_t **nullmap) {
+  /* the size of dims needs to be MAXDIM */
+  ArrayType *array = DatumGetArrayTypeP((Datum)datum);
+  int *dims_in;
+  int i;
+
+  *ndims = ARR_NDIM(array);
+  Assert(ndim <= MAXDIM);
+  *nullmap = ARR_NULLBITMAP(array);
+  *element_typeid = ARR_ELEMTYPE(array);
+
+  dims_in = ARR_DIMS(array);
+  for (i = 0; i < *ndims; i++) {
+    dims[i] = dims_in[i];
+  }
+}
+
+int pldotnet_getArrayDatum(Datum array_datum, Datum *results, int nelems,
+                           int element_typeid) {
+  // converts the PostgreSQL array to a linear array of `Datum`
+  // returns 0 on success, other on failure
+  ArrayType *array = DatumGetArrayTypeP(array_datum);
+  int ndim = ARR_NDIM(array);
+  int *dims = ARR_DIMS(array);
+  int computed_nelems = 1;
+  int i;
+  char *dataptr;
+  int16 typlen;
+  bool typbyval;
+  char typalign;
+
+  if (ndim > MAXDIM) {
+    elog(22, "# C ERROR: ndimcomputed_nelems(%d) > MAXDIM(%d))\n", ndim,
+         MAXDIM);
+    return -1;
+  }
+  for (i = 0; i < ndim; i++) {
+    computed_nelems *= dims[i];
+  }
+  if (computed_nelems != nelems) {
+    elog(22, "# C ERROR: (computed_nelems(%d)!=nelems(%d))\n", computed_nelems,
+         nelems);
+    return -2;
+  }
+
+  // this will be cleaned up later into parameters
+  get_typlenbyvalalign((Oid)element_typeid, &typlen, &typbyval, &typalign);
+
+  dataptr = ARR_DATA_PTR(array);
+
+  for (i = 0; i < nelems; i++) {
+    results[i] = fetch_att(dataptr, typbyval, typlen);
+    dataptr = att_addlength_pointer(dataptr, typlen, dataptr);
+    dataptr = (char *)att_align_nominal(dataptr, typalign);
+  }
+  return 0;
+}
+
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
 ////////////////////////////////////
@@ -283,15 +430,6 @@ Datum pldotnet_createDatumBox(double x1, double y1, double x2, double y2) {
   return BoxPGetDatum(new_b);
 }
 
-Datum pldotnet_createDatumText(int len, char *buf) {
-  const size_t new_size = VARHDRSZ + len;
-  text *new_t = (text *)palloc(new_size);
-
-  SET_VARSIZE(new_t, new_size);
-  memcpy((void *)VARDATA(new_t), buf, len);
-  PG_RETURN_TEXT_P(new_t);
-}
-
 Datum pldotnet_createDatumPath(int npts, int closed, double *xCoordinates,
                                double *yCoordinates) {
   size_t path_size = sizeof(PATH) + ((size_t)npts * sizeof(Point));
@@ -326,6 +464,51 @@ Datum pldotnet_createDatumCircle(double x, double y, double r) {
   new_c->center.y = y;
   new_c->radius = r;
   return CirclePGetDatum(new_c);
+}
+
+Datum pldotnet_createDatumText(int len, char *buf) {
+  const size_t new_size = VARHDRSZ + len;
+  text *new_t = (text *)palloc(new_size);
+
+  SET_VARSIZE(new_t, new_size);
+  memcpy((void *)VARDATA(new_t), buf, len);
+  PG_RETURN_TEXT_P(new_t);
+}
+
+Datum pldotnet_createDatumChar(int len, char *buf) {
+  const size_t new_size = VARHDRSZ + len;
+  BpChar *new_bpc = (BpChar *)palloc(new_size);
+
+  SET_VARSIZE(new_bpc, new_size);
+  memcpy((void *)VARDATA(new_bpc), buf, len);
+  PG_RETURN_BPCHAR_P(new_bpc);
+}
+
+Datum pldotnet_createDatumVarChar(int len, char *buf) {
+  const size_t new_size = VARHDRSZ + len;
+  VarChar *new_bpc = (VarChar *)palloc(new_size);
+
+  SET_VARSIZE(new_bpc, new_size);
+  memcpy((void *)VARDATA(new_bpc), buf, len);
+  PG_RETURN_VARCHAR_P(new_bpc);
+}
+
+Datum pldotnet_createDatumBytea(int len, char *buf) {
+  const size_t new_size = VARHDRSZ + len;
+  bytea *new_b = (bytea *)palloc(new_size);
+
+  SET_VARSIZE(new_b, new_size);
+  memcpy((void *)VARDATA(new_b), buf, len);
+  PG_RETURN_BYTEA_P(new_b);
+}
+
+Datum pldotnet_createDatumXml(int len, char *buf) {
+  const size_t new_size = VARHDRSZ + len;
+  xmltype *new_x = (xmltype *)palloc(new_size);
+
+  SET_VARSIZE(new_x, new_size);
+  memcpy((void *)VARDATA(new_x), buf, len);
+  PG_RETURN_XML_P(new_x);
 }
 
 Datum pldotnet_createDatumDate(int date) { return DateADTGetDatum(date); }
@@ -378,8 +561,6 @@ Datum pldotnet_createDatumMacAddress(int length, unsigned char *bytes) {
   return Macaddr8PGetDatum(new_ma8);
 }
 
-// TODO(rosicley) - Add an argument to check if the Datum is a `CIDR`.
-// If so, check if the address has nonzero bits to the right of the netmask.
 Datum pldotnet_createDatumInet(int length, unsigned char *bytes, int netmask) {
   inet *new_i = (inet *)palloc(sizeof(inet));
   SET_VARSIZE(new_i, sizeof(inet));
@@ -395,4 +576,47 @@ Datum pldotnet_createDatumInet(int length, unsigned char *bytes, int netmask) {
     new_i->inet_data.ipaddr[i] = bytes[i];
   }
   return InetPGetDatum(new_i);
+}
+
+Datum pldotnet_createDatumMoney(long value) {
+  Datum new_m = CashGetDatum(value);
+  return CashGetDatum(new_m);
+}
+
+Datum pldotnet_createDatumVarBit(int len, bits8 *bytes) {
+  size_t size = VARBITTOTALLEN(len);
+  VarBit *new_vb = (VarBit *)palloc(size);
+  SET_VARSIZE(new_vb, size);
+  new_vb->bit_len = len;
+  for (int i = 0; i < len; i++) new_vb->bit_dat[i] = bytes[i];
+  return VarBitPGetDatum(new_vb);
+}
+
+void pldotnet_typlenbyvalalign(int oid, int16 *typlen, bool *typbyval,
+                               char *typalign) {
+  // not sure if dotnet can call pg functions through this lib,
+  // so faking it for now
+
+  get_typlenbyvalalign(oid, &typlen, &typbyval, &typalign);
+}
+
+Datum pldotnet_createDatumArray(int element_id, int dimNumber, int *dimLengths,
+                                Datum *datums, bool *nulls) {
+  Oid element_type = (Oid)element_id;
+  ArrayType *at;
+  int16 typlen;
+  bool typbyval;
+  char typalign;
+  get_typlenbyvalalign(element_type, &typlen, &typbyval, &typalign);
+
+  int *lsb = (int *)palloc(sizeof(int) * dimNumber);
+
+  for (int i = 0; i < dimNumber; i++) {
+    lsb[i] = 1;
+  }
+
+  at = construct_md_array(datums, nulls, dimNumber, dimLengths, lsb,
+                          element_type, typlen, typbyval, typalign);
+
+  PG_RETURN_ARRAYTYPE_P(at);
 }

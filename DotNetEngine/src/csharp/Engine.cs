@@ -43,209 +43,68 @@ using System.Data.Common;
 using System.Text.RegularExpressions;
 
 using NpgsqlTypes;
+using PlDotNET_Handler;
 
 namespace PlDotNET
 {
     public static class Engine
     {
+        static bool AlwaysNullable = false;
+
         public struct CachedFunction
         {
             public string SourceCode;
-            public Action<List<IntPtr>, IntPtr> UserProcedure;
+            public Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
+            public bool SupportNullInput;
         }
 
-        enum OID : int
+        static Dictionary<OID, OID> HANDLE_ARRAY =
+                       new Dictionary<OID, OID>()
         {
-            BOOLOID = 16,
-            BYTEAOID = 17,
-            CHAROID = 18,
-            NAMEOID = 19,
-            INT8OID = 20,
-            INT2OID = 21,
-            INT2VECTOROID = 22,
-            INT4OID = 23,
-            REGPROCOID = 24,
-            TEXTOID = 25,
-            OIDOID = 26,
-            TIDOID = 27,
-            XIDOID = 28,
-            CIDOID = 29,
-            OIDVECTOROID = 30,
-            JSONOID = 114,
-            XMLOID = 142,
-            PG_NODE_TREEOID = 194,
-            PG_NDISTINCTOID = 3361,
-            PG_DEPENDENCIESOID = 3402,
-            PG_MCV_LISTOID = 5017,
-            PG_DDL_COMMANDOID = 32,
-            XID8OID = 5069,
-            POINTOID = 600,
-            LSEGOID = 601,
-            PATHOID = 602,
-            BOXOID = 603,
-            POLYGONOID = 604,
-            LINEOID = 628,
-            FLOAT4OID = 700,
-            FLOAT8OID = 701,
-            UNKNOWNOID = 705,
-            CIRCLEOID = 718,
-            MONEYOID = 790,
-            MACADDROID = 829,
-            INETOID = 869,
-            CIDROID = 650,
-            MACADDR8OID = 774,
-            ACLITEMOID = 1033,
-            BPCHAROID = 1042,
-            VARCHAROID = 1043,
-            DATEOID = 1082,
-            TIMEOID = 1083,
-            TIMESTAMPOID = 1114,
-            TIMESTAMPTZOID = 1184,
-            INTERVALOID = 1186,
-            TIMETZOID = 1266,
-            BITOID = 1560,
-            VARBITOID = 1562,
-            NUMERICOID = 1700,
-            REFCURSOROID = 1790,
-            REGPROCEDUREOID = 2202,
-            REGOPEROID = 2203,
-            REGOPERATOROID = 2204,
-            REGCLASSOID = 2205,
-            REGCOLLATIONOID = 4191,
-            REGTYPEOID = 2206,
-            REGROLEOID = 4096,
-            REGNAMESPACEOID = 4089,
-            UUIDOID = 2950,
-            PG_LSNOID = 3220,
-            TSVECTOROID = 3614,
-            GTSVECTOROID = 3642,
-            TSQUERYOID = 3615,
-            REGCONFIGOID = 3734,
-            REGDICTIONARYOID = 3769,
-            JSONBOID = 3802,
-            JSONPATHOID = 4072,
-            TXID_SNAPSHOTOID = 2970,
-            PG_SNAPSHOTOID = 5038,
-            INT4RANGEOID = 3904,
-            NUMRANGEOID = 3906,
-            TSRANGEOID = 3908,
-            TSTZRANGEOID = 3910,
-            DATERANGEOID = 3912,
-            INT8RANGEOID = 3926,
-            INT4MULTIRANGEOID = 4451,
-            NUMMULTIRANGEOID = 4532,
-            TSMULTIRANGEOID = 4533,
-            TSTZMULTIRANGEOID = 4534,
-            DATEMULTIRANGEOID = 4535,
-            INT8MULTIRANGEOID = 4536,
-            RECORDOID = 2249,
-            RECORDARRAYOID = 2287,
-            CSTRINGOID = 2275,
-            ANYOID = 2276,
-            ANYARRAYOID = 2277,
-            VOIDOID = 2278,
-            TRIGGEROID = 2279,
-            EVENT_TRIGGEROID = 3838,
-            LANGUAGE_HANDLEROID = 2280,
-            INTERNALOID = 2281,
-            ANYELEMENTOID = 2283,
-            ANYNONARRAYOID = 2776,
-            ANYENUMOID = 3500,
-            FDW_HANDLEROID = 3115,
-            INDEX_AM_HANDLEROID = 325,
-            TSM_HANDLEROID = 3310,
-            TABLE_AM_HANDLEROID = 269,
-            ANYRANGEOID = 3831,
-            ANYCOMPATIBLEOID = 5077,
-            ANYCOMPATIBLEARRAYOID = 5078,
-            ANYCOMPATIBLENONARRAYOID = 5079,
-            ANYCOMPATIBLERANGEOID = 5080,
-            ANYMULTIRANGEOID = 4537,
-            ANYCOMPATIBLEMULTIRANGEOID = 4538,
-            PG_BRIN_BLOOM_SUMMARYOID = 4600,
-            PG_BRIN_MINMAX_MULTI_SUMMARYOID = 4601,
-            BOOLARRAYOID = 1000,
-            BYTEAARRAYOID = 1001,
-            CHARARRAYOID = 1002,
-            NAMEARRAYOID = 1003,
-            INT8ARRAYOID = 1016,
-            INT2ARRAYOID = 1005,
-            INT2VECTORARRAYOID = 1006,
-            INT4ARRAYOID = 1007,
-            REGPROCARRAYOID = 1008,
-            TEXTARRAYOID = 1009,
-            OIDARRAYOID = 1028,
-            TIDARRAYOID = 1010,
-            XIDARRAYOID = 1011,
-            CIDARRAYOID = 1012,
-            OIDVECTORARRAYOID = 1013,
-            PG_TYPEARRAYOID = 210,
-            PG_ATTRIBUTEARRAYOID = 270,
-            PG_PROCARRAYOID = 272,
-            PG_CLASSARRAYOID = 273,
-            JSONARRAYOID = 199,
-            XMLARRAYOID = 143,
-            XID8ARRAYOID = 271,
-            POINTARRAYOID = 1017,
-            LSEGARRAYOID = 1018,
-            PATHARRAYOID = 1019,
-            BOXARRAYOID = 1020,
-            POLYGONARRAYOID = 1027,
-            LINEARRAYOID = 629,
-            FLOAT4ARRAYOID = 1021,
-            FLOAT8ARRAYOID = 1022,
-            CIRCLEARRAYOID = 719,
-            MONEYARRAYOID = 791,
-            MACADDRARRAYOID = 1040,
-            INETARRAYOID = 1041,
-            CIDRARRAYOID = 651,
-            MACADDR8ARRAYOID = 775,
-            ACLITEMARRAYOID = 1034,
-            BPCHARARRAYOID = 1014,
-            VARCHARARRAYOID = 1015,
-            DATEARRAYOID = 1182,
-            TIMEARRAYOID = 1183,
-            TIMESTAMPARRAYOID = 1115,
-            TIMESTAMPTZARRAYOID = 1185,
-            INTERVALARRAYOID = 1187,
-            TIMETZARRAYOID = 1270,
-            BITARRAYOID = 1561,
-            VARBITARRAYOID = 1563,
-            NUMERICARRAYOID = 1231,
-            REFCURSORARRAYOID = 2201,
-            REGPROCEDUREARRAYOID = 2207,
-            REGOPERARRAYOID = 2208,
-            REGOPERATORARRAYOID = 2209,
-            REGCLASSARRAYOID = 2210,
-            REGCOLLATIONARRAYOID = 4192,
-            REGTYPEARRAYOID = 2211,
-            REGROLEARRAYOID = 4097,
-            REGNAMESPACEARRAYOID = 4090,
-            UUIDARRAYOID = 2951,
-            PG_LSNARRAYOID = 3221,
-            TSVECTORARRAYOID = 3643,
-            GTSVECTORARRAYOID = 3644,
-            TSQUERYARRAYOID = 3645,
-            REGCONFIGARRAYOID = 3735,
-            REGDICTIONARYARRAYOID = 3770,
-            JSONBARRAYOID = 3807,
-            JSONPATHARRAYOID = 4073,
-            TXID_SNAPSHOTARRAYOID = 2949,
-            PG_SNAPSHOTARRAYOID = 5039,
-            INT4RANGEARRAYOID = 3905,
-            NUMRANGEARRAYOID = 3907,
-            TSRANGEARRAYOID = 3909,
-            TSTZRANGEARRAYOID = 3911,
-            DATERANGEARRAYOID = 3913,
-            INT8RANGEARRAYOID = 3927,
-            INT4MULTIRANGEARRAYOID = 6150,
-            NUMMULTIRANGEARRAYOID = 6151,
-            TSMULTIRANGEARRAYOID = 6152,
-            TSTZMULTIRANGEARRAYOID = 6153,
-            DATEMULTIRANGEARRAYOID = 6155,
-            INT8MULTIRANGEARRAYOID = 6157,
-            CSTRINGARRAYOID = 1263
-        }
+            {OID.BOOLARRAYOID,        OID.BOOLOID},
+            {OID.INT2ARRAYOID,        OID.INT2OID},
+            {OID.INT4ARRAYOID,        OID.INT4OID},
+            {OID.INT8ARRAYOID,        OID.INT8OID},
+            {OID.FLOAT4ARRAYOID,      OID.FLOAT4OID},
+            {OID.FLOAT8ARRAYOID,      OID.FLOAT8OID},
+            {OID.POINTARRAYOID,       OID.POINTOID},
+            {OID.LINEARRAYOID,        OID.LINEOID},
+            {OID.LSEGARRAYOID,        OID.LSEGOID},
+            {OID.BOXARRAYOID,         OID.BOXOID},
+            {OID.POLYGONARRAYOID,     OID.POLYGONOID},
+            {OID.TEXTARRAYOID,        OID.TEXTOID},
+            {OID.PATHARRAYOID,        OID.PATHOID},
+            {OID.CIRCLEARRAYOID,      OID.CIRCLEOID},
+            {OID.DATEARRAYOID,        OID.DATEOID},
+            {OID.TIMEARRAYOID,        OID.TIMEOID},
+            {OID.TIMETZARRAYOID,      OID.TIMETZOID},
+            {OID.TIMESTAMPARRAYOID,   OID.TIMESTAMPOID},
+            {OID.TIMESTAMPTZARRAYOID, OID.TIMESTAMPTZOID},
+            {OID.INTERVALARRAYOID,    OID.INTERVALOID},
+            {OID.MACADDRARRAYOID,     OID.MACADDROID},
+            {OID.MACADDR8ARRAYOID,    OID.MACADDR8OID},
+            {OID.INETARRAYOID,        OID.INETOID},
+            {OID.CIDRARRAYOID,        OID.CIDROID},
+            {OID.MONEYARRAYOID,       OID.MONEYOID},
+            {OID.VARBITARRAYOID,      OID.VARBITOID},
+            {OID.BITARRAYOID,         OID.BITOID},
+            {OID.BYTEAARRAYOID,       OID.BYTEAOID},
+            {OID.BPCHARARRAYOID,      OID.BPCHAROID},
+            {OID.VARCHARARRAYOID,     OID.VARCHAROID},
+            {OID.XMLARRAYOID,         OID.XMLOID},
+            {OID.INT4RANGEARRAYOID, OID.INT4RANGEOID},
+            {OID.NUMRANGEARRAYOID, OID.NUMRANGEOID},
+            {OID.TSRANGEARRAYOID, OID.TSRANGEOID},
+            {OID.TSTZRANGEARRAYOID, OID.TSTZRANGEOID},
+            {OID.DATERANGEARRAYOID, OID.DATERANGEOID},
+            {OID.INT8RANGEARRAYOID, OID.INT8RANGEOID},
+            {OID.INT4MULTIRANGEARRAYOID, OID.INT4MULTIRANGEOID},
+            {OID.NUMMULTIRANGEARRAYOID, OID.NUMMULTIRANGEOID},
+            {OID.TSMULTIRANGEARRAYOID, OID.TSMULTIRANGEOID},
+            {OID.TSTZMULTIRANGEARRAYOID, OID.TSTZMULTIRANGEOID},
+            {OID.DATEMULTIRANGEARRAYOID, OID.DATEMULTIRANGEOID},
+            {OID.INT8MULTIRANGEARRAYOID, OID.INT8MULTIRANGEOID},
+        };
 
         static Dictionary<OID, string> OID_TYPES =
                        new Dictionary<OID, string>()
@@ -273,14 +132,28 @@ namespace PlDotNET
             {OID.MACADDROID, "PhysicalAddress"},
             {OID.MACADDR8OID, "PhysicalAddress"},
             {OID.INETOID, "(IPAddress Address, int Netmask)"},
-            {OID.CIDROID, "(IPAddress Address, int Netmask)"}
+            {OID.CIDROID, "(IPAddress Address, int Netmask)"},
+            {OID.MONEYOID, "decimal"},
+            {OID.VARBITOID, "BitArray"},
+            {OID.BITOID, "BitArray"},
+            {OID.BYTEAOID, "byte[]"},
+            {OID.BPCHAROID, "string"},
+            {OID.VARCHAROID, "string"},
+            {OID.XMLOID, "string"},
+            {OID.INT4RANGEOID, "NpgsqlRange<int>"},
+            {OID.INT8RANGEOID, "NpgsqlRange<long>"},
+            {OID.TSRANGEOID, "NpgsqlRange<DateTime>"},
+            {OID.TSTZRANGEOID, "NpgsqlRange<DateTime>"},
+            {OID.DATERANGEOID, "NpgsqlRange<DateOnly>"},
+            // {OID.NUMRANGEOID, "NpgsqlRange<Numeric>"}, // currently unimplemented
         };
 
         static uint FunctionId;
         static MemoryStream MemStream;
         static IDictionary<uint, CachedFunction> FuncBuiltCodeDict;
         static CachedFunction Cached;
-        static Action<List<IntPtr>, IntPtr> UserProcedure;
+        static Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
+        static bool SupportNullInput;
 
         static string CSharpTemplatePath = "@CSHARP_TEMPLATE_DIR/csharp.tcs";
 
@@ -295,6 +168,25 @@ namespace PlDotNET
         public static void pldotnet_Warning(string message)
         {
             pldotnet_Elog(19, message);
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_typlenbyvalalign(int oid, ref short typlen, ref bool typbyval, ref byte typalign);
+
+        public static Dictionary<int, short> typlens = new Dictionary<int, short>();
+        public static Dictionary<int, bool> typbyvals = new Dictionary<int, bool>();
+        public static Dictionary<int, byte> typaligns = new Dictionary<int, byte>();
+
+        public static unsafe void add_typlenbyvalalign(int oid)
+        {
+            short typlen = 0;
+            bool typbyval = false;
+            byte typalign = 0;
+
+            pldotnet_typlenbyvalalign(oid, ref typlen, ref typbyval, ref typalign);
+            typlens[oid] = typlen;
+            typbyvals[oid] = typbyval;
+            typaligns[oid] = typalign;
         }
 
         // TODO - delete
@@ -315,79 +207,107 @@ namespace PlDotNET
             List<Tuple<string, string>> arguments = new List<Tuple<string, string>>();
             for (int i = 0; i < paramNames.Count(); i++)
             {
-                arguments.Add(new Tuple<string, string>(OID_TYPES[(OID)paramTypes[i]], paramNames[i]));
+                pldotnet_Info($"THE TYPE : {paramTypes[i]}");
+                string type = HANDLE_ARRAY.ContainsKey((OID)paramTypes[i]) ? "Array" : OID_TYPES[(OID)paramTypes[i]];
+                arguments.Add(new Tuple<string, string>(type, paramNames[i]));
             }
             return arguments;
         }
 
         public static string GetParamsString(List<Tuple<string, string>> sqlParams)
         {
+            if (Engine.SupportNullInput || Engine.AlwaysNullable)
+                return string.Join(", ", sqlParams.Select((p) => $"{p.Item1}? {p.Item2}").ToList());
             return string.Join(", ", sqlParams.Select((p) => $"{p.Item1} {p.Item2}").ToList());
         }
 
-        public static string GetDatumConversionFunction(int id)
+        public static string GetTypeHandler(int id)
         {
             switch (id)
             {
-                case (int)OID.INT2OID:
-                    return "pldotnet_getInt16";
-                case (int)OID.INT4OID:
-                    return "pldotnet_getInt32";
-                case (int)OID.INT8OID:
-                    return "pldotnet_getInt64";
-                case (int)OID.FLOAT4OID:
-                    return "pldotnet_getFloat";
-                case (int)OID.FLOAT8OID:
-                    return "pldotnet_getDouble";
                 case (int)OID.BOOLOID:
-                    return "pldotnet_getBoolean";
+                    return "bool_handler";
+                case (int)OID.INT2OID:
+                    return "short_handler";
+                case (int)OID.INT4OID:
+                    return "int_handler";
+                case (int)OID.INT8OID:
+                    return "long_handler";
+                case (int)OID.FLOAT4OID:
+                    return "float_handler";
+                case (int)OID.FLOAT8OID:
+                    return "double_handler";
                 case (int)OID.POINTOID:
-                    return "pldotnet_BuildNpgsqlPoint";
+                    return "point_handler";
                 case (int)OID.LINEOID:
-                    return "pldotnet_BuildNpgsqlLine";
+                    return "line_handler";
                 case (int)OID.LSEGOID:
-                    return "pldotnet_BuildNpgsqlLSeg";
+                    return "lseg_handler";
                 case (int)OID.BOXOID:
-                    return "pldotnet_BuildNpgsqlBox";
-                case (int)OID.TEXTOID:
-                    return "pldotnet_BuildString";
+                    return "box_handler";
                 case (int)OID.PATHOID:
-                    return "pldotnet_BuildNpgsqlPath";
+                    return "path_handler";
                 case (int)OID.POLYGONOID:
-                    return "pldotnet_BuildNpgsqlPolygon";
+                    return "polygon_handler";
                 case (int)OID.CIRCLEOID:
-                    return "pldotnet_BuildNpgsqlCircle";
+                    return "circle_handler";
                 case (int)OID.DATEOID:
-                    return "pldotnet_BuildDate";
+                    return "date_handler";
                 case (int)OID.TIMEOID:
-                    return "pldotnet_BuildTime";
+                    return "time_handler";
                 case (int)OID.TIMETZOID:
-                    return "pldotnet_BuildTimeTz";
+                    return "timetz_handler";
                 case (int)OID.TIMESTAMPOID:
-                    return "pldotnet_BuildTimestamp";
+                    return "timestamp_handler";
                 case (int)OID.TIMESTAMPTZOID:
-                    return "pldotnet_BuildTimestampTz";
+                    return "timestamptz_handler";
                 case (int)OID.INTERVALOID:
-                    return "pldotnet_BuildNpgsqlInterval";
+                    return "interval_handler";
                 case (int)OID.MACADDROID:
-                    return "pldotnet_BuildMacAddress";
+                    return "macaddr_handler";
                 case (int)OID.MACADDR8OID:
-                    return "pldotnet_BuildMacAddress8";
+                    return "macaddr8_handler";
                 case (int)OID.INETOID:
-                    return "pldotnet_BuildInet";
+                    return "inet_handler";
                 case (int)OID.CIDROID:
-                    return "pldotnet_BuildInet";
+                    return "cidr_handler";
+                case (int)OID.TEXTOID:
+                    return "text_handler";
+                case (int)OID.MONEYOID:
+                    return "money_handler";
+                case (int)OID.VARBITOID:
+                    return "varbit_handler";
+                case (int)OID.BITOID:
+                    return "varbit_handler";
+                case (int)OID.BYTEAOID:
+                    return "bytea_handler";
+                case (int)OID.BPCHAROID:
+                    return "bpchar_handler";
+                case (int)OID.VARCHAROID:
+                    return "varchar_handler";
+                case (int)OID.XMLOID:
+                    return "xml_handler";
+                case (int)OID.INT4RANGEOID:
+                    return "int_range_handler";
+                case (int)OID.INT8RANGEOID:
+                    return "long_range_handler";
+                case (int)OID.TSRANGEOID:
+                    return "time_range_handler";
+                case (int)OID.TSTZRANGEOID:
+                    return "timetz_range_handler";
+                case (int)OID.DATERANGEOID:
+                    return "date_range_handler";
+                // case (int)OID.NUMRANGEOID: // currently unimplemented
+                    // return "numeric_range_handler";
                 default:
-                    throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetDatumConversionFunction");
+                    if (HANDLE_ARRAY.ContainsKey((OID)id))
+                        return GetTypeHandler((int)HANDLE_ARRAY[(OID)id]);
+                    throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetTypeHandler");
             }
         }
 
-        // DONUT
         public static string BuildCreateArguments(string funcName, List<int> paramTypes)
         {
-            // WARNING: this is completely wrong.
-            // - the individual IntPtr are not GCHandles, only Datum
-            // - creating a GCHandle from it is wrong
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
             int argc = paramTypes.Count;
@@ -396,17 +316,28 @@ namespace PlDotNET
             {
                 var argname = $"argument_{i}";
                 var value = $"arguments[{i}]";
-                var dotnet_type = paramTypes[i];
-                var datum_conversion_function = GetDatumConversionFunction(dotnet_type);
-
-                sb.AppendLine($"var {argname} = {datum_conversion_function}({value});");
-
+                var type = paramTypes[i];
+                var type_handler = GetTypeHandler(type);
+                if (HANDLE_ARRAY.ContainsKey((OID)type))
+                {
+                    if (Engine.SupportNullInput || Engine.AlwaysNullable)
+                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_nullable_array({value}, isnull[{i}]);");
+                    else
+                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_array({value});");
+                }
+                else
+                {
+                    if (Engine.SupportNullInput || Engine.AlwaysNullable)
+                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_nullable_value({value}, isnull[{i}]);");
+                    else
+                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_value({value});");
+                }
             }
             sb.Append($"// END create arguments for {funcName}");
             return sb.ToString();
         }
 
-        // DONUT
+        // DONUT - TODO - remove thins function
         public static string BuildFreeArguments(string funcName, List<Tuple<string, string>> sqlParams)
         {
             // TODO(rosicley/todd) - we need to check how we will free the list...
@@ -437,7 +368,10 @@ namespace PlDotNET
 
             for (int i = 0; i < argc; i++)
             {
-                sb.Append($"({sqlParams[i].Item1}) argument_{i}");
+                if (Engine.SupportNullInput || Engine.AlwaysNullable)
+                    sb.Append($"({sqlParams[i].Item1}?) argument_{i}");
+                else
+                    sb.Append($"({sqlParams[i].Item1}) argument_{i}");
                 if (i < argc - 1)
                 {
                     sb.Append(", ");
@@ -449,109 +383,20 @@ namespace PlDotNET
 
         public static string BuildCallSetResult(int id, string returnType)
         {
-            string setResult = "var result_datum = ";
-            switch (id)
-            {
-                case (int)OID.INT2OID:
-                    setResult +=
-                    $"pldotnet_createDatumInt16(({returnType})result);\n";
-                    break;
-                case (int)OID.INT4OID:
-                    setResult +=
-                    $"pldotnet_createDatumInt32(({returnType})result);\n";
-                    break;
-                case (int)OID.INT8OID:
-                    setResult +=
-                    $"pldotnet_createDatumInt64(({returnType})result);\n";
-                    break;
-                case (int)OID.FLOAT4OID:
-                    setResult +=
-                    $"pldotnet_createDatumFloat(({returnType})result);\n";
-                    break;
-                case (int)OID.FLOAT8OID:
-                    setResult +=
-                    $"pldotnet_createDatumDouble(({returnType})result);\n";
-                    break;
-                case (int)OID.BOOLOID:
-                    setResult +=
-                    $"pldotnet_createDatumBoolean(({returnType})result);\n";
-                    break;
-                case (int)OID.POINTOID:
-                    setResult +=
-                    $"pldotnet_createDatumPoint((double)result.X, "
-                    + "(double)result.Y);\n";
-                    break;
-                case (int)OID.LINEOID:
-                    setResult +=
-                    $"pldotnet_createDatumLine((double)result.A, "
-                    + "(double)result.B,(double)result.C);\n";
-                    break;
-                case (int)OID.LSEGOID:
-                    setResult +=
-                    $"pldotnet_createDatumLineSegment((double)result.Start.X,"
-                    + "(double)result.Start.Y, (double)result.End.X, "
-                    + "(double)result.End.Y);\n";
-                    break;
-                case (int)OID.BOXOID:
-                    setResult +=
-                    $"pldotnet_createDatumBox((double)result.UpperRight.X, "
-                    + "(double)result.UpperRight.Y, (double)result.LowerLeft.X, "
-                    + "(double)result.LowerLeft.Y);\n";
-                    break;
-                case (int)OID.TEXTOID:
-                    setResult += "pldotnet_createDatumTextInternal(result);";
-                    break;
-                case (int)OID.PATHOID:
-                    setResult += "pldotnet_createDatumPath(result);\n";
-                    break;
-                case (int)OID.POLYGONOID:
-                    setResult += "pldotnet_createDatumPolygon(result);\n";
-                    break;
-                case (int)OID.CIRCLEOID:
-                    setResult += "pldotnet_createDatumCircle(result.Center.X, "
-                    + "result.Center.Y, result.Radius);\n";
-                    break;
-                case (int)OID.DATEOID:
-                    setResult += "pldotnet_createDatumDate(result.DayNumber-730119);\n";
-                    break;
-                case (int)OID.TIMEOID:
-                    setResult += "pldotnet_createDatumTime(result.Ticks/10);\n";
-                    break;
-                case (int)OID.TIMETZOID:
-                    setResult += "pldotnet_createDatumTimeTz(result.TimeOfDay.Ticks / 10, -(int) (result.Offset.Ticks / TimeSpan.TicksPerSecond));\n";
-                    break;
-                case (int)OID.TIMESTAMPOID:
-                    setResult += "pldotnet_createDatumTimestamp(result);\n";
-                    break;
-                case (int)OID.TIMESTAMPTZOID:
-                    setResult += "pldotnet_createDatumTimestampTz(result);\n";
-                    break;
-                case (int)OID.INTERVALOID:
-                    setResult += "pldotnet_createDatumInterval(result.Time, result.Days, result.Months);\n";
-                    break;
-                case (int)OID.MACADDROID:
-                    setResult += "pldotnet_createDatumMacAddress(6, result.GetAddressBytes());";
-                    break;
-                case (int)OID.MACADDR8OID:
-                    setResult += "pldotnet_createDatumMacAddress(8, result.GetAddressBytes());";
-                    break;
-                case (int)OID.INETOID:
-                    setResult += "pldotnet_createDatumInet(result.Address.GetAddressBytes().Length, result.Address.GetAddressBytes(), result.Netmask);";
-                    break;
-                case (int)OID.CIDROID:
-                    setResult += "pldotnet_createDatumInet(result.Address.GetAddressBytes().Length, result.Address.GetAddressBytes(), result.Netmask);";
-                    break;
-                default:
-                    throw new NotImplementedException($"It is not possible to return a {returnType} type! Check BuildCallSetResult.");
-            }
-            setResult += "pldotnet_SetDatumResult(result_datum, result_datum == null, output);";
+            string setResult;
+            if (HANDLE_ARRAY.ContainsKey((OID)id))
+                setResult = $"var result_datum = {GetTypeHandler(id)}_obj.output_nullable_array(result, OID.{HANDLE_ARRAY[(OID)id]});";
+            else
+                setResult = $"var result_datum = {GetTypeHandler(id)}_obj.output_nullable_value(result);";
+
+            setResult += "pldotnet_SetDatumResult(result_datum, result == null, output);";
             return setResult;
         }
 
         public static unsafe string BuildSourceCode(IntPtr Name, int returnTypeID, IntPtr ParamNames, int* ParamTypes, IntPtr Body)
         {
             string funcName = Marshal.PtrToStringAuto(Name);
-            string returnType = OID_TYPES[(OID)returnTypeID];
+            string returnType = HANDLE_ARRAY.ContainsKey((OID)returnTypeID) ? "Array" : OID_TYPES[(OID)returnTypeID];
             string parameters = Marshal.PtrToStringAuto(ParamNames);
             List<string> paramNameList = new List<string>();
             List<int> paramTypeList = new List<int>();
@@ -574,7 +419,7 @@ namespace PlDotNET
 
             // dummy template, we need to use a real template later
             // including the boilerplate code for the user function
-            string rawFunctionDecl = $"public static {returnType} {funcName}({paramsStr}) {{\n{body}\n}}";
+            string rawFunctionDecl = $"public static {returnType}? {funcName}({paramsStr}) {{\n#line 1\n{body}\n}}";
 
             if (!File.Exists(CSharpTemplatePath))
             {
@@ -628,6 +473,7 @@ namespace PlDotNET
             List<string> trustedAssembliesPaths = new();
             trustedAssembliesPaths.AddRange(trustedAssembliesPathsArray);
             trustedAssembliesPaths.Add(typeof(NpgsqlPoint).Assembly.Location);
+            trustedAssembliesPaths.Add(typeof(Engine).Assembly.Location);
 
             var neededAssemblies = new[]
             {
@@ -645,9 +491,18 @@ namespace PlDotNET
                 "System.Text",
                 "System.Buffers",
                 "System.Text.Unicode",
+                "System.Linq",
+                "System.Text",
+                "System.Buffers",
+                "System.Text.Unicode",
                 "System.Diagnostics",
                 "System.Net.NetworkInformation",
-                "System.Net.Primitives"
+                "System.Net.Primitives",
+                "PlDotNET",
+                "System.Core",
+                "System.Linq.Expressions",
+                "Microsoft.CSharp",
+                "System.Collections"
             };
 
             List<PortableExecutableReference> references = new List<PortableExecutableReference>();
@@ -689,14 +544,17 @@ namespace PlDotNET
             }
 
             Assembly myAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location);
+            Assembly myAssembly2 = AssemblyLoadContext.Default.LoadFromAssemblyPath(typeof(Engine).Assembly.Location);
 
             return compileResult;
         }
 
-        public unsafe delegate int DelCompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body);
+        public unsafe delegate int DelCompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body, [MarshalAs(UnmanagedType.I1)] bool SupportNullInput);
 
-        public static unsafe int CompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body)
+        public static unsafe int CompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body, [MarshalAs(UnmanagedType.I1)] bool SupportNullInput)
         {
+            Engine.SupportNullInput = SupportNullInput;
+
             string sourceCode = BuildSourceCode(Name, ReturnType, ParamNames, ParamTypes, Body);
 
             if (Engine.FuncBuiltCodeDict == null)
@@ -732,7 +590,8 @@ namespace PlDotNET
             Engine.Cached = new CachedFunction()
             {
                 SourceCode = rawSourceCode,
-                UserProcedure = GetDirectDelegate(Engine.MemStream)
+                UserProcedure = GetDirectDelegate(Engine.MemStream),
+                SupportNullInput = Engine.SupportNullInput
             };
 
             Engine.FunctionId = FunctionId;
@@ -746,7 +605,7 @@ namespace PlDotNET
             return 0;
         }
 
-        public static Action<List<IntPtr>, IntPtr> GetDirectDelegate(MemoryStream memoryStream)
+        public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(MemoryStream memoryStream)
         {
             var compiledAssembly = Assembly.Load(memoryStream.GetBuffer());
 
@@ -760,8 +619,8 @@ namespace PlDotNET
 
             MethodInfo procMethod = procClassType.GetMethod("CallUserFunction");
 
-            return (Action<List<IntPtr>, IntPtr>)Delegate.CreateDelegate(
-                typeof(Action<List<IntPtr>, IntPtr>),
+            return (Action<List<IntPtr>, IntPtr, bool[]>)Delegate.CreateDelegate(
+                typeof(Action<List<IntPtr>, IntPtr, bool[]>),
                 null,
                 procMethod
             );
@@ -774,40 +633,61 @@ namespace PlDotNET
         /// Otherwise, it calls the user function compiled by Roslyn
         /// </summary>
 
-        public static unsafe int RunUserFunction(uint functionId, IntPtr arguments, IntPtr output)
+        public static unsafe int RunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output)
         {
-            // TODO make it thread safe
-            // if (functionId != Engine.FunctionId)
-            // {
-            //     try
-            //     {
-            //         pldotnet_Info("Inside try structure\n");
-            //         if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
-            //         {
-            //             Engine.FunctionId = functionId;
-            //             Engine.Cached = cached;
-            //             Engine.UserProcedure = cached.UserProcedure;
-            //         }
-            //         else
-            //         {
-            //             return 1;
-            //         }
-            //     }
-            //     catch
-            //     {
-            //         pldotnet_Info("Entering catch structure\n");
-            //         return 2;
-            //     }
-            // }
+            if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
+            {
+                GCHandle gch_list = GCHandle.FromIntPtr(arguments);
+                var argument_list = (List<IntPtr>)gch_list.Target;
+                bool[] isnull = new bool[argument_list.Count];
+                if (cached.SupportNullInput || Engine.AlwaysNullable)
+                    for (int i = 0, nargs = isnull.Length; i < nargs; i++)
+                        isnull[i] = nullmap[i] == 0 ? false : true;
 
-            // not hread safe for now
-            GCHandle gch_list = GCHandle.FromIntPtr(arguments);
-            var argument_list = (List<IntPtr>)gch_list.Target;
-            Engine.Cached.UserProcedure(argument_list, output);
+                for (int i = 0; i < isnull.Length; i++)
+                    pldotnet_Info($"C# - DEBUG - is the argument[{i}] nulll? {isnull[i]}");
+
+                cached.UserProcedure(argument_list, output, isnull);
+            }
+            else
+            {
+                pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
+            }
 
             return 0;
         }
 
-        public delegate int DelRunUserFunction(uint functionId, IntPtr arguments, IntPtr output);
+        public unsafe delegate int DelRunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output);
+
+        /// <summary>
+        /// Free memmory pointed by a IntPtr
+        /// </summary>
+        public static unsafe void FreeGenericGCHandle(IntPtr p)
+        {
+            GCHandle gch = GCHandle.FromIntPtr(p);
+            gch.Free();
+        }
+
+        public delegate void DelFreeGenericGCHandle(IntPtr p);
+
+        // Create a new list of IntPtr
+        // Intended for pldotnet to pass an array of Datum's to Engine.cs
+        public static unsafe System.IntPtr BuildDatumList()
+        {
+            var l = new List<IntPtr>();
+            GCHandle handle = GCHandle.Alloc(l, GCHandleType.Normal);
+            return GCHandle.ToIntPtr(handle);
+        }
+        public delegate System.IntPtr DelBuildDatumList();
+
+        // Add an IntPtr(Datum) to a list of IntPtr
+        // Intended for pldotnet to pass an array of Datum's to Engine.cs
+        public static unsafe void AddDatumToList(System.IntPtr _list, System.IntPtr _datum)
+        {
+            GCHandle gch_list = GCHandle.FromIntPtr(_list);
+            var list = (List<IntPtr>)gch_list.Target;
+            list.Add(_datum);
+        }
+        public delegate void DelAddDatumToList(System.IntPtr _list, System.IntPtr _datum);
     }
 }

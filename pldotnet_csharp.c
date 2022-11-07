@@ -58,7 +58,7 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS);
  * block (DO command) in this language.
  *
  * @param PG_FUNCTION_ARGS The standard parameter list for
- * fmgr-compatible functions.  
+ * fmgr-compatible functions.
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
@@ -116,9 +116,9 @@ static Datum plcsharp_CompileAndRunUserFunction(
     bool is_inline);
 
 /**
- * @brief Call the pldotnet_BuildPaths function (from pldotnet_common.c) if 
+ * @brief Call the pldotnet_BuildPaths function (from pldotnet_common.c) if
  * the paths related to dotnet were not created yet.
- * 
+ *
  * @param paths the pldotnet config paths.
  * @return true the paths were created.
  * @return false the paths could not be created.
@@ -127,10 +127,10 @@ inline static bool plcsharp_BuildPaths(pldotnet_PathConfig *paths);
 
 /**
  * @brief Returns the declared function or creates one.
- * 
+ *
  * @param oid the function ID.
- * @param fcinfo 
- * @param proc 
+ * @param fcinfo
+ * @param proc
  * @param is_inline whether it is a inline function or not
  * @param validation whether the function should be validated.
  * @return pldotnet_FunctionDecl*  the function created by the user.
@@ -148,13 +148,13 @@ static pldotnet_FunctionDecl* plcsharp_GetFunctionDecl(
  * It searchs for information on PG SysCache and it stores the required data
  * into the last argument (pldotnet_FunctionDecl *function_decl) this structure
  * is meant to be saved into a hash table.
- * 
+ *
  * @param oid the function ID.
- * @param fcinfo 
- * @param proc 
+ * @param fcinfo
+ * @param proc
  * @param is_inline whether it is a inline function or not.
  * @param validation whether the function should be validated.
- * @param function_decl 
+ * @param function_decl
  * @return true it it succeeds.
  * @return false otherwise.
  */
@@ -169,10 +169,10 @@ static bool plcsharp_BuildFunctionDecl(
 
 
 /**
- * @brief Validate the user function. This function is called in 
+ * @brief Validate the user function. This function is called in
  * plcsharp_validator(PG_FUNCTION_ARGS) function, which is executed after the
  * user creates a SQL function on PostgreSQL.
- * 
+ *
  * @param oid The function ID
  * @param fcinfo The function information
  */
@@ -182,10 +182,10 @@ static void plcsharp_ValidateUserFunction(const Oid oid,
 /**
  * @brief Set the function information to the plcsharp_GetSourceCode object
  * if the function is not null.
- * 
+ *
  * @param fcinfo the function information
- * @param proc 
- * @param procst 
+ * @param proc
+ * @param procst
  * @param is_inline whether the functions is inline
  * @param validation whetter the function should be validated
  * @param user_function_decl the object that stores the function information
@@ -315,13 +315,19 @@ static Datum plcsharp_CompileAndRunUserFunction(
         nullptr == function_decl->call_user_method)
         elog(ERROR, "[pldotnet]: Could not load function_decl");
 
-    // DONUT: create arglist as List<IntPtr>, which is really Datum[]
     void* arglist = pldotnet_BuildArgumentList(fcinfo, procst);
-    function_decl->call_user_method(fcinfo->flinfo->fn_oid,
-    arglist, (void*) &output);
+    bool* nullmap = function_decl->user_decl.support_null_input ?
+        pldotnet_BuildNullArgumentList(fcinfo, procst) : nullptr;
 
-    // DONUT: free arg list
+    function_decl->call_user_method(function_decl->user_decl.func_oid,
+    arglist, &nullmap[0], (void*) &output);
+
+    if (output.is_null)
+        fcinfo->isnull = true;
+
     free_generic_gchandle(arglist);
+    if (nullmap)
+        pfree(nullmap);
 
     return output.value;
 }
@@ -391,7 +397,9 @@ static bool plcsharp_BuildFunctionDecl(
         elog(ERROR, "[pldotnet]: Could not obtain C# Methods");
 
     /* save some basic data */
-    function_decl->source.func_oid = (uint32_t) oid;
+    function_decl->user_decl.func_oid = (uint32_t) oid;
+    function_decl->user_decl.support_null_input =
+        procst->proisstrict ? false : true;
     function_decl->ret_type = procst->prorettype;
 
     if (!plcsharp_GetSourceCode(fcinfo,
@@ -403,7 +411,6 @@ static bool plcsharp_BuildFunctionDecl(
         elog(ERROR, "[pldotnet]: Could not obtain the source code");
 
     if (!pldotnet_CompileUserFunction(assembly_loader,
-                                      fcinfo->flinfo->fn_oid,
                                       &(function_decl->user_decl)))
         elog(ERROR, "[pldotnet]: Could not compile this "
         "function using the new method.");

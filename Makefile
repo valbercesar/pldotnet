@@ -4,8 +4,8 @@
 # Get installed dotnet host host
 DOTNET_VER = $(shell dotnet --info | grep 'Host' -A 3 | sed -n 's/Version: \(.*\)/\1/p' | xargs)
 # These need to be auto-generated from `dotnet`, or whatever
-DOTNET_HOSTDIR ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/6.0.9/runtimes/linux-x64/native/
-DOTNET_LIBDIR  ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/6.0.9/runtimes/linux-x64/native/
+DOTNET_HOSTDIR ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/$(DOTNET_VER)/runtimes/linux-x64/native/
+DOTNET_LIBDIR  ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/$(DOTNET_VER)/runtimes/linux-x64/native/
 # DOTNET_HOSTDIR ?= /usr/share/dotnet/shared/Microsoft.NETCore.App/$(DOTNET_VER)/
 # DOTNET_LIBDIR ?= /usr/share/dotnet/packs/Microsoft.NETCore.App.Host.linux-x64/$(DOTNET_VER)/runtimes/linux-x64/native/
 DOTNET_INCHOSTDIR ?= $(DOTNET_HOSTDIR) $(shell env > /tmp/pgdotnet-make-env)
@@ -80,6 +80,7 @@ plnet-install: install
 	rm -rf $(PLNET_ENGINE_ROOT)/DotNetEngine
 	cp -r DotNetEngine $(PLNET_ENGINE_ROOT) && chown -R postgres $(PLNET_ENGINE_ROOT)/DotNetEngine
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/Engine.cs
+	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/TypeHandlers/*.cs
 #	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/NewEngine.cs
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/templates/csharp.tcs
 #	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/NewEngine.cs
@@ -94,7 +95,7 @@ plnet-install: install
 # 	rm -rf $(PLNET_ENGINE_ROOT)/DotNetEngine
 
 plnet-install-dpkg:
-	sudo -u postgres pg_createcluster 14 default
+	-sudo -u postgres pg_createcluster 14 default
 	service postgresql start
 	pg_buildext updatecontrol
 	debuild -b -uc -us --lintian-opts --profile debian
@@ -123,7 +124,7 @@ pldotnet-ubuntu:
 
 plnet-postgres:
 	make clean && make && make plnet-install
-	sudo -u postgres bash
+	sudo -u postgres psql
 	
 dpkg-docker:
 	find debian/packages/ -name \*.deb -exec docker cp {} `docker ps -a|grep pldotnet:build|awk '{print $$1}'`:/app/pldotnet/{} \;

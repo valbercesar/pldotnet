@@ -52,7 +52,7 @@ PGDLLEXPORT Datum _PG_fini(PG_FUNCTION_ARGS);
 #define CODEBLOCK \
   ((InlineCodeBlock *) DatumGetPointer(PG_GETARG_DATUM(0)))->source_text
 PG_FUNCTION_INFO_V1(_PG_init);
-/** 
+/**
  * @brief On startup, pldotnet initializes the function cache.
  */
 Datum _PG_init(PG_FUNCTION_ARGS) {

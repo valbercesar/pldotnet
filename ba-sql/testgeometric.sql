@@ -128,5 +128,3 @@ return orig_circle;
 $$ LANGUAGE plcsharp; 
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'CIRCLE', 'returnCircle', returnCircle(CIRCLE '2.5, 3.5, 12.78') ~= CIRCLE '<(2.5, 3.5), 12.78>';
-
-

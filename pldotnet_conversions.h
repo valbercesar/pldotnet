@@ -54,8 +54,6 @@ extern void pldotnet_getDatumLineSegmentAttributes(void *datum, double *x1,
 extern void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
                                            double *x2, double *y2);
 
-extern void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf);
-
 extern void pldotnet_getDatumPathAttributes(void *datum, int *pointNumber,
                                             int *closed);
 
@@ -70,6 +68,17 @@ extern void pldotnet_getDatumPolygonCoordinates(void *datum,
 
 extern void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
                                               double *r);
+
+extern void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf);
+
+extern void pldotnet_getDatumCharAttributes(void *datum, int *len, char **buf);
+
+extern void pldotnet_getDatumVarCharAttributes(void *datum, int *len,
+                                               char **buf);
+
+extern void pldotnet_getDatumByteaAttributes(void *datum, int *len, char **buf);
+
+extern void pldotnet_getDatumXmlAttributes(void *datum, int *len, char **buf);
 
 extern void pldotnet_getDatumDateAttributes(void *datum, int *date);
 
@@ -91,6 +100,24 @@ extern void pldotnet_getDatumMacAddressAttributes(void *datum, int length,
 
 extern void pldotnet_getDatumInetAttributes(void *datum, int *nelem,
                                             unsigned char *bytes, int *netmask);
+
+extern void pldotnet_getDatumMoneyAttributes(void *datum, long *value);
+
+extern void pldotnet_getDatumVarBitAttributes(void *datum, int *len,
+                                              bits8 **dat);
+
+extern void pldotnet_getArrayAttributes(void *datum, int *element_typeid,
+                                        int *ndims, int *dims,
+                                        uint8_t **nullmap);
+
+extern int get_maxdim(void);
+
+extern void pldotnet_getArrayAttributes(void *datum, int *element_typeid,
+                                        int *ndims, int *dims,
+                                        uint8_t **nullmap);
+
+extern int pldotnet_getArrayDatum(Datum array_datum, Datum *results, int nelems,
+                                  int element_typeid);
 
 ////////////////////////////////////
 //// Npgsql or C# type -> Datum ////
@@ -118,8 +145,6 @@ extern Datum pldotnet_createDatumLineSegment(double x1, double y1, double x2,
 extern Datum pldotnet_createDatumBox(double x1, double y1, double x2,
                                      double y2);
 
-extern Datum pldotnet_createDatumText(int len, char *buf);
-
 extern Datum pldotnet_createDatumPath(int pointNumber, int closed,
                                       double *xCoordinates,
                                       double *yCoordinates);
@@ -128,6 +153,16 @@ extern Datum pldotnet_createDatumPolygon(int pointNumber, double *xCoordinates,
                                          double *yCoordinates);
 
 extern Datum pldotnet_createDatumCircle(double x, double y, double r);
+
+extern Datum pldotnet_createDatumText(int len, char *buf);
+
+extern Datum pldotnet_createDatumChar(int len, char *buf);
+
+extern Datum pldotnet_createDatumVarChar(int len, char *buf);
+
+extern Datum pldotnet_createDatumBytea(int len, char *buf);
+
+extern Datum pldotnet_createDatumXml(int len, char *buf);
 
 extern Datum pldotnet_createDatumDate(int date);
 
@@ -145,5 +180,13 @@ extern Datum pldotnet_createDatumMacAddress(int length, unsigned char *bytes);
 
 extern Datum pldotnet_createDatumInet(int length, unsigned char *bytes,
                                       int netmask);
+
+extern Datum pldotnet_createDatumMoney(long value);
+
+extern Datum pldotnet_createDatumVarBit(int len, bits8 *bytes);
+
+extern Datum pldotnet_createDatumArray(int element_id, int dimNumber,
+                                       int *dimLengths, Datum *datums,
+                                       bool *nulls);
 
 #endif  // PLDOTNET_CONVERSIONS_H_

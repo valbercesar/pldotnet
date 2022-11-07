@@ -72,12 +72,6 @@ typedef struct pldotnet_Result {
     bool is_null;
 } pldotnet_Result;
 
-typedef struct pldotnet_ArgsSource {
-    char* source_code;
-    int result;
-    uint32 func_oid;
-} pldotnet_ArgsSource;
-
 typedef struct pldotnet_ArgArrayInfo {
     int ixarray;
     int typlen;
@@ -105,10 +99,11 @@ typedef struct pldotnet_UserFunctionDeclaration {
     const char *func_paramsName;
     const int *func_paramsType;
     const char *func_body;
+    int func_oid;
+    bool support_null_input;
 } pldotnet_UserFunctionDeclaration;
 
 typedef struct pldotnet_FunctionDecl {
-    pldotnet_ArgsSource source;
     int8_t *args;
     size_t args_length;
     Oid ret_type;
@@ -191,6 +186,16 @@ void pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths);
  * @return Datum 
  */
 Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index);
+
+/**
+ * @brief Check that the datum argument is null. 
+ * 
+ * @param fcinfo the function information
+ * @param index the argument index 
+ * @return true if the referent argument is null.
+ * @return false if the referent argument is non-null.  
+ */
+bool pldotnet_CheckNullArgument(FunctionCallInfo fcinfo, size_t index);
 
 /**
  * @brief Retuns the Postgres Heap.
@@ -304,7 +309,6 @@ const int* pldotnet_GetSqlParamsType(HeapTuple proc,
  * @return false 
  */
 bool pldotnet_CompileUserFunction(dotnet_loader loader,
-                                uint32_t function_id,
                                 pldotnet_UserFunctionDeclaration *declaration);
 /**
  * @brief 
@@ -340,6 +344,13 @@ extern void pldotnet_SetDatumResult(void* value,
  * @return void* 
  */
 void* pldotnet_BuildArgumentList(FunctionCallInfo, Form_pg_proc);
+
+/**
+ * @brief 
+ * 
+ * @return void* 
+ */
+bool* pldotnet_BuildNullArgumentList(FunctionCallInfo, Form_pg_proc);
 
 extern char *root_path;
 extern char *dnldir;
