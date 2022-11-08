@@ -3,7 +3,10 @@ using System.Runtime.InteropServices;
 
 namespace PlDotNET_Handler
 {
-    public static class array_handler
+    /// <summary>
+    /// A generic class for all type handlers which handle PostreSQL arrays.
+    /// </summary>
+    public static class ArrayHandler
     {
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern int get_maxdim();
@@ -13,23 +16,23 @@ namespace PlDotNET_Handler
         public static extern unsafe void pldotnet_getArrayAttributes(IntPtr datum, ref int type_id, ref int ndims, int[] dims, byte** nullmap);
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe int pldotnet_getArrayDatum(IntPtr array_datum, IntPtr[] results, int nelems, int type_id);
+        public static extern unsafe int pldotnet_getArrayDatum(IntPtr arrayDatum, IntPtr[] results, int nelems, int type_id);
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumArray(int element_id, int dimNumber, int[] dimLengths, IntPtr[] datums, byte[] nullmap = null);
+        public static extern IntPtr pldotnet_createDatumArray(int elementId, int dimNumber, int[] dimLengths, IntPtr[] datums, byte[] nullmap = null);
 
         /// <summary>
         /// This is a recursive function that aims to create a multidimensional
         /// array from an one-dimensional one. The dimensions of the
         /// multidimensional array must be specified when you create the "Array"
-        /// object that you will pass for "multi_array". For that purpose, you
+        /// object that you will pass for "multiArray". For that purpose, you
         /// can use the "Array.CreateInstance()" method. Also, to use this
         /// function, you should pass only the first two arguments!
         /// </summary>
-        /// <param name="original_array">The original one-dimensional array.</param>
-        /// <param name="multi_array"> It is an empty array with the new
+        /// <param name="originalArray">The original one-dimensional array.</param>
+        /// <param name="multiArray"> It is an empty array with the new
         /// dimensions, which must be passed by reference, so the variable you
-        /// pass here will be modified to store the elements of the "original_array".
+        /// pass here will be modified to store the elements of the "originalArray".
         /// </param>
         /// <param name="auxiliar"> This one is only an integer array that helps
         /// to set the values to the new multidimensional array. You can pass
@@ -40,83 +43,83 @@ namespace PlDotNET_Handler
         /// <param name="loc"> This one is an auxiliary integer that helps to
         /// loop over the dimensions of the new array, so you can pass 1, but
         /// you don't need! </param>
-        /// <returns> Returns the number of elements of the original_array. </returns>
-        public static int reshapeArray(Array original_array, ref Array multi_array, int[] auxiliar = null, int contEl = 0, int loc = 1)
+        /// <returns> Returns the number of elements of the originalArray. </returns>
+        public static int ReshapeArray(Array originalArray, ref Array multiArray, int[] auxiliar = null, int contEl = 0, int loc = 1)
         {
-            if (contEl >= original_array.Length)
+            if (contEl >= originalArray.Length)
                 return contEl;
             else if (contEl == 0 || auxiliar == null)
-                auxiliar = new int[multi_array.Rank];
-            int ndim = multi_array.Rank;
+                auxiliar = new int[multiArray.Rank];
+            int ndim = multiArray.Rank;
             int[] dim = new int[ndim];
             for (int i = 0; i < ndim; i++)
-                dim[i] = multi_array.GetLength(i);
+                dim[i] = multiArray.GetLength(i);
 
             if (loc == 1)
                 for (int i = 0; i < dim[ndim - loc]; i++)
                 {
-                    multi_array.SetValue(original_array.GetValue(contEl++), auxiliar);
+                    multiArray.SetValue(originalArray.GetValue(contEl++), auxiliar);
                     auxiliar[ndim - loc] += 1;
                 }
             for (int i = 1; i < loc; i++)
             {
                 auxiliar[ndim - loc] += 1;
                 if (auxiliar[ndim - loc] < dim[ndim - loc])
-                    contEl = reshapeArray(original_array, ref multi_array, auxiliar, contEl, i);
+                    contEl = ReshapeArray(originalArray, ref multiArray, auxiliar, contEl, i);
             }
             auxiliar[ndim - loc] = 0;
-            contEl = reshapeArray(original_array, ref multi_array, auxiliar, contEl, ++loc);
+            contEl = ReshapeArray(originalArray, ref multiArray, auxiliar, contEl, ++loc);
             return contEl;
         }
 
         /// <summary>
         /// This is a recursive function that aims to create an one-dimensional
-        /// array from a multidimensional one. The "flat_array" must be created
-        /// with the same length as the "original_array", and you can use the
+        /// array from a multidimensional one. The "flatArray" must be created
+        /// with the same length as the "originalArray", and you can use the
         /// "Array.CreateInstance()" method for that.
         /// Also, to use this function, you should pass only the first two arguments!
         /// </summary>
-        /// <param name="original_array">The original multidimensional dimensional array.</param>
-        /// <param name="flat_array"> It is an empty one-dimensional array with
-        /// length equals to the "original_array". This argument must be
+        /// <param name="originalArray">The original multidimensional dimensional array.</param>
+        /// <param name="flatArray"> It is an empty one-dimensional array with
+        /// length equals to the "originalArray". This argument must be
         /// passed by reference, so the variable you pass here will be modified
-        /// to store the elements of the "original_array".</param>
+        /// to store the elements of the "originalArray".</param>
         /// <param name="auxiliar"> This one is only an integer array that helps
         /// to set the values to the new flat array. You can pass an empty array
-        /// with with length equal to the number of dimensions of the original_array.
+        /// with with length equal to the number of dimensions of the originalArray.
         /// However, you don't need! </param>
         /// <param name="contEl"> This one is an element counter, so you can pass
         /// 0, but you don't need! </param>
         /// <param name="loc"> This one is an auxiliary integer that helps to
         /// loop over the dimensions of the new array, so you can pass 1, but
         /// you don't need! </param>
-        /// <returns> Returns the number of elements of the original_array </returns>
-        public static int flatArray(Array original_array, ref Array flat_array, int[] auxiliar = null, int contEl = 0, int loc = 1)
+        /// <returns> Returns the number of elements of the originalArray </returns>
+        public static int FlatArray(Array originalArray, ref Array flatArray, int[] auxiliar = null, int contEl = 0, int loc = 1)
         {
-            if (contEl >= original_array.Length)
+            if (contEl >= originalArray.Length)
                 return contEl;
             else if (contEl == 0 || auxiliar == null)
-                auxiliar = new int[original_array.Rank];
+                auxiliar = new int[originalArray.Rank];
 
-            int ndim = original_array.Rank;
+            int ndim = originalArray.Rank;
             int[] dim = new int[ndim];
             for (int i = 0; i < ndim; i++)
-                dim[i] = original_array.GetLength(i);
+                dim[i] = originalArray.GetLength(i);
 
             if (loc == 1)
                 for (int i = 0; i < dim[ndim - loc]; i++)
                 {
-                    flat_array.SetValue(original_array.GetValue(auxiliar), contEl++);
+                    flatArray.SetValue(originalArray.GetValue(auxiliar), contEl++);
                     auxiliar[ndim - loc] += 1;
                 }
             for (int i = 1; i < loc; i++)
             {
                 auxiliar[ndim - loc] += 1;
                 if (auxiliar[ndim - loc] < dim[ndim - loc])
-                    contEl = flatArray(original_array, ref flat_array, auxiliar, contEl, i);
+                    contEl = FlatArray(originalArray, ref flatArray, auxiliar, contEl, i);
             }
             auxiliar[ndim - loc] = 0;
-            contEl = flatArray(original_array, ref flat_array, auxiliar, contEl, ++loc);
+            contEl = FlatArray(originalArray, ref flatArray, auxiliar, contEl, ++loc);
             return contEl;
         }
     }

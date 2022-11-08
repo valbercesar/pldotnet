@@ -37,34 +37,21 @@ typedef char char_t;
 
 typedef load_assembly_and_get_function_pointer_fn dotnet_loader;
 
-typedef int
-(CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
-    uint32_t functionId,
-    char *func_name,
-    int func_rettype,
-    char *func_paramsName,
-    int *func_paramsType,
-    char *func_body,
-    bool support_null_input
-);
+typedef int(CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
+    uint32_t functionId, char *func_name, int func_rettype,
+    char *func_paramsName, int *func_paramsType, char *func_body,
+    bool support_null_input);
 
-typedef int
-(CORECLR_DELEGATE_CALLTYPE *user_method_delegate)(
-    uint32_t functionId,
-    void *arguments,
-    bool *nullmap,
-    void *output
-);
+typedef int(CORECLR_DELEGATE_CALLTYPE *user_method_delegate)(
+    uint32_t functionId, void *arguments, bool *nullmap, void *output);
 
-typedef void*
-(CORECLR_DELEGATE_CALLTYPE *build_generic_list)(void);
+typedef void *(CORECLR_DELEGATE_CALLTYPE *build_datum_list_t)(void);
 
-typedef void*
-(CORECLR_DELEGATE_CALLTYPE *build_datum_list_t)(void);
+typedef void(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_t)(void *list,
+                                                             void *datum);
 
-typedef void
-(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_t)(
-    void *list, void* datum);
+typedef void(CORECLR_DELEGATE_CALLTYPE *free_generic_gchandle_t)(
+    void *gchandle);
 
 /** @brief Loads dotnet using the HostFXR.  HostFXR "finds and resolves
  * the runtime and all the frameworks the app needs", which in our
@@ -91,9 +78,6 @@ int pldotnet_LoadHostfxr(void);
  */
 load_assembly_and_get_function_pointer_fn GetNetLoadAssemblySetup(
     const char_t *config_path, const char_t *host_base_path);
-
-/// @brief Loaded host placeholder variable
-extern void *nethost_lib;
 
 /**
  * @brief Using the nethost library, this function discovers the location of

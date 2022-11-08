@@ -30,46 +30,46 @@ namespace PlDotNETUserSpace
             pldotnet_Elog(19, message);
         }
 
-        public static bool_handler bool_handler_obj = new bool_handler();
-        public static short_handler short_handler_obj = new short_handler();
-        public static int_handler int_handler_obj = new int_handler();
-        public static long_handler long_handler_obj = new long_handler();
-        public static float_handler float_handler_obj = new float_handler();
-        public static double_handler double_handler_obj = new double_handler();
-        public static point_handler point_handler_obj = new point_handler();
-        public static line_handler line_handler_obj = new line_handler();
-        public static lseg_handler lseg_handler_obj = new lseg_handler();
-        public static box_handler box_handler_obj = new box_handler();
-        public static path_handler path_handler_obj = new path_handler();
-        public static polygon_handler polygon_handler_obj = new polygon_handler();
-        public static circle_handler circle_handler_obj = new circle_handler();
-        public static date_handler date_handler_obj = new date_handler();
-        public static time_handler time_handler_obj = new time_handler();
-        public static timetz_handler timetz_handler_obj = new timetz_handler();
-        public static timestamp_handler timestamp_handler_obj = new timestamp_handler();
-        public static timestamptz_handler timestamptz_handler_obj = new timestamptz_handler();
-        public static interval_handler interval_handler_obj = new interval_handler();
-        public static macaddr_handler macaddr_handler_obj = new macaddr_handler();
-        public static macaddr8_handler macaddr8_handler_obj = new macaddr8_handler();
-        public static inet_handler inet_handler_obj = new inet_handler();
-        public static cidr_handler cidr_handler_obj = new cidr_handler();
-        public static text_handler text_handler_obj = new text_handler();
-        public static money_handler money_handler_obj = new money_handler();
-        public static varbit_handler varbit_handler_obj = new varbit_handler();
-        // public static bit_handler bit_handler_obj = new bit_handler();
-        public static bytea_handler bytea_handler_obj = new bytea_handler();
-        public static bpchar_handler bpchar_handler_obj = new bpchar_handler();
-        public static varchar_handler varchar_handler_obj = new varchar_handler();
-        public static xml_handler xml_handler_obj = new xml_handler();
-        public static int_range_handler int_range_handler_obj = new int_range_handler();
-        public static long_range_handler long_range_handler_obj = new long_range_handler();
-        public static time_range_handler time_range_handler_obj = new time_range_handler();
-        public static timetz_range_handler timetz_range_handler_obj = new timetz_range_handler();
-        public static date_range_handler date_range_handler_obj = new date_range_handler();
+        public static BoolHandler BoolHandlerObj = new BoolHandler();
+        public static ShortHandler ShortHandlerObj = new ShortHandler();
+        public static IntHandler IntHandlerObj = new IntHandler();
+        public static LongHandler LongHandlerObj = new LongHandler();
+        public static FloatHandler FloatHandlerObj = new FloatHandler();
+        public static DoubleHandler DoubleHandlerObj = new DoubleHandler();
+        public static PointHandler PointHandlerObj = new PointHandler();
+        public static LineHandler LineHandlerObj = new LineHandler();
+        public static LineSegmentHandler LineSegmentHandlerObj = new LineSegmentHandler();
+        public static BoxHandler BoxHandlerObj = new BoxHandler();
+        public static PathHandler PathHandlerObj = new PathHandler();
+        public static PolygonHandler PolygonHandlerObj = new PolygonHandler();
+        public static CircleHandler CircleHandlerObj = new CircleHandler();
+        public static DateHandler DateHandlerObj = new DateHandler();
+        public static TimeHandler TimeHandlerObj = new TimeHandler();
+        public static TimeTzHandler TimeTzHandlerObj = new TimeTzHandler();
+        public static TimestampHandler TimestampHandlerObj = new TimestampHandler();
+        public static TimestampTzHandler TimestampTzHandlerObj = new TimestampTzHandler();
+        public static IntervalHandler IntervalHandlerObj = new IntervalHandler();
+        public static MacaddrHandler MacaddrHandlerObj = new MacaddrHandler();
+        public static Macaddr8Handler Macaddr8HandlerObj = new Macaddr8Handler();
+        public static InetHandler InetHandlerObj = new InetHandler();
+        public static CidrHandler CidrHandlerObj = new CidrHandler();
+        public static TextHandler TextHandlerObj = new TextHandler();
+        public static MoneyHandler MoneyHandlerObj = new MoneyHandler();
+        public static BitStringHandler BitStringHandlerObj = new BitStringHandler();
+        // public static bit_handler bit_handlerObj = new bit_handler();
+        public static ByteaHandler ByteaHandlerObj = new ByteaHandler();
+        public static CharHandler CharHandlerObj = new CharHandler();
+        public static CharVaryingHandler CharVaryingHandlerObj = new CharVaryingHandler();
+        public static XmlHandler XmlHandlerObj = new XmlHandler();
+        public static IntRangeHandler IntRangeHandlerObj = new IntRangeHandler();
+        public static LongRangeHandler LongRangeHandlerObj = new LongRangeHandler();
+        public static TimestampRangeHandler TimestampRangeHandlerObj = new TimestampRangeHandler();
+        public static TimestampTzRangeHandler TimestampTzRangeHandlerObj = new TimestampTzRangeHandler();
+        public static DateRangeHandler DateRangeHandlerObj = new DateRangeHandler();
 
         /// SEND THE FINAL DATUM TO POSTGRES
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isnull, IntPtr native_result);
+        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isnull, IntPtr nativeResult);
 
         // $trigger_data_definition$
 
@@ -82,8 +82,6 @@ namespace PlDotNETUserSpace
             var result = // $user_function_call$
 
             System.Console.WriteLine($"-----> UserClass: {result}");
-
-            // $free_arguments
 
             // $call_set_result$
         }

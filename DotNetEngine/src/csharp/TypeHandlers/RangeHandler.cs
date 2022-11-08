@@ -4,86 +4,185 @@ using NpgsqlTypes;
 
 namespace PlDotNET_Handler
 {
-
-    public class range_constructors
+    /// <summary>
+    /// A generic type handler for the PostgreSQL range.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/rangetypes.html.
+    /// </remarks>
+    public abstract class RangeHandler<T, THandler> : StructTypeHandler<NpgsqlRange<T>>
+            where THandler : BaseTypeHandler<T>, new()
     {
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static unsafe extern void pldotnet_getDatumRangeAttributes(
-                IntPtr input_datum, byte* is_empty,
-                IntPtr* lower_range, IntPtr* upper_range);
+        public static THandler HandlerObj = new THandler();
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static unsafe extern void pldotnet_getDatumRangeBoundAttributes (
-                IntPtr input_range, IntPtr* range_datum,
-                byte* infinite, byte* inclusive, byte* lower);
-    }
-
-    [OIDHandler(OID.INT4RANGEOID, OID.INT4RANGEARRAYOID)]
-    public class range_handler<T, THandler> : struct_type_handler<NpgsqlRange<T>>
-            where THandler : base_type_handler<T>, new()
-    {
-
-        public static THandler handler_obj = new THandler();
-
-        public override unsafe NpgsqlRange<T> input_value(IntPtr datum)
+        /// <inheritdoc />
+        public override unsafe NpgsqlRange<T> InputValue(IntPtr datum)
         {
-            byte is_empty;
-            IntPtr upper_range, lower_range;
-            IntPtr upper_datum, lower_datum;
-            byte upper_infinite, lower_infinite;
-            byte upper_inclusive, lower_inclusive;
-            byte upper_lower, lower_lower;
+            byte isEmpty;
+            IntPtr upperDange, lower_range;
+            IntPtr upperDatum, lowerDatum;
+            byte upperInfinite, lowerInfinite;
+            byte upperInclusive, lowerInclusive;
+            byte upperLower, lowerLower;
             T upper, lower;
 
-            elog.pldotnet_Info("# DEBUG: Got range pointer: " + datum);
-            range_constructors.pldotnet_getDatumRangeAttributes(datum, &is_empty, &lower_range, &upper_range);
-            elog.pldotnet_Info($"# DEBUG: Got upper/lower pointers: {upper_range}, {lower_range}");
+            Elog.pldotnet_Info("# DEBUG: Got range pointer: " + datum);
+            RangeConstructors.pldotnet_getDatumRangeAttributes(datum, &isEmpty, &lower_range, &upperDange);
+            Elog.pldotnet_Info($"# DEBUG: Got upper/lower pointers: {upperDange}, {lower_range}");
 
-            range_constructors.pldotnet_getDatumRangeBoundAttributes(upper_range,
-                            &upper_datum, &upper_infinite, &upper_inclusive, &upper_lower);
-            range_constructors.pldotnet_getDatumRangeBoundAttributes(lower_range,
-                            &lower_datum, &lower_infinite, &lower_inclusive, &lower_lower);
+            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(upperDange,
+                            &upperDatum, &upperInfinite, &upperInclusive, &upperLower);
+            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(lower_range,
+                            &lowerDatum, &lowerInfinite, &lowerInclusive, &lowerLower);
 
-            // TODO: check upper_lower and lower_lower
-            lower = handler_obj.input_value(lower_datum);
-            upper = handler_obj.input_value(upper_datum);
-            elog.pldotnet_Info($"# DEBUG: creating range with: {lower}, " +
-                            $"{(lower_inclusive>0)}, {(lower_infinite > 0)} " +
-                            $"{upper}, {(upper_inclusive>0)}, {(upper_infinite > 0)}");
+            // TODO: check upperLower and lowerLower
+            lower = HandlerObj.InputValue(lowerDatum);
+            upper = HandlerObj.InputValue(upperDatum);
+            Elog.pldotnet_Info($"# DEBUG: creating range with: {lower}, " +
+                            $"{(lowerInclusive > 0)}, {(lowerInfinite > 0)} " +
+                            $"{upper}, {(upperInclusive > 0)}, {(upperInfinite > 0)}");
 
-            var retval = new NpgsqlRange<T>(lower, (lower_inclusive>0), (lower_infinite > 0),
-                upper, (upper_inclusive>0), (upper_infinite > 0));
-            elog.pldotnet_Info($"# DEBUG: returning range {retval}");
+            var retval = new NpgsqlRange<T>(lower, (lowerInclusive > 0), (lowerInfinite > 0),
+                upper, (upperInclusive > 0), (upperInfinite > 0));
+            Elog.pldotnet_Info($"# DEBUG: returning range {retval}");
             return retval;
         }
 
-        public override IntPtr output_value(NpgsqlRange<T> value)
+        /// <inheritdoc />
+        public override IntPtr OutputValue(NpgsqlRange<T> value)
         {
-            // byte is_empty=0;
-            // byte upper_infinite = value.UpperBoundIsInfinite ? 1 : 0;
-            // byte lower_infinite = value.LowerBoundIsInfinite ? 1 : 0;
-            // byte upper_inclusive = value.UpperBoundIsInclusive ? 1 : 0;
-            // byte lower_inclusive = value.LowerBoundIsInclusive ? 1 : 0;
-            // byte upper_lower = 0;
-            // byte lower_lower = 1;
-            // T upper = value.UpperBound;
-            // T lower = value.LowerBound;
-            // IntPtr upper_datum = handler_obj.output_value(upper_datum);
-            // IntPtr lower_datum = handler_obj.output_value(lower_datum);
-            // IntPtr upper_range, lower_range;
-            // IntPtr retval;
+            if (value.IsEmpty)
+                return RangeConstructors.pldotnet_createEmptyDatumRange(this.ElementOID);
+
+            // byte isEmpty = 0; // never used
+            byte upperInfinite = (byte)(value.UpperBoundInfinite ? 1 : 0);
+            byte lowerInfinite = (byte)(value.LowerBoundInfinite ? 1 : 0);
+            byte upperInclusive = (byte)(value.UpperBoundIsInclusive ? 1 : 0);
+            byte lowerInclusive = (byte)(value.LowerBoundIsInclusive ? 1 : 0);
+            // byte upperLower = 0; // never used
+            // byte lowerLower = 1; // never used
+            T upper = value.UpperBound;
+            T lower = value.LowerBound;
+            IntPtr upperDatum = HandlerObj.OutputValue(upper);
+            IntPtr lowerDatum = HandlerObj.OutputValue(lower);
+            // IntPtr upperDange, lower_range; // never used
+            // IntPtr retval; // never used
 
             // TODO: now, actualy construct the range datum down in C
+            // - Construct the two RangeBound objects for upper and lower
+            // - Combine them to make a Range
 
-            return (IntPtr)0;
+            return RangeConstructors.pldotnet_createDatumRange(this.ElementOID,
+                lowerDatum, lowerInfinite, lowerInclusive,
+                upperDatum, upperInfinite, upperInclusive);
         }
     }
 
-    public class    int_range_handler : range_handler<int,            int_handler>    {}
-    public class   long_range_handler : range_handler<long,           long_handler>   {}
-    public class   time_range_handler : range_handler<DateTime,       timestamp_handler>   {}
-    public class timetz_range_handler : range_handler<DateTime, timestamptz_handler> {}
-    public class   date_range_handler : range_handler<DateOnly,       date_handler>   {}
-    // waiting on a handler implementation for Numeric
-}
+    /// <summary>
+    /// This class contains the C methods used to convert from PostgreSQL range for NpgsqlRange,
+    /// as well as the opposite way.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/rangetypes.html.
+    /// </remarks>
+    public class RangeConstructors
+    {
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static unsafe extern void pldotnet_getDatumRangeAttributes(
+                IntPtr inputDatum, byte* isEmpty,
+                IntPtr* lowerRange, IntPtr* upperDange);
 
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static unsafe extern void pldotnet_getDatumRangeBoundAttributes(
+                IntPtr inputRange, IntPtr* rangeDatum,
+                byte* infinite, byte* inclusive, byte* lower);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static unsafe extern IntPtr pldotnet_createDatumRange(OID rtOid,
+                IntPtr lowerDatum, byte lowerInfinite, byte lowerInclusive,
+                IntPtr upperDatum, byte upperInfinite, byte upperInclusive);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static unsafe extern IntPtr pldotnet_createEmptyDatumRange(OID rangeTypeId);
+    }
+
+    /// <summary>
+    /// A type handler for the PostgreSQL range of integer.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/rangetypes.html.
+    /// </remarks>
+    [OIDHandler(OID.INT4RANGEOID, OID.INT4RANGEARRAYOID)]
+    public class IntRangeHandler : RangeHandler<int, IntHandler>
+    {
+        public IntRangeHandler()
+        {
+            this.ElementOID = OID.INT4RANGEOID;
+            this.ArrayOID = OID.INT4RANGEARRAYOID;
+        }
+    }
+
+    /// <summary>
+    /// A type handler for the PostgreSQL range of bigint.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/rangetypes.html.
+    /// </remarks>
+    [OIDHandler(OID.INT8RANGEOID, OID.INT8RANGEARRAYOID)]
+    public class LongRangeHandler : RangeHandler<long, LongHandler>
+    {
+        public LongRangeHandler()
+        {
+            this.ElementOID = OID.INT8RANGEOID;
+            this.ArrayOID = OID.INT8RANGEARRAYOID;
+        }
+    }
+
+    /// <summary>
+    /// A type handler for the PostgreSQL range of timestamp without time zone.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/rangetypes.html.
+    /// </remarks>
+    [OIDHandler(OID.TSRANGEOID, OID.TSRANGEARRAYOID)]
+    public class TimestampRangeHandler : RangeHandler<DateTime, TimestampHandler>
+    {
+        public TimestampRangeHandler()
+        {
+            this.ElementOID = OID.TSRANGEOID;
+            this.ArrayOID = OID.TSRANGEARRAYOID;
+        }
+    }
+
+    /// <summary>
+    /// A type handler for the PostgreSQL range of timestamp with time zone.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/rangetypes.html.
+    /// </remarks>
+    [OIDHandler(OID.TSTZRANGEOID, OID.TSTZRANGEARRAYOID)]
+    public class TimestampTzRangeHandler : RangeHandler<DateTime, TimestampTzHandler>
+    {
+        public TimestampTzRangeHandler()
+        {
+            this.ElementOID = OID.TSTZRANGEOID;
+            this.ArrayOID = OID.TSTZRANGEARRAYOID;
+        }
+    }
+
+    /// <summary>
+    /// A type handler for the PostgreSQL range of date.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/rangetypes.html.
+    /// </remarks>
+    [OIDHandler(OID.DATERANGEOID, OID.DATERANGEARRAYOID)]
+    public class DateRangeHandler : RangeHandler<DateOnly, DateHandler>
+    {
+        public DateRangeHandler()
+        {
+            this.ElementOID = OID.DATERANGEOID;
+            this.ArrayOID = OID.DATERANGEARRAYOID;
+        }
+    }
+}

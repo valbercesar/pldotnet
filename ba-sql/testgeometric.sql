@@ -141,7 +141,7 @@ SELECT 'point[]', 'updateArrayPointIndex1', CAST(updateArrayPointIndex(ARRAY[POI
 
 CREATE OR REPLACE FUNCTION IncreasePoints(values_array point[]) RETURNS point[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -178,7 +178,7 @@ SELECT 'LINE[]', 'updateArrayLineIndex1', CAST(updateArrayLineIndex(ARRAY[LINE '
 
 CREATE OR REPLACE FUNCTION IncreaseLines(values_array LINE[]) RETURNS LINE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -215,7 +215,7 @@ SELECT 'LSEG[]', 'updateArrayLSEGIndex1', CAST(updateArrayLSEGIndex(ARRAY[LSEG(P
 
 CREATE OR REPLACE FUNCTION IncreaseLSEGs(values_array LSEG[]) RETURNS LSEG[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -252,7 +252,7 @@ SELECT 'BOX[]', 'updateArrayBoxIndex1', CAST(updateArrayBoxIndex(ARRAY[BOX(POINT
 
 CREATE OR REPLACE FUNCTION IncreaseBoxs(values_array BOX[]) RETURNS BOX[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -289,7 +289,7 @@ SELECT 'PATH[]', 'updateArrayPathIndex1', CAST(updateArrayPathIndex(ARRAY['((1.5
 
 CREATE OR REPLACE FUNCTION IncreasePaths(values_array PATH[]) RETURNS PATH[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -330,7 +330,7 @@ SELECT 'POLYGON[]', 'updateArrayPolygonIndex1', CAST(updateArrayPolygonIndex(ARR
 
 CREATE OR REPLACE FUNCTION IncreasePolygons(values_array POLYGON[]) RETURNS POLYGON[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -371,7 +371,7 @@ SELECT 'CIRCLE[]', 'updateArrayCircleIndex1', CAST(updateArrayCircleIndex(ARRAY[
 
 CREATE OR REPLACE FUNCTION IncreaseCircles(values_array CIRCLE[]) RETURNS CIRCLE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)

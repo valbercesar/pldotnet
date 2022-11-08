@@ -84,7 +84,6 @@ Datum _PG_fini(PG_FUNCTION_ARGS) {
 
     /* TODO: shutdown dotnet runtime */
 
-    // dlclose(nethost_lib);
     PG_RETURN_VOID();
 }
 #endif

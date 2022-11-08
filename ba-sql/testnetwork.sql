@@ -85,7 +85,7 @@ SELECT 'MACADDR[]', 'updateArrayMacAddressIndex3', updateArrayMacAddressIndex(AR
 
 CREATE OR REPLACE FUNCTION IncreaseMacAddress(values_array MACADDR[]) RETURNS MACADDR[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -127,7 +127,7 @@ SELECT 'MACADDR8[]', 'updateArrayMacAddress8Index2', updateArrayMacAddress8Index
 
 CREATE OR REPLACE FUNCTION IncreaseMacAddress8(values_array MACADDR8[]) RETURNS MACADDR8[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -168,7 +168,7 @@ SELECT 'INET[]', 'updateArrayNetMaskIndex2', updateArrayNetMaskIndex(ARRAY[[INET
 
 CREATE OR REPLACE FUNCTION IncreaseInetAddress(values_array INET[]) RETURNS INET[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)
@@ -209,7 +209,7 @@ SELECT 'CIDR[]', 'updateArrayCIDRIndex2', updateArrayCIDRIndex(ARRAY[[CIDR '192.
 
 CREATE OR REPLACE FUNCTION IncreaseCIDRAddress(values_array CIDR[]) RETURNS CIDR[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-array_handler.flatArray(values_array, ref flatten_values);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {   
     if (flatten_values.GetValue(i) == null)

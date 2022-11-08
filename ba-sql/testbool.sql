@@ -36,7 +36,7 @@ SELECT 'BOOL[]', 'returnBooleanArray3', returnBooleanArray(ARRAY[[[true, false],
 
 CREATE OR REPLACE FUNCTION countBool(booleans boolean[], desired boolean) RETURNS Integer AS $$
 Array flatten_booleans = Array.CreateInstance(typeof(object), booleans.Length);
-array_handler.flatArray(booleans, ref flatten_booleans);
+ArrayHandler.FlatArray(booleans, ref flatten_booleans);
 int count = 0;
 for(int i = 0; i < flatten_booleans.Length; i++)
 {   

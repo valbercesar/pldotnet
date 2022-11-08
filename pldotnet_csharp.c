@@ -20,12 +20,13 @@
  * pldotnet_csharp.c - Postgres PL handlers for C# and functions
  *
  */
+
 #include "pldotnet_csharp.h"
-#include "pldotnet_hostfxr.h"
-#include <postgres.h>
 #include <access/htup.h>
 #include <catalog/pg_proc.h>
+#include <postgres.h>
 #include <utils/syscache.h>
+#include "pldotnet_hostfxr.h"
 
 /*
  * Exported functions
@@ -33,8 +34,6 @@
 PG_FUNCTION_INFO_V1(plcsharp_call_handler);
 PG_FUNCTION_INFO_V1(plcsharp_inline_handler);
 PG_FUNCTION_INFO_V1(plcsharp_validator);
-
-extern void (*free_generic_gchandle)(void*);
 
 /*
  * START: declaring functions
@@ -87,10 +86,7 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS);
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
-static Datum
-plcsharp_generic_handler(
-    FunctionCallInfo fcinfo,
-    bool is_inline);
+static Datum plcsharp_generic_handler(FunctionCallInfo fcinfo, bool is_inline);
 
 /**
  * @brief This function starts to building the output paths into a static
@@ -106,14 +102,14 @@ plcsharp_generic_handler(
  * pldotnet_FunctionDecl into a global hash table called procedures
  * (see pldotnet_common.h).
  *
- *  Case 2: if there is a previous cached function, then it just calls Engine.Run()
+ *  Case 2: if there is a previous cached function, then it just calls
+ * Engine.Run()
  * @param fcinfo The standard parameter list for fmgr-compatible functions.
  * @param is_inline Wether the function is inline or not.
  * @return The datum that can be stored in a PostgreSQL table.
  */
-static Datum plcsharp_CompileAndRunUserFunction(
-    const FunctionCallInfo fcinfo,
-    bool is_inline);
+static Datum plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
+                                                bool is_inline);
 
 /**
  * @brief Call the pldotnet_BuildPaths function (from pldotnet_common.c) if
@@ -135,13 +131,11 @@ inline static bool plcsharp_BuildPaths(pldotnet_PathConfig *paths);
  * @param validation whether the function should be validated.
  * @return pldotnet_FunctionDecl*  the function created by the user.
  */
-static pldotnet_FunctionDecl* plcsharp_GetFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation
-);
+static pldotnet_FunctionDecl *plcsharp_GetFunctionDecl(Oid oid,
+                                                       FunctionCallInfo fcinfo,
+                                                       HeapTuple proc,
+                                                       bool is_inline,
+                                                       bool validation);
 
 /**
  * @brief This function tries to build a valid pldotnet_FunctionDecl.
@@ -158,15 +152,10 @@ static pldotnet_FunctionDecl* plcsharp_GetFunctionDecl(
  * @return true it it succeeds.
  * @return false otherwise.
  */
-static bool plcsharp_BuildFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation,
-    pldotnet_FunctionDecl *function_decl
-);
-
+static bool plcsharp_BuildFunctionDecl(Oid oid, FunctionCallInfo fcinfo,
+                                       HeapTuple proc, bool is_inline,
+                                       bool validation,
+                                       pldotnet_FunctionDecl *function_decl);
 
 /**
  * @brief Validate the user function. This function is called in
@@ -177,7 +166,7 @@ static bool plcsharp_BuildFunctionDecl(
  * @param fcinfo The function information
  */
 static void plcsharp_ValidateUserFunction(const Oid oid,
-    const FunctionCallInfo fcinfo);
+                                          const FunctionCallInfo fcinfo);
 
 /**
  * @brief Set the function information to the plcsharp_GetSourceCode object
@@ -192,11 +181,9 @@ static void plcsharp_ValidateUserFunction(const Oid oid,
  * @return true if the process was successful
  * @return false if the source code could not be obtained
  */
-static bool plcsharp_GetSourceCode(FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool is_inline,
-    bool validation,
+static bool plcsharp_GetSourceCode(
+    FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst,
+    bool is_inline, bool validation,
     pldotnet_UserFunctionDeclaration *user_function_decl);
 
 /*
@@ -252,8 +239,7 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS) {
     PG_RETURN_VOID();
 }
 
-static Datum plcsharp_generic_handler(FunctionCallInfo fcinfo,
-                         bool is_inline) {
+static Datum plcsharp_generic_handler(FunctionCallInfo fcinfo, bool is_inline) {
     MemoryContextWrapper memory_context;
     Datum retval = 0;
 
@@ -285,47 +271,44 @@ static Datum plcsharp_generic_handler(FunctionCallInfo fcinfo,
     return retval;
 }
 
-static Datum plcsharp_CompileAndRunUserFunction(
-    const FunctionCallInfo fcinfo,
-    bool is_inline) {
+static Datum plcsharp_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
+                                                bool is_inline) {
     HeapTuple proc;
     Form_pg_proc procst;
     pldotnet_FunctionDecl *function_decl = nullptr;
+    void *arglist = nullptr;
+    bool *nullmap = nullptr;
     pldotnet_Result output;
-    output.value = (Datum) 0;
+    output.value = (Datum)0;
 
     /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END
      * IF PROC != nullptr */
     /* START */
     proc = pldotnet_GetPostgresHeapTuple(fcinfo->flinfo->fn_oid);
 
-    function_decl = plcsharp_GetFunctionDecl(
-        fcinfo->flinfo->fn_oid,
-        fcinfo,
-        proc,
-        is_inline,
-        false);
+    function_decl = plcsharp_GetFunctionDecl(fcinfo->flinfo->fn_oid, fcinfo,
+                                             proc, is_inline, false);
 
-    procst = (Form_pg_proc) GETSTRUCT(proc);
+    procst = (Form_pg_proc)GETSTRUCT(proc);
     /* END */
 
     pldotnet_ReleasePostgresHeapTuple(proc);
 
-    if (nullptr == function_decl ||
-        nullptr == function_decl->call_user_method)
+    if (nullptr == function_decl || nullptr == function_decl->call_user_method)
         elog(ERROR, "[pldotnet]: Could not load function_decl");
 
-    void* arglist = pldotnet_BuildArgumentList(fcinfo, procst);
-    bool* nullmap = function_decl->user_decl.support_null_input ?
-        pldotnet_BuildNullArgumentList(fcinfo, procst) : nullptr;
+    arglist = pldotnet_BuildArgumentList(fcinfo, procst);
+    nullmap = function_decl->user_decl.support_null_input
+                  ? pldotnet_BuildNullArgumentList(fcinfo, procst)
+                  : nullptr;
 
-    function_decl->call_user_method(function_decl->user_decl.func_oid,
-    arglist, &nullmap[0], (void*) &output);
+    function_decl->call_user_method(function_decl->user_decl.func_oid, arglist,
+                                    &nullmap[0], (void *)&output);
 
     if (output.is_null)
         fcinfo->isnull = true;
 
-    free_generic_gchandle(arglist);
+    pldotnet_FreeGCHandle(arglist);
     if (nullmap)
         pfree(nullmap);
 
@@ -334,23 +317,18 @@ static Datum plcsharp_CompileAndRunUserFunction(
 
 inline static bool plcsharp_BuildPaths(pldotnet_PathConfig *paths) {
     static bool built = false;
-
     if (!built) {
         pldotnet_BuildPaths(true, paths);
         built = true;
     }
-
-    // spi_paths = paths;
-
     return built;
 }
 
-static pldotnet_FunctionDecl* plcsharp_GetFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation) {
+static pldotnet_FunctionDecl *plcsharp_GetFunctionDecl(Oid oid,
+                                                       FunctionCallInfo fcinfo,
+                                                       HeapTuple proc,
+                                                       bool is_inline,
+                                                       bool validation) {
     pldotnet_FunctionDecl *decl = pldotnet_FindFunctionDecl(oid);
     bool found = nullptr != decl;
 
@@ -359,27 +337,17 @@ static pldotnet_FunctionDecl* plcsharp_GetFunctionDecl(
 
     decl = pldotnet_CreateFunctionDecl();
 
-    plcsharp_BuildFunctionDecl(
-        oid,
-        fcinfo,
-        proc,
-        is_inline,
-        validation,
-        decl);
+    plcsharp_BuildFunctionDecl(oid, fcinfo, proc, is_inline, validation, decl);
 
     pldotnet_SaveFunction(decl, !found);
 
     return decl;
 }
 
-
-static bool plcsharp_BuildFunctionDecl(
-    Oid oid,
-    FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    bool is_inline,
-    bool validation,
-    pldotnet_FunctionDecl *function_decl) {
+static bool plcsharp_BuildFunctionDecl(Oid oid, FunctionCallInfo fcinfo,
+                                       HeapTuple proc, bool is_inline,
+                                       bool validation,
+                                       pldotnet_FunctionDecl *function_decl) {
     Form_pg_proc procst;
     static pldotnet_PathConfig paths;
 
@@ -391,38 +359,33 @@ static bool plcsharp_BuildFunctionDecl(
 
     if (!pldotnet_SetNetLoader(paths.config_path, paths.prefix))
         elog(ERROR, "[pldotnet]: Could not obtain .NET Loader");
-    procst = (Form_pg_proc) GETSTRUCT(proc);
+    procst = (Form_pg_proc)GETSTRUCT(proc);
 
-    if (!pldotnet_SetDotNetMethods(assembly_loader, paths.library_path))
+    if (!pldotnet_SetDotNetMethods(paths.library_path))
         elog(ERROR, "[pldotnet]: Could not obtain C# Methods");
 
     /* save some basic data */
-    function_decl->user_decl.func_oid = (uint32_t) oid;
+    function_decl->user_decl.func_oid = (uint32_t)oid;
     function_decl->user_decl.support_null_input =
         procst->proisstrict ? false : true;
     function_decl->ret_type = procst->prorettype;
 
-    if (!plcsharp_GetSourceCode(fcinfo,
-                                proc,
-                                procst,
-                                is_inline,
-                                validation,
+    if (!plcsharp_GetSourceCode(fcinfo, proc, procst, is_inline, validation,
                                 &(function_decl->user_decl)))
         elog(ERROR, "[pldotnet]: Could not obtain the source code");
 
-    if (!pldotnet_CompileUserFunction(assembly_loader,
-                                      &(function_decl->user_decl)))
-        elog(ERROR, "[pldotnet]: Could not compile this "
-        "function using the new method.");
+    if (!pldotnet_CompileUserFunction(&(function_decl->user_decl)))
+        elog(ERROR,
+             "[pldotnet]: Could not compile this "
+             "function using the new method.");
 
-    function_decl->call_user_method =
-        pldotnet_GetUserDirectMethod(assembly_loader, &paths);
+    function_decl->call_user_method = pldotnet_GetUserDirectMethod(&paths);
 
     return nullptr != function_decl->call_user_method;
 }
 
 static void plcsharp_ValidateUserFunction(const Oid oid,
-    const FunctionCallInfo fcinfo) {
+                                          const FunctionCallInfo fcinfo) {
     HeapTuple proc = SearchSysCache1(PROCOID, ObjectIdGetDatum(oid));
 
     /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END IF PROC != nullptr */
@@ -430,43 +393,31 @@ static void plcsharp_ValidateUserFunction(const Oid oid,
     if (!HeapTupleIsValid(proc))
         elog(ERROR, "[pldotnet]: Could not obtain info about %u", oid);
 
-    plcsharp_GetFunctionDecl(
-        oid,
-        fcinfo,
-        proc,
-        false,
-        true);
+    plcsharp_GetFunctionDecl(oid, fcinfo, proc, false, true);
 
     /* END */
     pldotnet_ReleasePostgresHeapTuple(proc);
 }
 
-static bool plcsharp_GetSourceCode(FunctionCallInfo fcinfo,
-    HeapTuple proc,
-    Form_pg_proc procst,
-    bool is_inline,
-    bool validation,
+static bool plcsharp_GetSourceCode(
+    FunctionCallInfo fcinfo, HeapTuple proc, Form_pg_proc procst,
+    bool is_inline, bool validation,
     pldotnet_UserFunctionDeclaration *user_function_decl) {
-
-    // TODO(rosicley) - Check the TODOs Josias listed here...
     if (nullptr == user_function_decl)
         elog(ERROR, "[pldotnet]: Invalid argument: user_function_decl is null");
 
     if (is_inline) {
         elog(ERROR, "[pldotnet]: Inline functions are not supported yet");
     } else {
-        /* TODO(josias) get the real data here */
         user_function_decl->language = "csharp";
-        user_function_decl->func_name = NameStr(procst->proname);;
+        user_function_decl->func_name = NameStr(procst->proname);
         user_function_decl->func_rettype = procst->prorettype;
         user_function_decl->func_body = pldotnet_GetFunctionBody(proc, procst);
-        user_function_decl->func_paramsName = pldotnet_GetSqlParamsName(
-            proc, procst, true);
-        user_function_decl->func_paramsType = pldotnet_GetSqlParamsType(
-            proc, procst);
+        user_function_decl->func_paramsName =
+            pldotnet_GetSqlParamsName(proc, procst, true);
+        user_function_decl->func_paramsType =
+            pldotnet_GetSqlParamsType(proc, procst);
     }
-
-    /* TODO(josias) Validate the user_function_decl here*/
     return true;
 }
 

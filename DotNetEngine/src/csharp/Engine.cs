@@ -49,7 +49,7 @@ namespace PlDotNET
 {
     public static class Engine
     {
-        static bool AlwaysNullable = false;
+        public static bool AlwaysNullable = false;
 
         public struct CachedFunction
         {
@@ -58,40 +58,40 @@ namespace PlDotNET
             public bool SupportNullInput;
         }
 
-        static Dictionary<OID, OID> HANDLE_ARRAY =
+        public static Dictionary<OID, OID> HandleArray =
                        new Dictionary<OID, OID>()
         {
-            {OID.BOOLARRAYOID,        OID.BOOLOID},
-            {OID.INT2ARRAYOID,        OID.INT2OID},
-            {OID.INT4ARRAYOID,        OID.INT4OID},
-            {OID.INT8ARRAYOID,        OID.INT8OID},
-            {OID.FLOAT4ARRAYOID,      OID.FLOAT4OID},
-            {OID.FLOAT8ARRAYOID,      OID.FLOAT8OID},
-            {OID.POINTARRAYOID,       OID.POINTOID},
-            {OID.LINEARRAYOID,        OID.LINEOID},
-            {OID.LSEGARRAYOID,        OID.LSEGOID},
-            {OID.BOXARRAYOID,         OID.BOXOID},
-            {OID.POLYGONARRAYOID,     OID.POLYGONOID},
-            {OID.TEXTARRAYOID,        OID.TEXTOID},
-            {OID.PATHARRAYOID,        OID.PATHOID},
-            {OID.CIRCLEARRAYOID,      OID.CIRCLEOID},
-            {OID.DATEARRAYOID,        OID.DATEOID},
-            {OID.TIMEARRAYOID,        OID.TIMEOID},
-            {OID.TIMETZARRAYOID,      OID.TIMETZOID},
-            {OID.TIMESTAMPARRAYOID,   OID.TIMESTAMPOID},
+            {OID.BOOLARRAYOID, OID.BOOLOID},
+            {OID.INT2ARRAYOID, OID.INT2OID},
+            {OID.INT4ARRAYOID, OID.INT4OID},
+            {OID.INT8ARRAYOID, OID.INT8OID},
+            {OID.FLOAT4ARRAYOID, OID.FLOAT4OID},
+            {OID.FLOAT8ARRAYOID, OID.FLOAT8OID},
+            {OID.POINTARRAYOID, OID.POINTOID},
+            {OID.LINEARRAYOID, OID.LINEOID},
+            {OID.LSEGARRAYOID, OID.LSEGOID},
+            {OID.BOXARRAYOID, OID.BOXOID},
+            {OID.POLYGONARRAYOID, OID.POLYGONOID},
+            {OID.TEXTARRAYOID, OID.TEXTOID},
+            {OID.PATHARRAYOID, OID.PATHOID},
+            {OID.CIRCLEARRAYOID, OID.CIRCLEOID},
+            {OID.DATEARRAYOID, OID.DATEOID},
+            {OID.TIMEARRAYOID, OID.TIMEOID},
+            {OID.TIMETZARRAYOID, OID.TIMETZOID},
+            {OID.TIMESTAMPARRAYOID, OID.TIMESTAMPOID},
             {OID.TIMESTAMPTZARRAYOID, OID.TIMESTAMPTZOID},
-            {OID.INTERVALARRAYOID,    OID.INTERVALOID},
-            {OID.MACADDRARRAYOID,     OID.MACADDROID},
-            {OID.MACADDR8ARRAYOID,    OID.MACADDR8OID},
-            {OID.INETARRAYOID,        OID.INETOID},
-            {OID.CIDRARRAYOID,        OID.CIDROID},
-            {OID.MONEYARRAYOID,       OID.MONEYOID},
-            {OID.VARBITARRAYOID,      OID.VARBITOID},
-            {OID.BITARRAYOID,         OID.BITOID},
-            {OID.BYTEAARRAYOID,       OID.BYTEAOID},
-            {OID.BPCHARARRAYOID,      OID.BPCHAROID},
-            {OID.VARCHARARRAYOID,     OID.VARCHAROID},
-            {OID.XMLARRAYOID,         OID.XMLOID},
+            {OID.INTERVALARRAYOID, OID.INTERVALOID},
+            {OID.MACADDRARRAYOID, OID.MACADDROID},
+            {OID.MACADDR8ARRAYOID, OID.MACADDR8OID},
+            {OID.INETARRAYOID, OID.INETOID},
+            {OID.CIDRARRAYOID, OID.CIDROID},
+            {OID.MONEYARRAYOID, OID.MONEYOID},
+            {OID.VARBITARRAYOID, OID.VARBITOID},
+            {OID.BITARRAYOID, OID.BITOID},
+            {OID.BYTEAARRAYOID, OID.BYTEAOID},
+            {OID.BPCHARARRAYOID, OID.BPCHAROID},
+            {OID.VARCHARARRAYOID, OID.VARCHAROID},
+            {OID.XMLARRAYOID, OID.XMLOID},
             {OID.INT4RANGEARRAYOID, OID.INT4RANGEOID},
             {OID.NUMRANGEARRAYOID, OID.NUMRANGEOID},
             {OID.TSRANGEARRAYOID, OID.TSRANGEOID},
@@ -106,7 +106,7 @@ namespace PlDotNET
             {OID.INT8MULTIRANGEARRAYOID, OID.INT8MULTIRANGEOID},
         };
 
-        static Dictionary<OID, string> OID_TYPES =
+        public static Dictionary<OID, string> OidTypes =
                        new Dictionary<OID, string>()
         {
             {OID.BOOLOID,"bool"},
@@ -148,72 +148,54 @@ namespace PlDotNET
             // {OID.NUMRANGEOID, "NpgsqlRange<Numeric>"}, // currently unimplemented
         };
 
-        static uint FunctionId;
-        static MemoryStream MemStream;
-        static IDictionary<uint, CachedFunction> FuncBuiltCodeDict;
-        static CachedFunction Cached;
-        static Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
-        static bool SupportNullInput;
+        public static uint FunctionId;
 
-        static string CSharpTemplatePath = "@CSHARP_TEMPLATE_DIR/csharp.tcs";
+        public static MemoryStream MemStream;
+        public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict;
+
+        public static CachedFunction Cached;
+        public static Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
+        public static bool SupportNullInput;
+
+        public static string CSharpTemplatePath = "@CSHARP_TEMPLATE_DIR/csharp.tcs";
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_Elog(int level, string nessage);
 
+        /// <summary>
+        /// Reports an information message in PostgreSQL.
+        /// </summary> 
         public static void pldotnet_Info(string message)
         {
             pldotnet_Elog(17, message);
         }
 
+        /// <summary>
+        /// Reports an warning message in PostgreSQL.
+        /// </summary> 
         public static void pldotnet_Warning(string message)
         {
             pldotnet_Elog(19, message);
         }
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_typlenbyvalalign(int oid, ref short typlen, ref bool typbyval, ref byte typalign);
-
-        public static Dictionary<int, short> typlens = new Dictionary<int, short>();
-        public static Dictionary<int, bool> typbyvals = new Dictionary<int, bool>();
-        public static Dictionary<int, byte> typaligns = new Dictionary<int, byte>();
-
-        public static unsafe void add_typlenbyvalalign(int oid)
-        {
-            short typlen = 0;
-            bool typbyval = false;
-            byte typalign = 0;
-
-            pldotnet_typlenbyvalalign(oid, ref typlen, ref typbyval, ref typalign);
-            typlens[oid] = typlen;
-            typbyvals[oid] = typbyval;
-            typaligns[oid] = typalign;
-        }
-
-        // TODO - delete
-        public static List<Tuple<string, string>> GetSqlParamsFromString(string paramsStr)
-        {
-            string parameters = paramsStr == null ? "" : paramsStr;
-            return parameters.Split(',')
-                .Where(p => !string.IsNullOrEmpty(p))
-                .Select(p =>
-                {
-                    var splitedBySpace = p.Split(' ');
-                    return new Tuple<string, string>(splitedBySpace[1], splitedBySpace[0]);
-                }).ToList();
-        }
-
+        /// <summary>
+        /// It returns a list with of tuple, each tuple being the variable type
+        /// and its name.
+        /// </summary> 
         public static List<Tuple<string, string>> GetSqlParams(List<string> paramNames, List<int> paramTypes)
         {
             List<Tuple<string, string>> arguments = new List<Tuple<string, string>>();
             for (int i = 0; i < paramNames.Count(); i++)
             {
-                pldotnet_Info($"THE TYPE : {paramTypes[i]}");
-                string type = HANDLE_ARRAY.ContainsKey((OID)paramTypes[i]) ? "Array" : OID_TYPES[(OID)paramTypes[i]];
+                string type = HandleArray.ContainsKey((OID)paramTypes[i]) ? "Array" : OidTypes[(OID)paramTypes[i]];
                 arguments.Add(new Tuple<string, string>(type, paramNames[i]));
             }
             return arguments;
         }
 
+        /// <summary>
+        /// It creates the argument list of the user function.
+        /// </summary> 
         public static string GetParamsString(List<Tuple<string, string>> sqlParams)
         {
             if (Engine.SupportNullInput || Engine.AlwaysNullable)
@@ -221,91 +203,99 @@ namespace PlDotNET
             return string.Join(", ", sqlParams.Select((p) => $"{p.Item1} {p.Item2}").ToList());
         }
 
+        /// <summary>
+        /// Returns the handler object NAME for the specified OID.
+        /// </summary> 
         public static string GetTypeHandler(int id)
         {
             switch (id)
             {
                 case (int)OID.BOOLOID:
-                    return "bool_handler";
+                    return "BoolHandler";
                 case (int)OID.INT2OID:
-                    return "short_handler";
+                    return "ShortHandler";
                 case (int)OID.INT4OID:
-                    return "int_handler";
+                    return "IntHandler";
                 case (int)OID.INT8OID:
-                    return "long_handler";
+                    return "LongHandler";
                 case (int)OID.FLOAT4OID:
-                    return "float_handler";
+                    return "FloatHandler";
                 case (int)OID.FLOAT8OID:
-                    return "double_handler";
+                    return "DoubleHandler";
                 case (int)OID.POINTOID:
-                    return "point_handler";
+                    return "PointHandler";
                 case (int)OID.LINEOID:
-                    return "line_handler";
+                    return "LineHandler";
                 case (int)OID.LSEGOID:
-                    return "lseg_handler";
+                    return "LineSegmentHandler";
                 case (int)OID.BOXOID:
-                    return "box_handler";
+                    return "BoxHandler";
                 case (int)OID.PATHOID:
-                    return "path_handler";
+                    return "PathHandler";
                 case (int)OID.POLYGONOID:
-                    return "polygon_handler";
+                    return "PolygonHandler";
                 case (int)OID.CIRCLEOID:
-                    return "circle_handler";
+                    return "CircleHandler";
                 case (int)OID.DATEOID:
-                    return "date_handler";
+                    return "DateHandler";
                 case (int)OID.TIMEOID:
-                    return "time_handler";
+                    return "TimeHandler";
                 case (int)OID.TIMETZOID:
-                    return "timetz_handler";
+                    return "TimeTzHandler";
                 case (int)OID.TIMESTAMPOID:
-                    return "timestamp_handler";
+                    return "TimestampHandler";
                 case (int)OID.TIMESTAMPTZOID:
-                    return "timestamptz_handler";
+                    return "TimestampTzHandler";
                 case (int)OID.INTERVALOID:
-                    return "interval_handler";
+                    return "IntervalHandler";
                 case (int)OID.MACADDROID:
-                    return "macaddr_handler";
+                    return "MacaddrHandler";
                 case (int)OID.MACADDR8OID:
-                    return "macaddr8_handler";
+                    return "Macaddr8Handler";
                 case (int)OID.INETOID:
-                    return "inet_handler";
+                    return "InetHandler";
                 case (int)OID.CIDROID:
-                    return "cidr_handler";
+                    return "CidrHandler";
                 case (int)OID.TEXTOID:
-                    return "text_handler";
+                    return "TextHandler";
                 case (int)OID.MONEYOID:
-                    return "money_handler";
+                    return "MoneyHandler";
                 case (int)OID.VARBITOID:
-                    return "varbit_handler";
+                    return "BitStringHandler";
                 case (int)OID.BITOID:
-                    return "varbit_handler";
+                    return "BitStringHandler";
                 case (int)OID.BYTEAOID:
-                    return "bytea_handler";
+                    return "ByteaHandler";
                 case (int)OID.BPCHAROID:
-                    return "bpchar_handler";
+                    return "CharHandler";
                 case (int)OID.VARCHAROID:
-                    return "varchar_handler";
+                    return "CharVaryingHandler";
                 case (int)OID.XMLOID:
-                    return "xml_handler";
+                    return "XmlHandler";
                 case (int)OID.INT4RANGEOID:
-                    return "int_range_handler";
+                    return "IntRangeHandler";
                 case (int)OID.INT8RANGEOID:
-                    return "long_range_handler";
+                    return "LongRangeHandler";
                 case (int)OID.TSRANGEOID:
-                    return "time_range_handler";
+                    return "TimeRangeHandler";
                 case (int)OID.TSTZRANGEOID:
-                    return "timetz_range_handler";
+                    return "TimeTzRangeHandler";
                 case (int)OID.DATERANGEOID:
-                    return "date_range_handler";
+                    return "DateRangeHandler";
                 // case (int)OID.NUMRANGEOID: // currently unimplemented
-                    // return "numeric_range_handler";
+                // return "NumericRangeHandler";
                 default:
-                    if (HANDLE_ARRAY.ContainsKey((OID)id))
-                        return GetTypeHandler((int)HANDLE_ARRAY[(OID)id]);
+                    if (HandleArray.ContainsKey((OID)id))
+                        return GetTypeHandler((int)HandleArray[(OID)id]);
                     throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetTypeHandler");
             }
         }
 
+        /// <summary>
+        /// This function creates the code to call the handler objects, which
+        /// do the process of converting a Postgres type to an equivalente .NET
+        /// type. 
+        /// </summary> 
         public static string BuildCreateArguments(string funcName, List<int> paramTypes)
         {
             var sb = new System.Text.StringBuilder();
@@ -317,49 +307,29 @@ namespace PlDotNET
                 var argname = $"argument_{i}";
                 var value = $"arguments[{i}]";
                 var type = paramTypes[i];
-                var type_handler = GetTypeHandler(type);
-                if (HANDLE_ARRAY.ContainsKey((OID)type))
+                var typeHandler = GetTypeHandler(type);
+                if (HandleArray.ContainsKey((OID)type))
                 {
                     if (Engine.SupportNullInput || Engine.AlwaysNullable)
-                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_nullable_array({value}, isnull[{i}]);");
+                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputNullableArray({value}, isnull[{i}]);");
                     else
-                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_array({value});");
+                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputArray({value});");
                 }
                 else
                 {
                     if (Engine.SupportNullInput || Engine.AlwaysNullable)
-                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_nullable_value({value}, isnull[{i}]);");
+                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputNullableValue({value}, isnull[{i}]);");
                     else
-                        sb.AppendLine($"var {argname} = {type_handler}_obj.input_value({value});");
+                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputValue({value});");
                 }
             }
             sb.Append($"// END create arguments for {funcName}");
             return sb.ToString();
         }
 
-        // DONUT - TODO - remove thins function
-        public static string BuildFreeArguments(string funcName, List<Tuple<string, string>> sqlParams)
-        {
-            // TODO(rosicley/todd) - we need to check how we will free the list...
-            //     // WARNING: this is completely wrong.
-            // // - the individual IntPtr are not GCHandles, so there's nothing to free
-            // // - The list needs to be pinned (currently is not)
-            // // - Only the list needs to be freed
-            //     var sb = new System.Text.StringBuilder();
-            //     sb.AppendLine($"// BEGIN free arguments for {funcName}");
-            //     int argc = sqlParams.Count;
-
-            //     for (int i = 0; i < argc; i++)
-            //     {
-            //         var argname = $"argument_{i}";
-            //         sb.AppendLine($"gch_{argname}.Free();");
-            //     }
-
-            //     sb.AppendLine($"// END free arguments for {funcName}");
-            //     return sb.ToString();
-            return "";
-        }
-
+        /// <summary>
+        /// This function creates code to call the user function.
+        /// </summary> 
         public static string BuildFunctionCall(string funcName, List<Tuple<string, string>> sqlParams)
         {
             var sb = new System.Text.StringBuilder();
@@ -381,23 +351,32 @@ namespace PlDotNET
             return sb.ToString();
         }
 
+        /// <summary>
+        /// This function returns the code to create the Datum result according
+        /// to the OID of the result function. It also adds the code to set the
+        /// Datum object to the function output.
+        /// </summary> 
         public static string BuildCallSetResult(int id, string returnType)
         {
             string setResult;
-            if (HANDLE_ARRAY.ContainsKey((OID)id))
-                setResult = $"var result_datum = {GetTypeHandler(id)}_obj.output_nullable_array(result, OID.{HANDLE_ARRAY[(OID)id]});";
+            if (HandleArray.ContainsKey((OID)id))
+                setResult = $"var resultDatum = {GetTypeHandler(id)}Obj.OutputNullableArray(result);";
             else
-                setResult = $"var result_datum = {GetTypeHandler(id)}_obj.output_nullable_value(result);";
+                setResult = $"var resultDatum = {GetTypeHandler(id)}Obj.OutputNullableValue(result);";
 
-            setResult += "pldotnet_SetDatumResult(result_datum, result == null, output);";
+            setResult += "pldotnet_SetDatumResult(resultDatum, result == null, output);";
             return setResult;
         }
 
-        public static unsafe string BuildSourceCode(IntPtr Name, int returnTypeID, IntPtr ParamNames, int* ParamTypes, IntPtr Body)
+        /// <summary>
+        /// It builds the source code from the template file and the the user
+        /// function information received from the C code.
+        /// </summary>  
+        public static unsafe string BuildSourceCode(IntPtr name, int returnTypeID, IntPtr paramNames, int* paramTypes, IntPtr body)
         {
-            string funcName = Marshal.PtrToStringAuto(Name);
-            string returnType = HANDLE_ARRAY.ContainsKey((OID)returnTypeID) ? "Array" : OID_TYPES[(OID)returnTypeID];
-            string parameters = Marshal.PtrToStringAuto(ParamNames);
+            string funcName = Marshal.PtrToStringAuto(name);
+            string returnType = HandleArray.ContainsKey((OID)returnTypeID) ? "Array" : OidTypes[(OID)returnTypeID];
+            string parameters = Marshal.PtrToStringAuto(paramNames);
             List<string> paramNameList = new List<string>();
             List<int> paramTypeList = new List<int>();
             if (parameters != null)
@@ -405,39 +384,33 @@ namespace PlDotNET
                 paramNameList.AddRange(parameters.Split(" "));
                 for (int i = 0; i < paramNameList.Count(); i++)
                 {
-                    paramTypeList.Add(ParamTypes[i]);
+                    paramTypeList.Add(paramTypes[i]);
                 }
             }
             var sqlParams = GetSqlParams(paramNameList, paramTypeList);
             string paramsStr = GetParamsString(sqlParams);
-            string body = Marshal.PtrToStringAuto(Body);
+            string bodyStr = Marshal.PtrToStringAuto(body);
 
-            pldotnet_Info($"Compiling function {funcName}");
-            pldotnet_Info($"Return type: {returnType}");
-            pldotnet_Info($"Params: {paramsStr}");
-            pldotnet_Info($"Body: {body}");
-
-            // dummy template, we need to use a real template later
-            // including the boilerplate code for the user function
-            string rawFunctionDecl = $"public static {returnType}? {funcName}({paramsStr}) {{\n#line 1\n{body}\n}}";
+            string rawFunctionDecl = $"public static {returnType}? {funcName}({paramsStr}) {{\n#line 1\n{bodyStr}\n}}";
 
             if (!File.Exists(CSharpTemplatePath))
             {
                 string msg = $"Csharp template file '{CSharpTemplatePath}' not found";
-                pldotnet_Info(msg);
                 throw new SystemException(msg);
             }
 
-            pldotnet_Info($"Loading template from {CSharpTemplatePath}");
             var template = File.ReadAllText(CSharpTemplatePath);
             var withArgumentsCreated = template.Replace("// $create_arguments", BuildCreateArguments(funcName, paramTypeList));
             var withFunctionDecl = withArgumentsCreated.Replace("// $user_function_declaration$", rawFunctionDecl);
             var withFunctionCall = withFunctionDecl.Replace("// $user_function_call$", BuildFunctionCall(funcName, sqlParams));
-            var withArgumentsDeleted = withFunctionCall.Replace("// $free_arguments", BuildFreeArguments(funcName, sqlParams));
-            var withResultsSet = withArgumentsDeleted.Replace("// $call_set_result$", BuildCallSetResult(returnTypeID, returnType));
+            var withResultsSet = withFunctionCall.Replace("// $call_set_result$", BuildCallSetResult(returnTypeID, returnType));
             return withResultsSet;
         }
 
+        /// <summary>
+        /// This function returns the compilation errors reported during the
+        /// compilation of the dynamic code using Roslyn.
+        /// </summary>  
         public static string GetCompilationError(Diagnostic diagnostic, string[] lines)
         {
             string pattern = @"\d+,\d+";
@@ -460,11 +433,14 @@ namespace PlDotNET
             return message;
         }
 
-        public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream MemStream)
+        /// <summary>
+        /// This function compiles the dynamic code using Roslyn.
+        /// </summary>   
+        public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream)
         {
             pldotnet_Info("===========================");
             pldotnet_Info("Compiling source code");
-            pldotnet_Info($"Source code: {sourceCode}");
+            pldotnet_Info($"Source code:\n{sourceCode}");
             pldotnet_Info("===========================");
 
             var userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
@@ -505,19 +481,10 @@ namespace PlDotNET
                 "System.Collections"
             };
 
-            List<PortableExecutableReference> references = new List<PortableExecutableReference>();
-            foreach (var na in neededAssemblies)
-            {
-                foreach (var tap in trustedAssembliesPaths)
-                {
-                    if (Path.GetFileNameWithoutExtension(tap) == na)
-                    {
-                        var mr = MetadataReference.CreateFromFile(tap);
-                        pldotnet_Info($"trustedAssembliesPath {tap} matches neededAssembly {na}; adding MetadataReference {mr}");
-                        references.Add(mr);
-                    }
-                }
-            }
+            List<PortableExecutableReference> references = trustedAssembliesPaths
+                .Where(p => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
+                .Select(p => MetadataReference.CreateFromFile(p))
+                .ToList();
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithOptimizationLevel(OptimizationLevel.Release)
@@ -529,7 +496,7 @@ namespace PlDotNET
                 syntaxTrees: new[] { userTree },
                 references: references);
 
-            Microsoft.CodeAnalysis.Emit.EmitResult compileResult = compilation.Emit(MemStream);
+            Microsoft.CodeAnalysis.Emit.EmitResult compileResult = compilation.Emit(memStream);
 
             if (!compileResult.Success)
             {
@@ -549,13 +516,19 @@ namespace PlDotNET
             return compileResult;
         }
 
-        public unsafe delegate int DelCompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body, [MarshalAs(UnmanagedType.I1)] bool SupportNullInput);
+        public unsafe delegate int DelCompileUserFunction(uint functionId, IntPtr name, int returnType, IntPtr paramNames, int* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput);
 
-        public static unsafe int CompileUserFunction(uint FunctionId, IntPtr Name, int ReturnType, IntPtr ParamNames, int* ParamTypes, IntPtr Body, [MarshalAs(UnmanagedType.I1)] bool SupportNullInput)
+        // <summary>
+        /// This function is called called from C code and tries to create and
+        /// compile the dynamic code using Roslyn. It also saves the
+        /// CachedFunction in FuncBuiltCodeDict so that any compiled code can
+        /// be called by the user function ID.
+        /// </summary>
+        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, int returnType, IntPtr paramNames, int* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput)
         {
-            Engine.SupportNullInput = SupportNullInput;
+            Engine.SupportNullInput = supportNullInput;
 
-            string sourceCode = BuildSourceCode(Name, ReturnType, ParamNames, ParamTypes, Body);
+            string sourceCode = BuildSourceCode(name, returnType, paramNames, paramTypes, body);
 
             if (Engine.FuncBuiltCodeDict == null)
                 Engine.FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
@@ -564,10 +537,10 @@ namespace PlDotNET
                 // Code has not changed then it is not needed to build it
                 try
                 {
-                    Engine.FuncBuiltCodeDict.TryGetValue(FunctionId, out CachedFunction cached);
+                    Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached);
                     if (cached.SourceCode == sourceCode)
                     {
-                        Engine.FunctionId = FunctionId;
+                        Engine.FunctionId = functionId;
                         Engine.Cached = cached;
                         Engine.UserProcedure = cached.UserProcedure;
                         return 0;
@@ -594,17 +567,17 @@ namespace PlDotNET
                 SupportNullInput = Engine.SupportNullInput
             };
 
-            Engine.FunctionId = FunctionId;
-            Engine.FuncBuiltCodeDict[FunctionId] = Engine.Cached;
+            Engine.FunctionId = functionId;
+            Engine.FuncBuiltCodeDict[functionId] = Engine.Cached;
             Engine.UserProcedure = Engine.Cached.UserProcedure;
-
-            pldotnet_Info("================================");
-            pldotnet_Info($"\nNormalized source code: \n{Engine.Cached.SourceCode}");
-            pldotnet_Info("================================");
 
             return 0;
         }
 
+        /// <summary>
+        /// It creates the Delegate function for the CallUserFunction function,
+        /// which was compiled by Roslyn.
+        /// </summary>
         public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(MemoryStream memoryStream)
         {
             var compiledAssembly = Assembly.Load(memoryStream.GetBuffer());
@@ -627,27 +600,23 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// This function should be called from C code
-        /// It tries to get the cached function by its id.
-        /// If it is not found, it returns a number different from zero
-        /// Otherwise, it calls the user function compiled by Roslyn
+        /// This function is called called from C code and tries to get the
+        /// cached function by the function id. If the cached functions is not
+        /// found, an error message is reported. Otherwise, it calls the 
+        /// function compiled by Roslyn.
         /// </summary>
-
         public static unsafe int RunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output)
         {
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
-                GCHandle gch_list = GCHandle.FromIntPtr(arguments);
-                var argument_list = (List<IntPtr>)gch_list.Target;
-                bool[] isnull = new bool[argument_list.Count];
+                GCHandle gchList = GCHandle.FromIntPtr(arguments);
+                var argumentList = (List<IntPtr>)gchList.Target;
+                bool[] isnull = new bool[argumentList.Count];
                 if (cached.SupportNullInput || Engine.AlwaysNullable)
                     for (int i = 0, nargs = isnull.Length; i < nargs; i++)
                         isnull[i] = nullmap[i] == 0 ? false : true;
 
-                for (int i = 0; i < isnull.Length; i++)
-                    pldotnet_Info($"C# - DEBUG - is the argument[{i}] nulll? {isnull[i]}");
-
-                cached.UserProcedure(argument_list, output, isnull);
+                cached.UserProcedure(argumentList, output, isnull);
             }
             else
             {
@@ -656,22 +625,22 @@ namespace PlDotNET
 
             return 0;
         }
-
         public unsafe delegate int DelRunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output);
 
         /// <summary>
-        /// Free memmory pointed by a IntPtr
+        /// Free memmory pointed by a IntPtr.
         /// </summary>
         public static unsafe void FreeGenericGCHandle(IntPtr p)
         {
             GCHandle gch = GCHandle.FromIntPtr(p);
             gch.Free();
         }
-
         public delegate void DelFreeGenericGCHandle(IntPtr p);
 
-        // Create a new list of IntPtr
-        // Intended for pldotnet to pass an array of Datum's to Engine.cs
+        /// <summary>
+        /// This functions is called from C and creates a new list of IntPtr,
+        /// which pldotnet adds the Datums and passes to RunUserFunction.
+        /// </summary>
         public static unsafe System.IntPtr BuildDatumList()
         {
             var l = new List<IntPtr>();
@@ -680,14 +649,16 @@ namespace PlDotNET
         }
         public delegate System.IntPtr DelBuildDatumList();
 
-        // Add an IntPtr(Datum) to a list of IntPtr
-        // Intended for pldotnet to pass an array of Datum's to Engine.cs
-        public static unsafe void AddDatumToList(System.IntPtr _list, System.IntPtr _datum)
+        /// <summary>
+        /// This functions is called from C and adds an IntPtr(Datum) to a list,
+        /// of IntPtr. Pldotnet passes the final list to RunUserFunction.
+        /// </summary>
+        public static unsafe void AddDatumToList(System.IntPtr list, System.IntPtr datum)
         {
-            GCHandle gch_list = GCHandle.FromIntPtr(_list);
-            var list = (List<IntPtr>)gch_list.Target;
-            list.Add(_datum);
+            GCHandle gchList = GCHandle.FromIntPtr(list);
+            List<IntPtr> listObj = (List<IntPtr>)gchList.Target;
+            listObj.Add(datum);
         }
-        public delegate void DelAddDatumToList(System.IntPtr _list, System.IntPtr _datum);
+        public delegate void DelAddDatumToList(System.IntPtr list, System.IntPtr datum);
     }
 }

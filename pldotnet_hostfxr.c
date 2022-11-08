@@ -115,12 +115,11 @@ load_assembly_and_get_function_pointer_fn GetNetLoadAssemblySetup(
     }
 
     if (nullptr != host_base_path)
-        set_runtime_properties_ptr(
-            cxt, "APP_CONTEXT_BASE_DIRECTORY", (char *)host_base_path);
+        set_runtime_properties_ptr(cxt, "APP_CONTEXT_BASE_DIRECTORY",
+                                   (char *)host_base_path);
 
     /* Get the load assembly function pointer */
-    rc = get_delegate_fptr(cxt,
-                           hdt_load_assembly_and_get_function_pointer,
+    rc = get_delegate_fptr(cxt, hdt_load_assembly_and_get_function_pointer,
                            &load_assembly_and_get_function_pointer);
     close_fptr(cxt);
 

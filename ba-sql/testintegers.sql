@@ -66,7 +66,7 @@ SELECT 'SMALLINT[]', 'returnSmallIntArray3', returnSmallIntArray(ARRAY[[[null::s
 
 CREATE OR REPLACE FUNCTION sumSmallIntArray(small_integers smallint[]) RETURNS smallint AS $$
 Array flatten_small_integers = Array.CreateInstance(typeof(object), small_integers.Length);
-array_handler.flatArray(small_integers, ref flatten_small_integers);
+ArrayHandler.FlatArray(small_integers, ref flatten_small_integers);
 short small_integers_sum = (short)0;
 for(int i = 0; i < flatten_small_integers.Length; i++)
 {   
@@ -115,7 +115,7 @@ SELECT 'INTEGER[]', 'returnIntegerArray3', returnIntegerArray(ARRAY[[[null::inte
 
 CREATE OR REPLACE FUNCTION sumIntegerArray(integers integer[]) RETURNS integer AS $$
 Array flatten_integers = Array.CreateInstance(typeof(object), integers.Length);
-array_handler.flatArray(integers, ref flatten_integers);
+ArrayHandler.FlatArray(integers, ref flatten_integers);
 int integers_sum = 0;
 for(int i = 0; i < flatten_integers.Length; i++)
 {   
@@ -164,7 +164,7 @@ SELECT 'BIGINT[]', 'returnBigIntegerArray3', returnBigIntegerArray(ARRAY[[[null:
 
 CREATE OR REPLACE FUNCTION sumBigIntegerArray(big_integers bigint[]) RETURNS bigint AS $$
 Array flatten_big_integers = Array.CreateInstance(typeof(object), big_integers.Length);
-array_handler.flatArray(big_integers, ref flatten_big_integers);
+ArrayHandler.FlatArray(big_integers, ref flatten_big_integers);
 long big_integers_sum = 0;
 for(int i = 0; i < flatten_big_integers.Length; i++)
 {   

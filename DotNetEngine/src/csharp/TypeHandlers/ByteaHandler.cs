@@ -6,10 +6,20 @@ using System.Text.Unicode;
 
 namespace PlDotNET_Handler
 {
+    /// <summary>
+    /// A type handler for the PostgreSQL bytea data type.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/static/datatype-binary.html.
+    /// </remarks>
     [OIDHandler(OID.BYTEAOID, OID.BYTEAARRAYOID)]
-    public class bytea_handler : object_type_handler<byte[]>
+    public class ByteaHandler : ObjectTypeHandler<byte[]>
     {
-        public static UTF8Encoding utf8_e = new UTF8Encoding();
+        public ByteaHandler()
+        {
+            this.ElementOID = OID.BYTEAOID;
+            this.ArrayOID = OID.BYTEAARRAYOID;
+        }
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumByteaAttributes(IntPtr datum, ref int len, ref byte* buf);
@@ -17,7 +27,8 @@ namespace PlDotNET_Handler
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumBytea(int len, byte[] buf);
 
-        public override unsafe byte[] input_value(IntPtr datum)
+        /// <inheritdoc />
+        public override unsafe byte[] InputValue(IntPtr datum)
         {
             int len = 0;
             byte* buf = null;
@@ -26,7 +37,8 @@ namespace PlDotNET_Handler
             return nativeSpan.ToArray();
         }
 
-        public override IntPtr output_value(byte[] value)
+        /// <inheritdoc />
+        public override IntPtr OutputValue(byte[] value)
         {
             return pldotnet_createDatumBytea(value.Length, value);
         }

@@ -38,7 +38,7 @@ SELECT 'FLOAT[]', 'returnRealArray3', returnRealArray(ARRAY[[[null::real, null::
 
 CREATE OR REPLACE FUNCTION sumRealArray(floats real[]) RETURNS real AS $$
 Array flatten_floats = Array.CreateInstance(typeof(object), floats.Length);
-array_handler.flatArray(floats, ref flatten_floats);
+ArrayHandler.FlatArray(floats, ref flatten_floats);
 float float_sum = 0;
 for(int i = 0; i < flatten_floats.Length; i++)
 {   
@@ -85,7 +85,7 @@ SELECT 'DOUBLE[]', 'returnDoubleArray2', returnDoubleArray(ARRAY[[null::double p
 
 CREATE OR REPLACE FUNCTION sumDoubleArray(doubles double precision[]) RETURNS double precision AS $$
 Array flatten_doubles = Array.CreateInstance(typeof(object), doubles.Length);
-array_handler.flatArray(doubles, ref flatten_doubles);
+ArrayHandler.FlatArray(doubles, ref flatten_doubles);
 double double_sum = 0;
 for(int i = 0; i < flatten_doubles.Length; i++)
 {   

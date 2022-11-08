@@ -27,25 +27,23 @@ char *dnldir = STR(PLNET_ENGINE_DIR);
 
 dotnet_loader assembly_loader;
 compile_user_fn compile_user_function;
-build_datum_list_t build_datum_list;  // DONUT => BuildDatumList
-add_datum_to_list_t add_datum_to_list;  // DONUT => AddDatumToList
-
-// TODO(rosicley) - check where we will use this function pointer
-void (*free_generic_gchandle)(void*);
+build_datum_list_t build_datum_list;
+add_datum_to_list_t add_datum_to_list;
+free_generic_gchandle_t free_generic_gchandle;
 
 /*
  * START: implementing functions
  */
 
 bool pldotnet_SetNetLoader(const char *config_path, const char *prefix) {
-  if (nullptr != assembly_loader) return true;
+    if (nullptr != assembly_loader)
+        return true;
 
-  assembly_loader = GetNetLoadAssemblySetup(config_path, prefix);
-  return nullptr != assembly_loader;
+    assembly_loader = GetNetLoadAssemblySetup(config_path, prefix);
+    return nullptr != assembly_loader;
 }
 
-bool
-pldotnet_SPIReady(void) {
+bool pldotnet_SPIReady(void) {
     if (SPI_connect() != SPI_OK_CONNECT) {
         elog(ERROR, "[pldotnet]: could not connect to SPI manager");
         return false;
@@ -54,81 +52,62 @@ pldotnet_SPIReady(void) {
     return true;
 }
 
-void
-pldotnet_SPIFinish(void) {
+void pldotnet_SPIFinish(void) {
     if (SPI_finish() != SPI_OK_FINISH)
         elog(ERROR, "[pldotnet]: could not disconnect from SPI manager");
 }
 
-bool pldotnet_SetDotNetMethods(dotnet_loader loader, const char *library_path) {
-    compile_user_function = (compile_user_fn) pldotnet_GetDotNetMethod(
-        loader,
-        library_path,
-        "PlDotNET.Engine, PlDotNET",
-        "CompileUserFunction",
+bool pldotnet_SetDotNetMethods(const char *library_path) {
+    compile_user_function = (compile_user_fn)pldotnet_GetDotNetMethod(
+        library_path, "PlDotNET.Engine, PlDotNET", "CompileUserFunction",
         "PlDotNET.Engine+DelCompileUserFunction, PlDotNET");
 
-    build_datum_list = (build_datum_list_t) pldotnet_GetDotNetMethod(
-        assembly_loader,
-        library_path,
-        "PlDotNET.Engine, PlDotNET",
-        "BuildDatumList",
+    build_datum_list = (build_datum_list_t)pldotnet_GetDotNetMethod(
+        library_path, "PlDotNET.Engine, PlDotNET", "BuildDatumList",
         "PlDotNET.Engine+DelBuildDatumList, PlDotNET");
 
-    add_datum_to_list = (add_datum_to_list_t) pldotnet_GetDotNetMethod(
-        assembly_loader,
-        library_path,
-        "PlDotNET.Engine, PlDotNET",
-        "AddDatumToList",
+    add_datum_to_list = (add_datum_to_list_t)pldotnet_GetDotNetMethod(
+        library_path, "PlDotNET.Engine, PlDotNET", "AddDatumToList",
         "PlDotNET.Engine+DelAddDatumToList, PlDotNET");
 
-    free_generic_gchandle = (void (*)(void*)) pldotnet_GetDotNetMethod(
-        assembly_loader,
-        library_path,
-        "PlDotNET.Engine, PlDotNET",
-        "FreeGenericGCHandle",
+    free_generic_gchandle = (free_generic_gchandle_t)pldotnet_GetDotNetMethod(
+        library_path, "PlDotNET.Engine, PlDotNET", "FreeGenericGCHandle",
         "PlDotNET.Engine+DelFreeGenericGCHandle, PlDotNET");
 
-    return nullptr != compile_user_function
-    && nullptr != build_datum_list
-    && nullptr != add_datum_to_list
-    && nullptr != free_generic_gchandle;
+    return nullptr != compile_user_function && nullptr != build_datum_list &&
+           nullptr != add_datum_to_list && nullptr != free_generic_gchandle;
 }
 
-void *pldotnet_GetDotNetMethod(dotnet_loader loader,
-                               const char *library_path,
+void *pldotnet_GetDotNetMethod(const char *library_path,
                                const char *dotnet_type,
                                const char *dotnet_type_method,
                                const char *delegate_type_name) {
-  int rc;
-  void *dotnet_method = nullptr;
+    int rc;
+    void *dotnet_method = nullptr;
 
-  elog(INFO, "type: %s, method: %s", dotnet_type, dotnet_type_method);
-  elog(INFO, "delegate type name: %s", delegate_type_name);
+    rc = assembly_loader(library_path, dotnet_type, dotnet_type_method,
+                         delegate_type_name, nullptr, (void **)&dotnet_method);
 
-  rc = loader(library_path, dotnet_type, dotnet_type_method, delegate_type_name,
-              nullptr, (void **)&dotnet_method);
+    if (nullptr == dotnet_method)
+        elog(ERROR, "[pldotnet]: Could not get_function_pointer(%s)",
+             delegate_type_name);
 
-  if (nullptr == dotnet_method)
-    elog(ERROR,
-                         "[pldotnet]: Could not get_function_pointer(%s)",
-                         delegate_type_name);
+    if (0 != rc)
+        elog(ERROR,
+             "[pldotnet]: Could not "
+             "load_assembly_and_get_function_pointer(%s)",
+             delegate_type_name);
 
-  if (0 != rc)
-      elog(ERROR,
-              "[pldotnet]: Could not "
-              "load_assembly_and_get_function_pointer(%s)",
-              delegate_type_name);
-
-  return dotnet_method;
+    return dotnet_method;
 }
 
 void pldotnet_BuildPaths(bool is_csharp, pldotnet_PathConfig *paths) {
     char prefix[MAXPGPATH];
-    const char json_path_suffix[] = "/bin/Release/net6.0/PlDotNET."
+    const char json_path_suffix[] =
+        "/bin/Release/net6.0/PlDotNET."
         "runtimeconfig.json";
-    const char src_path_suffix[]  = "/Lib.cs";
-    const char dll_path_suffix[]  = "/bin/Release/net6.0/PlDotNET.dll";
+    const char src_path_suffix[] = "/Lib.cs";
+    const char dll_path_suffix[] = "/bin/Release/net6.0/PlDotNET.dll";
     char lang[] = "csharp";
 
     if (!is_csharp)
@@ -152,14 +131,14 @@ inline void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc) {
     ReleaseSysCache(proc);
 }
 
-pldotnet_FunctionDecl* pldotnet_CreateFunctionDecl(void) {
+pldotnet_FunctionDecl *pldotnet_CreateFunctionDecl(void) {
     pldotnet_FunctionDecl *decl;
     MemoryContext mem = CurrentMemoryContext;
 
     /* change to top mem context */
     MemoryContextSwitchTo(TopMemoryContext);
 
-    decl = (pldotnet_FunctionDecl*) palloc(sizeof(pldotnet_FunctionDecl));
+    decl = (pldotnet_FunctionDecl *)palloc(sizeof(pldotnet_FunctionDecl));
 
     pldotnet_ResetFunctionDecl(decl);
 
@@ -169,12 +148,12 @@ pldotnet_FunctionDecl* pldotnet_CreateFunctionDecl(void) {
     return decl;
 }
 
-pldotnet_FunctionDecl* pldotnet_FindFunctionDecl(int function_id) {
-    gpointer value = g_hash_table_lookup(procedures,
-        GUINT_TO_POINTER(function_id));
+pldotnet_FunctionDecl *pldotnet_FindFunctionDecl(int function_id) {
+    gpointer value =
+        g_hash_table_lookup(procedures, GUINT_TO_POINTER(function_id));
 
     if (nullptr != value)
-        return (pldotnet_FunctionDecl*) value;
+        return (pldotnet_FunctionDecl *)value;
 
     return nullptr;
 }
@@ -182,13 +161,9 @@ pldotnet_FunctionDecl* pldotnet_FindFunctionDecl(int function_id) {
 void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl) {
     if (nullptr == function_decl)
         return;
-    // function_decl->source.source_code = nullptr;
-    // function_decl->source.func_oid = 0;
-    // function_decl->source.result = 1;
     function_decl->args = nullptr;
     function_decl->args_length = 0;
     function_decl->ret_type = InvalidOid;
-    function_decl->dotnet_method = nullptr;
     function_decl->call_user_method = nullptr;
 
     /* this is the new user declaration */
@@ -204,9 +179,8 @@ void pldotnet_ResetFunctionDecl(pldotnet_FunctionDecl *function_decl) {
 
 void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config) {
     config->prev = CurrentMemoryContext;
-    config->curr = AllocSetContextCreate(TopMemoryContext,
-                                    "PL/NET func_exec_ctx",
-                                    ALLOCSET_SMALL_SIZES);
+    config->curr = AllocSetContextCreate(
+        TopMemoryContext, "PL/NET func_exec_ctx", ALLOCSET_SMALL_SIZES);
 
     if (nullptr == config->curr)
         elog(ERROR, "Could not create a new memory context");
@@ -215,7 +189,8 @@ void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config) {
 }
 
 void pldotnet_ResetMemoryContext(MemoryContextWrapper *config) {
-    if (nullptr == config) return;
+    if (nullptr == config)
+        return;
 
     if (config->prev)
         MemoryContextSwitchTo(config->prev);
@@ -226,67 +201,55 @@ void pldotnet_ResetMemoryContext(MemoryContextWrapper *config) {
 
 void pldotnet_SaveFunction(pldotnet_FunctionDecl *function, bool insert) {
     if (insert)
-        g_hash_table_insert(
-            procedures,
-            GUINT_TO_POINTER(function->user_decl.func_oid),
-            (gpointer) function);
+        g_hash_table_insert(procedures,
+                            GUINT_TO_POINTER(function->user_decl.func_oid),
+                            (gpointer)function);
     else
-        g_hash_table_replace(
-            procedures,
-            GUINT_TO_POINTER(function->user_decl.func_oid),
-            (gpointer) function);
+        g_hash_table_replace(procedures,
+                             GUINT_TO_POINTER(function->user_decl.func_oid),
+                             (gpointer)function);
 }
 
-const char* pldotnet_GetFunctionBody(HeapTuple proc, Form_pg_proc procst) {
+const char *pldotnet_GetFunctionBody(HeapTuple proc, Form_pg_proc procst) {
     bool isnull = false;
     Datum prosrc = SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_prosrc, &isnull);
     const char *body = DatumGetCString(DirectFunctionCall1(textout, prosrc));
     return body;
 }
 
-const char* pldotnet_GetSqlParamsName(HeapTuple proc,
-                                  Form_pg_proc procst,
-                                  bool is_csharp) {
+const char *pldotnet_GetSqlParamsName(HeapTuple proc, Form_pg_proc procst,
+                                      bool is_csharp) {
     int nnames = 0;
     bool isnull = false;
     const char **argnames_array = nullptr;
     Datum *argnames = nullptr;
     char *sql_params = nullptr;
-    Datum argname = SysCacheGetAttr(PROCOID,
-        proc,
-        Anum_pg_proc_proargnames,
-        &isnull);
+    Datum argname =
+        SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_proargnames, &isnull);
     size_t buffer_size = 0;
-
-    if (!isnull)
-        deconstruct_array(DatumGetArrayTypeP(argname),
-        TEXTOID,
-        -1,
-        false,
-        'i',
-        &argnames,
-        NULL,
-        &nnames);
-    else
-        return nullptr;
-
-    argnames_array = (const char**)
-        palloc0(sizeof(char*) * procst->pronargs * 2);
-
     const char *space = " ";
     size_t space_size = strlen(space);
 
+    if (!isnull)
+        deconstruct_array(DatumGetArrayTypeP(argname), TEXTOID, -1, false, 'i',
+                          &argnames, NULL, &nnames);
+    else
+        return nullptr;
+
+    argnames_array =
+        (const char **)palloc0(sizeof(char *) * procst->pronargs * 2);
+
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         /* get the arg name */
-        const char *name = DatumGetCString(DirectFunctionCall1(textout,
-            argnames[i]));
+        const char *name =
+            DatumGetCString(DirectFunctionCall1(textout, argnames[i]));
 
         argnames_array[i * 2] = name;
 
         buffer_size += strlen(name) + space_size;
     }
 
-    sql_params = (char*) palloc0(buffer_size);
+    sql_params = (char *)palloc0(buffer_size);
 
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         /* copy the arg name */
@@ -297,30 +260,20 @@ const char* pldotnet_GetSqlParamsName(HeapTuple proc,
     return sql_params;
 }
 
-const int* pldotnet_GetSqlParamsType(HeapTuple proc,
-                                  Form_pg_proc procst) {
+const int *pldotnet_GetSqlParamsType(HeapTuple proc, Form_pg_proc procst) {
     int nnames = 0;
     bool isnull = false;
     Datum *argnames = nullptr;
-    Datum argname = SysCacheGetAttr(PROCOID,
-        proc,
-        Anum_pg_proc_proargnames,
-        &isnull);
+    Datum argname =
+        SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_proargnames, &isnull);
     Oid *argtypes = procst->proargtypes.values;
+    int *sql_types = (int *)palloc0(sizeof(int) * procst->pronargs);
 
     if (!isnull)
-        deconstruct_array(DatumGetArrayTypeP(argname),
-        TEXTOID,
-        -1,
-        false,
-        'i',
-        &argnames,
-        NULL,
-        &nnames);
+        deconstruct_array(DatumGetArrayTypeP(argname), TEXTOID, -1, false, 'i',
+                          &argnames, NULL, &nnames);
     else
         return nullptr;
-
-    int *sql_types = (int*) palloc0(sizeof(int) * procst->pronargs);
 
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         sql_types[i] = argtypes[i];
@@ -328,45 +281,33 @@ const int* pldotnet_GetSqlParamsType(HeapTuple proc,
     return sql_types;
 }
 
-bool pldotnet_CompileUserFunction(dotnet_loader loader,
+bool pldotnet_CompileUserFunction(
     pldotnet_UserFunctionDeclaration *declaration) {
     int test = compile_user_function(
-        declaration->func_oid,
-        (void*) declaration->func_name,
-        (int) declaration->func_rettype,
-        (void*) declaration->func_paramsName,
-        (int*) declaration->func_paramsType,
-        (void*) declaration->func_body,
+        declaration->func_oid, (void *)declaration->func_name,
+        (int)declaration->func_rettype, (void *)declaration->func_paramsName,
+        (int *)declaration->func_paramsType, (void *)declaration->func_body,
         declaration->support_null_input);
     return 0 == test;
 }
 
-user_method_delegate pldotnet_GetUserDirectMethod(dotnet_loader loader,
-                                                  pldotnet_PathConfig *paths) {
-    elog(INFO, "library: %s", paths->library_path);
-    return (user_method_delegate) pldotnet_GetDotNetMethod(
-        loader,
-        paths->library_path,
-        "PlDotNET.Engine, PlDotNET",
-        "RunUserFunction",
+user_method_delegate pldotnet_GetUserDirectMethod(pldotnet_PathConfig *paths) {
+    return (user_method_delegate)pldotnet_GetDotNetMethod(
+        paths->library_path, "PlDotNET.Engine, PlDotNET", "RunUserFunction",
         "PlDotNET.Engine+DelRunUserFunction, PlDotNET");
 }
 
-void* pldotnet_BuildArgumentList(FunctionCallInfo fcinfo,
- Form_pg_proc procst) {
+void *pldotnet_BuildArgumentList(FunctionCallInfo fcinfo, Form_pg_proc procst) {
     void *list = build_datum_list();
-
-    // this might seem silly, but it saves us having to
-    // pass nargs to the invocation
     for (int16_t i = 0; i < procst->pronargs; ++i) {
         Datum argdatum = pldotnet_GetArgDatum(fcinfo, i);
-        add_datum_to_list(list, (void*)argdatum);
+        add_datum_to_list(list, (void *)argdatum);
     }
     return list;
 }
 
-bool* pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
- Form_pg_proc procst) {
+bool *pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
+                                     Form_pg_proc procst) {
     int nargums = procst->pronargs;
     bool *isnull = (bool *)palloc(sizeof(bool) * nargums);
 
@@ -376,9 +317,7 @@ bool* pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
     return isnull;
 }
 
-void pldotnet_Elog(int level, char *message) {
-    elog(level, "%s", message);
-}
+void pldotnet_Elog(int level, char *message) { elog(level, "%s", message); }
 
 inline Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index) {
 #if PG_VERSION_NUM >= 120000
@@ -396,11 +335,13 @@ inline bool pldotnet_CheckNullArgument(FunctionCallInfo fcinfo, size_t index) {
 #endif
 }
 
-void pldotnet_SetDatumResult(void* value, bool isnull, void *native_result) {
-    pldotnet_Result *result = (pldotnet_Result*) native_result;
+void pldotnet_SetDatumResult(void *value, bool isnull, void *native_result) {
+    pldotnet_Result *result = (pldotnet_Result *)native_result;
     result->is_null = isnull;
     result->value = (Datum)value;
 }
+
+void pldotnet_FreeGCHandle(void *gchandle) { free_generic_gchandle(gchandle); }
 
 /*
  * END: implementing functions
