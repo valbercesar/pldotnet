@@ -344,6 +344,15 @@ extern void pldotnet_getDatumVarBitAttributes(void *datum, int *len,
                                               bits8 **dat);
 
 /**
+ * @brief Modifies the array argument with the UUID data. It is used to convert
+ * from PostgreSQL type to C#.
+ *
+ * @param datum the datum object.
+ * @param data an pointer that points to an array of unsigned char.
+ */
+extern void pldotnet_getDatumUuidAttributes(void *datum, unsigned char *data);
+
+/**
  * @brief Modifies the arguments with the properties of a PostgreSQL Array. It
  * is used to convert from PostgreSQL type to C#.
  *
@@ -675,6 +684,14 @@ extern Datum pldotnet_createDatumMoney(long value);
  * @return Datum the datum object.
  */
 extern Datum pldotnet_createDatumVarBit(int len, bits8 *bytes);
+
+/**
+ * @brief Creates a PostgreSQL UUID. It is used to convert from a .NET type to a
+ * PostgreSQL Datum.
+ *
+ * @param data the array with the UUID values.
+ */
+extern Datum pldotnet_createDatumUuid(unsigned char *data);
 
 /**
  * @brief Creates a empty PostgreSQL range. It is used to convert from a .NET

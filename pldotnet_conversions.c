@@ -34,6 +34,7 @@
 #include <utils/timestamp.h>
 #include <utils/varbit.h>
 #include <utils/xml.h>
+#include <utils/uuid.h>
 
 #include "pldotnet_common.h"
 
@@ -257,6 +258,12 @@ void pldotnet_getDatumVarBitAttributes(void *datum, int *len, bits8 **dat) {
     VarBit *orig_vb = DatumGetVarBitP((Datum)datum);
     *len = orig_vb->bit_len;
     *dat = &orig_vb->bit_dat[0];
+}
+
+void pldotnet_getDatumUuidAttributes(void *datum, unsigned char *data) {
+    pg_uuid_t *orig_uuid = DatumGetUUIDP((Datum)datum);
+    for (int i = 0; i < 16; i++)
+        data[i] = orig_uuid->data[i];
 }
 
 void pldotnet_getDatumRangeAttributes(Datum input_datum, bool *is_empty,
@@ -598,6 +605,13 @@ Datum pldotnet_createDatumVarBit(int len, bits8 *bytes) {
     for (int i = 0; i < len; i++)
         new_vb->bit_dat[i] = bytes[i];
     return VarBitPGetDatum(new_vb);
+}
+
+Datum pldotnet_createDatumUuid(unsigned char *data) {
+    pg_uuid_t *new_uuid = (pg_uuid_t *)palloc(sizeof(pg_uuid_t));
+    for (int i = 0; i < 16; i++)
+        new_uuid->data[i] = data[i];
+    return UUIDPGetDatum(new_uuid);
 }
 
 Datum pldotnet_createEmptyDatumRange(Oid rangetypid) {

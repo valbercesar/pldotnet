@@ -1,0 +1,65 @@
+using System;
+using System.Runtime.InteropServices;
+
+namespace PlDotNET_Handler
+{
+    /// <summary>
+    /// A type handler for the PostgreSQL UUID data type.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/static/datatype-uuid.html.
+    /// </remarks>
+    [OIDHandler(OID.UUIDOID, OID.UUIDARRAYOID)]
+    public class UuidHandler : StructTypeHandler<Guid>
+    {
+        public UuidHandler()
+        {
+            this.ElementOID = OID.UUIDOID;
+            this.ArrayOID = OID.UUIDARRAYOID;
+        }
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_getDatumUuidAttributes(IntPtr datum, byte[] data);
+
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumUuid(byte[] data);
+
+        /// <inheritdoc />
+        public override Guid InputValue(IntPtr datum)
+        {
+            byte[] data = new byte[16];
+            pldotnet_getDatumUuidAttributes(datum, data);
+
+            byte[] data1 = data[0..4];
+            byte[] data2 = data[4..6];
+            byte[] data3 = data[6..8];
+            Array.Reverse(data1);
+            Array.Reverse(data2);
+            Array.Reverse(data3);
+
+            return new Guid(
+                BitConverter.ToInt32(data1, 0), BitConverter.ToInt16(data2, 0),
+                BitConverter.ToInt16(data3, 0), data[8..]);
+        }
+
+        /// <inheritdoc />
+        public override IntPtr OutputValue(Guid value)
+        {
+            byte[] data = value.ToByteArray();
+            byte[] data1 = data[0..4];
+            byte[] data2 = data[4..6];
+            byte[] data3 = data[6..8];
+            Array.Reverse(data1);
+            Array.Reverse(data2);
+            Array.Reverse(data3);
+
+            byte[] psql_data = new byte[16];
+            data1.CopyTo(psql_data, 0);
+            data2.CopyTo(psql_data, 4);
+            data3.CopyTo(psql_data, 6);
+            data[8..].CopyTo(psql_data, 8);
+
+            return pldotnet_createDatumUuid(psql_data);
+        }
+    }
+}

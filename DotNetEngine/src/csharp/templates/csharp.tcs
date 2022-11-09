@@ -61,6 +61,7 @@ namespace PlDotNETUserSpace
         public static CharHandler CharHandlerObj = new CharHandler();
         public static CharVaryingHandler CharVaryingHandlerObj = new CharVaryingHandler();
         public static XmlHandler XmlHandlerObj = new XmlHandler();
+        public static UuidHandler UuidHandlerObj = new UuidHandler();
         public static IntRangeHandler IntRangeHandlerObj = new IntRangeHandler();
         public static LongRangeHandler LongRangeHandlerObj = new LongRangeHandler();
         public static TimestampRangeHandler TimestampRangeHandlerObj = new TimestampRangeHandler();
