@@ -241,6 +241,27 @@ extern void pldotnet_getDatumByteaAttributes(void *datum, int *len, char **buf);
 extern void pldotnet_getDatumXmlAttributes(void *datum, int *len, char **buf);
 
 /**
+ * @brief Modifies the arguments with the properties of a PostgreSQL json. It is
+ * used to convert from PostgreSQL type to C#.
+ * @remark a PostgreSQL json is treated as text.
+ *
+ * @param datum the datum object.
+ * @param len the number of characters.
+ * @param buf a pointer that will point to the data content (char*).
+ */
+extern void pldotnet_getDatumJsonAttributes(void *datum, int *len, char **buf);
+
+/**
+ * @brief Modifies the arguments with the properties of a PostgreSQL jsonb. It
+ * is used to convert from PostgreSQL type to C#.
+ *
+ * @param datum the datum object.
+ * @param len the number of characters.
+ * @param buf a pointer that will point to the data content (char*).
+ */
+extern void pldotnet_getDatumJsonbAttributes(void *datum, int *len, char **buf);
+
+/**
  * @brief Modifies the argument with the property of a PostgreSQL Date. It is
  * used to convert from PostgreSQL type to C#.
  *
@@ -586,6 +607,29 @@ extern Datum pldotnet_createDatumBytea(int len, char *buf);
  * @return Datum the datum object.
  */
 extern Datum pldotnet_createDatumXml(int len, char *buf);
+
+/**
+ * @brief Creates a PostgreSQL json. It is used to convert from a .NET type to a
+ * PostgreSQL Datum.
+ * @remark a PostgreSQL json is treated as text.
+ *
+ * @param len the number of characters.
+ * @param buf the array with byte values.
+ * @return Datum the datum object.
+ */
+extern Datum pldotnet_createDatumJson(int len, char *buf);
+
+/**
+ * @brief Creates a PostgreSQL jsonb. It is used to convert from a .NET type to
+ * a PostgreSQL Datum.
+ * @remark a PostgreSQL json is treated as text.
+ *
+ * @param len the number of characters.
+ * @param buf the array with byte values.
+ * @param uniqueKeys whether the jsonb datum has duplicated keys or not.
+ * @return Datum the datum object.
+ */
+extern Datum pldotnet_createDatumJsonb(int len, char *buf);
 
 /**
  * @brief Creates a PostgreSQL Date. It is used to convert from a .NET type to a

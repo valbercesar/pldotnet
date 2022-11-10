@@ -152,6 +152,7 @@ tests:
 	cat ba-sql/testfloats.sql | (sudo -u postgres  psql 2>&1) | tee results/testfloats.out
 	cat ba-sql/testgeometric.sql | (sudo -u postgres  psql 2>&1) | tee results/testgeometric.out
 	cat ba-sql/testintegers.sql | (sudo -u postgres  psql 2>&1) | tee results/testintegers.out
+	cat ba-sql/testjson.sql | (sudo -u postgres  psql 2>&1) | tee results/testjson.out
 	cat ba-sql/testmoney.sql | (sudo -u postgres  psql 2>&1) | tee results/testmoney.out
 	cat ba-sql/testnetwork.sql | (sudo -u postgres  psql 2>&1) | tee results/testnetwork.out
 	# cat ba-sql/testrange.sql | (sudo -u postgres  psql 2>&1) | tee results/testrange.out

@@ -92,6 +92,8 @@ namespace PlDotNET
             {OID.BPCHARARRAYOID, OID.BPCHAROID},
             {OID.VARCHARARRAYOID, OID.VARCHAROID},
             {OID.XMLARRAYOID, OID.XMLOID},
+            {OID.JSONARRAYOID, OID.JSONOID},
+            {OID.JSONBARRAYOID, OID.JSONBOID},
             {OID.UUIDARRAYOID, OID.UUIDOID},
             {OID.INT4RANGEARRAYOID, OID.INT4RANGEOID},
             {OID.NUMRANGEARRAYOID, OID.NUMRANGEOID},
@@ -141,6 +143,8 @@ namespace PlDotNET
             {OID.BPCHAROID, "string"},
             {OID.VARCHAROID, "string"},
             {OID.XMLOID, "string"},
+            {OID.JSONOID, "string"},
+            {OID.JSONBOID, "string"},
             {OID.UUIDOID, "Guid"},
             {OID.INT4RANGEOID, "NpgsqlRange<int>"},
             {OID.INT8RANGEOID, "NpgsqlRange<long>"},
@@ -274,6 +278,10 @@ namespace PlDotNET
                     return "CharVaryingHandler";
                 case (int)OID.XMLOID:
                     return "XmlHandler";
+                case (int)OID.JSONOID:
+                    return "JsonHandler";
+                case (int)OID.JSONBOID:
+                    return "JsonbHandler";
                 case (int)OID.UUIDOID:
                     return "UuidHandler";
                 case (int)OID.INT4RANGEOID:

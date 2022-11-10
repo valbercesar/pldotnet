@@ -35,7 +35,8 @@
 #include <utils/varbit.h>
 #include <utils/xml.h>
 #include <utils/uuid.h>
-
+#include <utils/json.h>
+#include <utils/jsonb.h>
 #include "pldotnet_common.h"
 
 ////////////////////////////////////
@@ -171,6 +172,20 @@ void pldotnet_getDatumXmlAttributes(void *datum, int *len, char **buf) {
     xmltype *orig_x = DatumGetXmlP((Datum)datum);
     *len = VARSIZE_ANY_EXHDR(orig_x);
     *buf = VARDATA_ANY(orig_x);
+}
+
+void pldotnet_getDatumJsonAttributes(void *datum, int *len, char **buf) {
+    text *orig_j = DatumGetTextPP((Datum)datum);
+    *len = VARSIZE_ANY_EXHDR(orig_j);
+    *buf = VARDATA_ANY(orig_j);
+}
+
+void pldotnet_getDatumJsonbAttributes(void *datum, int *len, char **buf) {
+    Jsonb *orig_jb = DatumGetJsonbP((Datum)datum);
+    JsonbContainer *jsonb_cont = &orig_jb->root;
+    const int estimated_len = VARSIZE_ANY_EXHDR(orig_jb);
+    *buf = JsonbToCString(NULL, jsonb_cont, estimated_len);
+    *len = strlen(*buf);
 }
 
 void pldotnet_getDatumDateAttributes(void *datum, int *date) {
@@ -521,6 +536,21 @@ Datum pldotnet_createDatumXml(int len, char *buf) {
     SET_VARSIZE(new_x, new_size);
     memcpy((void *)VARDATA(new_x), buf, len);
     PG_RETURN_XML_P(new_x);
+}
+
+Datum pldotnet_createDatumJson(int len, char *buf) {
+    const size_t new_size = VARHDRSZ + len;
+    text *new_j = (text *)palloc(new_size);
+
+    SET_VARSIZE(new_j, new_size);
+    memcpy((void *)VARDATA(new_j), buf, len);
+    PG_RETURN_TEXT_P(new_j);
+}
+
+Datum pldotnet_createDatumJsonb(int len, char *buf) {
+    // TODO(rosicley) - add support to return jsonb
+    elog(ERROR, "PL/.NET doesn't have support to return jsonb yet.");
+    return pldotnet_createDatumJson(len, buf);
 }
 
 Datum pldotnet_createDatumDate(int date) { return DateADTGetDatum(date); }
