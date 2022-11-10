@@ -289,9 +289,9 @@ namespace PlDotNET
                 case (int)OID.INT8RANGEOID:
                     return "LongRangeHandler";
                 case (int)OID.TSRANGEOID:
-                    return "TimeRangeHandler";
+                    return "TimestampRangeHandler";
                 case (int)OID.TSTZRANGEOID:
-                    return "TimeTzRangeHandler";
+                    return "TimestampTzRangeHandler";
                 case (int)OID.DATERANGEOID:
                     return "DateRangeHandler";
                 // case (int)OID.NUMRANGEOID: // currently unimplemented

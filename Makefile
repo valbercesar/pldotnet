@@ -155,6 +155,6 @@ tests:
 	cat ba-sql/testjson.sql | (sudo -u postgres  psql 2>&1) | tee results/testjson.out
 	cat ba-sql/testmoney.sql | (sudo -u postgres  psql 2>&1) | tee results/testmoney.out
 	cat ba-sql/testnetwork.sql | (sudo -u postgres  psql 2>&1) | tee results/testnetwork.out
-	# cat ba-sql/testrange.sql | (sudo -u postgres  psql 2>&1) | tee results/testrange.out
+	cat ba-sql/testrange.sql | (sudo -u postgres  psql 2>&1) | tee results/testrange.out
 	cat ba-sql/teststring.sql | (sudo -u postgres  psql 2>&1) | tee results/teststring.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out
