@@ -63,7 +63,6 @@ SELECT 'DATE[]', 'updateArrayDateIndex2', updateArrayDateIndex(ARRAY[[DATE 'Oct-
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DATE[]', 'updateArrayDateIndex3', updateArrayDateIndex(ARRAY[[null::date, null::date], [null::date, DATE 'Oct-16-2022']], DATE 'Nov-18-2022', ARRAY[1, 0]) = ARRAY[[null::date, null::date], [DATE 'Nov-18-2022', DATE 'Oct-16-2022']];
 
-
 CREATE OR REPLACE FUNCTION IncreaseMonthDateArray(dates DATE[]) RETURNS DATE[] AS $$
 Array flatten_dates = Array.CreateInstance(typeof(object), dates.Length);
 ArrayHandler.FlatArray(dates, ref flatten_dates);
@@ -86,7 +85,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DATE[]', 'IncreaseMonthDateArray1', IncreaseMonthDateArray(ARRAY[DATE 'Oct-14-2022', DATE 'Oct-15-2022', null::date, DATE 'Oct-16-2022']) = ARRAY[DATE 'Nov-14-2022', DATE 'Nov-15-2022', null::date, DATE 'Nov-16-2022'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DATE[]', 'IncreaseMonthDateArray2', IncreaseMonthDateArray(ARRAY[[DATE 'Oct-14-2022', DATE 'Jan-15-2022'], [DATE 'Nov-18-2022', null::date]]) = ARRAY[DATE 'Nov-14-2022', DATE 'Feb-15-2022', DATE 'Dec-18-2022', null::date];
-
 
 CREATE OR REPLACE FUNCTION CreateDateMultidimensionalArray() RETURNS DATE[] AS $$
 int day = 25;
@@ -112,7 +110,6 @@ SELECT 'TIME[]', 'updateArrayTimeIndex2', updateArrayTimeIndex(ARRAY[[TIME '05:3
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIME[]', 'updateArrayTimeIndex3', updateArrayTimeIndex(ARRAY[[null::TIME, null::TIME], [null::time, TIME '09:30 AM']], TIME '5:45 AM', ARRAY[1, 0]) = ARRAY[[null::TIME, null::TIME], [TIME '05:45 AM', TIME '09:30 AM']];
 
-
 CREATE OR REPLACE FUNCTION IncreaseMinutesTimeArray(values_array TIME[], min_to_add INT) RETURNS TIME[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
 ArrayHandler.FlatArray(values_array, ref flatten_values);
@@ -133,7 +130,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIME[]', 'IncreaseMinutesTimeArray1', IncreaseMinutesTimeArray(ARRAY[TIME '05:30 PM', TIME '06:30 PM', null::time, TIME '09:30 AM'], 15) = ARRAY[TIME '05:45 PM', TIME '06:45 PM', null::time, TIME '09:45 AM'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIME[]', 'IncreaseMinutesTimeArray', IncreaseMinutesTimeArray(ARRAY[[TIME '05:30 PM', TIME '06:30 PM'], [null::time, TIME '09:30 AM']], 15) = ARRAY[TIME '05:45 PM', TIME '06:45 PM', null::time, TIME '09:45 AM'];
-
 
 CREATE OR REPLACE FUNCTION CreateTimeMultidimensionalArray() RETURNS TIME[] AS $$
 int hour = 10;
@@ -159,7 +155,6 @@ SELECT 'TIMETZ[]', 'updateArrayTimetzIndex2', updateArrayTimetzIndex(ARRAY[[TIME
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMETZ[]', 'updateArrayTimetzIndex3', updateArrayTimetzIndex(ARRAY[[null::TIMETZ, null::TIMETZ], [null::timetz, TIMETZ '22:30-03:00']], TIMETZ '02:30-05:00', ARRAY[1, 0]) = ARRAY[[null::TIMETZ, null::TIMETZ], [TIMETZ '02:30-05:00', TIMETZ '22:30-03:00']];
 
-
 CREATE OR REPLACE FUNCTION IncreaseMinutesTimetzArray(values_array TIMETZ[], min_to_add INT) RETURNS TIMETZ[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
 ArrayHandler.FlatArray(values_array, ref flatten_values);
@@ -180,7 +175,6 @@ SELECT 'TIMETZ[]', 'IncreaseMinutesTimetzArray1', IncreaseMinutesTimetzArray(ARR
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMETZ[]', 'IncreaseMinutesTimetzArray2', IncreaseMinutesTimetzArray(ARRAY[[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00'], [null::timetz, TIMETZ '22:30-03:00']], 15) = ARRAY[TIMETZ '05:45-03:00', TIMETZ '06:45-03:00', null::timetz, TIMETZ '22:45-03:00'];
 
-
 CREATE OR REPLACE FUNCTION CreateTimetzMultidimensionalArray() RETURNS TIMETZ[] AS $$
 int hour = 10;
 int minute = 33;
@@ -200,8 +194,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMESTAMP[]', 'updateArrayTimestampIndex1', updateArrayTimestampIndex(ARRAY[TIMESTAMP '2004-10-19 10:23:54 PM', TIMESTAMP '2020-10-19 10:23:54 PM', null::timestamp, TIMESTAMP '2022-12-25 10:23:54 PM'], TIMESTAMP '2025-10-19 10:23:54 PM', ARRAY[2]) = ARRAY[TIMESTAMP '2004-10-19 10:23:54 PM', TIMESTAMP '2020-10-19 10:23:54 PM', TIMESTAMP '2025-10-19 10:23:54 PM', TIMESTAMP '2022-12-25 10:23:54 PM'];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMESTAMP[]', 'updateArrayTimestampIndex2', updateArrayTimestampIndex(ARRAY[[null::timestamp, null::timestamp], [null::timestamp, TIMESTAMP '2022-12-25 10:23:54 PM']], TIMESTAMP '2025-10-19 10:23:54 PM', ARRAY[1,0]) = ARRAY[[null::timestamp, null::timestamp], [TIMESTAMP '2025-10-19 10:23:54 PM', TIMESTAMP '2022-12-25 10:23:54 PM']];
-
 
 CREATE OR REPLACE FUNCTION IncreaseTimestamps(values_array TIMESTAMP[], days_to_add INT) RETURNS TIMESTAMP[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -235,7 +229,6 @@ $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMESTAMP[]', 'CreateTimestampMultidimensionalArray', CreateTimestampMultidimensionalArray() = ARRAY[[[TIMESTAMP '2022-11-15 13:23:45', TIMESTAMP '2022-11-15 13:23:45'], [null::timestamp, null::timestamp]], [[TIMESTAMP '2022-11-15 13:23:45', null::timestamp], [TIMESTAMP '2022-11-15 13:23:45', TIMESTAMP '2022-11-15 13:23:45']]];
 
-
 --- TIMESTAMPTZ Arrays
 CREATE OR REPLACE FUNCTION updateArrayTimestamptzIndex(values_array TIMESTAMP WITH TIME ZONE[], desired TIMESTAMP WITH TIME ZONE, index integer[]) RETURNS TIMESTAMP WITH TIME ZONE[] AS $$
 int[] arrayInteger = index.Cast<int>().ToArray();
@@ -244,8 +237,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMESTAMPTZ[]', 'updateArrayTimestamptzIndex1', updateArrayTimestamptzIndex(ARRAY[TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', TIMESTAMP WITH TIME ZONE '2020-10-19 10:23:54 PM +03', null::timestamptz, TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05'], TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', ARRAY[2]) = ARRAY[TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', TIMESTAMP WITH TIME ZONE '2020-10-19 10:23:54 PM +03', TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05'];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMESTAMPTZ[]', 'updateArrayTimestamptzIndex2', updateArrayTimestamptzIndex(ARRAY[[null::timestamptz, null::timestamptz], [null::timestamptz, TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05']], TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', ARRAY[1,0]) = ARRAY[[null::timestamptz, null::timestamptz], [TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05']];
-
 
 CREATE OR REPLACE FUNCTION IncreaseTimestampstz(values_array TIMESTAMP WITH TIME ZONE[], days_to_add INT) RETURNS TIMESTAMP WITH TIME ZONE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -272,10 +265,8 @@ int day = 15;
 int hour = 13;
 int minute = 23;
 int seconds = 45;
-
 DateTime objects_value = new DateTime(year, month, day, hour, minute, seconds, DateTimeKind.Utc);
 DateTime?[, ,] three_dimensional_array = new DateTime?[2, 2, 2] {{{objects_value, objects_value}, {null, null}}, {{objects_value, null}, {objects_value, objects_value}}};
-
 return three_dimensional_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
@@ -293,7 +284,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTERVAL[]', 'updateArrayIntervalIndex2', updateArrayIntervalIndex(ARRAY[[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds'], [null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']], INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', ARRAY[1, 0]) = ARRAY[[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds'], [INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTERVAL[]', 'updateArrayIntervalIndex3', updateArrayIntervalIndex(ARRAY[[null::interval, null::interval], [null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']], INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', ARRAY[1, 0]) = ARRAY[[null::interval, null::interval], [INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']];
-
 
 CREATE OR REPLACE FUNCTION IncreaseIntervals(values_array INTERVAL[],months_to_add INT, days_to_add INT) RETURNS INTERVAL[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -314,7 +304,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTERVAL[]', 'IncreaseIntervals1', IncreaseIntervals(ARRAY[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds'], 2, 5) = ARRAY[INTERVAL '2 mons 5 days 4 hours 5 minutes 6 seconds', INTERVAL '2 mons 5 days 8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 10 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTERVAL[]', 'IncreaseIntervals2', IncreaseIntervals(ARRAY[[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds'], [null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']], 2, 5) = ARRAY[INTERVAL '2 mons 5 days 4 hours 5 minutes 6 seconds', INTERVAL '2 mons 5 days 8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 10 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds'];
-
 
 CREATE OR REPLACE FUNCTION CreateIntervalMultidimensionalArray() RETURNS INTERVAL[] AS $$
 int months = 10;

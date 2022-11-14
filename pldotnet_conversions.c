@@ -36,7 +36,6 @@
 #include <utils/xml.h>
 #include <utils/uuid.h>
 #include <utils/json.h>
-#include <utils/jsonb.h>
 #include "pldotnet_common.h"
 
 ////////////////////////////////////
@@ -180,14 +179,6 @@ void pldotnet_getDatumJsonAttributes(void *datum, int *len, char **buf) {
     *buf = VARDATA_ANY(orig_j);
 }
 
-void pldotnet_getDatumJsonbAttributes(void *datum, int *len, char **buf) {
-    Jsonb *orig_jb = DatumGetJsonbP((Datum)datum);
-    JsonbContainer *jsonb_cont = &orig_jb->root;
-    const int estimated_len = VARSIZE_ANY_EXHDR(orig_jb);
-    *buf = JsonbToCString(NULL, jsonb_cont, estimated_len);
-    *len = strlen(*buf);
-}
-
 void pldotnet_getDatumDateAttributes(void *datum, int *date) {
     DateADT orig_d = DatumGetDateADT((Datum)datum);
     *date = orig_d;
@@ -286,46 +277,22 @@ void pldotnet_getDatumRangeAttributes(Datum input_datum, bool *is_empty,
                                       RangeBound **upper_range) {
     RangeType *orig_r = DatumGetRangeTypeP(input_datum);
     Oid rt_oid = RangeTypeGetOid(orig_r);
-    // Oid             ul_oid = range_underlying(rt_oid);
     TypeCacheEntry *typcache;
 
     *lower_range = palloc(sizeof(RangeBound));
     *upper_range = palloc(sizeof(RangeBound));
 
-    elog(INFO, "# DEBUG(C): lower_range is %p, upper_range is %p, oid is %d.",
-         lower_range, upper_range, rt_oid);
-
     typcache = lookup_type_cache(rt_oid, TYPECACHE_RANGE_INFO);
     range_deserialize(typcache, orig_r, *lower_range, *upper_range, is_empty);
-
-    elog(INFO,
-         "# DEBUG(C): after range_deserialize, lower_range is %p, upper_range "
-         "is %p, is_empty is %d.",
-         *lower_range, *upper_range, is_empty);
 }
 
 void pldotnet_getDatumRangeBoundAttributes(RangeBound *input_range,
                                            Datum *range_datum, bool *infinite,
                                            bool *inclusive, bool *lower) {
-    elog(INFO,
-         "# START DEBUG[before](C:pldotnet_getDatumRangeBoundAttributes)");
-    elog(INFO, "# *range_datum = %p", range_datum);
-    elog(INFO, "# *infinite = %d", *infinite);
-    elog(INFO, "# *inclusive = %d", *inclusive);
-    elog(INFO, "# *lower = %d", *lower);
-    elog(INFO, "# END DEBUG(C:pldotnet_getDatumRangeBoundAttributes)");
-
     *range_datum = input_range->val;
     *infinite = input_range->infinite;
     *inclusive = input_range->inclusive;
     *lower = input_range->lower;
-
-    elog(INFO, "# START DEBUG[after](C:pldotnet_getDatumRangeBoundAttributes)");
-    elog(INFO, "# *range_datum = %p", range_datum);
-    elog(INFO, "# *infinite = %d", *infinite);
-    elog(INFO, "# *inclusive = %d", *inclusive);
-    elog(INFO, "# *lower = %d", *lower);
-    elog(INFO, "# END DEBUG(C:pldotnet_getDatumRangeBoundAttributes)");
 }
 
 int get_maxdim(void) { return MAXDIM; }
@@ -547,12 +514,6 @@ Datum pldotnet_createDatumJson(int len, char *buf) {
     PG_RETURN_TEXT_P(new_j);
 }
 
-Datum pldotnet_createDatumJsonb(int len, char *buf) {
-    // TODO(rosicley) - add support to return jsonb
-    elog(ERROR, "PL/.NET doesn't have support to return jsonb yet.");
-    return pldotnet_createDatumJson(len, buf);
-}
-
 Datum pldotnet_createDatumDate(int date) { return DateADTGetDatum(date); }
 
 Datum pldotnet_createDatumTime(long time) { return TimeADTGetDatum(time); }
@@ -674,11 +635,6 @@ Datum pldotnet_createDatumRange(Oid rt_oid, Datum lower_datum,
     upper.infinite = upper_infinite;
     upper.inclusive = upper_inclusive;
     upper.lower = 0;
-    elog(INFO,
-         "Preparing Range: oid=%u lower_infinite=%d, lower_inclusive=%d, "
-         "upper_infinite=%d, upper_inclusive=%d, oid=%d\n",
-         rt_oid, lower_infinite, lower_inclusive, upper_infinite,
-         upper_inclusive, rt_oid);
 
     typcache = lookup_type_cache(rt_oid, TYPECACHE_RANGE_INFO);
 

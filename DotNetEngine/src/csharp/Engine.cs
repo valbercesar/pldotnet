@@ -53,9 +53,11 @@ namespace PlDotNET
 
         public struct CachedFunction
         {
-            public string SourceCode;
+            public string UserHandlerSourceCode;
+            public string UserFunctionSourceCode;
             public Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
             public bool SupportNullInput;
+            public AssemblyLoadContext UserAssemblyLoadContext;
         }
 
         public static Dictionary<OID, OID> HandleArray =
@@ -93,7 +95,6 @@ namespace PlDotNET
             {OID.VARCHARARRAYOID, OID.VARCHAROID},
             {OID.XMLARRAYOID, OID.XMLOID},
             {OID.JSONARRAYOID, OID.JSONOID},
-            {OID.JSONBARRAYOID, OID.JSONBOID},
             {OID.UUIDARRAYOID, OID.UUIDOID},
             {OID.INT4RANGEARRAYOID, OID.INT4RANGEOID},
             {OID.NUMRANGEARRAYOID, OID.NUMRANGEOID},
@@ -144,26 +145,19 @@ namespace PlDotNET
             {OID.VARCHAROID, "string"},
             {OID.XMLOID, "string"},
             {OID.JSONOID, "string"},
-            {OID.JSONBOID, "string"},
             {OID.UUIDOID, "Guid"},
             {OID.INT4RANGEOID, "NpgsqlRange<int>"},
             {OID.INT8RANGEOID, "NpgsqlRange<long>"},
             {OID.TSRANGEOID, "NpgsqlRange<DateTime>"},
             {OID.TSTZRANGEOID, "NpgsqlRange<DateTime>"},
-            {OID.DATERANGEOID, "NpgsqlRange<DateOnly>"},
-            // {OID.NUMRANGEOID, "NpgsqlRange<Numeric>"}, // currently unimplemented
+            {OID.DATERANGEOID, "NpgsqlRange<DateOnly>"}
         };
 
-        public static uint FunctionId;
+        public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
 
-        public static MemoryStream MemStream;
-        public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict;
+        public static string CSharpTemplateUserHandler = "@CSHARP_TEMPLATE_DIR/UserHandler.tcs";
 
-        public static CachedFunction Cached;
-        public static Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
-        public static bool SupportNullInput;
-
-        public static string CSharpTemplatePath = "@CSHARP_TEMPLATE_DIR/csharp.tcs";
+        public static string CSharpTemplateUserFunction = "@CSHARP_TEMPLATE_DIR/UserFunction.tcs";
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_Elog(int level, string nessage);
@@ -202,9 +196,9 @@ namespace PlDotNET
         /// <summary>
         /// It creates the argument list of the user function.
         /// </summary> 
-        public static string GetParamsString(List<Tuple<string, string>> sqlParams)
+        public static string GetParamsString(List<Tuple<string, string>> sqlParams, bool supportNullInput)
         {
-            if (Engine.SupportNullInput || Engine.AlwaysNullable)
+            if (supportNullInput || Engine.AlwaysNullable)
                 return string.Join(", ", sqlParams.Select((p) => $"{p.Item1}? {p.Item2}").ToList());
             return string.Join(", ", sqlParams.Select((p) => $"{p.Item1} {p.Item2}").ToList());
         }
@@ -280,8 +274,6 @@ namespace PlDotNET
                     return "XmlHandler";
                 case (int)OID.JSONOID:
                     return "JsonHandler";
-                case (int)OID.JSONBOID:
-                    return "JsonbHandler";
                 case (int)OID.UUIDOID:
                     return "UuidHandler";
                 case (int)OID.INT4RANGEOID:
@@ -294,8 +286,6 @@ namespace PlDotNET
                     return "TimestampTzRangeHandler";
                 case (int)OID.DATERANGEOID:
                     return "DateRangeHandler";
-                // case (int)OID.NUMRANGEOID: // currently unimplemented
-                // return "NumericRangeHandler";
                 default:
                     if (HandleArray.ContainsKey((OID)id))
                         return GetTypeHandler((int)HandleArray[(OID)id]);
@@ -308,7 +298,7 @@ namespace PlDotNET
         /// do the process of converting a Postgres type to an equivalente .NET
         /// type. 
         /// </summary> 
-        public static string BuildCreateArguments(string funcName, List<int> paramTypes)
+        public static string BuildCreateArguments(string funcName, List<int> paramTypes, bool supportNullInput)
         {
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
@@ -322,14 +312,14 @@ namespace PlDotNET
                 var typeHandler = GetTypeHandler(type);
                 if (HandleArray.ContainsKey((OID)type))
                 {
-                    if (Engine.SupportNullInput || Engine.AlwaysNullable)
+                    if (supportNullInput || Engine.AlwaysNullable)
                         sb.AppendLine($"var {argname} = {typeHandler}Obj.InputNullableArray({value}, isnull[{i}]);");
                     else
                         sb.AppendLine($"var {argname} = {typeHandler}Obj.InputArray({value});");
                 }
                 else
                 {
-                    if (Engine.SupportNullInput || Engine.AlwaysNullable)
+                    if (supportNullInput || Engine.AlwaysNullable)
                         sb.AppendLine($"var {argname} = {typeHandler}Obj.InputNullableValue({value}, isnull[{i}]);");
                     else
                         sb.AppendLine($"var {argname} = {typeHandler}Obj.InputValue({value});");
@@ -342,7 +332,7 @@ namespace PlDotNET
         /// <summary>
         /// This function creates code to call the user function.
         /// </summary> 
-        public static string BuildFunctionCall(string funcName, List<Tuple<string, string>> sqlParams)
+        public static string BuildFunctionCall(string funcName, List<Tuple<string, string>> sqlParams, bool supportNullInput)
         {
             var sb = new System.Text.StringBuilder();
             sb.Append($"{funcName}(");
@@ -350,7 +340,7 @@ namespace PlDotNET
 
             for (int i = 0; i < argc; i++)
             {
-                if (Engine.SupportNullInput || Engine.AlwaysNullable)
+                if (supportNullInput || Engine.AlwaysNullable)
                     sb.Append($"({sqlParams[i].Item1}?) argument_{i}");
                 else
                     sb.Append($"({sqlParams[i].Item1}) argument_{i}");
@@ -368,7 +358,7 @@ namespace PlDotNET
         /// to the OID of the result function. It also adds the code to set the
         /// Datum object to the function output.
         /// </summary> 
-        public static string BuildCallSetResult(int id, string returnType)
+        public static string BuildCallSetResult(int id)
         {
             string setResult;
             if (HandleArray.ContainsKey((OID)id))
@@ -381,10 +371,38 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// It builds the source code from the template file and the the user
+        /// Returns the code to create the handler object that will be used.
+        /// </summary> 
+        public static string BuildHandlerObjects(List<int> inputTypes, int outputType)
+        {
+            List<string> allHandlers = new List<string>();
+
+            allHandlers.Add(GetTypeHandler(outputType));
+            for (int i = 0; i < inputTypes.Count; i++)
+                allHandlers.Add(GetTypeHandler(inputTypes[i]));
+
+            List<string> filteredHandlers = allHandlers.Distinct().ToList();
+
+            string handlerObjects = "";
+
+            for (int i = 0; i < filteredHandlers.Count; i++)
+            {
+                string handler = filteredHandlers[i];
+                handlerObjects += $"public static {handler} {handler}Obj = new {handler}();\n";
+            }
+
+            return handlerObjects;
+        }
+
+        /// <summary>
+        /// It builds the source codes from the template files and the user
         /// function information received from the C code.
-        /// </summary>  
-        public static unsafe string BuildSourceCode(IntPtr name, int returnTypeID, IntPtr paramNames, int* paramTypes, IntPtr body)
+        /// </summary>
+        /// <remarks>
+        /// If the user provides an assembly file, "userFunction" will be the provided
+        /// SQL function body, i.e., 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'.
+        /// </remarks>
+        public static unsafe (string userHandler, string userFunction) BuildSourceCodes(IntPtr name, int returnTypeID, IntPtr paramNames, int* paramTypes, IntPtr body, bool supportNullInput)
         {
             string funcName = Marshal.PtrToStringAuto(name);
             string returnType = HandleArray.ContainsKey((OID)returnTypeID) ? "Array" : OidTypes[(OID)returnTypeID];
@@ -400,23 +418,51 @@ namespace PlDotNET
                 }
             }
             var sqlParams = GetSqlParams(paramNameList, paramTypeList);
-            string paramsStr = GetParamsString(sqlParams);
+            string paramsStr = GetParamsString(sqlParams, supportNullInput);
             string bodyStr = Marshal.PtrToStringAuto(body);
 
-            string rawFunctionDecl = $"public static {returnType}? {funcName}({paramsStr}) {{\n#line 1\n{bodyStr}\n}}";
-
-            if (!File.Exists(CSharpTemplatePath))
+            bool providedAssembly = bodyStr.Contains(".dll");
+            string nampespace = "UserSpace";
+            string className = "UserFunction";
+            if (providedAssembly)
             {
-                string msg = $"Csharp template file '{CSharpTemplatePath}' not found";
+                string[] bodySplit = bodyStr.Split(':');
+                bodySplit = bodySplit[1].Split('.');
+                nampespace = bodySplit[0]; // UserNamespace
+                bodySplit = bodySplit[1].Split('!');
+                className = bodySplit[0]; // UserClass
+                funcName = bodySplit[1]; // FunctionName
+            }
+
+            if (!File.Exists(CSharpTemplateUserHandler))
+            {
+                string msg = $"Csharp template file '{CSharpTemplateUserHandler}' not found";
                 throw new SystemException(msg);
             }
 
-            var template = File.ReadAllText(CSharpTemplatePath);
-            var withArgumentsCreated = template.Replace("// $create_arguments", BuildCreateArguments(funcName, paramTypeList));
-            var withFunctionDecl = withArgumentsCreated.Replace("// $user_function_declaration$", rawFunctionDecl);
-            var withFunctionCall = withFunctionDecl.Replace("// $user_function_call$", BuildFunctionCall(funcName, sqlParams));
-            var withResultsSet = withFunctionCall.Replace("// $call_set_result$", BuildCallSetResult(returnTypeID, returnType));
-            return withResultsSet;
+            string userHandlerCode = File.ReadAllText(CSharpTemplateUserHandler);
+            userHandlerCode = userHandlerCode.Replace("// $create_arguments", BuildCreateArguments(funcName, paramTypeList, supportNullInput));
+            userHandlerCode = userHandlerCode.Replace("// $user_function_call$", $"{className}." + BuildFunctionCall(funcName, sqlParams, supportNullInput));
+            userHandlerCode = userHandlerCode.Replace("// $call_set_result$", BuildCallSetResult(returnTypeID));
+            userHandlerCode = userHandlerCode.Replace("// $handler_objects$", BuildHandlerObjects(paramTypeList, returnTypeID));
+
+            if (providedAssembly)
+            {
+                userHandlerCode = userHandlerCode.Replace("// $user_namespace$", $"using {nampespace};\n");
+                return (userHandlerCode, bodyStr);
+            }
+
+            if (!File.Exists(CSharpTemplateUserFunction))
+            {
+                string msg = $"Csharp template file '{CSharpTemplateUserFunction}' not found";
+                throw new SystemException(msg);
+            }
+
+            string rawFunctionDecl = $"public static {returnType}? {funcName}({paramsStr}) {{\n#line 1\n{bodyStr}\n}}";
+            string userFunctionCode = File.ReadAllText(CSharpTemplateUserFunction);
+            userFunctionCode = userFunctionCode.Replace("// $user_function_declaration$", rawFunctionDecl);
+
+            return (userHandlerCode, userFunctionCode);
         }
 
         /// <summary>
@@ -448,14 +494,16 @@ namespace PlDotNET
         /// <summary>
         /// This function compiles the dynamic code using Roslyn.
         /// </summary>   
-        public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream)
+        public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
+            SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
+            SyntaxNode node = userTree.GetRoot().NormalizeWhitespace();
+            sourceCode = node.ToFullString();
+
             pldotnet_Info("===========================");
             pldotnet_Info("Compiling source code");
             pldotnet_Info($"Source code:\n{sourceCode}");
             pldotnet_Info("===========================");
-
-            var userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
 
             var trustedAssembliesPathsArray = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
             List<string> trustedAssembliesPaths = new();
@@ -498,12 +546,15 @@ namespace PlDotNET
                 .Select(p => MetadataReference.CreateFromFile(p))
                 .ToList();
 
+            if (memStreamUserFunction != null)
+                references.Add(MetadataReference.CreateFromStream(new MemoryStream(memStreamUserFunction.GetBuffer())));
+
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithOptimizationLevel(OptimizationLevel.Release)
                 .WithConcurrentBuild(true).WithAllowUnsafe(true);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
-                "plnetproc.dll",
+                $"{assemblyName}.dll",
                 options: compilationOptions,
                 syntaxTrees: new[] { userTree },
                 references: references);
@@ -522,9 +573,6 @@ namespace PlDotNET
                 return null;
             }
 
-            Assembly myAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location);
-            Assembly myAssembly2 = AssemblyLoadContext.Default.LoadFromAssemblyPath(typeof(Engine).Assembly.Location);
-
             return compileResult;
         }
 
@@ -538,50 +586,59 @@ namespace PlDotNET
         /// </summary>
         public static unsafe int CompileUserFunction(uint functionId, IntPtr name, int returnType, IntPtr paramNames, int* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput)
         {
-            Engine.SupportNullInput = supportNullInput;
+            (string userHandler, string userFunction) sourceCode = BuildSourceCodes(name, returnType, paramNames, paramTypes, body, supportNullInput);
 
-            string sourceCode = BuildSourceCode(name, returnType, paramNames, paramTypes, body);
+            bool useUserAssembly = sourceCode.userFunction.Contains(".dll");
 
-            if (Engine.FuncBuiltCodeDict == null)
-                Engine.FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
-            else
+            if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
-                // Code has not changed then it is not needed to build it
-                try
+                if (cached.UserHandlerSourceCode == sourceCode.userHandler && cached.UserFunctionSourceCode == sourceCode.userFunction && !useUserAssembly)
                 {
-                    Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached);
-                    if (cached.SourceCode == sourceCode)
-                    {
-                        Engine.FunctionId = functionId;
-                        Engine.Cached = cached;
-                        Engine.UserProcedure = cached.UserProcedure;
-                        return 0;
-                    }
+                    pldotnet_Info("User function hasn't changed, so it doesn't need to be recompiled!");
+                    return 0;
                 }
-                catch
+                else
                 {
+                    pldotnet_Info("User function has changed.");
+                    FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
+                    FuncBuiltCodeDict.Remove(functionId);
                 }
             }
 
-            SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
-
-            SyntaxNode node = userTree.GetRoot().NormalizeWhitespace();
-
-            var rawSourceCode = node.ToFullString();
-
-            Engine.MemStream = new MemoryStream();
-            var compileResult = Engine.CompileSourceCode(rawSourceCode, Engine.MemStream);
-
-            Engine.Cached = new CachedFunction()
+            MemoryStream memUserFunction = new MemoryStream();
+            if (!useUserAssembly)
             {
-                SourceCode = rawSourceCode,
-                UserProcedure = GetDirectDelegate(Engine.MemStream),
-                SupportNullInput = Engine.SupportNullInput
-            };
+                var compileResultUserFunction = CompileSourceCode(sourceCode.userFunction, memUserFunction, $"UserFunction_{functionId}");
+            }
+            else
+            {
+                string userAssemblyPath = sourceCode.userFunction.Split(":")[0];
+                using (var fs = File.Open(userAssemblyPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    fs.CopyTo(memUserFunction);
+                }
+            }
 
-            Engine.FunctionId = functionId;
-            Engine.FuncBuiltCodeDict[functionId] = Engine.Cached;
-            Engine.UserProcedure = Engine.Cached.UserProcedure;
+            MemoryStream memUserHandler = new MemoryStream();
+            var compileResultUserHandler = Engine.CompileSourceCode(sourceCode.userHandler, memUserHandler, $"UserHandler_{functionId}", memUserFunction);
+
+            AssemblyLoadContext userAlc = new AssemblyLoadContext($"UserFunction_{functionId}", true);
+            userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location);
+            userAlc.LoadFromAssemblyPath(typeof(Engine).Assembly.Location);
+            userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer()));
+
+            CachedFunction newCachedFunction = new CachedFunction()
+            {
+                UserFunctionSourceCode = sourceCode.userFunction,
+                UserHandlerSourceCode = sourceCode.userHandler,
+                SupportNullInput = supportNullInput,
+                UserAssemblyLoadContext = userAlc,
+                UserProcedure = GetDirectDelegate(memUserHandler, userAlc)
+            };
+            Engine.FuncBuiltCodeDict.Add(functionId, newCachedFunction);
+
+            memUserFunction.Close();
+            memUserHandler.Close();
 
             return 0;
         }
@@ -590,15 +647,15 @@ namespace PlDotNET
         /// It creates the Delegate function for the CallUserFunction function,
         /// which was compiled by Roslyn.
         /// </summary>
-        public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(MemoryStream memoryStream)
+        public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(MemoryStream memoryStream, AssemblyLoadContext userAlc)
         {
-            var compiledAssembly = Assembly.Load(memoryStream.GetBuffer());
+            var compiledAssembly = userAlc.LoadFromStream(new MemoryStream(memoryStream.GetBuffer()));
 
-            Type procClassType = compiledAssembly.GetType("PlDotNETUserSpace.UserClass");
+            Type procClassType = compiledAssembly.GetType("UserSpace.UserHandler");
 
             if (null == procClassType)
             {
-                pldotnet_Warning($"Failed to get type PlDotNETUserSpace.UserClass");
+                pldotnet_Warning($"Failed to get type UserSpace.UserHandler");
                 return null;
             }
 

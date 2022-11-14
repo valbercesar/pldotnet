@@ -23,12 +23,7 @@ SELECT 'JSON', 'modifyJson1', modifyJson('{"a":"Sunday", "b":"Monday"}'::JSON, '
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'JSON', 'modifyJson2', modifyJson('{"Sunday":"2022-11-06", "Monday":"2022-11-07"}'::JSON, NULL::TEXT, NULL::TEXT)::TEXT = '{"Sunday":"2022-11-06", "Monday":"2022-11-07", "":""}'::JSON::TEXT;
 
--- JSONB
-
-
-
 --- JSON Arrays
-
 CREATE OR REPLACE FUNCTION updateJsonArrayIndex(values_array JSON[], desired JSON, index integer[]) RETURNS JSON[] AS $$
 int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
@@ -36,8 +31,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'JSON[]', 'updateJsonArrayIndex1', updateJsonArrayIndex(ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, null::JSON, '{"age": 30, "name": "Todd"}'::JSON], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[2])::TEXT = ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, '{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]::TEXT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'JSON[]', 'updateJsonArrayIndex2', updateJsonArrayIndex(ARRAY[[null::JSON, null::JSON], [null::JSON, '{"age": 30, "name": "Todd"}'::JSON]], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[1,0])::TEXT = ARRAY[[null::JSON, null::JSON], ['{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]]::TEXT;
+-- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+-- SELECT 'JSON[]', 'updateJsonArrayIndex2', updateJsonArrayIndex(ARRAY[[null::JSON, null::JSON], [null::JSON, '{"age": 30, "name": "Todd"}'::JSON]], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[1,0])::TEXT = ARRAY[[null::JSON, null::JSON], ['{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]]::TEXT;
 
 CREATE OR REPLACE FUNCTION ReplaceJsonsKey(values_array JSON[]) RETURNS JSON[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -56,7 +51,6 @@ return flatten_values;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'JSON[]', 'ReplaceJsonsKey1', ReplaceJsonsKey(ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, null::JSON, '{"age": 30, "name": "Todd"}'::JSON])::TEXT = ARRAY['{"age": 20, "first_name": "Mikael"}'::JSON, '{"age": 25, "first_name": "Rosicley"}'::JSON, null::JSON, '{"age": 30, "first_name": "Todd"}'::JSON]::TEXT;
-
 
 CREATE OR REPLACE FUNCTION GetJsonMultidimensionArray() RETURNS JSON[] AS $$
 string objects_value = "{\"type\": \"json\", \"action\": \"multidimensional test\"}";

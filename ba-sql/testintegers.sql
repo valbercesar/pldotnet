@@ -53,7 +53,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'BIGINT', 'mixedBigInt8', mixedBigInt8(CAST(32 AS SMALLINT), CAST(100 AS BIGINT)) = smallint '132';
 
 --- Small Integer Arrays
-
 CREATE OR REPLACE FUNCTION returnSmallIntArray(small_integers smallint[]) RETURNS smallint[] AS $$
 return small_integers;
 $$ LANGUAGE plcsharp STRICT;
@@ -83,7 +82,6 @@ SELECT 'SMALLINT[]', 'sumSmallIntArray2', sumSmallIntArray(ARRAY[[null::smallint
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'SMALLINT[]', 'sumSmallIntArray3', sumSmallIntArray(ARRAY[[[null::smallint, null::smallint], [null::smallint, null::smallint]], [[186::smallint, 13823::smallint], [9521::smallint, 934::smallint]]]) = '24464';
 
-
 CREATE OR REPLACE FUNCTION CreateSmallIntMultidimensionalArray() RETURNS smallint[] AS $$
 short?[, ,] smallint_three_dimensional = new short?[2, 2, 2] {{{423, 536}, {null, null}}, {{8763, 15}, {943, 1003}}};
 return smallint_three_dimensional;
@@ -102,7 +100,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'SMALLINT[]', 'updateArraySmallIntIndex2', updateArraySmallIntIndex(ARRAY[[45::smallint, 11324::smallint], [null::smallint, 12464::smallint]], CAST(13212 AS smallint), ARRAY[1, 0]) = ARRAY[[45::smallint, 11324::smallint], [13212::smallint, 12464::smallint]];
 
 --- Integer Arrays
-
 CREATE OR REPLACE FUNCTION returnIntegerArray(integers integer[]) RETURNS integer[] AS $$
 return integers;
 $$ LANGUAGE plcsharp STRICT;
@@ -132,7 +129,6 @@ SELECT 'INTEGER[]', 'sumIntegerArray2', sumIntegerArray(ARRAY[[null::integer, nu
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTEGER[]', 'sumIntegerArray3', sumIntegerArray(ARRAY[[[null::integer, null::integer], [null::integer, null::integer]], [[2047483647::integer, 304325::integer], [706524::integer, 4356::integer]]]) = '2048498852';
 
-
 CREATE OR REPLACE FUNCTION CreateIntegerMultidimensionalArray() RETURNS integer[] AS $$
 int?[, ,] integer_three_dimensional = new int?[2, 2, 2] {{{2047483647, 304325}, {null, null}}, {{706524, 9652345}, {943, 4134677}}};
 return integer_three_dimensional;
@@ -151,7 +147,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTEGER[]', 'updateArrayIntegerIndex2', updateArrayIntegerIndex(ARRAY[[2047483647::integer, 304325::integer], [null::integer, 12465464::integer]], 65464532, ARRAY[1, 0]) = ARRAY[[2047483647::integer, 304325::integer], [65464532::integer, 12465464::integer]];
 
 --- Big Integer Arrays
-
 CREATE OR REPLACE FUNCTION returnBigIntegerArray(big_integers bigint[]) RETURNS bigint[] AS $$
 return big_integers;
 $$ LANGUAGE plcsharp STRICT;
@@ -180,7 +175,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'BIGINT[]', 'sumBigIntegerArray2', sumBigIntegerArray(ARRAY[[null::bigint, null::bigint], [92332036854775707::bigint, 23372036854775707::bigint]]) = '115704073709551414';
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'BIGINT[]', 'sumBigIntegerArray3', sumBigIntegerArray(ARRAY[[[null::bigint, null::bigint], [null::bigint, null::bigint]], [[92232036854775707::bigint, 2337203684775707::bigint], [706524::bigint, 756452434247987::bigint]]]) = '95325692974505925';
-
 
 CREATE OR REPLACE FUNCTION CreateBigIntegerMultidimensionalArray() RETURNS bigint[] AS $$
 long?[, ,] big_integer_three_dimensional = new long?[2, 2, 2] {{{92232036854775707, 2337203684775707}, {null, null}}, {{706524, 756452434247987}, {943, 4134677}}};

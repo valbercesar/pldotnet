@@ -1,5 +1,4 @@
 -- MONEY
-
 CREATE OR REPLACE FUNCTION computeNewSalary(salary MONEY, rate FLOAT8) RETURNS MONEY AS $$
     decimal aux = (decimal)(1.0+rate);
     return (decimal)salary*aux;
@@ -22,7 +21,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'MONEY', 'returnMinMoney', returnMinMoney() = '-92233720368547758.08'::MONEY;
 
 -- NULL
-
 CREATE OR REPLACE FUNCTION returnMoney(salary MONEY, bonus MONEY, discounts MONEY) RETURNS MONEY AS $$
     decimal s = salary == null ? 0.0M : (decimal)salary;
     decimal b = bonus == null ? 0.0M : (decimal)bonus;
@@ -37,7 +35,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'MONEY', 'returnMoney3', returnMoney(NULL::MONEY, NULL::MONEY, NULL::MONEY) = '0'::MONEY;
 
 --- MONEY Arrays
-
 CREATE OR REPLACE FUNCTION updateMoneyArrayIndex(values_array MONEY[], desired MONEY, index integer[]) RETURNS MONEY[] AS $$
 int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
@@ -67,7 +64,6 @@ return flatten_values;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'MONEY[]', 'IncreaseMoney1', IncreaseMoney(ARRAY['32500.0'::MONEY, '-500.4'::MONEY, null::MONEY, '900540.2'::MONEY]) = ARRAY['32501.0'::MONEY, '-499.4'::MONEY, null::MONEY, '900541.2'::MONEY];
-
 
 CREATE OR REPLACE FUNCTION CreateMoneyMultidimensionalArray() RETURNS MONEY[] AS $$
 decimal objects_value = 3720368547758.08M;

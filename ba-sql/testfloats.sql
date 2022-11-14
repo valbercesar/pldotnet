@@ -25,7 +25,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DOUBLE', 'sumDouble', sumDouble(10.5000000000055, 10.5000000000054) = double precision  '21.0000000000109'; -- 21.0000000000109
 
 --- Float Arrays
-
 CREATE OR REPLACE FUNCTION returnRealArray(floats real[]) RETURNS real[] AS $$
 return floats;
 $$ LANGUAGE plcsharp STRICT;
@@ -55,7 +54,6 @@ SELECT 'FLOAT[]', 'sumRealArray2', sumRealArray(ARRAY[[1.50055::real, 2.30300::r
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'FLOAT[]', 'sumRealArray3', sumRealArray(ARRAY[[[1.50055::real, 2.30300::real], [4.52123::real, 7.41234::real], [null::real, null::real]], [[7.50055::real, 8.30300::real], [null::real, null::real], [9.52123::real, 11.41234::real]]]) = '52.474243';
 
-
 CREATE OR REPLACE FUNCTION CreateRealMultidimensionalArray() RETURNS real[] AS $$
 float?[, ,] float_three_dimensional = new float?[2, 2, 2] {{{1.24323f, 3.42345f}, {null, null}}, {{9.32425f, 8.11134f}, {10.32145f, 16.14256f}}};
 return float_three_dimensional;
@@ -74,7 +72,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'FLOAT[]', 'updateArrayRealIndex2', updateArrayRealIndex(ARRAY[[4.55555::real, 10.11324::real], [null::real, 16.12464::real]], 9.83212, ARRAY[1, 0]) = ARRAY[[4.55555::real, 10.11324::real], [9.83212::real, 16.12464::real]];
 
 --- Double Arrays
-
 CREATE OR REPLACE FUNCTION returnDoubleArray(doubles double precision[]) RETURNS double precision[] AS $$
 return doubles;
 $$ LANGUAGE plcsharp STRICT;
@@ -99,7 +96,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DOUBLE[]', 'sumDoubleArray1', sumDoubleArray(ARRAY[21.0000000000109::double precision, null::double precision, 4.521234313421::double precision, 7.412344328978::double precision]) = '32.9335786424099';
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DOUBLE[]', 'sumDoubleArray2', sumDoubleArray(ARRAY[[21.0000000000109::double precision, null::double precision], [4.521234313421::double precision, 7.412344328978::double precision]]) = '32.9335786424099';
-
 
 CREATE OR REPLACE FUNCTION CreateDoubleMultidimensionalArray() RETURNS double precision[] AS $$
 double?[, ,] double_three_dimensional = new double?[2, 2, 2] {{{1.243235421, 3.423454214}, {null, null}}, {{9.3242542134, 8.1113476543}, {10.321451237, 16.142541316}}};

@@ -30,7 +30,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'POINT', 'checkPoints2',  checkPoints(POINT(2.555701574,8.7552345789),POINT(2.555701574,8.7552345785)) is false;
 
 --------- LINE
-
 CREATE OR REPLACE FUNCTION createLine(a double precision, b double precision, c double precision) RETURNS LINE AS $$
 NpgsqlLine my_line = new NpgsqlLine(a,b,c);
 return my_line;
@@ -58,7 +57,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'LINE', 'getMinimumDistance', getMinimumDistance(LINE '{4.0, 6.0, 2.0}', POINT(3.0,-6.0)) = double precision '3.05085107923876';
 
 --------- LSEG
-
 CREATE OR REPLACE FUNCTION createLineSegment(start_point POINT, end_point POINT) RETURNS LSEG AS $$
 NpgsqlLSeg newLine = new NpgsqlLSeg(start_point, end_point);
 return newLine;
@@ -76,7 +74,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'LSEG', 'getReverseLineSegment', getReverseLineSegment(LSEG(POINT(0.0,1.0),POINT(5.0,3.0))) = LSEG '[(5.0,3.0),(0.0,1.0)]';
 
 --------- BOX
-
 CREATE OR REPLACE FUNCTION testBox(my_box BOX) RETURNS BOX AS $$
 return my_box;
 $$ LANGUAGE plcsharp STRICT;
@@ -97,7 +94,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'BOX', 'returnWidth', returnWidth(POINT '(0.025988, 1.021653)', POINT '(2.052787, 3.005716)') = double precision '2.026799';
 
 --------- PATH
-
 CREATE OR REPLACE FUNCTION returnPath(orig_path PATH) RETURNS PATH AS $$
 return orig_path;
 $$ LANGUAGE plcsharp STRICT;
@@ -107,7 +103,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'PATH', 'returnPath - close', returnPath(PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))') <= PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))';
 
 --------- POLYGON
-
 CREATE OR REPLACE FUNCTION addPointToPolygon(orig_polygon POLYGON, new_point POINT) RETURNS POLYGON AS $$
 int npts = orig_polygon.Count;
 NpgsqlPolygon new_polygon = new NpgsqlPolygon(npts+1);
@@ -122,7 +117,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'POLYGON', 'addPointToPolygon', addPointToPolygon(POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0))', POINT '(6.5,8.8)') ~= POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0),(6.5,8.8))';
 
 --------- CIRCLE
-
 CREATE OR REPLACE FUNCTION returnCircle(orig_circle CIRCLE) RETURNS CIRCLE AS $$
 return orig_circle;
 $$ LANGUAGE plcsharp STRICT; 
@@ -130,7 +124,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'CIRCLE', 'returnCircle', returnCircle(CIRCLE '2.5, 3.5, 12.78') ~= CIRCLE '<(2.5, 3.5), 12.78>';
 
 --- POINT Arrays
-
 CREATE OR REPLACE FUNCTION updateArrayPointIndex(values_array point[], desired point, index integer[]) RETURNS point[] AS $$
 int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
@@ -140,7 +133,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'point[]', 'updateArrayPointIndex1', CAST(updateArrayPointIndex(ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), null::point, POINT(40.5,21.3)], POINT(31.43, 32.44), ARRAY[2]) AS TEXT) = CAST(ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), POINT(31.43, 32.44), POINT(40.5,21.3)] AS TEXT);
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'point[]', 'updateArrayPointIndex2', CAST(updateArrayPointIndex(ARRAY[[null::point, null::point], [null::point, POINT(40.5,21.3)]], POINT(31.43, 32.44), ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::point, null::point], [POINT(31.43, 32.44), POINT(40.5,21.3)]] AS TEXT);
-
 
 CREATE OR REPLACE FUNCTION IncreasePoints(values_array point[]) RETURNS point[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -160,7 +152,6 @@ $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'point[]', 'IncreasePoints1', CAST(IncreasePoints(ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), null::point, POINT(40.5,21.3)]) AS TEXT) = CAST(ARRAY[POINT(11.0,21.0), POINT(31.0,56.0), null::point, POINT(41.5,22.3)] AS TEXT);
 
-
 CREATE OR REPLACE FUNCTION CreatePointMultidimensionalArray() RETURNS point[] AS $$
 NpgsqlPoint objects_value = new NpgsqlPoint(2.4, 8.2);;
 NpgsqlPoint?[, ,] three_dimensional_array = new NpgsqlPoint?[2, 2, 2] {{{objects_value, objects_value}, {null, null}}, {{objects_value, null}, {objects_value, objects_value}}};
@@ -170,7 +161,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'point[]', 'CreatePointMultidimensionalArray1', CAST(CreatePointMultidimensionalArray() AS TEXT) = CAST(ARRAY[[[POINT(2.4,8.2), POINT(2.4,8.2)], [null::point, null::point]], [[POINT(2.4,8.2), null::point], [POINT(2.4,8.2), POINT(2.4,8.2)]]] AS TEXT);
 
 --- LINE Arrays
-
 CREATE OR REPLACE FUNCTION updateArrayLineIndex(values_array LINE[], desired LINE, index integer[]) RETURNS LINE[] AS $$
 int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
@@ -287,7 +277,6 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'BOX[]', 'CreateBoxMultidimensionalArray1', CAST(CreateBoxMultidimensionalArray() AS TEXT) = CAST(ARRAY[[[BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), BOX(POINT(25.4,-54.2),POINT(78.3,122.31))], [null::BOX, null::BOX]], [[BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), null::BOX], [BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), BOX(POINT(25.4,-54.2),POINT(78.3,122.31))]]] AS TEXT);
 
 --- PATH Arrays
-
 CREATE OR REPLACE FUNCTION updateArrayPathIndex(values_array PATH[], desired PATH, index integer[]) RETURNS PATH[] AS $$
 int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
@@ -295,8 +284,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'PATH[]', 'updateArrayPathIndex1', CAST(updateArrayPathIndex(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[2]) AS TEXT) = CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH] AS TEXT);
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'PATH[]', 'updateArrayPathIndex2', CAST(updateArrayPathIndex(ARRAY[[null::PATH, null::PATH], [null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]] AS TEXT);
+-- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+-- SELECT 'PATH[]', 'updateArrayPathIndex2', CAST(updateArrayPathIndex(ARRAY[[null::PATH, null::PATH], [null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreasePaths(values_array PATH[]) RETURNS PATH[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -319,7 +308,6 @@ return flatten_values;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'PATH[]', 'IncreasePaths1', CAST(IncreasePaths(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]) AS TEXT) = CAST(ARRAY['((2.5,3.75),(4.0,5.75),(6.0,6.0))'::PATH, '((2.5,3.75),(4.0,5.75),(6.0,6.0))'::PATH, null::PATH, '((2.5,3.75),(4.0,5.75),(6.0,6.0))'::PATH] AS TEXT);
-
 
 CREATE OR REPLACE FUNCTION CreatePathMultidimensionalArray() RETURNS PATH[] AS $$
 NpgsqlPath objects_value = new NpgsqlPath(new NpgsqlPoint(1.5, 2.75), new NpgsqlPoint(3.0, 4.75), new NpgsqlPoint(5.0, 5.0));

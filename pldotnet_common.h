@@ -38,6 +38,7 @@
 #include <utils/memutils.h>
 #include <utils/fmgrprotos.h>
 #include <access/htup_details.h>
+#include <utils/array.h>
 
 extern PGDLLIMPORT bool check_function_bodies;
 

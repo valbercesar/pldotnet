@@ -82,7 +82,7 @@ plnet-install: install
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/Engine.cs
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/TypeHandlers/*.cs
 #	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/NewEngine.cs
-	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/templates/csharp.tcs
+	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/templates/*.tcs
 #	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/NewEngine.cs
 	sed -i 's/@CSHARP_TEMPLATE_DIR/$(shell echo $(CSHARP_TEMPLATE_DIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/Engine.cs
 #	sed -i 's/@CSHARP_TEMPLATE_DIR/$(shell echo $(CSHARP_TEMPLATE_DIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/NewEngine.cs
