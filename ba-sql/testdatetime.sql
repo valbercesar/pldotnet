@@ -109,6 +109,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIME[]', 'updateArrayTimeIndex1', updateArrayTimeIndex(ARRAY[TIME '05:30 PM', TIME '06:30 PM', null::time, TIME '09:30 AM'], TIME '5:45 AM', ARRAY[2]) = ARRAY[TIME '05:30 PM', TIME '06:30 PM', TIME '05:45 AM', TIME '09:30 AM'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIME[]', 'updateArrayTimeIndex2', updateArrayTimeIndex(ARRAY[[TIME '05:30 PM', TIME '06:30 PM'], [null::time, TIME '09:30 AM']], TIME '5:45 AM', ARRAY[1, 0]) = ARRAY[[TIME '05:30 PM', TIME '06:30 PM'], [TIME '05:45 AM', TIME '09:30 AM']];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'TIME[]', 'updateArrayTimeIndex3', updateArrayTimeIndex(ARRAY[[null::TIME, null::TIME], [null::time, TIME '09:30 AM']], TIME '5:45 AM', ARRAY[1, 0]) = ARRAY[[null::TIME, null::TIME], [TIME '05:45 AM', TIME '09:30 AM']];
 
 
 CREATE OR REPLACE FUNCTION IncreaseMinutesTimeArray(values_array TIME[], min_to_add INT) RETURNS TIME[] AS $$
@@ -154,6 +156,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMETZ[]', 'updateArrayTimetzIndex1', updateArrayTimetzIndex(ARRAY[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00', null::timetz, TIMETZ '22:30-03:00'], TIMETZ '02:30-05:00', ARRAY[2]) = ARRAY[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00', TIMETZ '02:30-05:00', TIMETZ '22:30-03:00'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMETZ[]', 'updateArrayTimetzIndex2', updateArrayTimetzIndex(ARRAY[[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00'], [null::timetz, TIMETZ '22:30-03:00']], TIMETZ '02:30-05:00', ARRAY[1, 0]) = ARRAY[[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00'], [TIMETZ '02:30-05:00', TIMETZ '22:30-03:00']];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'TIMETZ[]', 'updateArrayTimetzIndex3', updateArrayTimetzIndex(ARRAY[[null::TIMETZ, null::TIMETZ], [null::timetz, TIMETZ '22:30-03:00']], TIMETZ '02:30-05:00', ARRAY[1, 0]) = ARRAY[[null::TIMETZ, null::TIMETZ], [TIMETZ '02:30-05:00', TIMETZ '22:30-03:00']];
 
 
 CREATE OR REPLACE FUNCTION IncreaseMinutesTimetzArray(values_array TIMETZ[], min_to_add INT) RETURNS TIMETZ[] AS $$
@@ -196,6 +200,7 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMESTAMP[]', 'updateArrayTimestampIndex1', updateArrayTimestampIndex(ARRAY[TIMESTAMP '2004-10-19 10:23:54 PM', TIMESTAMP '2020-10-19 10:23:54 PM', null::timestamp, TIMESTAMP '2022-12-25 10:23:54 PM'], TIMESTAMP '2025-10-19 10:23:54 PM', ARRAY[2]) = ARRAY[TIMESTAMP '2004-10-19 10:23:54 PM', TIMESTAMP '2020-10-19 10:23:54 PM', TIMESTAMP '2025-10-19 10:23:54 PM', TIMESTAMP '2022-12-25 10:23:54 PM'];
+SELECT 'TIMESTAMP[]', 'updateArrayTimestampIndex2', updateArrayTimestampIndex(ARRAY[[null::timestamp, null::timestamp], [null::timestamp, TIMESTAMP '2022-12-25 10:23:54 PM']], TIMESTAMP '2025-10-19 10:23:54 PM', ARRAY[1,0]) = ARRAY[[null::timestamp, null::timestamp], [TIMESTAMP '2025-10-19 10:23:54 PM', TIMESTAMP '2022-12-25 10:23:54 PM']];
 
 
 CREATE OR REPLACE FUNCTION IncreaseTimestamps(values_array TIMESTAMP[], days_to_add INT) RETURNS TIMESTAMP[] AS $$
@@ -239,6 +244,7 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TIMESTAMPTZ[]', 'updateArrayTimestamptzIndex1', updateArrayTimestamptzIndex(ARRAY[TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', TIMESTAMP WITH TIME ZONE '2020-10-19 10:23:54 PM +03', null::timestamptz, TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05'], TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', ARRAY[2]) = ARRAY[TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', TIMESTAMP WITH TIME ZONE '2020-10-19 10:23:54 PM +03', TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05'];
+SELECT 'TIMESTAMPTZ[]', 'updateArrayTimestamptzIndex2', updateArrayTimestamptzIndex(ARRAY[[null::timestamptz, null::timestamptz], [null::timestamptz, TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05']], TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', ARRAY[1,0]) = ARRAY[[null::timestamptz, null::timestamptz], [TIMESTAMP WITH TIME ZONE '2025-10-19 10:23:54 PM -03', TIMESTAMP WITH TIME ZONE '2022-12-25 10:23:54 PM -05']];
 
 
 CREATE OR REPLACE FUNCTION IncreaseTimestampstz(values_array TIMESTAMP WITH TIME ZONE[], days_to_add INT) RETURNS TIMESTAMP WITH TIME ZONE[] AS $$
@@ -285,6 +291,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTERVAL[]', 'updateArrayIntervalIndex1', updateArrayIntervalIndex(ARRAY[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds'], INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', ARRAY[2]) = ARRAY[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds', INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INTERVAL[]', 'updateArrayIntervalIndex2', updateArrayIntervalIndex(ARRAY[[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds'], [null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']], INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', ARRAY[1, 0]) = ARRAY[[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds'], [INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'INTERVAL[]', 'updateArrayIntervalIndex3', updateArrayIntervalIndex(ARRAY[[null::interval, null::interval], [null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']], INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', ARRAY[1, 0]) = ARRAY[[null::interval, null::interval], [INTERVAL '5 YEAR 4 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds', INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']];
 
 
 CREATE OR REPLACE FUNCTION IncreaseIntervals(values_array INTERVAL[],months_to_add INT, days_to_add INT) RETURNS INTERVAL[] AS $$

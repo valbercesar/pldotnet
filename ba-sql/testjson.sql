@@ -24,3 +24,44 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'JSON', 'modifyJson2', modifyJson('{"Sunday":"2022-11-06", "Monday":"2022-11-07"}'::JSON, NULL::TEXT, NULL::TEXT)::TEXT = '{"Sunday":"2022-11-06", "Monday":"2022-11-07", "":""}'::JSON::TEXT;
 
 -- JSONB
+
+
+
+--- JSON Arrays
+
+CREATE OR REPLACE FUNCTION updateJsonArrayIndex(values_array JSON[], desired JSON, index integer[]) RETURNS JSON[] AS $$
+int[] arrayInteger = index.Cast<int>().ToArray();
+values_array.SetValue(desired, arrayInteger);
+return values_array;
+$$ LANGUAGE plcsharp STRICT;
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'JSON[]', 'updateJsonArrayIndex1', updateJsonArrayIndex(ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, null::JSON, '{"age": 30, "name": "Todd"}'::JSON], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[2])::TEXT = ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, '{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]::TEXT;
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'JSON[]', 'updateJsonArrayIndex2', updateJsonArrayIndex(ARRAY[[null::JSON, null::JSON], [null::JSON, '{"age": 30, "name": "Todd"}'::JSON]], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[1,0])::TEXT = ARRAY[[null::JSON, null::JSON], ['{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]]::TEXT;
+
+CREATE OR REPLACE FUNCTION ReplaceJsonsKey(values_array JSON[]) RETURNS JSON[] AS $$
+Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
+ArrayHandler.FlatArray(values_array, ref flatten_values);
+for(int i = 0; i < flatten_values.Length; i++)
+{   
+    if (flatten_values.GetValue(i) == null)
+        continue;
+
+    string orig_value = (string)flatten_values.GetValue(i);
+    string new_value = orig_value.Replace("name", "first_name");
+    
+    flatten_values.SetValue((string)new_value, i);
+}
+return flatten_values;
+$$ LANGUAGE plcsharp STRICT;
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'JSON[]', 'ReplaceJsonsKey1', ReplaceJsonsKey(ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, null::JSON, '{"age": 30, "name": "Todd"}'::JSON])::TEXT = ARRAY['{"age": 20, "first_name": "Mikael"}'::JSON, '{"age": 25, "first_name": "Rosicley"}'::JSON, null::JSON, '{"age": 30, "first_name": "Todd"}'::JSON]::TEXT;
+
+
+CREATE OR REPLACE FUNCTION GetJsonMultidimensionArray() RETURNS JSON[] AS $$
+string objects_value = "{\"type\": \"json\", \"action\": \"multidimensional test\"}";
+string?[, ,] three_dimensional_array = new string?[2, 2, 2] {{{objects_value, objects_value}, {null, null}}, {{objects_value, null}, {objects_value, objects_value}}};
+return three_dimensional_array;
+$$ LANGUAGE plcsharp STRICT;
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'JSON[]', 'GetJsonMultidimensionArray1', GetJsonMultidimensionArray()::TEXT = ARRAY[[['{"type": "json", "action": "multidimensional test"}'::JSON, '{"type": "json", "action": "multidimensional test"}'::JSON], [null::JSON, null::JSON]], [['{"type": "json", "action": "multidimensional test"}'::JSON, null::JSON], ['{"type": "json", "action": "multidimensional test"}'::JSON, '{"type": "json", "action": "multidimensional test"}'::JSON]]]::TEXT;

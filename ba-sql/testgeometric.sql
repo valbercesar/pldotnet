@@ -138,6 +138,9 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'point[]', 'updateArrayPointIndex1', CAST(updateArrayPointIndex(ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), null::point, POINT(40.5,21.3)], POINT(31.43, 32.44), ARRAY[2]) AS TEXT) = CAST(ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), POINT(31.43, 32.44), POINT(40.5,21.3)] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'point[]', 'updateArrayPointIndex2', CAST(updateArrayPointIndex(ARRAY[[null::point, null::point], [null::point, POINT(40.5,21.3)]], POINT(31.43, 32.44), ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::point, null::point], [POINT(31.43, 32.44), POINT(40.5,21.3)]] AS TEXT);
+
 
 CREATE OR REPLACE FUNCTION IncreasePoints(values_array point[]) RETURNS point[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -175,6 +178,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'LINE[]', 'updateArrayLineIndex1', CAST(updateArrayLineIndex(ARRAY[LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}', null::LINE, LINE '{-1.5,2.75,-3.25}'], LINE '{-1.5,2.75,-3.25}', ARRAY[2]) AS TEXT) = CAST(ARRAY[LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}'] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'LINE[]', 'updateArrayLineIndex2', CAST(updateArrayLineIndex(ARRAY[[null::LINE, null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']], LINE '{-1.5,2.75,-3.25}', ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::LINE, null::LINE], [LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}']] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreaseLines(values_array LINE[]) RETURNS LINE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -212,6 +217,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'LSEG[]', 'updateArrayLSEGIndex1', CAST(updateArrayLSEGIndex(ARRAY[LSEG(POINT(0.0,1.0),POINT(5.0,3.0)), LSEG(POINT(-5.0,4.5),POINT(6.7,12.3)), null::LSEG, LSEG(POINT(0.0,1.0),POINT(4.7,9.2))], LSEG(POINT(0.0,1.0),POINT(4.7,9.2)), ARRAY[2]) AS TEXT) = CAST(ARRAY[LSEG(POINT(0.0,1.0),POINT(5.0,3.0)), LSEG(POINT(-5.0,4.5),POINT(6.7,12.3)), LSEG(POINT(0.0,1.0),POINT(4.7,9.2)), LSEG(POINT(0.0,1.0),POINT(4.7,9.2))] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'LSEG[]', 'updateArrayLSEGIndex2', CAST(updateArrayLSEGIndex(ARRAY[[null::LSEG, null::LSEG], [null::LSEG, LSEG(POINT(0.0,1.0),POINT(4.7,9.2))]], LSEG(POINT(0.0,1.0),POINT(4.7,9.2)), ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::LSEG, null::LSEG], [LSEG(POINT(0.0,1.0),POINT(4.7,9.2)), LSEG(POINT(0.0,1.0),POINT(4.7,9.2))]] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreaseLSEGs(values_array LSEG[]) RETURNS LSEG[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -249,6 +256,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'BOX[]', 'updateArrayBoxIndex1', CAST(updateArrayBoxIndex(ARRAY[BOX(POINT(0.0,1.0),POINT(5.0,3.0)), BOX(POINT(-5.0,4.5),POINT(6.7,12.3)), null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))], BOX(POINT(0.0,1.0),POINT(4.7,9.2)), ARRAY[2]) AS TEXT) = CAST(ARRAY[BOX(POINT(0.0,1.0),POINT(5.0,3.0)), BOX(POINT(-5.0,4.5),POINT(6.7,12.3)), BOX(POINT(0.0,1.0),POINT(4.7,9.2)), BOX(POINT(0.0,1.0),POINT(4.7,9.2))] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'BOX[]', 'updateArrayBoxIndex2', CAST(updateArrayBoxIndex(ARRAY[[null::BOX, null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]], BOX(POINT(0.0,1.0),POINT(4.7,9.2)), ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::BOX, null::BOX], [BOX(POINT(0.0,1.0),POINT(4.7,9.2)), BOX(POINT(0.0,1.0),POINT(4.7,9.2))]] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreaseBoxs(values_array BOX[]) RETURNS BOX[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -286,6 +295,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'PATH[]', 'updateArrayPathIndex1', CAST(updateArrayPathIndex(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[2]) AS TEXT) = CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'PATH[]', 'updateArrayPathIndex2', CAST(updateArrayPathIndex(ARRAY[[null::PATH, null::PATH], [null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreasePaths(values_array PATH[]) RETURNS PATH[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -327,6 +338,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'POLYGON[]', 'updateArrayPolygonIndex1', CAST(updateArrayPolygonIndex(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[2]) AS TEXT) = CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'POLYGON[]', 'updateArrayPolygonIndex2', CAST(updateArrayPolygonIndex(ARRAY[[null::POLYGON, null::POLYGON], [null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::POLYGON, null::POLYGON], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreasePolygons(values_array POLYGON[]) RETURNS POLYGON[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -368,6 +381,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'CIRCLE[]', 'updateArrayCircleIndex1', CAST(updateArrayCircleIndex(ARRAY[CIRCLE(POINT(0.0,1.0), 2.5), CIRCLE(POINT(-5.0,4.5), 4), null::CIRCLE, CIRCLE(POINT(0.0,1.0),4.5)], CIRCLE(POINT(0.0,1.0), 2), ARRAY[2]) AS TEXT) = CAST(ARRAY[CIRCLE(POINT(0.0,1.0), 2.5), CIRCLE(POINT(-5.0,4.5), 4), CIRCLE(POINT(0.0,1.0), 2), CIRCLE(POINT(0.0,1.0),4.5)] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'CIRCLE[]', 'updateArrayCircleIndex2', CAST(updateArrayCircleIndex(ARRAY[[null::CIRCLE, null::CIRCLE], [null::CIRCLE, CIRCLE(POINT(0.0,1.0),4.5)]], CIRCLE(POINT(0.0,1.0), 2), ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::CIRCLE, null::CIRCLE], [CIRCLE(POINT(0.0,1.0), 2), CIRCLE(POINT(0.0,1.0),4.5)]] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreaseCircles(values_array CIRCLE[]) RETURNS CIRCLE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);

@@ -157,4 +157,5 @@ tests:
 	cat ba-sql/testnetwork.sql | (sudo -u postgres  psql 2>&1) | tee results/testnetwork.out
 	cat ba-sql/testrange.sql | (sudo -u postgres  psql 2>&1) | tee results/testrange.out
 	cat ba-sql/teststring.sql | (sudo -u postgres  psql 2>&1) | tee results/teststring.out
+	cat ba-sql/testuuid.sql | (sudo -u postgres  psql 2>&1) | tee results/testuuid.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out

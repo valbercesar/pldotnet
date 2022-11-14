@@ -124,6 +124,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'MACADDR8[]', 'updateArrayMacAddress8Index1', updateArrayMacAddress8Index(ARRAY[MACADDR8 '08-00-2b-01-02-03-ab-ac', MACADDR8 '09-00-2b-01-02-03-ab-ac', null::macaddr8, MACADDR8 'a8-00-2b-01-02-03-ab-ac'], MACADDR8 'd1-00-2b-01-02-03-ab-ac', ARRAY[2]) = ARRAY[MACADDR8 '08-00-2b-01-02-03-ab-ac', MACADDR8 '09-00-2b-01-02-03-ab-ac', MACADDR8 'd1-00-2b-01-02-03-ab-ac', MACADDR8 'a8-00-2b-01-02-03-ab-ac'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'MACADDR8[]', 'updateArrayMacAddress8Index2', updateArrayMacAddress8Index(ARRAY[[MACADDR8 '08-00-2b-01-02-03-ab-ac', MACADDR8 '09-00-2b-01-02-03-ab-ac'], [null::macaddr8, MACADDR8 'a8-00-2b-01-02-03-ab-ac']], MACADDR8 'd1-00-2b-01-02-03-ab-ac', ARRAY[1, 0]) = ARRAY[[MACADDR8 '08-00-2b-01-02-03-ab-ac', MACADDR8 '09-00-2b-01-02-03-ab-ac'], [MACADDR8 'd1-00-2b-01-02-03-ab-ac', MACADDR8 'a8-00-2b-01-02-03-ab-ac']];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'MACADDR8[]', 'updateArrayMacAddress8Index3', updateArrayMacAddress8Index(ARRAY[[null::MACADDR8, null::MACADDR8], [null::macaddr8, MACADDR8 'a8-00-2b-01-02-03-ab-ac']], MACADDR8 'd1-00-2b-01-02-03-ab-ac', ARRAY[1, 0]) = ARRAY[[null::MACADDR8, null::MACADDR8], [MACADDR8 'd1-00-2b-01-02-03-ab-ac', MACADDR8 'a8-00-2b-01-02-03-ab-ac']];
 
 CREATE OR REPLACE FUNCTION IncreaseMacAddress8(values_array MACADDR8[]) RETURNS MACADDR8[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -165,6 +167,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INET[]', 'updateArrayNetMaskIndex1', updateArrayNetMaskIndex(ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', null::inet, INET '170.168.0.1/24'], INET '192.168.0.120/24', ARRAY[2]) = ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', INET '192.168.0.120/24', INET '170.168.0.1/24'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INET[]', 'updateArrayNetMaskIndex2', updateArrayNetMaskIndex(ARRAY[[INET '192.168.0.1/24', INET '192.170.0.1/24'], [null::inet, INET '170.168.0.1/24']], INET '192.168.0.120/24', ARRAY[1, 0]) = ARRAY[[INET '192.168.0.1/24', INET '192.170.0.1/24'], [INET '192.168.0.120/24', INET '170.168.0.1/24']];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'INET[]', 'updateArrayNetMaskIndex3', updateArrayNetMaskIndex(ARRAY[[null::INET, null::INET], [null::inet, INET '170.168.0.1/24']], INET '192.168.0.120/24', ARRAY[1, 0]) = ARRAY[[null::INET, null::INET], [INET '192.168.0.120/24', INET '170.168.0.1/24']];
 
 CREATE OR REPLACE FUNCTION IncreaseInetAddress(values_array INET[]) RETURNS INET[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -205,6 +209,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'CIDR[]', 'updateArrayCIDRIndex1', updateArrayCIDRIndex(ARRAY[CIDR '192.168/24', CIDR '170.168/24', null::cidr, CIDR '142.168/24'], CIDR '192.169/24', ARRAY[2]) = ARRAY[CIDR '192.168/24', CIDR '170.168/24', CIDR '192.169/24', CIDR '142.168/24'];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'CIDR[]', 'updateArrayCIDRIndex2', updateArrayCIDRIndex(ARRAY[[CIDR '192.168/24', CIDR '170.168/24'], [null::cidr, CIDR '142.168/24']], CIDR '192.169/24', ARRAY[1, 0]) = ARRAY[[CIDR '192.168/24', CIDR '170.168/24'], [CIDR '192.169/24', CIDR '142.168/24']];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'CIDR[]', 'updateArrayCIDRIndex3', updateArrayCIDRIndex(ARRAY[[null::CIDR, null::CIDR], [null::cidr, CIDR '142.168/24']], CIDR '192.169/24', ARRAY[1, 0]) = ARRAY[[null::CIDR, null::CIDR], [CIDR '192.169/24', CIDR '142.168/24']];
 
 
 CREATE OR REPLACE FUNCTION IncreaseCIDRAddress(values_array CIDR[]) RETURNS CIDR[] AS $$
