@@ -31,8 +31,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'JSON[]', 'updateJsonArrayIndex1', updateJsonArrayIndex(ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, null::JSON, '{"age": 30, "name": "Todd"}'::JSON], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[2])::TEXT = ARRAY['{"age": 20, "name": "Mikael"}'::JSON, '{"age": 25, "name": "Rosicley"}'::JSON, '{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]::TEXT;
--- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
--- SELECT 'JSON[]', 'updateJsonArrayIndex2', updateJsonArrayIndex(ARRAY[[null::JSON, null::JSON], [null::JSON, '{"age": 30, "name": "Todd"}'::JSON]], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[1,0])::TEXT = ARRAY[[null::JSON, null::JSON], ['{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]]::TEXT;
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'JSON[]', 'updateJsonArrayIndex2', updateJsonArrayIndex(ARRAY[[null::JSON, null::JSON], [null::JSON, '{"age": 30, "name": "Todd"}'::JSON]], '{"age": 40, "name": "John Doe"}'::JSON, ARRAY[1,0])::TEXT = ARRAY[[null::JSON, null::JSON], ['{"age": 40, "name": "John Doe"}'::JSON, '{"age": 30, "name": "Todd"}'::JSON]]::TEXT;
 
 CREATE OR REPLACE FUNCTION ReplaceJsonsKey(values_array JSON[]) RETURNS JSON[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);

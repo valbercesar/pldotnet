@@ -77,8 +77,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INT4RANGE[]', 'updateInt4RangeIndex1', updateInt4RangeIndex(ARRAY['[2,6)'::INT4RANGE, '(,6)'::INT4RANGE, null::INT4RANGE, '[,)'::INT4RANGE], '[6,)'::INT4RANGE, ARRAY[2]) = ARRAY['[2,6)'::INT4RANGE, '(,6)'::INT4RANGE, '[6,)'::INT4RANGE, '[,)'::INT4RANGE];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INT4RANGE[]', 'updateInt4RangeIndex2', updateInt4RangeIndex(ARRAY[['[2,6)'::INT4RANGE, '(,6)'::INT4RANGE], [null::INT4RANGE, '[,)'::INT4RANGE]], '[6,)'::INT4RANGE, ARRAY[1, 0]) = ARRAY[['[2,6)'::INT4RANGE, '(,6)'::INT4RANGE], ['[6,)'::INT4RANGE, '[,)'::INT4RANGE]];
--- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
--- SELECT 'INT4RANGE[]', 'updateInt4RangeIndex3', updateInt4RangeIndex(ARRAY[[null::INT4RANGE, null::INT4RANGE], [null::INT4RANGE, '[,)'::INT4RANGE]], '[6,)'::INT4RANGE, ARRAY[1, 0]) = ARRAY[[null::INT4RANGE, null::INT4RANGE], ['[6,)'::INT4RANGE, '[,)'::INT4RANGE]];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'INT4RANGE[]', 'updateInt4RangeIndex3', updateInt4RangeIndex(ARRAY[[null::INT4RANGE, null::INT4RANGE], [null::INT4RANGE, '[,)'::INT4RANGE]], '[6,)'::INT4RANGE, ARRAY[1, 0]) = ARRAY[[null::INT4RANGE, null::INT4RANGE], ['[6,)'::INT4RANGE, '[,)'::INT4RANGE]];
 
 CREATE OR REPLACE FUNCTION IncreaseInt4Ranges(values_array INT4RANGE[]) RETURNS INT4RANGE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -116,8 +116,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INT8RANGE[]', 'updateInt8RangeIndex1', updateInt8RangeIndex(ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE], '[6,)'::INT8RANGE, ARRAY[2]) = ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, '[6,)'::INT8RANGE, '[,)'::INT8RANGE];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'INT8RANGE[]', 'updateInt8RangeIndex2', updateInt8RangeIndex(ARRAY[['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE], [null::INT8RANGE, '[,)'::INT8RANGE]], '[6,)'::INT8RANGE, ARRAY[1, 0]) = ARRAY[['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE], ['[6,)'::INT8RANGE, '[,)'::INT8RANGE]];
--- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
--- SELECT 'INT8RANGE[]', 'updateInt8RangeIndex3', updateInt8RangeIndex(ARRAY[[null::INT8RANGE, null::INT8RANGE], [null::INT8RANGE, '[,)'::INT8RANGE]], '[6,)'::INT8RANGE, ARRAY[1, 0]) = ARRAY[[null::INT8RANGE, null::INT8RANGE], ['[6,)'::INT8RANGE, '[,)'::INT8RANGE]];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'INT8RANGE[]', 'updateInt8RangeIndex3', updateInt8RangeIndex(ARRAY[[null::INT8RANGE, null::INT8RANGE], [null::INT8RANGE, '[,)'::INT8RANGE]], '[6,)'::INT8RANGE, ARRAY[1, 0]) = ARRAY[[null::INT8RANGE, null::INT8RANGE], ['[6,)'::INT8RANGE, '[,)'::INT8RANGE]];
 
 CREATE OR REPLACE FUNCTION IncreaseInt8Ranges(values_array INT8RANGE[]) RETURNS INT8RANGE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -155,8 +155,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TSRANGE[]', 'updateTimestampRangeIndex1', updateTimestampRangeIndex(ARRAY['[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, '(, 2021-04-01 15:30)'::TSRANGE, null::TSRANGE, '[,)'::TSRANGE], '[2021-05-25 14:30,)'::TSRANGE, ARRAY[2]) = ARRAY['[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, '(, 2021-04-01 15:30)'::TSRANGE, '[2021-05-25 14:30,)'::TSRANGE, '[,)'::TSRANGE];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TSRANGE[]', 'updateTimestampRangeIndex2', updateTimestampRangeIndex(ARRAY[['[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, '(, 2021-04-01 15:30)'::TSRANGE], [null::TSRANGE, '[,)'::TSRANGE]], '[2021-05-25 14:30,)'::TSRANGE, ARRAY[1, 0]) = ARRAY[['[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, '(, 2021-04-01 15:30)'::TSRANGE], ['[2021-05-25 14:30,)'::TSRANGE, '[,)'::TSRANGE]];
--- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
--- SELECT 'TSRANGE[]', 'updateTimestampRangeIndex3', updateTimestampRangeIndex(ARRAY[[null::TSRANGE, null::TSRANGE], [null::TSRANGE, '[,)'::TSRANGE]], '[2021-05-25 14:30,)'::TSRANGE, ARRAY[1, 0]) = ARRAY[[null::TSRANGE, null::TSRANGE], ['[2021-05-25 14:30,)'::TSRANGE, '[,)'::TSRANGE]];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'TSRANGE[]', 'updateTimestampRangeIndex3', updateTimestampRangeIndex(ARRAY[[null::TSRANGE, null::TSRANGE], [null::TSRANGE, '[,)'::TSRANGE]], '[2021-05-25 14:30,)'::TSRANGE, ARRAY[1, 0]) = ARRAY[[null::TSRANGE, null::TSRANGE], ['[2021-05-25 14:30,)'::TSRANGE, '[,)'::TSRANGE]];
 
 CREATE OR REPLACE FUNCTION IncreaseTimestampRanges(values_array TSRANGE[]) RETURNS TSRANGE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -194,8 +194,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TSTZRANGE[]', 'updateTimestampTzRangeIndex1', updateTimestampTzRangeIndex(ARRAY['[2021-01-01 14:30 +02, 2021-01-01 15:30 -05)'::TSTZRANGE, '(, 2021-04-01 15:30 +05)'::TSTZRANGE, null::TSTZRANGE, '[,)'::TSTZRANGE], '[2021-05-25 14:30 +03,)'::TSTZRANGE, ARRAY[2]) = ARRAY['[2021-01-01 14:30 +02, 2021-01-01 15:30 -05)'::TSTZRANGE, '(, 2021-04-01 15:30 +05)'::TSTZRANGE, '[2021-05-25 14:30 +03,)'::TSTZRANGE, '[,)'::TSTZRANGE];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TSTZRANGE[]', 'updateTimestampTzRangeIndex2', updateTimestampTzRangeIndex(ARRAY[['[2021-01-01 14:30 +02, 2021-01-01 15:30 -05)'::TSTZRANGE, '(, 2021-04-01 15:30 +05)'::TSTZRANGE], [null::TSTZRANGE, '[,)'::TSTZRANGE]], '[2021-05-25 14:30 +03,)'::TSTZRANGE, ARRAY[1, 0]) = ARRAY[['[2021-01-01 14:30 +02, 2021-01-01 15:30 -05)'::TSTZRANGE, '(, 2021-04-01 15:30 +05)'::TSTZRANGE], ['[2021-05-25 14:30 +03,)'::TSTZRANGE, '[,)'::TSTZRANGE]];
--- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
--- SELECT 'TSTZRANGE[]', 'updateTimestampTzRangeIndex3', updateTimestampTzRangeIndex(ARRAY[[null::TSTZRANGE, null::TSTZRANGE], [null::TSTZRANGE, '[,)'::TSTZRANGE]], '[2021-05-25 14:30 +03,)'::TSTZRANGE, ARRAY[1, 0]) = ARRAY[[null::TSTZRANGE, null::TSTZRANGE], ['[2021-05-25 14:30 +03,)'::TSTZRANGE, '[,)'::TSTZRANGE]];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'TSTZRANGE[]', 'updateTimestampTzRangeIndex3', updateTimestampTzRangeIndex(ARRAY[[null::TSTZRANGE, null::TSTZRANGE], [null::TSTZRANGE, '[,)'::TSTZRANGE]], '[2021-05-25 14:30 +03,)'::TSTZRANGE, ARRAY[1, 0]) = ARRAY[[null::TSTZRANGE, null::TSTZRANGE], ['[2021-05-25 14:30 +03,)'::TSTZRANGE, '[,)'::TSTZRANGE]];
 
 CREATE OR REPLACE FUNCTION IncreaseTimestampTzRanges(values_array TSTZRANGE[]) RETURNS TSTZRANGE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -233,8 +233,8 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DATERANGE[]', 'updateDateonlyRangeIndex1', updateDateonlyRangeIndex(ARRAY['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-01)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE], '[2021-05-25,)'::DATERANGE, ARRAY[2]) = ARRAY['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-01)'::DATERANGE, '[2021-05-25,)'::DATERANGE, '[,)'::DATERANGE];
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'DATERANGE[]', 'updateDateonlyRangeIndex2', updateDateonlyRangeIndex(ARRAY[['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-01)'::DATERANGE], [null::DATERANGE, '[,)'::DATERANGE]], '[2021-05-25,)'::DATERANGE, ARRAY[1, 0]) = ARRAY[['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-01)'::DATERANGE], ['[2021-05-25,)'::DATERANGE, '[,)'::DATERANGE]];
--- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
--- SELECT 'DATERANGE[]', 'updateDateonlyRangeIndex3', updateDateonlyRangeIndex(ARRAY[[null::DATERANGE, null::DATERANGE], [null::DATERANGE, '[,)'::DATERANGE]], '[2021-05-25,)'::DATERANGE, ARRAY[1, 0]) = ARRAY[[null::DATERANGE, null::DATERANGE], ['[2021-05-25,)'::DATERANGE, '[,)'::DATERANGE]];
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'DATERANGE[]', 'updateDateonlyRangeIndex3', updateDateonlyRangeIndex(ARRAY[[null::DATERANGE, null::DATERANGE], [null::DATERANGE, '[,)'::DATERANGE]], '[2021-05-25,)'::DATERANGE, ARRAY[1, 0]) = ARRAY[[null::DATERANGE, null::DATERANGE], ['[2021-05-25,)'::DATERANGE, '[,)'::DATERANGE]];
 
 CREATE OR REPLACE FUNCTION IncreaseDateonlyRanges(values_array DATERANGE[]) RETURNS DATERANGE[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);

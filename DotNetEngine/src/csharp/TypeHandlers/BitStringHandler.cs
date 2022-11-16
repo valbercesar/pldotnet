@@ -5,18 +5,18 @@ using System.Collections;
 namespace PlDotNET_Handler
 {
     /// <summary>
-    /// A type handler for the PostgreSQL bit string data type.
+    /// A type handler for the PostgreSQL var bit string data type.
     /// </summary>
     /// <remarks>
     /// See https://www.postgresql.org/docs/current/static/datatype-bit.html.
     /// </remarks>
-    [OIDHandler(OID.BITOID, OID.BITARRAYOID)]
-    public class BitStringHandler : ObjectTypeHandler<BitArray>
+    [OIDHandler(OID.VARBITOID, OID.VARBITARRAYOID)]
+    public class VarBitStringHandler : ObjectTypeHandler<BitArray>
     {
-        public BitStringHandler()
+        public VarBitStringHandler()
         {
-            this.ElementOID = OID.BITOID;
-            this.ArrayOID = OID.BITARRAYOID;
+            this.ElementOID = OID.VARBITOID;
+            this.ArrayOID = OID.VARBITARRAYOID;
         }
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
@@ -25,8 +25,10 @@ namespace PlDotNET_Handler
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumVarBit(int len, byte[] dat);
 
-        /// <inheritdoc />
-        public override unsafe BitArray InputValue(IntPtr datum)
+        /// <summary>
+        /// Creates a BitArray object from a PostgreSQL bit string data type.
+        /// </summary>
+        public static unsafe BitArray CreateBitArray(IntPtr datum)
         {
             int bitLen = 0;
             byte* bitDat = null;
@@ -56,8 +58,10 @@ namespace PlDotNET_Handler
             return result;
         }
 
-        /// <inheritdoc />
-        public override IntPtr OutputValue(BitArray value)
+        /// <summary>
+        /// Creates a PostgreSQL bit string data type from a BitArray object.
+        /// </summary>
+        public static IntPtr CreateDatum(BitArray value)
         {
             int bitLen = value.Length;
             int byteLen = bitLen / 8 + ((bitLen % 8) > 0 ? 1 : 0);
@@ -78,6 +82,46 @@ namespace PlDotNET_Handler
             auxiliar.CopyTo(bytes, 0);
 
             return pldotnet_createDatumVarBit(bitLen, bytes);
+        }
+
+        /// <inheritdoc />
+        public override BitArray InputValue(IntPtr datum)
+        {
+            return CreateBitArray(datum);
+        }
+
+        /// <inheritdoc />
+        public override IntPtr OutputValue(BitArray value)
+        {
+            return CreateDatum(value);
+        }
+    }
+
+    /// <summary>
+    /// A type handler for the PostgreSQL bit string data type.
+    /// </summary>
+    /// <remarks>
+    /// See https://www.postgresql.org/docs/current/static/datatype-bit.html.
+    /// </remarks>
+    [OIDHandler(OID.BITOID, OID.BITARRAYOID)]
+    public class BitStringHandler : ObjectTypeHandler<BitArray>
+    {
+        public BitStringHandler()
+        {
+            this.ElementOID = OID.BITOID;
+            this.ArrayOID = OID.BITARRAYOID;
+        }
+
+        /// <inheritdoc />
+        public override BitArray InputValue(IntPtr datum)
+        {
+            return VarBitStringHandler.CreateBitArray(datum);
+        }
+
+        /// <inheritdoc />
+        public override IntPtr OutputValue(BitArray value)
+        {
+            return VarBitStringHandler.CreateDatum(value);
         }
     }
 }

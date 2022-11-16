@@ -261,7 +261,7 @@ namespace PlDotNET
                 case (int)OID.MONEYOID:
                     return "MoneyHandler";
                 case (int)OID.VARBITOID:
-                    return "BitStringHandler";
+                    return "VarBitStringHandler";
                 case (int)OID.BITOID:
                     return "BitStringHandler";
                 case (int)OID.BYTEAOID:

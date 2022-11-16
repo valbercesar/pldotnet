@@ -322,9 +322,11 @@ int pldotnet_getArrayDatum(Datum array_datum, Datum *results, int nelems,
     ArrayType *array = DatumGetArrayTypeP(array_datum);
     int ndim = ARR_NDIM(array);
     int *dims = ARR_DIMS(array);
+    char *dataptr = ARR_DATA_PTR(array);
+    bits8 *bitmap = ARR_NULLBITMAP(array);
+    int bitmask = 1;
     int computed_nelems = 1;
     int i;
-    char *dataptr;
     int16 typlen;
     bool typbyval;
     char typalign;
@@ -346,12 +348,23 @@ int pldotnet_getArrayDatum(Datum array_datum, Datum *results, int nelems,
     // this will be cleaned up later into parameters
     get_typlenbyvalalign((Oid)element_typeid, &typlen, &typbyval, &typalign);
 
-    dataptr = ARR_DATA_PTR(array);
-
     for (i = 0; i < nelems; i++) {
-        results[i] = fetch_att(dataptr, typbyval, typlen);
-        dataptr = att_addlength_pointer(dataptr, typlen, dataptr);
-        dataptr = (char *)att_align_nominal(dataptr, typalign);
+        /* checking for NULL */
+        if (bitmap && (*bitmap & bitmask) == 0) {
+            results[i] = (Datum)0;
+        } else {
+            results[i] = fetch_att(dataptr, typbyval, typlen);
+            dataptr = att_addlength_pointer(dataptr, typlen, dataptr);
+            dataptr = (char *)att_align_nominal(dataptr, typalign);
+        }
+        /* advance bitmap pointer if any */
+        if (bitmap) {
+            bitmask <<= 1;
+            if (bitmask == 0x100 /* (1<<8) */) {
+                bitmap++;
+                bitmask = 1;
+            }
+        }
     }
     return 0;
 }

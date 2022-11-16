@@ -96,9 +96,9 @@ namespace PlDotNET_Handler
         {
             int ndims = 0;
             int[] rawDims = new int[ArrayHandler.maxdim];
-            byte* nullmap;
+            byte* nullmap = null;
             int typeId = 0;
-            ArrayHandler.pldotnet_getArrayAttributes(datum, ref typeId, ref ndims, rawDims, &nullmap);
+            ArrayHandler.pldotnet_getArrayAttributes(datum, ref typeId, ref ndims, rawDims, ref nullmap);
 
             int[] dims = rawDims[..ndims];
             int nelems = 1;
@@ -122,8 +122,8 @@ namespace PlDotNET_Handler
             {
                 int nullmapLen = (nelems / 8) + 1;
                 ReadOnlySpan<byte> nativeSpan = new ReadOnlySpan<byte>(nullmap, nullmapLen);
-                byte[] nullmap2 = nativeSpan.ToArray();
-                return InputArrayWithNull(datumList, dims, nullmap2);
+                byte[] nullmapArray = nativeSpan.ToArray();
+                return InputArrayWithNull(datumList, dims, nullmapArray);
             }
 
             var ret = datumList.Select((datum, index) => InputValue(datum)).ToArray();
@@ -176,10 +176,10 @@ namespace PlDotNET_Handler
             int nelms = datums.Count;
             object[] ret = new object[nelms];
 
-            for (int i = 0, cont = 0; i < nelms; i++)
+            for (int i = 0; i < nelms; i++)
             {
                 bool isNull = NullMap.CheckNullValue(nullmap, i);
-                ret[i] = isNull ? null : InputValue(datums[cont++]);
+                ret[i] = isNull ? null : InputValue(datums[i]);
             }
 
             Array ret2 = Array.CreateInstance(typeof(object), dims);
@@ -294,7 +294,7 @@ namespace PlDotNET_Handler
     public class Elog
     {
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_Elog(int level, string nessage);
+        public static extern void pldotnet_Elog(int level, string message);
 
         public static void pldotnet_Info(string message)
         {

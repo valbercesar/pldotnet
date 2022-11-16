@@ -13,7 +13,7 @@ namespace PlDotNET_Handler
         public static int maxdim = get_maxdim();
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getArrayAttributes(IntPtr datum, ref int type_id, ref int ndims, int[] dims, byte** nullmap);
+        public static extern unsafe void pldotnet_getArrayAttributes(IntPtr datum, ref int type_id, ref int ndims, int[] dims, ref byte* nullmap);
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe int pldotnet_getArrayDatum(IntPtr arrayDatum, IntPtr[] results, int nelems, int type_id);

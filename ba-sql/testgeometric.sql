@@ -284,8 +284,8 @@ return values_array;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'PATH[]', 'updateArrayPathIndex1', CAST(updateArrayPathIndex(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[2]) AS TEXT) = CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH] AS TEXT);
--- INSERT INTO results (FEATURE, TEST_NAME, RESULT)
--- SELECT 'PATH[]', 'updateArrayPathIndex2', CAST(updateArrayPathIndex(ARRAY[[null::PATH, null::PATH], [null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]] AS TEXT);
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'PATH[]', 'updateArrayPathIndex2', CAST(updateArrayPathIndex(ARRAY[[null::PATH, null::PATH], [null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[1,0]) AS TEXT) = CAST(ARRAY[[null::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]] AS TEXT);
 
 CREATE OR REPLACE FUNCTION IncreasePaths(values_array PATH[]) RETURNS PATH[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
