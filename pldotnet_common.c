@@ -30,6 +30,7 @@ compile_user_fn compile_user_function;
 build_datum_list_t build_datum_list;
 add_datum_to_list_t add_datum_to_list;
 free_generic_gchandle_t free_generic_gchandle;
+unload_assemblies_t unload_assemblies;
 
 /*
  * START: implementing functions
@@ -74,8 +75,13 @@ bool pldotnet_SetDotNetMethods(const char *library_path) {
         library_path, "PlDotNET.Engine, PlDotNET", "FreeGenericGCHandle",
         "PlDotNET.Engine+DelFreeGenericGCHandle, PlDotNET");
 
+    unload_assemblies = (unload_assemblies_t)pldotnet_GetDotNetMethod(
+        library_path, "PlDotNET.Engine, PlDotNET", "UnloadAssemblies",
+        "PlDotNET.Engine+DelUnloadAssemblies, PlDotNET");
+
     return nullptr != compile_user_function && nullptr != build_datum_list &&
-           nullptr != add_datum_to_list && nullptr != free_generic_gchandle;
+           nullptr != add_datum_to_list && nullptr != free_generic_gchandle &&
+           nullptr != unload_assemblies;
 }
 
 void *pldotnet_GetDotNetMethod(const char *library_path,
@@ -343,6 +349,9 @@ void pldotnet_SetDatumResult(void *value, bool isnull, void *native_result) {
 
 void pldotnet_FreeGCHandle(void *gchandle) { free_generic_gchandle(gchandle); }
 
+void pldotnet_UnloadAssemblies(int functionId) {
+    unload_assemblies(functionId);
+}
 /*
  * END: implementing functions
  */

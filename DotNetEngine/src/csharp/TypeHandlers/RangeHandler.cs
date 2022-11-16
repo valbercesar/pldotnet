@@ -26,9 +26,7 @@ namespace PlDotNET_Handler
             byte upperLower, lowerLower;
             T upper, lower;
 
-            Elog.pldotnet_Info("# DEBUG: Got range pointer: " + datum);
             RangeConstructors.pldotnet_getDatumRangeAttributes(datum, &isEmpty, &lower_range, &upperDange);
-            Elog.pldotnet_Info($"# DEBUG: Got upper/lower pointers: {upperDange}, {lower_range}");
 
             RangeConstructors.pldotnet_getDatumRangeBoundAttributes(upperDange,
                             &upperDatum, &upperInfinite, &upperInclusive, &upperLower);
@@ -38,14 +36,9 @@ namespace PlDotNET_Handler
             // TODO: check upperLower and lowerLower
             lower = HandlerObj.InputValue(lowerDatum);
             upper = HandlerObj.InputValue(upperDatum);
-            Elog.pldotnet_Info($"# DEBUG: creating range with: {lower}, " +
-                            $"{(lowerInclusive > 0)}, {(lowerInfinite > 0)} " +
-                            $"{upper}, {(upperInclusive > 0)}, {(upperInfinite > 0)}");
 
-            var retval = new NpgsqlRange<T>(lower, (lowerInclusive > 0), (lowerInfinite > 0),
+            return new NpgsqlRange<T>(lower, (lowerInclusive > 0), (lowerInfinite > 0),
                 upper, (upperInclusive > 0), (upperInfinite > 0));
-            Elog.pldotnet_Info($"# DEBUG: returning range {retval}");
-            return retval;
         }
 
         /// <inheritdoc />
@@ -54,21 +47,16 @@ namespace PlDotNET_Handler
             if (value.IsEmpty)
                 return RangeConstructors.pldotnet_createEmptyDatumRange(this.ElementOID);
 
-            // byte isEmpty = 0; // never used
             byte upperInfinite = (byte)(value.UpperBoundInfinite ? 1 : 0);
             byte lowerInfinite = (byte)(value.LowerBoundInfinite ? 1 : 0);
             byte upperInclusive = (byte)(value.UpperBoundIsInclusive ? 1 : 0);
             byte lowerInclusive = (byte)(value.LowerBoundIsInclusive ? 1 : 0);
-            // byte upperLower = 0; // never used
-            // byte lowerLower = 1; // never used
             T upper = value.UpperBound;
             T lower = value.LowerBound;
             IntPtr upperDatum = HandlerObj.OutputValue(upper);
             IntPtr lowerDatum = HandlerObj.OutputValue(lower);
-            // IntPtr upperDange, lower_range; // never used
-            // IntPtr retval; // never used
 
-            // TODO: now, actualy construct the range datum down in C
+            // TODO: now, actually construct the range datum down in C
             // - Construct the two RangeBound objects for upper and lower
             // - Combine them to make a Range
 

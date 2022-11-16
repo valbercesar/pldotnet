@@ -150,7 +150,8 @@ namespace PlDotNET
             {OID.INT8RANGEOID, "NpgsqlRange<long>"},
             {OID.TSRANGEOID, "NpgsqlRange<DateTime>"},
             {OID.TSTZRANGEOID, "NpgsqlRange<DateTime>"},
-            {OID.DATERANGEOID, "NpgsqlRange<DateOnly>"}
+            {OID.DATERANGEOID, "NpgsqlRange<DateOnly>"},
+            {OID.VOIDOID, "void"}
         };
 
         public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
@@ -360,6 +361,10 @@ namespace PlDotNET
         /// </summary> 
         public static string BuildCallSetResult(int id)
         {
+            if ((OID)id == OID.VOIDOID)
+                return ("var resultDatum = pldotnet_createDatumVoid();\n"
+                + "pldotnet_SetDatumResult(resultDatum, false, output);");
+
             string setResult;
             if (HandleArray.ContainsKey((OID)id))
                 setResult = $"var resultDatum = {GetTypeHandler(id)}Obj.OutputNullableArray(result);";
@@ -377,7 +382,9 @@ namespace PlDotNET
         {
             List<string> allHandlers = new List<string>();
 
-            allHandlers.Add(GetTypeHandler(outputType));
+            if ((OID)outputType != OID.VOIDOID)
+                allHandlers.Add(GetTypeHandler(outputType));
+
             for (int i = 0; i < inputTypes.Count; i++)
                 allHandlers.Add(GetTypeHandler(inputTypes[i]));
 
@@ -441,8 +448,9 @@ namespace PlDotNET
             }
 
             string userHandlerCode = File.ReadAllText(CSharpTemplateUserHandler);
+            string nullAbleOutput = returnType == "void" ? "" : "var result =";
             userHandlerCode = userHandlerCode.Replace("// $create_arguments", BuildCreateArguments(funcName, paramTypeList, supportNullInput));
-            userHandlerCode = userHandlerCode.Replace("// $user_function_call$", $"{className}." + BuildFunctionCall(funcName, sqlParams, supportNullInput));
+            userHandlerCode = userHandlerCode.Replace("// $user_function_call$", $"{nullAbleOutput} {className}." + BuildFunctionCall(funcName, sqlParams, supportNullInput));
             userHandlerCode = userHandlerCode.Replace("// $call_set_result$", BuildCallSetResult(returnTypeID));
             userHandlerCode = userHandlerCode.Replace("// $handler_objects$", BuildHandlerObjects(paramTypeList, returnTypeID));
 
@@ -458,7 +466,8 @@ namespace PlDotNET
                 throw new SystemException(msg);
             }
 
-            string rawFunctionDecl = $"public static {returnType}? {funcName}({paramsStr}) {{\n#line 1\n{bodyStr}\n}}";
+            nullAbleOutput = returnType == "void" ? "" : "?";
+            string rawFunctionDecl = $"public static {returnType}{nullAbleOutput} {funcName}({paramsStr}) {{\n#line 1\n{bodyStr}\n}}";
             string userFunctionCode = File.ReadAllText(CSharpTemplateUserFunction);
             userFunctionCode = userFunctionCode.Replace("// $user_function_declaration$", rawFunctionDecl);
 
@@ -729,5 +738,22 @@ namespace PlDotNET
             listObj.Add(datum);
         }
         public delegate void DelAddDatumToList(System.IntPtr list, System.IntPtr datum);
+
+        /// <summary>
+        /// Unloads the assemblies of a specific function.
+        /// </summary>
+        public static void UnloadAssemblies(uint functionId)
+        {
+            if (FuncBuiltCodeDict.ContainsKey(functionId))
+            {
+                FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
+                FuncBuiltCodeDict.Remove(functionId);
+            }
+            else
+            {
+                pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
+            }
+        }
+        public delegate void DelUnloadAssemblies(uint functionId);
     }
 }

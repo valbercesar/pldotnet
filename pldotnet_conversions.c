@@ -674,3 +674,5 @@ Datum pldotnet_createDatumArray(int element_id, int dimNumber, int *dimLengths,
 
     PG_RETURN_ARRAYTYPE_P(at);
 }
+
+Datum pldotnet_createDatumVoid(void) { PG_RETURN_VOID(); }

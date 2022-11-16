@@ -24,13 +24,15 @@ namespace UserSpace
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isnull, IntPtr nativeResult);
 
+        /// Returns a void datum
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumVoid();
+
         public static unsafe void CallUserFunction(List<IntPtr> arguments, IntPtr output, bool[] isnull)
         {
             // $create_arguments
 
-            var result = // $user_function_call$
-
-            System.Console.WriteLine($"-----> UserClass: {result}");
+            // $user_function_call$
 
             // $call_set_result$
         }

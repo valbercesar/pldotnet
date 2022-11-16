@@ -158,4 +158,8 @@ tests:
 	cat ba-sql/testrange.sql | (sudo -u postgres  psql 2>&1) | tee results/testrange.out
 	cat ba-sql/teststring.sql | (sudo -u postgres  psql 2>&1) | tee results/teststring.out
 	cat ba-sql/testuuid.sql | (sudo -u postgres  psql 2>&1) | tee results/testuuid.out
+	cat ba-sql/testdo.sql | (sudo -u postgres  psql 2>&1) | tee results/testdo.out
+	cat ba-sql/testprocedure.sql | (sudo -u postgres  psql 2>&1) | tee results/testprocedure.out
+	cat ba-sql/testcreate.sql | (sudo -u postgres  psql 2>&1) | tee results/testcreate.out
+	cat ba-sql/testcall.sql | (sudo -u postgres  psql 2>&1) | tee results/testcall.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out

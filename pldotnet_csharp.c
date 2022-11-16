@@ -199,7 +199,9 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS) {
 }
 
 Datum plcsharp_inline_handler(PG_FUNCTION_ARGS) {
-    return plcsharp_generic_handler(fcinfo, true);
+    Datum result = plcsharp_generic_handler(fcinfo, true);
+    pldotnet_UnloadAssemblies(fcinfo->flinfo->fn_oid);
+    return result;
 }
 
 Datum plcsharp_validator(PG_FUNCTION_ARGS) {
@@ -339,7 +341,8 @@ static pldotnet_FunctionDecl *plcsharp_GetFunctionDecl(Oid oid,
 
     plcsharp_BuildFunctionDecl(oid, fcinfo, proc, is_inline, validation, decl);
 
-    pldotnet_SaveFunction(decl, !found);
+    if (!is_inline)
+        pldotnet_SaveFunction(decl, !found);
 
     return decl;
 }
@@ -407,7 +410,12 @@ static bool plcsharp_GetSourceCode(
         elog(ERROR, "[pldotnet]: Invalid argument: user_function_decl is null");
 
     if (is_inline) {
-        elog(ERROR, "[pldotnet]: Inline functions are not supported yet");
+        user_function_decl->language = "csharp";
+        user_function_decl->func_name = "plcsharp_inline_block";
+        user_function_decl->func_rettype = VOIDOID;
+        user_function_decl->func_body =
+            ((InlineCodeBlock *)DatumGetPointer(PG_GETARG_DATUM(0)))
+                ->source_text;
     } else {
         user_function_decl->language = "csharp";
         user_function_decl->func_name = NameStr(procst->proname);

@@ -758,4 +758,11 @@ extern Datum pldotnet_createDatumArray(int element_id, int dimNumber,
                                        int *dimLengths, Datum *datums,
                                        bool *nulls);
 
+/**
+ * @brief Creates a PostgreSQL void.
+ *
+ * @return Datum void
+ */
+extern Datum pldotnet_createDatumVoid(void);
+
 #endif  // PLDOTNET_CONVERSIONS_H_

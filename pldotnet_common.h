@@ -319,10 +319,18 @@ bool *pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
 /**
  * @brief Calls the "FreeGenericGCHandle" function to free a GCHandle object
  * previous allocated in the .NET environment.
- * 
+ *
  * @param gchandle the GCHandle object that will be free on .NET.
  */
 void pldotnet_FreeGCHandle(void *gchandle);
+
+/**
+ * @brief Calls the "UnloadAssemblies" function to unload the assemblies related
+ * to the specified function.
+ *
+ * @param functionId the function ID.
+ */
+void pldotnet_UnloadAssemblies(int functionId);
 
 extern char *root_path;
 extern char *dnldir;

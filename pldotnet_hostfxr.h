@@ -53,6 +53,9 @@ typedef void(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_t)(void *list,
 typedef void(CORECLR_DELEGATE_CALLTYPE *free_generic_gchandle_t)(
     void *gchandle);
 
+typedef void(CORECLR_DELEGATE_CALLTYPE *unload_assemblies_t)(
+    uint32_t functionId);
+
 /** @brief Loads dotnet using the HostFXR.  HostFXR "finds and resolves
  * the runtime and all the frameworks the app needs", which in our
  * case is via `nethost`, "which is used by native apps (any app
