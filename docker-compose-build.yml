@@ -1,27 +1,11 @@
-version: '3.4'
-
 x-interactive: &interactive
   tty: true        # docker run -t
   stdin_open: true # docker run -i
 
-x-install-command: &install-command
-  command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/start_pg_non_persistent.sh && bash /app/pldotnet/Dockerfiles/scripts/install_package.sh && bash /app/pldotnet/Dockerfiles/scripts/test_package.sh"
-
 x-build-args: &build-args
   context: .
   args:
-    DOTNET_VERSION: 3.1
-
-x-ubuntu-environment: &ubuntu-environment
-  environment:
-    USE_DOTNETBUILD: "FALSE"
-
-x-install-volumes: &install-volumes
-  volumes_from:
-    - pldotnet-build:ro
-  volumes:
-    - $PWD/installation_test_results/deb/:/app/pldotnet/installation_test_results/deb/
-
+    DOTNET_VERSION: 6.0
 
 services:
   pldotnet-build:
@@ -51,79 +35,5 @@ services:
       - ./Makefile:/app/pldotnet/Makefile
       - ./DotNetEngine:/app/pldotnet/DotNetEngine/
       - ./ba-sql:/app/pldotnet/ba-sql/
-      - $PWD/debian/packages:/app/pldotnet/debian/packages
-
-  pldotnet-test:
-    container_name: pldotnet-build
-    image: pldotnet:build
-    <<: *interactive
-    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/build_packages.sh && bash"
-    build:
-      dockerfile: Dockerfiles/deb_package/Dockerfile_deb-build
-      <<: *build-args
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-      PGDATA: /var/lib/postgresql/data1/
-      POSTGRES_HOST_AUTH_METHOD: trust
-      # POSTGRES_PASSWORD: # your password
-    volumes:
-      - ./pldotnet.c:/app/pldotnet/pldotnet.c
-      - ./pldotnet_common.c:/app/pldotnet/pldotnet_common.c
-      - ./pldotnet_csharp.c:/app/pldotnet/pldotnet_csharp.c
-      - ./pldotnet_hostfxr.c:/app/pldotnet/pldotnet_hostfxr.c
-      - ./hostfxr.h:/app/pldotnet/hostfxr.h
-      - ./pldotnet_common.h:/app/pldotnet/pldotnet_common.h
-      - ./pldotnet_csharp.h:/app/pldotnet/pldotnet_csharp.h
-      - ./pldotnet_hostfxr.h:/app/pldotnet/pldotnet_hostfxr.h
-      - ./pldotnet_conversions.h:/app/pldotnet/pldotnet_conversions.h
-      - ./pldotnet_conversions.c:/app/pldotnet/pldotnet_conversions.c
-      - ./Makefile:/app/pldotnet/Makefile
-      - ./DotNetEngine:/app/pldotnet/DotNetEngine/
-      - $PWD/debian/packages:/app/pldotnet/debian/packages
-
-  pldotnet-deb:
-    container_name: pldotnet-deb-install
-    image: pldotnet:deb-install
-    <<: *interactive
-    <<: *install-command
-    build:
-      dockerfile: Dockerfiles/deb_package/Dockerfile_deb-install
-      <<: *build-args
-    environment:
-      USE_DOTNETBUILD: "FALSE"
-      PGDATA: /var/lib/postgresql/data2/
-      POSTGRES_HOST_AUTH_METHOD: trust
-    <<: *install-volumes
-
-  pldotnet-ubuntu18:
-    container_name: pldotnet-ubuntu18-install
-    image: pldotnet:ubuntu18-install
-    <<: *interactive
-    <<: *install-command
-    build:
-      dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu18-install
-      <<: *build-args
-    <<: *ubuntu-environment
-    <<: *install-volumes
-
-  pldotnet-ubuntu20:
-    container_name: pldotnet-ubuntu20-install
-    image: pldotnet:ubuntu20-install
-    <<: *interactive
-    <<: *install-command
-    build:
-      dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu20-install
-      <<: *build-args
-    <<: *ubuntu-environment
-    <<: *install-volumes
-
-  pldotnet-ubuntu21:
-    container_name: pldotnet-ubuntu21-install
-    image: pldotnet:ubuntu21-install
-    <<: *interactive
-    <<: *install-command
-    build:
-      dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu21-install
-      <<: *build-args
-    <<: *ubuntu-environment
-    <<: *install-volumes
+      - ./debian/packages:/app/pldotnet/debian/packages
+      - ./debian/pgversions:/app/pldotnet/debian/pgversions

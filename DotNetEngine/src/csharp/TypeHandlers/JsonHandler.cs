@@ -36,7 +36,7 @@ namespace PlDotNET_Handler
             byte* buf = null;
             pldotnet_getDatumJsonAttributes(datum, ref len, ref buf);
             ReadOnlySpan<byte> nativeSpan = new ReadOnlySpan<byte>(buf, len);
-            String s1 = utf8_e.GetString(nativeSpan.ToArray(), 0, len);
+            string s1 = utf8_e.GetString(nativeSpan.ToArray(), 0, len);
             return s1;
         }
 

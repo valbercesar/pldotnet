@@ -44,6 +44,11 @@ extern PGDLLIMPORT bool check_function_bodies;
 
 extern GHashTable *procedures;
 
+extern char *root_path;
+extern char *dnldir;
+
+extern dotnet_loader assembly_loader;
+
 /* As a reminder snprintf is defined as pg_snprintf.  TODO - CHECK HERE
  * Check port.h into postgres codebase
  */
@@ -331,8 +336,5 @@ void pldotnet_FreeGCHandle(void *gchandle);
  * @param functionId the function ID.
  */
 void pldotnet_UnloadAssemblies(int functionId);
-
-extern char *root_path;
-extern char *dnldir;
 
 #endif  // PLDOTNET_COMMON_H_

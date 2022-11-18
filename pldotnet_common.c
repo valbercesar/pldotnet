@@ -23,9 +23,18 @@
 
 #include "pldotnet_common.h"
 
+/*
+ * Directories where C#/F# projects for user code are built when
+ * USE_DOTNETBUILD is defined. Otherwise that is where our C#/F# compiler
+ * projects are located. Default for Linux is /var/lib/DotNetEngine/
+ */
+char *root_path = NULL;
 char *dnldir = STR(PLNET_ENGINE_DIR);
 
+GHashTable *procedures;
+
 dotnet_loader assembly_loader;
+
 compile_user_fn compile_user_function;
 build_datum_list_t build_datum_list;
 add_datum_to_list_t add_datum_to_list;

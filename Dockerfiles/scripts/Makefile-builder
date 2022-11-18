@@ -4,33 +4,32 @@ export DEBIAN_FRONTEND=noninteractive
 apt_update: 
 	echo "# ENVIRONMENT SETUP: running $@"
 	apt-get update 
-	# install the basics
-	apt install -y wget apt-transport-https build-essential apt-utils pkg-config
 
 add_dotnet: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
 	wget -q \
-		https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb \
+		https://packages.microsoft.com/config/$(shell lsb_release -i | cut -f2 -d'	' | sed 's/.*/\L&/')/$(shell lsb_release -r | cut -f2 -d'	')/packages-microsoft-prod.deb \
 		-O packages-microsoft-prod.deb
 	dpkg -i packages-microsoft-prod.deb 
 	apt-get update 
 
-install_dotnet: add_dotnet
+install_dotnet_deb: add_dotnet
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt-get install -y dotnet-sdk-6.0
-	apt-get install -y dotnet-runtime-6.0
-	apt-get install -y dotnet-hostfxr-6.0
+	apt install -y dotnet-sdk-6.0 dotnet-runtime-6.0 dotnet-hostfxr-6.0
+
+install_dotnet_ubuntu: add_dotnet
+	echo "# ENVIRONMENT SETUP: running $@"
+	apt install -y dotnet-hostfxr-6.0=6.0.8-1 dotnet-runtime-6.0=6.0.8-1 dotnet-sdk-6.0=6.0.400-1
 
 install_requirements: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential sudo vim
+	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential sudo vim apt-utils pkg-config
 
 install_pg_dev: install_requirements
 	# installs postgresql dev packages
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y postgresql-server-dev-all lsb-release devscripts
+	apt install -y postgresql postgresql-common postgresql-server-dev-all devscripts
 	mkdir -p /var/log/postgresql/data1
-	apt install -y postgresql postgresql-common postgresql-server-dev-all 
 
 install_pg: install_pg_dev
 	# install postgresql server for testing
@@ -59,10 +58,7 @@ create_cluster_and_install_extension:
 	rsync -a ${PGDATA}/* /var/lib/postgresql/pgnet_backup_cluster
 
 # these targets correspond to the original Dockerfiles which this Makefile replaces
-deb_build: install_pg_dev install_dotnet
-deb_install: install_pg_dev install_dotnet
-ubuntu18_install: install_pg_dev install_dotnet
-ubuntu20_install: install_pg_dev install_dotnet
-ubuntu21_install: install_pg_dev install_dotnet
+deb_build: install_pg_dev install_dotnet_deb
+ubuntu22_install: install_pg_dev install_dotnet_ubuntu
 
 

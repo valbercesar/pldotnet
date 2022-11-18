@@ -7,7 +7,7 @@ INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'TEXT', 'identityStr', identityStr('dog') = 'dog';
 
 CREATE OR REPLACE FUNCTION concatenateText(a text, b text) RETURNS text AS $$
-    String c = a + " " + b;
+    string c = a + " " + b;
     return c;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
@@ -15,7 +15,7 @@ SELECT 'TEXT', 'concatenateText', concatenateText('red', 'blue') = 'red blue';
 
 CREATE OR REPLACE FUNCTION multiplyText(a text, b int) RETURNS text AS $$
     int i;
-    String c = "";
+    string c = "";
     for(i=0;i<b;i++){ c = c + a; }
     return c;
 $$ LANGUAGE plcsharp STRICT;

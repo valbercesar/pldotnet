@@ -31,17 +31,6 @@
 
 #define DIR_SEPARATOR '/'
 
-/*
- * Directories where C#/F# projects for user code are built when
- * USE_DOTNETBUILD is defined. Otherwise that is where our C#/F# compiler
- * projects are located. Default for Linux is /var/lib/DotNetEngine/
- */
-
-char *root_path = NULL;
-// char *dnldir = QUOTE(PLNET_ENGINE_DIR);
-GHashTable *procedures;
-load_assembly_and_get_function_pointer_fn assembly_loader;
-
 PG_MODULE_MAGIC;
 
 /* Declare extension variables/structs here */
@@ -49,8 +38,7 @@ PGDLLEXPORT Datum _PG_init(PG_FUNCTION_ARGS);
 PGDLLEXPORT Datum _PG_fini(PG_FUNCTION_ARGS);
 
 #if PG_VERSION_NUM >= 90000
-#define CODEBLOCK \
-  ((InlineCodeBlock *) DatumGetPointer(PG_GETARG_DATUM(0)))->source_text
+
 PG_FUNCTION_INFO_V1(_PG_init);
 /**
  * @brief On startup, pldotnet initializes the function cache.
@@ -62,14 +50,11 @@ Datum _PG_init(PG_FUNCTION_ARGS) {
     if (root_path[strlen(root_path) - 1] == DIR_SEPARATOR)
         root_path[strlen(root_path) - 1] = 0;
 
-    procedures = g_hash_table_new_full(
-        g_direct_hash,
-        g_direct_equal,
-        NULL,
-        NULL);
+    procedures =
+        g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
 
     /* reset the assembly loader */
-    assembly_loader = (load_assembly_and_get_function_pointer_fn)NULL;
+    assembly_loader = nullptr;
 
     PG_RETURN_VOID();
 }

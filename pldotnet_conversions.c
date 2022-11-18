@@ -27,6 +27,7 @@
 #include <utils/cash.h>
 #include <utils/date.h>
 #include <utils/geo_decls.h>
+#include <sys/socket.h>
 #include <utils/inet.h>
 #include <utils/lsyscache.h>
 #include <utils/numeric.h>

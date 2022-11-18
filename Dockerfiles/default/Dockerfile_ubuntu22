@@ -1,4 +1,4 @@
-FROM ubuntu:21.04
+FROM ubuntu:22.04
 
 # avoids tzdata prompt
 ARG DEBIAN_FRONTEND=noninteractive
@@ -9,7 +9,7 @@ WORKDIR /app/pldotnet
 
 # Do all the things
 RUN apt update &&  apt install make
-RUN make -f /app/pldotnet/Dockerfiles/scripts/Makefile-builder ubuntu21_install
+RUN make -f /app/pldotnet/Dockerfiles/scripts/Makefile-builder ubuntu22_install
 
 # cluster creation requirements; locale settings
 RUN make -f /app/pldotnet/Dockerfiles/scripts/Makefile-builder install_cluster_requirements

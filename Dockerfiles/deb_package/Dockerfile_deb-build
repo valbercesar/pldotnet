@@ -1,4 +1,4 @@
-FROM postgres:10-stretch
+FROM postgres:15.1-bullseye
 
 # PLDOTNET
 COPY . /app/pldotnet/
