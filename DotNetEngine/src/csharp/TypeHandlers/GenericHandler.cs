@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A class to handle with null values in arrays.
@@ -275,7 +275,7 @@ namespace PlDotNET_Handler
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class OIDHandler : System.Attribute
     {
@@ -293,12 +293,27 @@ namespace PlDotNET_Handler
     /// </summary>
     public class Elog
     {
+        /// <summary>
+        /// C function declared in pldotnet_common.h.
+        /// See ::pldotnet_Elog().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_Elog(int level, string message);
+        public static extern void pldotnet_Elog(int level, string nessage);
 
+        /// <summary>
+        /// Reports an information message in PostgreSQL.
+        /// </summary>
         public static void pldotnet_Info(string message)
         {
             pldotnet_Elog(17, message);
+        }
+
+        /// <summary>
+        /// Reports an warning message in PostgreSQL.
+        /// </summary>
+        public static void pldotnet_Warning(string message)
+        {
+            pldotnet_Elog(19, message);
         }
     }
 }

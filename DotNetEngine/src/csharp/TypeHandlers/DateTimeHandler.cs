@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using NpgsqlTypes;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A class to control PostgreSQL parameters.
@@ -32,9 +32,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.DATEARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumDateAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumDateAttributes(IntPtr datum, ref int date);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumDate().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumDate(int date);
 
@@ -75,9 +83,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.TIMEARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumTimeAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumTimeAttributes(IntPtr datum, ref long time);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumTime().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumTime(long time);
 
@@ -111,9 +127,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.TIMETZARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumTimeTzAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumTimeTzAttributes(IntPtr datum, ref long time, ref int zone);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumTimeTz().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumTimeTz(long time, int zone);
 
@@ -148,9 +172,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.TIMESTAMPARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumTimestampAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumTimestampAttributes(IntPtr datum, ref long timestamp);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumTimestamp().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumTimestamp(long timestamp);
 
@@ -215,9 +247,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.TIMESTAMPTZARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumTimestampTzAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumTimestampTzAttributes(IntPtr datum, ref long timestamp);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumTimestampTz().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumTimestampTz(long timestamp);
 
@@ -281,9 +321,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.INTERVALARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumIntervalAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumIntervalAttributes(IntPtr datum, ref long time, ref int day, ref int month);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumInterval().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumInterval(long time, int day, int month);
 

@@ -39,6 +39,8 @@
 #include <utils/fmgrprotos.h>
 #include <access/htup_details.h>
 #include <utils/array.h>
+#include <funcapi.h>
+#include <utils/builtins.h>
 
 extern PGDLLIMPORT bool check_function_bodies;
 
@@ -245,11 +247,9 @@ const char *pldotnet_GetFunctionBody(HeapTuple proc, Form_pg_proc procst);
  *
  * @param proc the HeapTuple object.
  * @param procst the Form_pg_proc object.
- * @param is_csharp whether the user functions uses C#.
  * @return const char* the SQL parameters.
  */
-const char *pldotnet_GetSqlParamsName(HeapTuple proc, Form_pg_proc procst,
-                                      bool is_csharp);
+const char *pldotnet_GetSqlParamsName(HeapTuple proc, Form_pg_proc procst);
 
 /**
  * @brief Returns the OIDs of the SQL function as an int*.

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for the PostgreSQL float data type.
@@ -18,9 +18,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.FLOAT4ARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getFloat().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern float pldotnet_getFloat(IntPtr datum);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumFloat().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumFloat(float value);
 
@@ -52,9 +60,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.FLOAT8ARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDouble().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern double pldotnet_getDouble(IntPtr datum);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumDouble().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumDouble(double value);
 

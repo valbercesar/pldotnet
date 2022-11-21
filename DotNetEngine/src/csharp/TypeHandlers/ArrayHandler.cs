@@ -1,23 +1,39 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A generic class for all type handlers which handle PostreSQL arrays.
     /// </summary>
     public static class ArrayHandler
     {
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::get_maxdim().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern int get_maxdim();
         public static int maxdim = get_maxdim();
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getArrayAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getArrayAttributes(IntPtr datum, ref int type_id, ref int ndims, int[] dims, ref byte* nullmap);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getArrayDatum().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe int pldotnet_getArrayDatum(IntPtr arrayDatum, IntPtr[] results, int nelems, int type_id);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumArray().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumArray(int elementId, int dimNumber, int[] dimLengths, IntPtr[] datums, byte[] nullmap = null);
 

@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using NpgsqlTypes;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for the PostgreSQL point data type.
@@ -19,9 +19,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.POINTARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumPointAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumPointAttributes(IntPtr datum, ref double x, ref double y);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumPoint().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumPoint(double x, double y);
 
@@ -55,9 +63,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.LINEARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumLineAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumLineAttributes(IntPtr datum, ref double a, ref double b, ref double c);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumLine().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumLine(double a, double b, double c);
 
@@ -91,9 +107,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.LSEGARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumLineSegmentAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumLineSegmentAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumLineSegment().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumLineSegment(double x1, double y1, double x2, double y2);
 
@@ -127,9 +151,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.BOXARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumBoxAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumBoxAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumBox().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumBox(double x1, double y1, double x2, double y2);
 
@@ -169,12 +201,24 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.PATHARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumPathAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumPathAttributes(IntPtr datum, ref int pointNumber, ref int closed);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumPathCoordinates().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumPathCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumPath().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumPath(int npts, int closed, double[] xCoordinates, double[] yCoordinates);
 
@@ -227,12 +271,24 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.POLYGONARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumPolygonAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumPolygonAttributes(IntPtr datum, ref int pointNumber);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumPolygonCoordinates().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumPolygonCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumPolygon().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumPolygon(int npts, double[] xCoordinates, double[] yCoordinates);
 
@@ -282,9 +338,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.CIRCLEARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumCircleAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumCircleAttributes(IntPtr datum, ref double x, ref double y, ref double r);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumCircle().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumCircle(double x, double y, double r);
 

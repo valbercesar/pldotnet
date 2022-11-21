@@ -4,7 +4,7 @@ using System.Text;
 using System.Buffers;
 using System.Text.Unicode;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for PostgreSQL character data types (text, char, varchar, xml).
@@ -16,27 +16,59 @@ namespace PlDotNET_Handler
     {
         public static UTF8Encoding Utf8 = new UTF8Encoding();
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumTextAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumTextAttributes(IntPtr datum, ref int len, ref byte* buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumText().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumText(int len, byte[] buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumCharAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumCharAttributes(IntPtr datum, ref int len, ref byte* buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumChar().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumChar(int len, byte[] buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumVarCharAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumVarCharAttributes(IntPtr datum, ref int len, ref byte* buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumVarChar().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumVarChar(int len, byte[] buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumXmlAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumXmlAttributes(IntPtr datum, ref int len, ref byte* buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumXml().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumXml(int len, byte[] buf);
 

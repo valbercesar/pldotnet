@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for the PostgreSQL var bit string data type.
@@ -19,9 +19,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.VARBITARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumVarBitAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumVarBitAttributes(IntPtr datum, ref int len, ref byte* dat);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumVarBit().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumVarBit(int len, byte[] dat);
 

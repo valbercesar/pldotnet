@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using NpgsqlTypes;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A generic type handler for the PostgreSQL range.
@@ -75,21 +75,37 @@ namespace PlDotNET_Handler
     /// </remarks>
     public class RangeConstructors
     {
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumRangeAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static unsafe extern void pldotnet_getDatumRangeAttributes(
                 IntPtr inputDatum, byte* isEmpty,
                 IntPtr* lowerRange, IntPtr* upperDange);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumRangeBoundAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static unsafe extern void pldotnet_getDatumRangeBoundAttributes(
                 IntPtr inputRange, IntPtr* rangeDatum,
                 byte* infinite, byte* inclusive, byte* lower);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumRange().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static unsafe extern IntPtr pldotnet_createDatumRange(OID rtOid,
                 IntPtr lowerDatum, byte lowerInfinite, byte lowerInclusive,
                 IntPtr upperDatum, byte upperInfinite, byte upperInclusive);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createEmptyDatumRange().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static unsafe extern IntPtr pldotnet_createEmptyDatumRange(OID rangeTypeId);
     }

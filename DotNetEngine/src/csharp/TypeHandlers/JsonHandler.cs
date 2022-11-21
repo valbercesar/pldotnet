@@ -4,7 +4,7 @@ using System.Text;
 using System.Buffers;
 using System.Text.Unicode;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for the PostgreSQL json data type.
@@ -23,9 +23,17 @@ namespace PlDotNET_Handler
 
         public static UTF8Encoding utf8_e = new UTF8Encoding();
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumJsonAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumJsonAttributes(IntPtr datum, ref int len, ref byte* buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumJson().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumJson(int len, byte[] buf);
 

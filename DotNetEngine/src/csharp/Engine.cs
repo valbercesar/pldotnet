@@ -43,7 +43,7 @@ using System.Data.Common;
 using System.Text.RegularExpressions;
 
 using NpgsqlTypes;
-using PlDotNET_Handler;
+using PlDotNET.Handler;
 
 namespace PlDotNET
 {
@@ -160,29 +160,10 @@ namespace PlDotNET
 
         public static string CSharpTemplateUserFunction = "@CSHARP_TEMPLATE_DIR/UserFunction.tcs";
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_Elog(int level, string nessage);
-
-        /// <summary>
-        /// Reports an information message in PostgreSQL.
-        /// </summary> 
-        public static void pldotnet_Info(string message)
-        {
-            pldotnet_Elog(17, message);
-        }
-
-        /// <summary>
-        /// Reports an warning message in PostgreSQL.
-        /// </summary> 
-        public static void pldotnet_Warning(string message)
-        {
-            pldotnet_Elog(19, message);
-        }
-
         /// <summary>
         /// It returns a list with of tuple, each tuple being the variable type
         /// and its name.
-        /// </summary> 
+        /// </summary>
         public static List<Tuple<string, string>> GetSqlParams(List<string> paramNames, List<int> paramTypes)
         {
             List<Tuple<string, string>> arguments = new List<Tuple<string, string>>();
@@ -196,7 +177,7 @@ namespace PlDotNET
 
         /// <summary>
         /// It creates the argument list of the user function.
-        /// </summary> 
+        /// </summary>
         public static string GetParamsString(List<Tuple<string, string>> sqlParams, bool supportNullInput)
         {
             if (supportNullInput || Engine.AlwaysNullable)
@@ -206,7 +187,7 @@ namespace PlDotNET
 
         /// <summary>
         /// Returns the handler object NAME for the specified OID.
-        /// </summary> 
+        /// </summary>
         public static string GetTypeHandler(int id)
         {
             switch (id)
@@ -297,11 +278,20 @@ namespace PlDotNET
         /// <summary>
         /// This function creates the code to call the handler objects, which
         /// do the process of converting a Postgres type to an equivalente .NET
-        /// type. 
-        /// </summary> 
+        /// type.
+        /// </summary>
         public static string BuildCreateArguments(string funcName, List<int> paramTypes, bool supportNullInput)
         {
             var sb = new System.Text.StringBuilder();
+
+            if (!supportNullInput)
+            {
+                sb.AppendLine($"// As the SQL function named {funcName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
+                sb.AppendLine("// `PL.NET` doesn't check whether any argument datum is null.");
+                sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
+                sb.AppendLine("// to always check whether the datum is null.\n");
+            }
+
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
             int argc = paramTypes.Count;
 
@@ -332,7 +322,7 @@ namespace PlDotNET
 
         /// <summary>
         /// This function creates code to call the user function.
-        /// </summary> 
+        /// </summary>
         public static string BuildFunctionCall(string funcName, List<Tuple<string, string>> sqlParams, bool supportNullInput)
         {
             var sb = new System.Text.StringBuilder();
@@ -358,7 +348,7 @@ namespace PlDotNET
         /// This function returns the code to create the Datum result according
         /// to the OID of the result function. It also adds the code to set the
         /// Datum object to the function output.
-        /// </summary> 
+        /// </summary>
         public static string BuildCallSetResult(int id)
         {
             if ((OID)id == OID.VOIDOID)
@@ -377,7 +367,7 @@ namespace PlDotNET
 
         /// <summary>
         /// Returns the code to create the handler object that will be used.
-        /// </summary> 
+        /// </summary>
         public static string BuildHandlerObjects(List<int> inputTypes, int outputType)
         {
             List<string> allHandlers = new List<string>();
@@ -429,7 +419,7 @@ namespace PlDotNET
             string bodyStr = Marshal.PtrToStringAuto(body);
 
             bool providedAssembly = bodyStr.Contains(".dll");
-            string nampespace = "UserSpace";
+            string nampespace = "PlDotNET.UserSpace";
             string className = "UserFunction";
             if (providedAssembly)
             {
@@ -477,7 +467,7 @@ namespace PlDotNET
         /// <summary>
         /// This function returns the compilation errors reported during the
         /// compilation of the dynamic code using Roslyn.
-        /// </summary>  
+        /// </summary>
         public static string GetCompilationError(Diagnostic diagnostic, string[] lines)
         {
             string pattern = @"\d+,\d+";
@@ -502,17 +492,17 @@ namespace PlDotNET
 
         /// <summary>
         /// This function compiles the dynamic code using Roslyn.
-        /// </summary>   
+        /// </summary>
         public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
             SyntaxNode node = userTree.GetRoot().NormalizeWhitespace();
             sourceCode = node.ToFullString();
 
-            pldotnet_Info("===========================");
-            pldotnet_Info("Compiling source code");
-            pldotnet_Info($"Source code:\n{sourceCode}");
-            pldotnet_Info("===========================");
+            Elog.pldotnet_Info("===========================");
+            Elog.pldotnet_Info("Compiling source code");
+            Elog.pldotnet_Info($"Source code:\n{sourceCode}");
+            Elog.pldotnet_Info("===========================");
 
             var trustedAssembliesPathsArray = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
             List<string> trustedAssembliesPaths = new();
@@ -522,32 +512,27 @@ namespace PlDotNET
 
             var neededAssemblies = new[]
             {
-                "System.Runtime",
-                "System.Private.CoreLib",
+                "System.Buffers",
+                "System.Collections",
+                "System.Collections.Generic",
                 "System.Console",
-                "System.Linq",
-                "System.Data.SqlClient",
+                "System.Core",
                 "System.Data",
                 "System.Data.Common",
-                "System.Collections.Generic",
+                "System.Data.SqlClient",
+                "System.Diagnostics",
                 "System.Diagnostics.CodeAnalysis",
                 "System.Globalization",
-                "Npgsql",
-                "System.Text",
-                "System.Buffers",
-                "System.Text.Unicode",
                 "System.Linq",
-                "System.Text",
-                "System.Buffers",
-                "System.Text.Unicode",
-                "System.Diagnostics",
+                "System.Linq.Expressions",
                 "System.Net.NetworkInformation",
                 "System.Net.Primitives",
-                "PlDotNET",
-                "System.Core",
-                "System.Linq.Expressions",
-                "Microsoft.CSharp",
-                "System.Collections"
+                "System.Private.CoreLib",
+                "System.Runtime",
+                "System.Text",
+                "System.Text.Unicode",
+                "Npgsql",
+                "PlDotNET"
             };
 
             List<PortableExecutableReference> references = trustedAssembliesPaths
@@ -578,7 +563,7 @@ namespace PlDotNET
                 foreach (var diagnostic in compileResult.Diagnostics)
                     sb.AppendLine(GetCompilationError(diagnostic, lines));
                 sb.AppendLine("\n********ERROR************\n");
-                pldotnet_Warning(sb.ToString());
+                Elog.pldotnet_Warning(sb.ToString());
                 return null;
             }
 
@@ -603,12 +588,12 @@ namespace PlDotNET
             {
                 if (cached.UserHandlerSourceCode == sourceCode.userHandler && cached.UserFunctionSourceCode == sourceCode.userFunction && !useUserAssembly)
                 {
-                    pldotnet_Info("User function hasn't changed, so it doesn't need to be recompiled!");
+                    Elog.pldotnet_Info("User function hasn't changed, so it doesn't need to be recompiled!");
                     return 0;
                 }
                 else
                 {
-                    pldotnet_Info("User function has changed.");
+                    Elog.pldotnet_Info("User function has changed.");
                     FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
                     FuncBuiltCodeDict.Remove(functionId);
                 }
@@ -660,11 +645,11 @@ namespace PlDotNET
         {
             var compiledAssembly = userAlc.LoadFromStream(new MemoryStream(memoryStream.GetBuffer()));
 
-            Type procClassType = compiledAssembly.GetType("UserSpace.UserHandler");
+            Type procClassType = compiledAssembly.GetType("PlDotNET.UserSpace.UserHandler");
 
             if (null == procClassType)
             {
-                pldotnet_Warning($"Failed to get type UserSpace.UserHandler");
+                Elog.pldotnet_Warning($"Failed to get type PlDotNET.UserSpace.UserHandler");
                 return null;
             }
 
@@ -680,7 +665,7 @@ namespace PlDotNET
         /// <summary>
         /// This function is called called from C code and tries to get the
         /// cached function by the function id. If the cached functions is not
-        /// found, an error message is reported. Otherwise, it calls the 
+        /// found, an error message is reported. Otherwise, it calls the
         /// function compiled by Roslyn.
         /// </summary>
         public static unsafe int RunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output)
@@ -698,7 +683,7 @@ namespace PlDotNET
             }
             else
             {
-                pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
+                Elog.pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
             }
 
             return 0;
@@ -751,7 +736,7 @@ namespace PlDotNET
             }
             else
             {
-                pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
+                Elog.pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
             }
         }
         public delegate void DelUnloadAssemblies(uint functionId);

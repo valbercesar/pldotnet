@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Net.NetworkInformation;
 using System.Net;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for the PostgreSQL macaddr data types.
@@ -20,9 +20,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.MACADDRARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumMacAddressAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumMacAddressAttributes(IntPtr datum, int length, byte[] bytes);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumMacAddress().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumMacAddress(int length, byte[] bytes);
 
@@ -86,9 +94,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.INETARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumInetAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern void pldotnet_getDatumInetAttributes(IntPtr datum, ref int nelem, byte[] bytes, ref int netmask);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumInet().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumInet(int length, byte[] bytes, int netmask);
 

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for the PostgreSQL bool data type.
@@ -18,10 +18,18 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.BOOLARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getBoolean().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool pldotnet_getBoolean(IntPtr datum);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumBoolean().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumBoolean(bool value);
 

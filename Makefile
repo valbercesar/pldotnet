@@ -97,6 +97,7 @@ cpplint:
 	cpplint --filter=-readability/casting,-build/include_subdir,-runtime/int,-runtime/printf *.c *.h
 
 doxygen:
+	rm -rf documentation
 	doxygen Doxyfile
 
 clean-docker:

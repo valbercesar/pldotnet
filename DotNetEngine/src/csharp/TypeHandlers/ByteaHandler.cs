@@ -4,7 +4,7 @@ using System.Text;
 using System.Buffers;
 using System.Text.Unicode;
 
-namespace PlDotNET_Handler
+namespace PlDotNET.Handler
 {
     /// <summary>
     /// A type handler for the PostgreSQL bytea data type.
@@ -21,9 +21,17 @@ namespace PlDotNET_Handler
             this.ArrayOID = OID.BYTEAARRAYOID;
         }
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_getDatumByteaAttributes().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern unsafe void pldotnet_getDatumByteaAttributes(IntPtr datum, ref int len, ref byte* buf);
 
+        /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_createDatumBytea().
+        /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern IntPtr pldotnet_createDatumBytea(int len, byte[] buf);
 

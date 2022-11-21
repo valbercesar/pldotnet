@@ -228,71 +228,85 @@ void pldotnet_SaveFunction(pldotnet_FunctionDecl *function, bool insert) {
 const char *pldotnet_GetFunctionBody(HeapTuple proc, Form_pg_proc procst) {
     bool isnull = false;
     Datum prosrc = SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_prosrc, &isnull);
-    const char *body = DatumGetCString(DirectFunctionCall1(textout, prosrc));
-    return body;
+    if (isnull)
+        elog(ERROR, "null prosrc");
+    return TextDatumGetCString(prosrc);
 }
 
-const char *pldotnet_GetSqlParamsName(HeapTuple proc, Form_pg_proc procst,
-                                      bool is_csharp) {
-    int nnames = 0;
-    bool isnull = false;
-    const char **argnames_array = nullptr;
-    Datum *argnames = nullptr;
+const char *pldotnet_GetSqlParamsName(HeapTuple proc, Form_pg_proc procst) {
+    int nargs = 0;
     char *sql_params = nullptr;
-    Datum argname =
-        SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_proargnames, &isnull);
-    size_t buffer_size = 0;
     const char *space = " ";
-    size_t space_size = strlen(space);
+    size_t buffer_size = 0;
+    Oid *types;
+    char **names, *modes;
+    int total;
 
-    if (!isnull)
-        deconstruct_array(DatumGetArrayTypeP(argname), TEXTOID, -1, false, 'i',
-                          &argnames, NULL, &nnames);
-    else
+    if (!procst->pronargs)
         return nullptr;
 
-    argnames_array =
-        (const char **)palloc0(sizeof(char *) * procst->pronargs * 2);
+    /* number of argument that are not OUT or TABLE */
+    total = get_func_arg_info(proc, &types, &names, &modes);
 
-    for (int16_t i = 0; i < procst->pronargs; ++i) {
-        /* get the arg name */
-        const char *name =
-            DatumGetCString(DirectFunctionCall1(textout, argnames[i]));
+    for (int i = 0; i < total; i++) {
+        if (modes &&
+            (modes[i] == PROARGMODE_OUT || modes[i] == PROARGMODE_TABLE))
+            continue; /* skip OUT arguments */
 
-        argnames_array[i * 2] = name;
-
-        buffer_size += strlen(name) + space_size;
+        nargs++;
+        buffer_size += strlen(names[i]);
     }
 
-    sql_params = (char *)palloc0(buffer_size);
+    sql_params = (char *)palloc0(buffer_size + strlen(space) * nargs);
 
-    for (int16_t i = 0; i < procst->pronargs; ++i) {
+    for (int i = 0, pos = 0; i < total; i++) {
+        if (modes &&
+            (modes[i] == PROARGMODE_OUT || modes[i] == PROARGMODE_TABLE))
+            continue; /* skip OUT arguments */
+
         /* copy the arg name */
-        strcat(sql_params, argnames_array[i * 2]);
-        if (i < procst->pronargs - 1)
+        strcat(sql_params, names[i]);
+        if (pos < nargs - 1)
             strcat(sql_params, space);
+        pos++;
     }
+
     return sql_params;
 }
 
 const int *pldotnet_GetSqlParamsType(HeapTuple proc, Form_pg_proc procst) {
-    int nnames = 0;
-    bool isnull = false;
-    Datum *argnames = nullptr;
-    Datum argname =
-        SysCacheGetAttr(PROCOID, proc, Anum_pg_proc_proargnames, &isnull);
-    Oid *argtypes = procst->proargtypes.values;
-    int *sql_types = (int *)palloc0(sizeof(int) * procst->pronargs);
+    int nargs = 0;
+    int *sql_types = nullptr;
+    Oid *types;
+    char **names, *modes;
+    int total;
 
-    if (!isnull)
-        deconstruct_array(DatumGetArrayTypeP(argname), TEXTOID, -1, false, 'i',
-                          &argnames, NULL, &nnames);
-    else
+    if (!procst->pronargs)
         return nullptr;
 
-    for (int16_t i = 0; i < procst->pronargs; ++i) {
-        sql_types[i] = argtypes[i];
+    /* number of argument that are not OUT or TABLE */
+    total = get_func_arg_info(proc, &types, &names, &modes);
+
+    if (modes == nullptr) {
+        nargs = total;
+    } else {
+        for (int i = 0; i < total; i++) {
+            if (modes[i] != PROARGMODE_OUT && modes[i] != PROARGMODE_TABLE) {
+                nargs++;
+            }
+        }
     }
+
+    sql_types = (int *)palloc0(sizeof(int) * nargs);
+
+    for (int i = 0, pos = 0; i < total; i++) {
+        if (modes &&
+            (modes[i] == PROARGMODE_OUT || modes[i] == PROARGMODE_TABLE))
+            continue; /* skip OUT arguments */
+
+        sql_types[pos++] = types[i];
+    }
+
     return sql_types;
 }
 
