@@ -276,9 +276,17 @@ void pldotnet_getDatumUuidAttributes(void *datum, unsigned char *data) {
 void pldotnet_getDatumRangeAttributes(Datum input_datum, bool *is_empty,
                                       RangeBound **lower_range,
                                       RangeBound **upper_range) {
-    RangeType *orig_r = DatumGetRangeTypeP(input_datum);
-    Oid rt_oid = RangeTypeGetOid(orig_r);
-    TypeCacheEntry *typcache;
+    RangeType *orig_r = nullptr;
+    TypeCacheEntry *typcache = nullptr;
+    Oid rt_oid;
+
+#if PG_VERSION_NUM >= 110000
+    orig_r = DatumGetRangeTypeP(input_datum);
+#else
+    orig_r = DatumGetRangeType(input_datum);
+#endif
+
+    rt_oid = RangeTypeGetOid(orig_r);
 
     *lower_range = palloc(sizeof(RangeBound));
     *upper_range = palloc(sizeof(RangeBound));
@@ -629,7 +637,11 @@ Datum pldotnet_createEmptyDatumRange(Oid rangetypid) {
     retval->rangetypid = rangetypid;
     flag_ptr[len - 1] = RANGE_EMPTY;
 
+#if PG_VERSION_NUM >= 110000
     PG_RETURN_RANGE_P(retval);
+#else
+    PG_RETURN_RANGE(retval);
+#endif
 }
 
 Datum pldotnet_createDatumRange(Oid rt_oid, Datum lower_datum,
@@ -652,7 +664,11 @@ Datum pldotnet_createDatumRange(Oid rt_oid, Datum lower_datum,
 
     typcache = lookup_type_cache(rt_oid, TYPECACHE_RANGE_INFO);
 
+#if PG_VERSION_NUM >= 110000
     PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
+#else
+    PG_RETURN_RANGE(range_serialize(typcache, &lower, &upper, false));
+#endif
 }
 
 Datum pldotnet_createDatumArray(int element_id, int dimNumber, int *dimLengths,

@@ -86,6 +86,7 @@ plnet-install: install
 
 plnet-install-dpkg:
 	rm -f debian/packages/postgresql-*-pldotnet_*.deb
+	-sudo -u postgres pg_createcluster $(PG_VER) default
 	service postgresql start
 	pg_buildext updatecontrol
 	debuild -b -uc -us --lintian-opts --profile debian

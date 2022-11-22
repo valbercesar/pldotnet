@@ -1,9 +1,11 @@
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'INTEGER', 'fibonacci2', fibonacci(3) = integer '2';
+SELECT 'BIGINT', 'fibonacci2', fibonacci(5) = BIGINT '5';
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'INTEGER', 'fibonacci3', fibonacci(24) = integer '46368';
+SELECT 'BIGINT', 'fibonacci3', fibonacci(15) = BIGINT '610';
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'INTEGER', 'fibonacci1', fibonacci(30) = integer '832040';
+SELECT 'BIGINT', 'fibonacci1', fibonacci(20) = BIGINT '6765';
+INSERT INTO results (FEATURE, TEST_NAME, RESULT)
+SELECT 'BIGINT', 'fibonacci1', fibonacci(30) = BIGINT '832040';
 
 INSERT INTO results (FEATURE, TEST_NAME, RESULT)
 SELECT 'MONEY[]', 'updateMoneyArray1', updateMoneyArray(ARRAY['32500.0'::MONEY, '-500.4'::MONEY, null::MONEY, '900540.2'::MONEY], '1390540.2'::MONEY, ARRAY[2]) = ARRAY['32500.0'::MONEY, '-500.4'::MONEY, '1390540.2'::MONEY, '900540.2'::MONEY];

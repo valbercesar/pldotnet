@@ -37,9 +37,10 @@ PG_MODULE_MAGIC;
 PGDLLEXPORT Datum _PG_init(PG_FUNCTION_ARGS);
 PGDLLEXPORT Datum _PG_fini(PG_FUNCTION_ARGS);
 
-#if PG_VERSION_NUM >= 90000
+#if PG_VERSION_NUM >= 100000
 
 PG_FUNCTION_INFO_V1(_PG_init);
+
 /**
  * @brief On startup, pldotnet initializes the function cache.
  */

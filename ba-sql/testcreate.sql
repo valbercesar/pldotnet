@@ -1,8 +1,14 @@
-CREATE OR REPLACE FUNCTION fibonacci(n integer) RETURNS integer AS $$
-    int? ret = 1;
-    if (n == 1 || n == 2) 
-        return ret;
-    return fibonacci(n.GetValueOrDefault()-1) + fibonacci(n.GetValueOrDefault()-2);;
+CREATE OR REPLACE FUNCTION fibonacci(n integer) RETURNS BIGINT AS $$
+    if (n <= 0)
+    {
+        Elog.pldotnet_Info("Fibonacci number must be greater than 0.");
+        return null;
+    }
+    else if (n <= 2)
+    {
+        return 1;
+    }
+    return fibonacci(n-1) + fibonacci(n-2);
 $$ LANGUAGE plcsharp;
 
 CREATE OR REPLACE FUNCTION updateMoneyArray(values_array MONEY[], desired MONEY, index integer[]) RETURNS MONEY[] AS $$
