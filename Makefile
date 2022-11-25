@@ -145,3 +145,9 @@ tests:
 	cat ba-sql/testcreate.sql | (sudo -u postgres  psql 2>&1) | tee results/testcreate.out
 	cat ba-sql/testcall.sql | (sudo -u postgres  psql 2>&1) | tee results/testcall.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out
+
+stress-test:
+	rm -rf results
+	mkdir results
+	echo 'DROP TABLE results;CREATE TABLE results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres psql)
+	sudo bash stress_test.sh
