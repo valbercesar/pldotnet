@@ -1,0 +1,17 @@
+\i sql/benchmark/includes.sql
+
+\i sql/testrecursive.sql
+\i sql/python/testrecursive.sql
+--- \i sql/java/testrecursive.sql
+
+SELECT
+    'fibbb',
+    plbench('SELECT fibbb(30)', 10) as plcsharp,
+    plbench('SELECT fibbbPython(30)', 10) as plpython;
+    --- plbench('SELECT fibbbJava(30)', 10) as pljava;
+
+SELECT
+    'fact',
+    plbench('SELECT fact(5)', 10) as plcsharp,
+    plbench('SELECT factPython(5)', 10) as plpython;
+    --- plbench('SELECT factJava(5)', 10) as pljava;

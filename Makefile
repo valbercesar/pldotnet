@@ -146,6 +146,10 @@ tests:
 	cat ba-sql/testcall.sql | (sudo -u postgres  psql 2>&1) | tee results/testcall.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from results;' | (sudo -u postgres  psql 2>&1) | tee results/results.out
 
+install-pls:
+	sudo apt-get install -y  postgresql-plpython3 default-jre maven
+	sudo -u postgres psql -f "sql/python/init-extension.sql"
+	
 stress-test:
 	rm -rf results
 	mkdir results

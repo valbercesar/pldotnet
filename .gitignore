@@ -93,6 +93,7 @@ results/
 build*/
 
 sql/*
+!sql/benchmark/
 results/*
 expected/*
 documentation/*
