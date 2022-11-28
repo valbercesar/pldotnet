@@ -7,8 +7,8 @@ CREATE OR REPLACE FUNCTION byteaConversions(a BYTEA, b BYTEA) RETURNS BYTEA AS $
     string result = s1 + " " + s2;
     return utf8_e.GetBytes(result);
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BYTEA', 'byteaConversions', byteaConversions('Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA) = '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea', 'byteaConversions', byteaConversions('Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA) = '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA;
 
 CREATE OR REPLACE FUNCTION concatenateBytea(a BYTEA, b TEXT) RETURNS BYTEA AS $$
     UTF8Encoding utf8_e = new UTF8Encoding();
@@ -19,8 +19,8 @@ CREATE OR REPLACE FUNCTION concatenateBytea(a BYTEA, b TEXT) RETURNS BYTEA AS $$
     b_bytes.CopyTo(c, a.Length);
     return c;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BYTEA', 'concatenateBytea', concatenateBytea('\x427269636b2041626f6465206973206e69636521'::BYTEA, ' Thank you very much...'::TEXT) = '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea', 'concatenateBytea', concatenateBytea('\x427269636b2041626f6465206973206e69636521'::BYTEA, ' Thank you very much...'::TEXT) = '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA;
 
 --- BYTEA Arrays
 
@@ -29,12 +29,12 @@ int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
 return values_array;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BYTEA[]', 'updateByteaArrayIndex1', updateByteaArrayIndex(ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA], 'Inserted BYTEA'::BYTEA, ARRAY[2]) = ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, 'Inserted BYTEA'::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA];
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BYTEA[]', 'updateByteaArrayIndex2', updateByteaArrayIndex(ARRAY[['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA], [null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]], 'Inserted BYTEA'::BYTEA, ARRAY[1,0]) = ARRAY[['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA], ['Inserted BYTEA'::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]];
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BYTEA[]', 'updateByteaArrayIndex3', updateByteaArrayIndex(ARRAY[[null::BYTEA, null::BYTEA], [null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]], 'Inserted BYTEA'::BYTEA, ARRAY[1,0]) = ARRAY[[null::BYTEA, null::BYTEA], ['Inserted BYTEA'::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea-null-1array', 'updateByteaArrayIndex1', updateByteaArrayIndex(ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA], 'Inserted BYTEA'::BYTEA, ARRAY[2]) = ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, 'Inserted BYTEA'::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea-null-2array', 'updateByteaArrayIndex2', updateByteaArrayIndex(ARRAY[['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA], [null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]], 'Inserted BYTEA'::BYTEA, ARRAY[1,0]) = ARRAY[['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA], ['Inserted BYTEA'::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea-null-2array-arraynull', 'updateByteaArrayIndex3', updateByteaArrayIndex(ARRAY[[null::BYTEA, null::BYTEA], [null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]], 'Inserted BYTEA'::BYTEA, ARRAY[1,0]) = ARRAY[[null::BYTEA, null::BYTEA], ['Inserted BYTEA'::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]];
 
 CREATE OR REPLACE FUNCTION ConvertByteaArray(values_array BYTEA[]) RETURNS BYTEA[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -53,13 +53,13 @@ for(int i = 0; i < flatten_values.Length; i++)
 }
 return flatten_values;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BYTEA[]', 'ConvertByteaArray1', ConvertByteaArray(ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]) = ARRAY['\x427269636b2041626f6465206973206e69636521'::BYTEA, '\x54657374203121'::BYTEA, null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea-null-1array', 'ConvertByteaArray1', ConvertByteaArray(ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]) = ARRAY['\x427269636b2041626f6465206973206e69636521'::BYTEA, '\x54657374203121'::BYTEA, null::BYTEA, '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA];
 
 CREATE OR REPLACE FUNCTION CreateByteaMultidimensionalArray() RETURNS BYTEA[] AS $$
 byte[] objects_value = new byte[] { 0x92, 0x83, 0x74, 0x65, 0x56, 0x47, 0x38 };
 byte[]?[, ,] three_dimensional_array = new byte[]?[2, 2, 2] {{{objects_value, objects_value}, {null, null}}, {{objects_value, null}, {objects_value, objects_value}}};
 return three_dimensional_array;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BYTEA[]', 'CreateByteaMultidimensionalArray1', CreateByteaMultidimensionalArray() = ARRAY[[['\x92837465564738'::BYTEA, '\x92837465564738'::BYTEA], [null::BYTEA, null::BYTEA]], [['\x92837465564738'::BYTEA, null::BYTEA], ['\x92837465564738'::BYTEA, '\x92837465564738'::BYTEA]]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea-null-3array-arraynull', 'CreateByteaMultidimensionalArray1', CreateByteaMultidimensionalArray() = ARRAY[[['\x92837465564738'::BYTEA, '\x92837465564738'::BYTEA], [null::BYTEA, null::BYTEA]], [['\x92837465564738'::BYTEA, null::BYTEA], ['\x92837465564738'::BYTEA, '\x92837465564738'::BYTEA]]];

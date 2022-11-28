@@ -5,8 +5,8 @@ CREATE OR REPLACE FUNCTION modifybit(a BIT(10)) RETURNS BIT(10) AS $$
     a[a.Length-1] = a[a.Length-1] ? false : true;
     return a;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BIT', 'modifybit', modifybit('10101'::BIT(10)) = '0010100001'::BIT(10);
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bit', 'modifybit', modifybit('10101'::BIT(10)) = '0010100001'::BIT(10);
 
 -- VARBIT
 
@@ -15,8 +15,8 @@ CREATE OR REPLACE FUNCTION modifyvarbit(a BIT VARYING) RETURNS BIT VARYING AS $$
     a[a.Length-1] = a[a.Length-1] ? false : true;
     return a;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT', 'modifyvarbit', modifyvarbit('1001110001000'::BIT VARYING) = '0001110001001'::BIT VARYING;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit', 'modifyvarbit', modifyvarbit('1001110001000'::BIT VARYING) = '0001110001001'::BIT VARYING;
 
 CREATE OR REPLACE FUNCTION concatenatevarbit(a BIT VARYING, b BIT VARYING) RETURNS BIT VARYING AS $$
     BitArray c = new BitArray(a.Length+b.Length);
@@ -26,10 +26,10 @@ CREATE OR REPLACE FUNCTION concatenatevarbit(a BIT VARYING, b BIT VARYING) RETUR
         c[cont++] = b[i];
     return c;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT', 'concatenatevarbit1', concatenatevarbit('1001110001000'::BIT VARYING, '111010111101111000'::BIT VARYING) = '1001110001000111010111101111000'::BIT VARYING;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT', 'concatenatevarbit2', concatenatevarbit('1001110001000'::BIT(10), '111010111101111000'::BIT VARYING) = '1001110001111010111101111000'::BIT VARYING;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit', 'concatenatevarbit1', concatenatevarbit('1001110001000'::BIT VARYING, '111010111101111000'::BIT VARYING) = '1001110001000111010111101111000'::BIT VARYING;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit', 'concatenatevarbit2', concatenatevarbit('1001110001000'::BIT(10), '111010111101111000'::BIT VARYING) = '1001110001111010111101111000'::BIT VARYING;
 
 --- BIT Arrays
 
@@ -38,12 +38,12 @@ int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
 return values_array;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BIT[]', 'updateBitArrayIndex1', updateBitArrayIndex(ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)], '11111111'::BIT(8), ARRAY[2]) = ARRAY['10101001'::BIT(8), '10101101'::BIT(8), '11111111'::BIT(8), '11101001'::BIT(8)];
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BIT[]', 'updateBitArrayIndex2', updateBitArrayIndex(ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]) = ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]];
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BIT[]', 'updateBitArrayIndex3', updateBitArrayIndex(ARRAY[[null::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]) = ARRAY[[null::BIT(8), null::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bit-null-1array', 'updateBitArrayIndex1', updateBitArrayIndex(ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)], '11111111'::BIT(8), ARRAY[2]) = ARRAY['10101001'::BIT(8), '10101101'::BIT(8), '11111111'::BIT(8), '11101001'::BIT(8)];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bit-null-2array', 'updateBitArrayIndex2', updateBitArrayIndex(ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]) = ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bit-null-2array-arraynull', 'updateBitArrayIndex3', updateBitArrayIndex(ARRAY[[null::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]) = ARRAY[[null::BIT(8), null::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]];
 
 CREATE OR REPLACE FUNCTION ToggleFirstBits(values_array BIT(8)[]) RETURNS BIT(8)[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -61,8 +61,8 @@ for(int i = 0; i < flatten_values.Length; i++)
 }
 return flatten_values;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BIT[]', 'ToggleFirstBits1', ToggleFirstBits(ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '01101001'::BIT(8)]) = ARRAY['00101001'::BIT(8), '00101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bit-null-1array', 'ToggleFirstBits1', ToggleFirstBits(ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '01101001'::BIT(8)]) = ARRAY['00101001'::BIT(8), '00101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)];
 
 
 CREATE OR REPLACE FUNCTION CreateBitMultidimensionalArray() RETURNS BIT(8)[] AS $$
@@ -70,8 +70,8 @@ BitArray objects_value = new BitArray(new bool[8]{true, false, true, false, true
 BitArray?[, ,] three_dimensional_array = new BitArray?[2, 2, 2] {{{objects_value, objects_value}, {null, null}}, {{objects_value, null}, {objects_value, objects_value}}};
 return three_dimensional_array;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'BIT[]', 'CreateBitMultidimensionalArray1', CreateBitMultidimensionalArray() = ARRAY[[['10101100'::BIT(8), '10101100'::BIT(8)], [null::BIT(8), null::BIT(8)]], [['10101100'::BIT(8), null::BIT(8)], ['10101100'::BIT(8), '10101100'::BIT(8)]]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bit-null-3array-arraynull', 'CreateBitMultidimensionalArray1', CreateBitMultidimensionalArray() = ARRAY[[['10101100'::BIT(8), '10101100'::BIT(8)], [null::BIT(8), null::BIT(8)]], [['10101100'::BIT(8), null::BIT(8)], ['10101100'::BIT(8), '10101100'::BIT(8)]]];
 
 --- VARBIT Arrays
 
@@ -80,12 +80,12 @@ int[] arrayInteger = index.Cast<int>().ToArray();
 values_array.SetValue(desired, arrayInteger);
 return values_array;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT[]', 'updateVarbitArrayIndex1', updateVarbitArrayIndex(ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, null::BIT VARYING, '101001'::BIT VARYING], '1111111001111'::BIT VARYING, ARRAY[2]) = ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, '1111111001111'::BIT VARYING, '101001'::BIT VARYING];
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT[]', 'updateVarbitArrayIndex2', updateVarbitArrayIndex(ARRAY[['1010101101101'::BIT VARYING, '101011101'::BIT VARYING], [null::BIT VARYING, '101001'::BIT VARYING]], '1111111001111'::BIT VARYING, ARRAY[1, 0]) = ARRAY[['1010101101101'::BIT VARYING, '101011101'::BIT VARYING], ['1111111001111'::BIT VARYING, '101001'::BIT VARYING]];
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT[]', 'updateVarbitArrayIndex3', updateVarbitArrayIndex(ARRAY[[null::BIT VARYING, null::BIT VARYING], [null::BIT VARYING, '101001'::BIT VARYING]], '1111111001111'::BIT VARYING, ARRAY[1, 0]) = ARRAY[[null::BIT VARYING, null::BIT VARYING], ['1111111001111'::BIT VARYING, '101001'::BIT VARYING]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit-null-1array', 'updateVarbitArrayIndex1', updateVarbitArrayIndex(ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, null::BIT VARYING, '101001'::BIT VARYING], '1111111001111'::BIT VARYING, ARRAY[2]) = ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, '1111111001111'::BIT VARYING, '101001'::BIT VARYING];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit-null-2array', 'updateVarbitArrayIndex2', updateVarbitArrayIndex(ARRAY[['1010101101101'::BIT VARYING, '101011101'::BIT VARYING], [null::BIT VARYING, '101001'::BIT VARYING]], '1111111001111'::BIT VARYING, ARRAY[1, 0]) = ARRAY[['1010101101101'::BIT VARYING, '101011101'::BIT VARYING], ['1111111001111'::BIT VARYING, '101001'::BIT VARYING]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit-null-2array-arraynull', 'updateVarbitArrayIndex3', updateVarbitArrayIndex(ARRAY[[null::BIT VARYING, null::BIT VARYING], [null::BIT VARYING, '101001'::BIT VARYING]], '1111111001111'::BIT VARYING, ARRAY[1, 0]) = ARRAY[[null::BIT VARYING, null::BIT VARYING], ['1111111001111'::BIT VARYING, '101001'::BIT VARYING]];
 
 CREATE OR REPLACE FUNCTION ToggleFirstVarbits(values_array BIT VARYING[]) RETURNS BIT VARYING[] AS $$
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
@@ -103,8 +103,8 @@ for(int i = 0; i < flatten_values.Length; i++)
 }
 return flatten_values;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT[]', 'ToggleFirstVarbits1', ToggleFirstVarbits(ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, null::BIT VARYING, '001001'::BIT VARYING]) = ARRAY['0010101101101'::BIT VARYING, '001011101'::BIT VARYING, null::BIT VARYING, '101001'::BIT VARYING];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit-null-1array', 'ToggleFirstVarbits1', ToggleFirstVarbits(ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, null::BIT VARYING, '001001'::BIT VARYING]) = ARRAY['0010101101101'::BIT VARYING, '001011101'::BIT VARYING, null::BIT VARYING, '101001'::BIT VARYING];
 
 
 CREATE OR REPLACE FUNCTION CreateVarbitMultidimensionalArray() RETURNS BIT VARYING[] AS $$
@@ -112,5 +112,5 @@ BitArray objects_value = new BitArray(new bool[8]{true, false, true, false, true
 BitArray?[, ,] three_dimensional_array = new BitArray?[2, 2, 2] {{{objects_value, objects_value}, {null, null}}, {{objects_value, null}, {objects_value, objects_value}}};
 return three_dimensional_array;
 $$ LANGUAGE plcsharp STRICT;
-INSERT INTO results (FEATURE, TEST_NAME, RESULT)
-SELECT 'VARBIT[]', 'CreateVarbitMultidimensionalArray1', CreateVarbitMultidimensionalArray() = ARRAY[[['10101100'::BIT VARYING, '10101100'::BIT VARYING], [null::BIT VARYING, null::BIT VARYING]], [['10101100'::BIT VARYING, null::BIT VARYING], ['10101100'::BIT VARYING, '10101100'::BIT VARYING]]];
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit-null-3array-arraynull', 'CreateVarbitMultidimensionalArray1', CreateVarbitMultidimensionalArray() = ARRAY[[['10101100'::BIT VARYING, '10101100'::BIT VARYING], [null::BIT VARYING, null::BIT VARYING]], [['10101100'::BIT VARYING, null::BIT VARYING], ['10101100'::BIT VARYING, '10101100'::BIT VARYING]]];

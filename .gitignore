@@ -83,7 +83,7 @@ DotNetEngine/src/*/bin/
 pom.properties
 
 logs/
-results/
+automated_test_results/
 
 # debian build files
 *.log
@@ -94,7 +94,7 @@ build*/
 
 sql/*
 !sql/benchmark/
-results/*
+automated_test_results/*
 expected/*
 documentation/*
 
