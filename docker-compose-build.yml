@@ -22,18 +22,10 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       # POSTGRES_PASSWORD: # your password
     volumes:
-      - ./pldotnet.c:/app/pldotnet/pldotnet.c
-      - ./pldotnet_common.c:/app/pldotnet/pldotnet_common.c
-      - ./pldotnet_csharp.c:/app/pldotnet/pldotnet_csharp.c
-      - ./pldotnet_hostfxr.c:/app/pldotnet/pldotnet_hostfxr.c
-      - ./hostfxr.h:/app/pldotnet/hostfxr.h
-      - ./pldotnet_common.h:/app/pldotnet/pldotnet_common.h
-      - ./pldotnet_conversions.h:/app/pldotnet/pldotnet_conversions.h
-      - ./pldotnet_conversions.c:/app/pldotnet/pldotnet_conversions.c
-      - ./pldotnet_csharp.h:/app/pldotnet/pldotnet_csharp.h
-      - ./pldotnet_hostfxr.h:/app/pldotnet/pldotnet_hostfxr.h
+      - ./src/:/app/pldotnet/src/
       - ./Makefile:/app/pldotnet/Makefile
-      - ./DotNetEngine:/app/pldotnet/DotNetEngine/
-      - ./ba-sql:/app/pldotnet/ba-sql/
-      - ./debian/packages:/app/pldotnet/debian/packages
+      - ./DotNetEngine/:/app/pldotnet/DotNetEngine/
+      - ./ba-sql/:/app/pldotnet/ba-sql/
+      - ./debian/packages/:/app/pldotnet/debian/packages/
       - ./debian/pgversions:/app/pldotnet/debian/pgversions
+      - ./debian/rules:/app/pldotnet/debian/rules

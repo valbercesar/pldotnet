@@ -9,8 +9,11 @@ DEBIAN_ROOT_DIR = debian/postgresql-${PG_VER}-pldotnet/
 USR_LIBDIR = var/lib/
 include /usr/share/postgresql-common/pgxs_debian_control.mk
 
+# FIXME - we need to do this in a nicer way
 override_dh_auto_build:
+	for VER in $(PG_VER); do mkdir build-"$${VER}" build-"$${VER}"/src; done
 	+pg_buildext build $(CURDIR) build-%v
+	for VER in $(PG_VER); do mv build-"$${VER}"/src/* build-"$${VER}"; done
 	find . -xdev 2>/dev/null -maxdepth 1 -name "build-*" -exec cp *.bc {} \;
 
 override_dh_auto_clean:

@@ -1,0 +1,213 @@
+/*
+ * PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+ *             procedural languages (PL)
+ *
+ *
+ * Copyright 2019-2020 Brick Abode
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * pldotnet_main.h
+ *
+ */
+#ifndef PLDOTNET_MAIN_H_
+#define PLDOTNET_MAIN_H_
+
+#include <postgres.h>
+#include <utils/fmgrprotos.h>
+#include <access/htup_details.h>
+#include <catalog/pg_proc.h>
+#include <glib.h>
+#include <utils/syscache.h>
+#include <utils/builtins.h>
+#include <funcapi.h>
+
+#include "pldotnet_hostfxr.h"
+
+#define QUOTE(name) #name
+#define STR(macro) QUOTE(macro)
+#define nullptr ((void *)0)
+
+extern PGDLLIMPORT bool check_function_bodies;
+
+extern GHashTable *procedures;
+
+extern char *root_path;
+extern char *dnldir;
+
+/* As a reminder snprintf is defined as pg_snprintf.  TODO - CHECK HERE
+ * Check port.h into postgres codebase
+ */
+#define SNPRINTF(dst, size, fmt, ...)                                      \
+    if (snprintf(dst, size, fmt, __VA_ARGS__) >= size) {                   \
+        elog(ERROR, "[pldotnet] (%s:%d) String too long for buffer: " fmt, \
+             __FILE__, __LINE__, __VA_ARGS__);                             \
+    }
+
+typedef enum pldotnet_Language { csharp, fsharp } pldotnet_Language;
+
+typedef struct MemoryContextWrapper {
+    MemoryContext prev;
+    MemoryContext curr;
+} MemoryContextWrapper;
+
+typedef struct pldotnet_PathConfig {
+    char prefix[MAXPGPATH];
+    char config_path[MAXPGPATH];
+    char library_path[MAXPGPATH];
+    char src_lib_path[MAXPGPATH];
+} pldotnet_PathConfig;
+
+typedef struct pldotnet_Result {
+    Datum value;
+    bool is_null;
+} pldotnet_Result;
+
+typedef struct pldotnet_UserFunctionDeclaration {
+    const char *language;
+    const char *func_name;
+    Oid func_ret_type;
+    const char *func_param_names;
+    const Oid *func_param_types;
+    const char *func_body;
+    Oid func_oid;
+    bool support_null_input;
+} pldotnet_UserFunctionDeclaration;
+
+/**
+ * @brief The call_handler will be called to execute the procedural
+ * language's functions.  The call handler receives a pointer to a
+ * FunctionCallInfoData struct containing argument values and information
+ * about the called function, and it is expected to return a Datum result.
+ *
+ * @param PG_FUNCTION_ARGS The standard parameter list for fmgr-compatible
+ * functions.
+ *
+ * @return The datum that can be stored in a PostgreSQL table.
+ */
+Datum plcsharp_call_handler(PG_FUNCTION_ARGS);
+
+/**
+ * @brief The inline_handler will be called to execute an anonymous code
+ * block (DO command) in this language.
+ *
+ * @param PG_FUNCTION_ARGS The standard parameter list for
+ * fmgr-compatible functions.
+ *
+ * @return The datum that can be stored in a PostgreSQL table.
+ */
+Datum plcsharp_inline_handler(PG_FUNCTION_ARGS);
+
+/**
+ * @brief The validator function will inspect the function body for syntactical
+ * correctness, but it can also look at other properties of the function,
+ * for example if the language cannot handle certain argument types. To
+ * signal an error, the validator function should use the ereport()
+ * function. The return value of the function is ignored.
+ *
+ * @param PG_FUNCTION_ARGS The standard parameter list for fmgr-compatible
+ * functions.
+ *
+ * @return The datum that can be stored in a PostgreSQL table.
+ */
+Datum plcsharp_validator(PG_FUNCTION_ARGS);
+
+/**
+ * @brief The call_handler will be called to execute the procedural
+ * language's functions.  The call handler receives a pointer to a
+ * FunctionCallInfoData struct containing argument values and information
+ * about the called function, and it is expected to return a Datum result.
+ *
+ * @param PG_FUNCTION_ARGS The standard parameter list for fmgr-compatible
+ * functions.
+ *
+ * @return The datum that can be stored in a PostgreSQL table.
+ */
+Datum plfsharp_call_handler(PG_FUNCTION_ARGS);
+
+/**
+ * @brief The inline_handler will be called to execute an anonymous code
+ * block (DO command) in this language.
+ *
+ * @param PG_FUNCTION_ARGS The standard parameter list for
+ * fmgr-compatible functions.
+ *
+ * @return The datum that can be stored in a PostgreSQL table.
+ */
+Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
+
+/**
+ * @brief The validator function will inspect the function body for syntactical
+ * correctness, but it can also look at other properties of the function,
+ * for example if the language cannot handle certain argument types. To
+ * signal an error, the validator function should use the ereport()
+ * function. The return value of the function is ignored.
+ *
+ * @param PG_FUNCTION_ARGS The standard parameter list for fmgr-compatible
+ * functions.
+ *
+ * @return The datum that can be stored in a PostgreSQL table.
+ */
+Datum plfsharp_validator(PG_FUNCTION_ARGS);
+
+/**
+ * @brief Build the config paths related do .NET.
+ *
+ * @param paths the variable that stores the config paths related to dotnet.
+ */
+bool pldotnet_BuildPaths(void);
+
+/**
+ * @brief Sets the assembly_loader object.
+ *
+ * @param config_path
+ * @param prefix
+ *
+ * @return true if the assembly_loader was already defined or was found
+ * correctly.
+ * @return false if the assembly_loader was not found.
+ */
+bool pldotnet_SetNetLoader(void);
+
+/**
+ * @brief Sets the .NET methods for the C function pointers.
+ *
+ * @param library_path The .NET library.
+ *
+ * @return true if all the .NET functions were found.
+ * @return false if any .NET functions were not found.
+ */
+bool pldotnet_SetDotNetMethods(void);
+
+/**
+ * @brief Calls the "elog" function to report a message os PostgreSQL.
+ *
+ * @param level The message level. For example, INFO, ERROR, WARNING...
+ * @param message The message that will be reported.
+ */
+extern void pldotnet_Elog(int level, char *message);
+
+/**
+ * @brief This functions is called from the dynamic C# code to set the result
+ * Datum of the user function.
+ *
+ * @param value a Datum object.
+ * @param isnull whether the Datum is null.
+ * @param native_result a "pldotnet_Result" object created on
+ * "pldotnet_CompileAndRunUserFunction" and contains the Datum that will be
+ * returned.
+ */
+extern void pldotnet_SetDatumResult(void *value, bool isnull,
+                                    void *native_result);
+
+#endif  // PLDOTNET_MAIN_H_

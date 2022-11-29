@@ -10,10 +10,12 @@ echo "${DOTNET_LIBDIR}" > /etc/ld.so.conf.d/nethost_pldotnet.conf
 sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/Engine.cs
 sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/TypeHandlers/*.cs
 sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/templates/*.tcs
+sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/templates/*.tfs
 CSHARP_TEMPLATE_DIR=/var/lib/DotNetEngine/src/csharp/templates
 # sed -i "s/@CSHARP_TEMPLATE_DIR/${CSHARP_TEMPLATE_DIR}/g" ${PLNET_ENGINE_DIR}/src/csharp/Engine.cs
 cat  /var/lib/DotNetEngine/src/csharp/Engine.cs | perl -ane "s#\@CSHARP_TEMPLATE_DIR#/var/lib/DotNetEngine/src/csharp/templates#g; print" > q && mv q /var/lib/DotNetEngine/src/csharp/Engine.cs
-# # sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/fsharp/FSharpEngine.fs
+cat  /var/lib/DotNetEngine/src/csharp/CodeGenerator.cs | perl -ane "s#\@CSHARP_TEMPLATE_DIR#/var/lib/DotNetEngine/src/csharp/templates#g; print" > q && mv q /var/lib/DotNetEngine/src/csharp/CodeGenerator.cs
+sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLNET_ENGINE_DIR}/src/fsharp/FSharpCompiler.fs
 dotnet build ${PLNET_ENGINE_DIR}/src/csharp -c Release
 # # dotnet build ${PLNET_ENGINE_DIR}/src/fsharp
 ldconfig -v &> /dev/null # We need -v for ldconfig otherwise it won't work

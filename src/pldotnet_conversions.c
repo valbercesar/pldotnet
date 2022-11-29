@@ -37,7 +37,7 @@
 #include <utils/xml.h>
 #include <utils/uuid.h>
 #include <utils/json.h>
-#include "pldotnet_common.h"
+// #include "pldotnet_common.h"
 
 ////////////////////////////////////
 //// Datum -> Npgsql or C# type ////

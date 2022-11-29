@@ -1,6 +1,6 @@
 namespace PlDotNET.Handler
 {
-    public enum OID : int
+    public enum OID : uint
     {
         BOOLOID = 16,
         BYTEAOID = 17,

@@ -21,6 +21,10 @@
     <Protobuf Include="Protos\storage.proto" GrpcServices="Client" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\fsharp\FSharpCompiler.fsproj" />
+  </ItemGroup>
+
   <Target Name="SetupForDemo" AfterTargets="Build">
 
     <ItemGroup>

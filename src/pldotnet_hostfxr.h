@@ -15,11 +15,15 @@
 #ifndef PLDOTNET_HOSTFXR_H_
 #define PLDOTNET_HOSTFXR_H_
 
+#include <coreclr_delegates.h>
 #include <nethost.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #if defined(_WIN32)
 #define CORECLR_DELEGATE_CALLTYPE __stdcall
+#define HOSTFXR_CALLTYPE __cdecl
 #ifdef _WCHAR_T_DEFINED
 typedef wchar_t char_t;
 #else
@@ -27,33 +31,86 @@ typedef unsigned short char_t;
 #endif
 #else
 #define CORECLR_DELEGATE_CALLTYPE
+#define HOSTFXR_CALLTYPE
 typedef char char_t;
 #endif
 
-// Header files copied from https://github.com/dotnet/core-setup
-#include "coreclr_delegates.h"
-// #include <experimental_coreclr_delegates.h>
-#include "hostfxr.h"
+enum hostfxr_delegate_type {
+    hdt_com_activation,
+    hdt_load_in_memory_assembly,
+    hdt_winrt_activation,
+    hdt_com_register,
+    hdt_com_unregister,
+    hdt_load_assembly_and_get_function_pointer
+};
+
+typedef void *hostfxr_handle;
+
+typedef struct hostfxr_initialize_parameters {
+    size_t size;
+    const char_t *host_path;
+    const char_t *dotnet_root;
+} hostfxr_initialize_parameters;
+
+typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_initialize_for_runtime_config_fn)(
+    const char_t *runtime_config_path,
+    const hostfxr_initialize_parameters *parameters,
+    /*out*/ hostfxr_handle *host_context_handle);
+
+typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_set_runtime_property_value_fn)(
+    const hostfxr_handle host_context_handle, const char_t *name,
+    const char_t *value);
+
+typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_get_runtime_delegate_fn)(
+    const hostfxr_handle host_context_handle, enum hostfxr_delegate_type type,
+    /*out*/ void **delegate);
+
+typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_close_fn)(
+    const hostfxr_handle host_context_handle);
 
 typedef load_assembly_and_get_function_pointer_fn dotnet_loader;
 
+/**
+ * @brief A function pointer that points to Engine.CompileUserFunction().
+ *
+ */
 typedef int(CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
-    uint32_t functionId, char *func_name, int func_rettype,
-    char *func_paramsName, int *func_paramsType, char *func_body,
-    bool support_null_input);
+    uint32_t functionId, char *func_name, uint32_t func_ret_type,
+    char *func_param_names, uint32_t *func_param_types, char *func_body,
+    bool support_null_input, char *dotnet_language);
 
-typedef int(CORECLR_DELEGATE_CALLTYPE *user_method_delegate)(
+/**
+ * @brief A function pointer that points to Engine.RunUserFunction().
+ *
+ */
+typedef int(CORECLR_DELEGATE_CALLTYPE *run_user_fn)(
     uint32_t functionId, void *arguments, bool *nullmap, void *output);
 
-typedef void *(CORECLR_DELEGATE_CALLTYPE *build_datum_list_t)(void);
+/**
+ * @brief A function pointer that points to Engine.BuildDatumList().
+ *
+ */
+typedef void *(CORECLR_DELEGATE_CALLTYPE *build_datum_list_fn)(void);
 
-typedef void(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_t)(void *list,
+/**
+ * @brief A function pointer that points to Engine.AddDatumToList().
+ *
+ */
+typedef void(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_fn)(void *list,
                                                              void *datum);
 
-typedef void(CORECLR_DELEGATE_CALLTYPE *free_generic_gchandle_t)(
+/**
+ * @brief A function pointer that points to Engine.FreeGenericGCHandle().
+ *
+ */
+typedef void(CORECLR_DELEGATE_CALLTYPE *free_generic_gchandle_fn)(
     void *gchandle);
 
-typedef void(CORECLR_DELEGATE_CALLTYPE *unload_assemblies_t)(
+/**
+ * @brief A function pointer that points to Engine.UnloadAssemblies().
+ *
+ */
+typedef void(CORECLR_DELEGATE_CALLTYPE *unload_assemblies_fn)(
     uint32_t functionId);
 
 /** @brief Loads dotnet using the HostFXR.  HostFXR "finds and resolves

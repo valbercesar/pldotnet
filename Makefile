@@ -59,7 +59,7 @@ DATA = pldotnet--0.0.1.sql
 	testelog \
 	testfselog
 
-OBJS = pldotnet_csharp.o pldotnet_hostfxr.o pldotnet.o pldotnet_common.o pldotnet_conversions.o
+OBJS = src/pldotnet_hostfxr.o src/pldotnet.o src/pldotnet_conversions.o src/pldotnet_main.o
 
 PG_CPPFLAGS = -I$(DOTNET_INCHOSTDIR) \
 			  -Iinc -D LINUX $(DEFINE_DOTNET_BUILD) $(PLNET_ENGINE_DIR) \
@@ -78,7 +78,10 @@ plnet-install: install
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/Engine.cs
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/TypeHandlers/*.cs
 	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/templates/*.tcs
-	sed -i 's/@CSHARP_TEMPLATE_DIR/$(shell echo $(CSHARP_TEMPLATE_DIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/Engine.cs
+	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/templates/*.tfs
+	sed -i 's/@CSHARP_TEMPLATE_DIR/$(shell echo $(CSHARP_TEMPLATE_DIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/*.cs
+	sed -i 's/@FSHARP_TEMPLATE_DIR/$(shell echo $(CSHARP_TEMPLATE_DIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/csharp/*.cs
+	sed -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLNET_ENGINE_ROOT)/DotNetEngine/src/fsharp/FSharpCompiler.fs
 	$(GENERATE_CSHARP_BUILD_FILES)
 
 # plnet-uninstall: uninstall
@@ -95,7 +98,7 @@ plnet-install-dpkg:
 	rm -rf ../postgresql-*-pldotnet_*.deb
 
 cpplint:
-	cpplint --filter=-readability/casting,-build/include_subdir,-runtime/int,-runtime/printf *.c *.h
+	cpplint --filter=-readability/casting,-build/include_subdir,-runtime/int,-runtime/printf,-build/header_guard src/*.c src/*.h
 
 doxygen:
 	rm -rf documentation
@@ -117,7 +120,7 @@ plnet-postgres:
 	sudo -u postgres psql
 
 build-package:
-	docker-compose -f docker-compose-build.yml up pldotnet-build | tee build-log.txt
+	docker-compose -f docker-compose-build.yml up pldotnet-build | tee package-build-log.txt
 
 build-package-bash:
 	make build-package
@@ -144,12 +147,13 @@ tests:
 	cat ba-sql/testprocedure.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testprocedure.out
 	cat ba-sql/testcreate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcreate.out
 	cat ba-sql/testcall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcall.out
+	cat ba-sql/testfsintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsintegers.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u postgres  psql 2>&1) | tee automated_test_results/automated_test_results.out
 
 install-pls:
 	sudo apt-get install -y  postgresql-plpython3 default-jre maven
 	sudo -u postgres psql -f "sql/python/init-extension.sql"
-	
+
 stress-test:
 	rm -rf automated_test_results
 	mkdir automated_test_results

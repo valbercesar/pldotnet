@@ -20,14 +20,9 @@
  * pldotnet.c - Postgres pldotnet extension init and deinit routines
  *
  */
-#include <postgres.h>
-#include <funcapi.h>
-#include <dlfcn.h>
-#include <glib.h>
-#include <glib/ghash.h>
-#include <coreclr_delegates.h>
-#include "pldotnet_common.h"
+
 #include "pldotnet_conversions.h"
+#include "pldotnet_main.h"
 
 #define DIR_SEPARATOR '/'
 
@@ -51,11 +46,20 @@ Datum _PG_init(PG_FUNCTION_ARGS) {
     if (root_path[strlen(root_path) - 1] == DIR_SEPARATOR)
         root_path[strlen(root_path) - 1] = 0;
 
+    if (!pldotnet_LoadHostFxrIfNeeded())
+        elog(ERROR, "[pldotnet]: Could not load host fxr.");
+
+    if (!pldotnet_BuildPaths())
+        elog(ERROR, "[pldotnet]: Could not build paths.");
+
+    if (!pldotnet_SetNetLoader())
+        elog(ERROR, "[pldotnet]: Could not obtain .NET Loader.");
+
+    if (!pldotnet_SetDotNetMethods())
+        elog(ERROR, "[pldotnet]: Could not obtain C# Methods.");
+
     procedures =
         g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
-
-    /* reset the assembly loader */
-    assembly_loader = nullptr;
 
     PG_RETURN_VOID();
 }
@@ -72,4 +76,5 @@ Datum _PG_fini(PG_FUNCTION_ARGS) {
 
     PG_RETURN_VOID();
 }
+
 #endif

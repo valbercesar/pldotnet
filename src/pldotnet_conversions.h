@@ -24,7 +24,7 @@
 #ifndef PLDOTNET_CONVERSIONS_H_
 #define PLDOTNET_CONVERSIONS_H_
 
-#include "pldotnet_common.h"
+#include "pldotnet_main.h"
 #include <utils/rangetypes.h>
 
 ////////////////////////////////////

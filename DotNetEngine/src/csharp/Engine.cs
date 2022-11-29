@@ -44,9 +44,17 @@ using System.Text.RegularExpressions;
 
 using NpgsqlTypes;
 using PlDotNET.Handler;
+using PlDotNET.FSharp;
 
 namespace PlDotNET
 {
+    public enum DotNETLanguage : ushort
+    {
+        CSharp,
+        FSharp,
+        VisualBasic
+    }
+
     public static class Engine
     {
         public static bool AlwaysNullable = false;
@@ -58,6 +66,7 @@ namespace PlDotNET
             public Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
             public bool SupportNullInput;
             public AssemblyLoadContext UserAssemblyLoadContext;
+            public DotNETLanguage Language;
         }
 
         public static Dictionary<OID, OID> HandleArray =
@@ -156,312 +165,112 @@ namespace PlDotNET
 
         public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
 
-        public static string CSharpTemplateUserHandler = "@CSHARP_TEMPLATE_DIR/UserHandler.tcs";
+        public static FSharpCodeGenerator FSharpGenerator = new FSharpCodeGenerator();
 
-        public static string CSharpTemplateUserFunction = "@CSHARP_TEMPLATE_DIR/UserFunction.tcs";
-
-        /// <summary>
-        /// It returns a list with of tuple, each tuple being the variable type
-        /// and its name.
-        /// </summary>
-        public static List<Tuple<string, string>> GetSqlParams(List<string> paramNames, List<int> paramTypes)
-        {
-            List<Tuple<string, string>> arguments = new List<Tuple<string, string>>();
-            for (int i = 0; i < paramNames.Count(); i++)
-            {
-                string type = HandleArray.ContainsKey((OID)paramTypes[i]) ? "Array" : OidTypes[(OID)paramTypes[i]];
-                arguments.Add(new Tuple<string, string>(type, paramNames[i]));
-            }
-            return arguments;
-        }
+        public static CSharpCodeGenerator CSharpGenerator = new CSharpCodeGenerator();
 
         /// <summary>
-        /// It creates the argument list of the user function.
+        /// C function declared in pldotnet_conversions.h to return a void datum.
+        /// See ::pldotnet_createDatumVoid().
         /// </summary>
-        public static string GetParamsString(List<Tuple<string, string>> sqlParams, bool supportNullInput)
-        {
-            if (supportNullInput || Engine.AlwaysNullable)
-                return string.Join(", ", sqlParams.Select((p) => $"{p.Item1}? {p.Item2}").ToList());
-            return string.Join(", ", sqlParams.Select((p) => $"{p.Item1} {p.Item2}").ToList());
-        }
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern IntPtr pldotnet_createDatumVoid();
+
+        /// <summary>
+        /// C function declared in pldotnet_common.h to set the datum result.
+        /// See ::pldotnet_SetDatumResult().
+        /// </summary>
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isnull, IntPtr nativeResult);
 
         /// <summary>
         /// Returns the handler object NAME for the specified OID.
         /// </summary>
-        public static string GetTypeHandler(int id)
+        public static string GetTypeHandler(uint id)
         {
             switch (id)
             {
-                case (int)OID.BOOLOID:
+                case (uint)OID.BOOLOID:
                     return "BoolHandler";
-                case (int)OID.INT2OID:
+                case (uint)OID.INT2OID:
                     return "ShortHandler";
-                case (int)OID.INT4OID:
+                case (uint)OID.INT4OID:
                     return "IntHandler";
-                case (int)OID.INT8OID:
+                case (uint)OID.INT8OID:
                     return "LongHandler";
-                case (int)OID.FLOAT4OID:
+                case (uint)OID.FLOAT4OID:
                     return "FloatHandler";
-                case (int)OID.FLOAT8OID:
+                case (uint)OID.FLOAT8OID:
                     return "DoubleHandler";
-                case (int)OID.POINTOID:
+                case (uint)OID.POINTOID:
                     return "PointHandler";
-                case (int)OID.LINEOID:
+                case (uint)OID.LINEOID:
                     return "LineHandler";
-                case (int)OID.LSEGOID:
+                case (uint)OID.LSEGOID:
                     return "LineSegmentHandler";
-                case (int)OID.BOXOID:
+                case (uint)OID.BOXOID:
                     return "BoxHandler";
-                case (int)OID.PATHOID:
+                case (uint)OID.PATHOID:
                     return "PathHandler";
-                case (int)OID.POLYGONOID:
+                case (uint)OID.POLYGONOID:
                     return "PolygonHandler";
-                case (int)OID.CIRCLEOID:
+                case (uint)OID.CIRCLEOID:
                     return "CircleHandler";
-                case (int)OID.DATEOID:
+                case (uint)OID.DATEOID:
                     return "DateHandler";
-                case (int)OID.TIMEOID:
+                case (uint)OID.TIMEOID:
                     return "TimeHandler";
-                case (int)OID.TIMETZOID:
+                case (uint)OID.TIMETZOID:
                     return "TimeTzHandler";
-                case (int)OID.TIMESTAMPOID:
+                case (uint)OID.TIMESTAMPOID:
                     return "TimestampHandler";
-                case (int)OID.TIMESTAMPTZOID:
+                case (uint)OID.TIMESTAMPTZOID:
                     return "TimestampTzHandler";
-                case (int)OID.INTERVALOID:
+                case (uint)OID.INTERVALOID:
                     return "IntervalHandler";
-                case (int)OID.MACADDROID:
+                case (uint)OID.MACADDROID:
                     return "MacaddrHandler";
-                case (int)OID.MACADDR8OID:
+                case (uint)OID.MACADDR8OID:
                     return "Macaddr8Handler";
-                case (int)OID.INETOID:
+                case (uint)OID.INETOID:
                     return "InetHandler";
-                case (int)OID.CIDROID:
+                case (uint)OID.CIDROID:
                     return "CidrHandler";
-                case (int)OID.TEXTOID:
+                case (uint)OID.TEXTOID:
                     return "TextHandler";
-                case (int)OID.MONEYOID:
+                case (uint)OID.MONEYOID:
                     return "MoneyHandler";
-                case (int)OID.VARBITOID:
+                case (uint)OID.VARBITOID:
                     return "VarBitStringHandler";
-                case (int)OID.BITOID:
+                case (uint)OID.BITOID:
                     return "BitStringHandler";
-                case (int)OID.BYTEAOID:
+                case (uint)OID.BYTEAOID:
                     return "ByteaHandler";
-                case (int)OID.BPCHAROID:
+                case (uint)OID.BPCHAROID:
                     return "CharHandler";
-                case (int)OID.VARCHAROID:
+                case (uint)OID.VARCHAROID:
                     return "CharVaryingHandler";
-                case (int)OID.XMLOID:
+                case (uint)OID.XMLOID:
                     return "XmlHandler";
-                case (int)OID.JSONOID:
+                case (uint)OID.JSONOID:
                     return "JsonHandler";
-                case (int)OID.UUIDOID:
+                case (uint)OID.UUIDOID:
                     return "UuidHandler";
-                case (int)OID.INT4RANGEOID:
+                case (uint)OID.INT4RANGEOID:
                     return "IntRangeHandler";
-                case (int)OID.INT8RANGEOID:
+                case (uint)OID.INT8RANGEOID:
                     return "LongRangeHandler";
-                case (int)OID.TSRANGEOID:
+                case (uint)OID.TSRANGEOID:
                     return "TimestampRangeHandler";
-                case (int)OID.TSTZRANGEOID:
+                case (uint)OID.TSTZRANGEOID:
                     return "TimestampTzRangeHandler";
-                case (int)OID.DATERANGEOID:
+                case (uint)OID.DATERANGEOID:
                     return "DateRangeHandler";
                 default:
                     if (HandleArray.ContainsKey((OID)id))
-                        return GetTypeHandler((int)HandleArray[(OID)id]);
+                        return GetTypeHandler((uint)HandleArray[(OID)id]);
                     throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetTypeHandler");
             }
-        }
-
-        /// <summary>
-        /// This function creates the code to call the handler objects, which
-        /// do the process of converting a Postgres type to an equivalente .NET
-        /// type.
-        /// </summary>
-        public static string BuildCreateArguments(string funcName, List<int> paramTypes, bool supportNullInput)
-        {
-            var sb = new System.Text.StringBuilder();
-
-            if (!supportNullInput)
-            {
-                sb.AppendLine($"// As the SQL function named {funcName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
-                sb.AppendLine("// `PL.NET` doesn't check whether any argument datum is null.");
-                sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
-                sb.AppendLine("// to always check whether the datum is null.\n");
-            }
-
-            sb.AppendLine($"// BEGIN create arguments for {funcName}");
-            int argc = paramTypes.Count;
-
-            for (int i = 0; i < argc; i++)
-            {
-                var argname = $"argument_{i}";
-                var value = $"arguments[{i}]";
-                var type = paramTypes[i];
-                var typeHandler = GetTypeHandler(type);
-                if (HandleArray.ContainsKey((OID)type))
-                {
-                    if (supportNullInput || Engine.AlwaysNullable)
-                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputNullableArray({value}, isnull[{i}]);");
-                    else
-                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputArray({value});");
-                }
-                else
-                {
-                    if (supportNullInput || Engine.AlwaysNullable)
-                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputNullableValue({value}, isnull[{i}]);");
-                    else
-                        sb.AppendLine($"var {argname} = {typeHandler}Obj.InputValue({value});");
-                }
-            }
-            sb.Append($"// END create arguments for {funcName}");
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// This function creates code to call the user function.
-        /// </summary>
-        public static string BuildFunctionCall(string funcName, List<Tuple<string, string>> sqlParams, bool supportNullInput)
-        {
-            var sb = new System.Text.StringBuilder();
-            sb.Append($"{funcName}(");
-            int argc = sqlParams.Count;
-
-            for (int i = 0; i < argc; i++)
-            {
-                if (supportNullInput || Engine.AlwaysNullable)
-                    sb.Append($"({sqlParams[i].Item1}?) argument_{i}");
-                else
-                    sb.Append($"({sqlParams[i].Item1}) argument_{i}");
-                if (i < argc - 1)
-                {
-                    sb.Append(", ");
-                }
-            }
-            sb.Append(");");
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// This function returns the code to create the Datum result according
-        /// to the OID of the result function. It also adds the code to set the
-        /// Datum object to the function output.
-        /// </summary>
-        public static string BuildCallSetResult(int id)
-        {
-            if ((OID)id == OID.VOIDOID)
-                return ("var resultDatum = pldotnet_createDatumVoid();\n"
-                + "pldotnet_SetDatumResult(resultDatum, false, output);");
-
-            string setResult;
-            if (HandleArray.ContainsKey((OID)id))
-                setResult = $"var resultDatum = {GetTypeHandler(id)}Obj.OutputNullableArray(result);";
-            else
-                setResult = $"var resultDatum = {GetTypeHandler(id)}Obj.OutputNullableValue(result);";
-
-            setResult += "pldotnet_SetDatumResult(resultDatum, result == null, output);";
-            return setResult;
-        }
-
-        /// <summary>
-        /// Returns the code to create the handler object that will be used.
-        /// </summary>
-        public static string BuildHandlerObjects(List<int> inputTypes, int outputType)
-        {
-            List<string> allHandlers = new List<string>();
-
-            if ((OID)outputType != OID.VOIDOID)
-                allHandlers.Add(GetTypeHandler(outputType));
-
-            for (int i = 0; i < inputTypes.Count; i++)
-                allHandlers.Add(GetTypeHandler(inputTypes[i]));
-
-            List<string> filteredHandlers = allHandlers.Distinct().ToList();
-
-            string handlerObjects = "";
-
-            for (int i = 0; i < filteredHandlers.Count; i++)
-            {
-                string handler = filteredHandlers[i];
-                handlerObjects += $"public static {handler} {handler}Obj = new {handler}();\n";
-            }
-
-            return handlerObjects;
-        }
-
-        /// <summary>
-        /// It builds the source codes from the template files and the user
-        /// function information received from the C code.
-        /// </summary>
-        /// <remarks>
-        /// If the user provides an assembly file, "userFunction" will be the provided
-        /// SQL function body, i.e., 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'.
-        /// </remarks>
-        public static unsafe (string userHandler, string userFunction) BuildSourceCodes(IntPtr name, int returnTypeID, IntPtr paramNames, int* paramTypes, IntPtr body, bool supportNullInput)
-        {
-            string funcName = Marshal.PtrToStringAuto(name);
-            string returnType = HandleArray.ContainsKey((OID)returnTypeID) ? "Array" : OidTypes[(OID)returnTypeID];
-            string parameters = Marshal.PtrToStringAuto(paramNames);
-            List<string> paramNameList = new List<string>();
-            List<int> paramTypeList = new List<int>();
-            if (parameters != null)
-            {
-                paramNameList.AddRange(parameters.Split(" "));
-                for (int i = 0; i < paramNameList.Count(); i++)
-                {
-                    paramTypeList.Add(paramTypes[i]);
-                }
-            }
-            var sqlParams = GetSqlParams(paramNameList, paramTypeList);
-            string paramsStr = GetParamsString(sqlParams, supportNullInput);
-            string bodyStr = Marshal.PtrToStringAuto(body);
-
-            bool providedAssembly = bodyStr.Contains(".dll");
-            string nampespace = "PlDotNET.UserSpace";
-            string className = "UserFunction";
-            if (providedAssembly)
-            {
-                string[] bodySplit = bodyStr.Split(':');
-                bodySplit = bodySplit[1].Split('.');
-                nampespace = bodySplit[0]; // UserNamespace
-                bodySplit = bodySplit[1].Split('!');
-                className = bodySplit[0]; // UserClass
-                funcName = bodySplit[1]; // FunctionName
-            }
-
-            if (!File.Exists(CSharpTemplateUserHandler))
-            {
-                string msg = $"Csharp template file '{CSharpTemplateUserHandler}' not found";
-                throw new SystemException(msg);
-            }
-
-            string userHandlerCode = File.ReadAllText(CSharpTemplateUserHandler);
-            string nullAbleOutput = returnType == "void" ? "" : "var result =";
-            userHandlerCode = userHandlerCode.Replace("// $create_arguments", BuildCreateArguments(funcName, paramTypeList, supportNullInput));
-            userHandlerCode = userHandlerCode.Replace("// $user_function_call$", $"{nullAbleOutput} {className}." + BuildFunctionCall(funcName, sqlParams, supportNullInput));
-            userHandlerCode = userHandlerCode.Replace("// $call_set_result$", BuildCallSetResult(returnTypeID));
-            userHandlerCode = userHandlerCode.Replace("// $handler_objects$", BuildHandlerObjects(paramTypeList, returnTypeID));
-
-            if (providedAssembly)
-            {
-                userHandlerCode = userHandlerCode.Replace("// $user_namespace$", $"using {nampespace};\n");
-                return (userHandlerCode, bodyStr);
-            }
-
-            if (!File.Exists(CSharpTemplateUserFunction))
-            {
-                string msg = $"Csharp template file '{CSharpTemplateUserFunction}' not found";
-                throw new SystemException(msg);
-            }
-
-            nullAbleOutput = returnType == "void" ? "" : "?";
-            string rawFunctionDecl = $"public static {returnType}{nullAbleOutput} {funcName}({paramsStr}) {{\n#line 1\n{bodyStr}\n}}";
-            string userFunctionCode = File.ReadAllText(CSharpTemplateUserFunction);
-            userFunctionCode = userFunctionCode.Replace("// $user_function_declaration$", rawFunctionDecl);
-
-            return (userHandlerCode, userFunctionCode);
         }
 
         /// <summary>
@@ -473,19 +282,20 @@ namespace PlDotNET
             string pattern = @"\d+,\d+";
             string message = diagnostic.ToString();
             Match m = Regex.Match(message, pattern, RegexOptions.IgnoreCase);
-            if (m.Success)
-            {
-                var sb = new System.Text.StringBuilder();
-                var split = m.Value.Split(',');
-                if (split.Length > 0)
-                {
-                    var l0 = Int32.Parse(split[0]);
-                    var line = lines[l0 - 1].TrimEnd();
-                    sb.AppendLine($" > {line}");
-                    sb.AppendLine($" ^ {message}");
-                    return sb.ToString();
-                }
-            }
+            // TODO(rosicley) - I commented the code below because it was failing.
+            // if (m.Success)
+            // {
+            //     var sb = new System.Text.StringBuilder();
+            //     var split = m.Value.Split(',');
+            //     if (split.Length > 0)
+            //     {
+            //         var l0 = Int32.Parse(split[0]);
+            //         var line = lines[l0 - 1].TrimEnd();
+            //         sb.AppendLine($" > {line}");
+            //         sb.AppendLine($" ^ {message}");
+            //         return sb.ToString();
+            //     }
+            // }
 
             return message;
         }
@@ -564,36 +374,68 @@ namespace PlDotNET
                     sb.AppendLine(GetCompilationError(diagnostic, lines));
                 sb.AppendLine("\n********ERROR************\n");
                 Elog.pldotnet_Warning(sb.ToString());
-                return null;
             }
 
             return compileResult;
         }
 
-        public unsafe delegate int DelCompileUserFunction(uint functionId, IntPtr name, int returnType, IntPtr paramNames, int* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput);
+        public unsafe delegate int DelCompileUserFunction(uint functionId, IntPtr name, uint returnType, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr dotnetLanguage);
 
         // <summary>
         /// This function is called called from C code and tries to create and
         /// compile the dynamic code using Roslyn. It also saves the
         /// CachedFunction in FuncBuiltCodeDict so that any compiled code can
         /// be called by the user function ID.
+        /// This function returns 0 if all the codes were compiled correctly.
         /// </summary>
-        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, int returnType, IntPtr paramNames, int* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput)
+        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
         {
-            (string userHandler, string userFunction) sourceCode = BuildSourceCodes(name, returnType, paramNames, paramTypes, body, supportNullInput);
+            /// User function Data
+            string funcName = Marshal.PtrToStringAuto(name);
+            string returnType = HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : OidTypes[(OID)returnTypeId];
+            string auxParameters = Marshal.PtrToStringAuto(paramNames);
+            string[] paramNameArray = auxParameters == null ? new string[0] : auxParameters.Split(" ");
+            uint[] paramTypeArray = auxParameters == null ? new uint[0] : (new ReadOnlySpan<uint>(paramTypes, paramNameArray.Length)).ToArray();
+            string funcBody = Marshal.PtrToStringAuto(body);
 
-            bool useUserAssembly = sourceCode.userFunction.Contains(".dll");
+            CodeGenerator dynamicCodeGenerator;
+            DotNETLanguage dotnetLanguage;
+            switch (Marshal.PtrToStringAuto(language))
+            {
+                case "csharp":
+                    dynamicCodeGenerator = CSharpGenerator;
+                    dotnetLanguage = DotNETLanguage.CSharp;
+                    break;
+                case "fsharp":
+                    dynamicCodeGenerator = FSharpGenerator;
+                    dotnetLanguage = DotNETLanguage.FSharp;
+                    break;
+                default:
+                    Elog.pldotnet_Warning($"PL.NET doesn't have support for {Marshal.PtrToStringAuto(language)}. Please contact Brick Abode! <tlewis@brickabode.com>");
+                    return 1;
+            }
 
+            /// Generate the UserFunction code
+            /// If the user function uses F#, this variable receives an empty string
+            string userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput);
+
+            /// Generate the UserHandler code
+            string userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput);
+
+            /// Check if the user provided an assembly
+            bool useUserAssembly = userFunctionCode.Contains(".dll");
+
+            /// Check if the user function exists in .NET context
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
-                if (cached.UserHandlerSourceCode == sourceCode.userHandler && cached.UserFunctionSourceCode == sourceCode.userFunction && !useUserAssembly)
+                /// check PL.NET needs to recompile the source codes
+                if (cached.UserHandlerSourceCode == userHandlerCode && cached.UserFunctionSourceCode == userFunctionCode && !useUserAssembly)
                 {
                     Elog.pldotnet_Info("User function hasn't changed, so it doesn't need to be recompiled!");
                     return 0;
                 }
                 else
                 {
-                    Elog.pldotnet_Info("User function has changed.");
                     FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
                     FuncBuiltCodeDict.Remove(functionId);
                 }
@@ -602,11 +444,18 @@ namespace PlDotNET
             MemoryStream memUserFunction = new MemoryStream();
             if (!useUserAssembly)
             {
-                var compileResultUserFunction = CompileSourceCode(sourceCode.userFunction, memUserFunction, $"UserFunction_{functionId}");
+                if (dotnetLanguage == DotNETLanguage.CSharp)
+                {
+                    var compileResultUserFunction = CompileSourceCode(userFunctionCode, memUserFunction, $"UserFunction_{functionId}");
+
+                    // Verify that the C# code for UserFunction compiled correctly
+                    if (!compileResultUserFunction.Success)
+                        return 1;
+                }
             }
             else
             {
-                string userAssemblyPath = sourceCode.userFunction.Split(":")[0];
+                string userAssemblyPath = userFunctionCode.Split(":")[0];
                 using (var fs = File.Open(userAssemblyPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     fs.CopyTo(memUserFunction);
@@ -614,20 +463,44 @@ namespace PlDotNET
             }
 
             MemoryStream memUserHandler = new MemoryStream();
-            var compileResultUserHandler = Engine.CompileSourceCode(sourceCode.userHandler, memUserHandler, $"UserHandler_{functionId}", memUserFunction);
+            if (dotnetLanguage == DotNETLanguage.FSharp)
+            {
+                string generatedAssembly = FSharpCompiler.CompileFSharpSourceCode(functionId, userHandlerCode);
 
+                // Verify that the F# code compiled correctly
+                if (generatedAssembly == "")
+                    return 1;
+
+                using (var fs = File.Open(generatedAssembly, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    fs.CopyTo(memUserHandler);
+                }
+            }
+            else
+            {
+                var compileResultUserHandler = Engine.CompileSourceCode(userHandlerCode, memUserHandler, $"UserHandler_{functionId}", memUserFunction);
+
+                // Verify that the C# code for UserHandler compiled correctly
+                if (!compileResultUserHandler.Success)
+                    return 1;
+            }
+
+            /// Load the assemblies into AssemblyLoadContext
             AssemblyLoadContext userAlc = new AssemblyLoadContext($"UserFunction_{functionId}", true);
-            userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location);
-            userAlc.LoadFromAssemblyPath(typeof(Engine).Assembly.Location);
-            userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer()));
+            Assembly npgsqlAssembly = userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location);
+            Assembly pldotnetAssembly = userAlc.LoadFromAssemblyPath(typeof(Engine).Assembly.Location);
+            Assembly userFunctionAssembly = dotnetLanguage != DotNETLanguage.FSharp ? userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer())) : null;
+            Assembly userHandlerAssembly = userAlc.LoadFromStream(new MemoryStream(memUserHandler.GetBuffer()));
 
+            /// Create the CachedFunction to keep the function information
             CachedFunction newCachedFunction = new CachedFunction()
             {
-                UserFunctionSourceCode = sourceCode.userFunction,
-                UserHandlerSourceCode = sourceCode.userHandler,
+                UserFunctionSourceCode = userFunctionCode,
+                UserHandlerSourceCode = userHandlerCode,
                 SupportNullInput = supportNullInput,
                 UserAssemblyLoadContext = userAlc,
-                UserProcedure = GetDirectDelegate(memUserHandler, userAlc)
+                UserProcedure = GetDirectDelegate(userHandlerAssembly),
+                Language = dotnetLanguage
             };
             Engine.FuncBuiltCodeDict.Add(functionId, newCachedFunction);
 
@@ -641,10 +514,8 @@ namespace PlDotNET
         /// It creates the Delegate function for the CallUserFunction function,
         /// which was compiled by Roslyn.
         /// </summary>
-        public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(MemoryStream memoryStream, AssemblyLoadContext userAlc)
+        public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(Assembly compiledAssembly)
         {
-            var compiledAssembly = userAlc.LoadFromStream(new MemoryStream(memoryStream.GetBuffer()));
-
             Type procClassType = compiledAssembly.GetType("PlDotNET.UserSpace.UserHandler");
 
             if (null == procClassType)
