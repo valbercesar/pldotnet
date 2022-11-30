@@ -27,13 +27,13 @@ CREATE OR REPLACE FUNCTION addGoodbye(a BPCHAR) RETURNS BPCHAR AS $$
     return (a + " Goodbye ^.^");
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-char', 'testingBpChar', addGoodbye('HELLO!') = 'HELLO! Goodbye ^.^'::BPCHAR;
+SELECT 'c#-bpchar', 'testingBpChar', addGoodbye('HELLO!') = 'HELLO! Goodbye ^.^'::BPCHAR;
 
 CREATE OR REPLACE FUNCTION concatenateChars(a BPCHAR, b BPCHAR, c BPCHAR) RETURNS BPCHAR AS $$
     return (a + " " + b + " " + c).ToUpper();
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-char', 'concatenateChars', concatenateChars('hello'::BPCHAR, 'beautiful'::BPCHAR, 'world!'::BPCHAR) = 'HELLO BEAUTIFUL WORLD!'::BPCHAR;
+SELECT 'c#-bpchar', 'concatenateChars', concatenateChars('hello'::BPCHAR, 'beautiful'::BPCHAR, 'world!'::BPCHAR) = 'HELLO BEAUTIFUL WORLD!'::BPCHAR;
 
 -- VARCHAR
 CREATE OR REPLACE FUNCTION concatenateVarChars(a VARCHAR, b VARCHAR, c BPCHAR) RETURNS VARCHAR AS $$
