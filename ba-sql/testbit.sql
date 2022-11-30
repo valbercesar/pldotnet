@@ -1,22 +1,32 @@
 -- BIT
 
 CREATE OR REPLACE FUNCTION modifybit(a BIT(10)) RETURNS BIT(10) AS $$
+    if (a == null)
+        return null;
+
     a[0] = a[0] ? false : true;
     a[a.Length-1] = a[a.Length-1] ? false : true;
     return a;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-bit', 'modifybit', modifybit('10101'::BIT(10)) = '0010100001'::BIT(10);
+SELECT 'c#-bit', 'modifybit1', modifybit('10101'::BIT(10)) = '0010100001'::BIT(10);
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bit-null', 'modifybit2', modifybit(NULL::BIT(10)) IS NULL;
 
 -- VARBIT
 
 CREATE OR REPLACE FUNCTION modifyvarbit(a BIT VARYING) RETURNS BIT VARYING AS $$
+    if (a == null)
+        return null;
+
     a[0] = a[0] ? false : true;
     a[a.Length-1] = a[a.Length-1] ? false : true;
     return a;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-varbit', 'modifyvarbit', modifyvarbit('1001110001000'::BIT VARYING) = '0001110001001'::BIT VARYING;
+SELECT 'c#-varbit', 'modifyvarbit1', modifyvarbit('1001110001000'::BIT VARYING) = '0001110001001'::BIT VARYING;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varbit-null', 'modifyvarbit2', modifyvarbit(NULL::BIT VARYING) IS NULL;
 
 CREATE OR REPLACE FUNCTION concatenatevarbit(a BIT VARYING, b BIT VARYING) RETURNS BIT VARYING AS $$
     BitArray c = new BitArray(a.Length+b.Length);

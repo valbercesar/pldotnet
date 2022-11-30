@@ -5,22 +5,52 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-bool', 'returnBool', returnBool() is false;
 
 CREATE OR REPLACE FUNCTION BooleanAnd(a boolean, b boolean) RETURNS boolean AS $$
+if (a == null) {
+    a = false;
+}
+
+if (b == null) {
+    b = false;
+}
+
 return a&b;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-bool', 'BooleanAnd', BooleanAnd(true, true) is true;
+SELECT 'c#-bool', 'BooleanAnd1', BooleanAnd(true, true) is true;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bool-null', 'BooleanAnd2', BooleanAnd(NULL::BOOLEAN, true) is false;
 
 CREATE OR REPLACE FUNCTION BooleanOr(a boolean, b boolean) RETURNS boolean AS $$
+if (a == null) {
+    a = false;
+}
+
+if (b == null) {
+    b = false;
+}
+
 return a|b;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-bool', 'BooleanOr', BooleanOr(false, false) is false;
+SELECT 'c#-bool', 'BooleanOr1', BooleanOr(false, false) is false;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bool-null', 'BooleanOr2', BooleanOr(true, NULL::BOOLEAN) is true;
 
 CREATE OR REPLACE FUNCTION BooleanXor(a boolean, b boolean) RETURNS boolean AS $$
+if (a == null) {
+    a = false;
+}
+
+if (b == null) {
+    b = false;
+}
+
 return a^b;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-bool', 'BooleanXor', BooleanXor(false, false) is false;
+SELECT 'c#-bool', 'BooleanXor1', BooleanXor(false, false) is false;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bool-null', 'BooleanXor2', BooleanXor(NULL::BOOLEAN, NULL::BOOLEAN) is false;
 
 --- Arrays
 

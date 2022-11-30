@@ -23,6 +23,12 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-uuid', 'createUUID4', createUUID('024be913-3bf8-4499-9694-12769239b763'::TEXT) = '024be913-3bf8-4499-9694-12769239b763'::UUID;
 
 CREATE OR REPLACE FUNCTION combineUUIDs(a UUID, b UUID) RETURNS UUID AS $$
+    if (a == null)
+        a = new Guid("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
+
+    if (b == null)
+        b = new Guid("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
+    
     string aStr = a.ToString();
     string bStr = b.ToString();
     var aList = aStr.Split('-');
@@ -34,6 +40,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-uuid', 'combineUUIDs1', combineUUIDs('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, '87e3006a-604e-11ed-9b6a-0242ac120002'::UUID) = 'a0eebc99-9c0b-4ef8-9b6a-0242ac120002'::UUID;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-uuid', 'combineUUIDs2', combineUUIDs('123e4567-e89b-12d3-a456-426614174000'::UUID, '024be913-3bf8-4499-9694-12769239b763'::UUID) = '123e4567-e89b-12d3-9694-12769239b763'::UUID;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-uuid-null', 'combineUUIDs3', combineUUIDs(NULL::UUID, '024be913-3bf8-4499-9694-12769239b763'::UUID) = 'a0eebc99-9c0b-4ef8-9694-12769239b763'::UUID;
 
 --- UUID Arrays
 

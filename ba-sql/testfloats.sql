@@ -6,10 +6,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-float4', 'returnReal', returnReal() = real '1.50055';
 
 CREATE OR REPLACE FUNCTION sumReal(a real, b real) RETURNS real AS $$
+if (a == null)
+    a = 0;
+
+if (b == null)
+    b = 0;
+
 return a+b;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-float4', 'sumReal', sumReal(1.50055, 1.50054) = real '3.00109'; -- 3.00109
+SELECT 'c#-float4', 'sumReal1', sumReal(1.50055, 1.50054) = real '3.00109';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-float4-null', 'sumReal2', sumReal(NULL, 1.50054) = real '1.50054';
 
 --- Float8 (double precision): 15 digits of precison
 CREATE OR REPLACE FUNCTION returnDouble() RETURNS double precision AS $$
@@ -19,10 +27,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-float8', 'returnDouble', returnDouble() = double precision '11.0050000000005';
 
 CREATE OR REPLACE FUNCTION sumDouble(a double precision, b double precision) RETURNS double precision AS $$
+if (a == null)
+    a = 0;
+
+if (b == null)
+    b = 0;
+
 return a+b;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-float8', 'sumDouble', sumDouble(10.5000000000055, 10.5000000000054) = double precision  '21.0000000000109'; -- 21.0000000000109
+SELECT 'c#-float8', 'sumDouble1', sumDouble(10.5000000000055, 10.5000000000054) = double precision  '21.0000000000109';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-float8-null', 'sumDouble2', sumDouble(NULL, NULL) = double precision '0';
 
 --- Float Arrays
 CREATE OR REPLACE FUNCTION returnRealArray(floats real[]) RETURNS real[] AS $$

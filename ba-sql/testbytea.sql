@@ -2,13 +2,22 @@
 
 CREATE OR REPLACE FUNCTION byteaConversions(a BYTEA, b BYTEA) RETURNS BYTEA AS $$
     UTF8Encoding utf8_e = new UTF8Encoding();
+    if (a == null && b == null)
+        return null;
+    if (a == null)
+        return b;
+    if (b == null)
+        return a;
+
     string s1 = utf8_e.GetString(a, 0, a.Length);
     string s2 = utf8_e.GetString(b, 0, b.Length);
     string result = s1 + " " + s2;
     return utf8_e.GetBytes(result);
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-bytea', 'byteaConversions', byteaConversions('Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA) = '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA;
+SELECT 'c#-bytea', 'byteaConversions1', byteaConversions('Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA) = '\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bytea-null', 'byteaConversions2', byteaConversions(NULL::BYTEA, 'Thank you very much...'::BYTEA) = 'Thank you very much...'::BYTEA;
 
 CREATE OR REPLACE FUNCTION concatenateBytea(a BYTEA, b TEXT) RETURNS BYTEA AS $$
     UTF8Encoding utf8_e = new UTF8Encoding();

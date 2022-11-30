@@ -1,7 +1,15 @@
 --- INT4RANGE
 CREATE OR REPLACE FUNCTION IncreaseInt4Range(orig_value INT4RANGE, increment_value INTEGER) RETURNS INT4RANGE AS $$
-return new NpgsqlRange<int>(orig_value.LowerBound + increment_value, orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound + increment_value, orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
-$$ LANGUAGE plcsharp STRICT;
+if (orig_value == null)
+    orig_value = new NpgsqlRange<int>(0, true, false, 100, false, false);
+
+if (increment_value == null)
+    increment_value = 1;
+
+NpgsqlRange<int> non_null_value = (NpgsqlRange<int>)orig_value;
+
+return new NpgsqlRange<int>(non_null_value.LowerBound + (int)increment_value, non_null_value.LowerBoundIsInclusive, non_null_value.LowerBoundInfinite, non_null_value.UpperBound + (int)increment_value, non_null_value.UpperBoundIsInclusive, non_null_value.UpperBoundInfinite);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int4range', 'IncreaseInt4Range1', IncreaseInt4Range('[2,6)'::INT4RANGE, 1) = '[3,7)'::INT4RANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
@@ -12,11 +20,21 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int4range', 'IncreaseInt4Range4', IncreaseInt4Range('(-2147483648,2147483644)'::INT4RANGE, 3) = '[-2147483644,2147483647)'::INT4RANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int4range', 'IncreaseInt4Range5', IncreaseInt4Range('(-456,-123]'::INT4RANGE, 1) = '[-454,-121)'::INT4RANGE;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int4range-null', 'IncreaseInt4Range6', IncreaseInt4Range(NULL::INT4RANGE, 1) = '[1,101)'::INT4RANGE;
 
 --- INT8RANGE
 CREATE OR REPLACE FUNCTION IncreaseInt8Range(orig_value INT8RANGE, increment_value integer) RETURNS INT8RANGE AS $$
-return new NpgsqlRange<long>(orig_value.LowerBound + increment_value, orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound + increment_value, orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
-$$ LANGUAGE plcsharp STRICT;
+if (orig_value == null)
+    orig_value = new NpgsqlRange<long>(-9223372036854775808, true, false, 9223372036854775804, false, false);
+
+if (increment_value == null)
+    increment_value = 1;
+
+NpgsqlRange<long> non_null_value = (NpgsqlRange<long>)orig_value;
+
+return new NpgsqlRange<long>(non_null_value.LowerBound + (int)increment_value, non_null_value.LowerBoundIsInclusive, non_null_value.LowerBoundInfinite, non_null_value.UpperBound + (int)increment_value, non_null_value.UpperBoundIsInclusive, non_null_value.UpperBoundInfinite);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int8range', 'IncreaseInt8Range1', IncreaseInt8Range('[2,6)'::INT8RANGE, 1) = '[3,7)'::INT8RANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
@@ -27,11 +45,21 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int8range', 'IncreaseInt8Range8', IncreaseInt8Range('(-9223372036854775808,9223372036854775804)'::INT8RANGE, 3) = '[-9223372036854775804,9223372036854775807)'::INT8RANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int8range', 'IncreaseInt8Range5', IncreaseInt8Range('(-456,-123]'::INT8RANGE, 1) = '[-454,-121)'::INT8RANGE;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int8range-null', 'IncreaseInt8Range6', IncreaseInt8Range(NULL::INT8RANGE, 1) = '[-9223372036854775807,9223372036854775805)'::INT8RANGE;
 
 --- TSRANGEOID
 CREATE OR REPLACE FUNCTION IncreaseTimestampRange(orig_value TSRANGE, days_to_add INTEGER) RETURNS TSRANGE AS $$
-return new NpgsqlRange<DateTime>(orig_value.LowerBound.AddDays(days_to_add), orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound.AddDays(days_to_add), orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
-$$ LANGUAGE plcsharp STRICT;
+if (orig_value == null)
+    orig_value = new NpgsqlRange<DateTime>(new DateTime(2022, 1, 1, 12, 30, 30), true, false, new DateTime(2022, 12, 25, 17, 30, 30), false, false);
+
+if (days_to_add == null)
+    days_to_add = 1;
+
+NpgsqlRange<DateTime> non_null_value = (NpgsqlRange<DateTime>)orig_value;
+
+return new NpgsqlRange<DateTime>(non_null_value.LowerBound.AddDays((int)days_to_add), non_null_value.LowerBoundIsInclusive, non_null_value.LowerBoundInfinite, non_null_value.UpperBound.AddDays((int)days_to_add), non_null_value.UpperBoundIsInclusive, non_null_value.UpperBoundInfinite);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-tsrange', 'IncreaseTimestampRange1', IncreaseTimestampRange('[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, 1) = '[2021-01-02 14:30, 2021-01-02 15:30)'::TSRANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
@@ -40,11 +68,21 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-tsrange', 'IncreaseTimestampRange3', IncreaseTimestampRange('[,)'::TSRANGE, 3) = '(,)'::TSRANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-tsrange', 'IncreaseTimestampRange4', IncreaseTimestampRange('(2021-01-01 14:30, 2021-01-01 15:30]'::TSRANGE, 3) = '(2021-01-04 14:30, 2021-01-04 15:30]'::TSRANGE;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-tsrange-null', 'IncreaseTimestampRange5', IncreaseTimestampRange(NULL::TSRANGE, 3) = '["2022-01-04 12:30:30","2022-12-28 17:30:30")'::TSRANGE;
 
 --- TSTZRANGEOID
 CREATE OR REPLACE FUNCTION IncreaseTimestampTzRange(orig_value TSTZRANGE, days_to_add INTEGER) RETURNS TSTZRANGE AS $$
-return new NpgsqlRange<DateTime>(orig_value.LowerBound.AddDays(days_to_add), orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound.AddDays(days_to_add), orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
-$$ LANGUAGE plcsharp STRICT;
+if (orig_value == null)
+    orig_value = new NpgsqlRange<DateTime>(new DateTime(2022, 1, 1, 12, 30, 30, DateTimeKind.Utc), true, false, new DateTime(2022, 12, 25, 17, 30, 30, DateTimeKind.Utc), false, false);
+
+if (days_to_add == null)
+    days_to_add = 1;
+
+NpgsqlRange<DateTime> non_null_value = (NpgsqlRange<DateTime>)orig_value;
+
+return new NpgsqlRange<DateTime>(non_null_value.LowerBound.AddDays((int)days_to_add), non_null_value.LowerBoundIsInclusive, non_null_value.LowerBoundInfinite, non_null_value.UpperBound.AddDays((int)days_to_add), non_null_value.UpperBoundIsInclusive, non_null_value.UpperBoundInfinite);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-tstzrange', 'IncreaseTimestampTzRange1', IncreaseTimestampTzRange('[2021-01-01 14:30 -03, 2021-01-04 15:30 +05)'::TSTZRANGE, 1) = '[2021-01-02 14:30 -03, 2021-01-05 15:30 +05)'::TSTZRANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
@@ -53,11 +91,21 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-tstzrange', 'IncreaseTimestampTzRange3', IncreaseTimestampTzRange('[,)'::TSTZRANGE, 3) = '(,)'::TSTZRANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-tstzrange', 'IncreaseTimestampTzRange4', IncreaseTimestampTzRange('(2021-01-01 14:30 -03, 2021-01-04 15:30 +05]'::TSTZRANGE, 3) = '(2021-01-04 14:30 -03, 2021-01-07 15:30 +05]'::TSTZRANGE;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-tstzrange-null', 'IncreaseTimestampTzRange5', IncreaseTimestampTzRange(NULL::TSTZRANGE, 3) = '["2022-01-04 12:30:30+00","2022-12-28 17:30:30+00")'::TSTZRANGE;
 
 --- DATERANGEOID
 CREATE OR REPLACE FUNCTION IncreaseDateonlyRange(orig_value DATERANGE, days_to_add INTEGER) RETURNS DATERANGE AS $$
-return new NpgsqlRange<DateOnly>(orig_value.LowerBound.AddDays(days_to_add), orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound.AddDays(days_to_add), orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
-$$ LANGUAGE plcsharp STRICT;
+if (orig_value == null)
+    orig_value = new NpgsqlRange<DateOnly>(new DateOnly(2022, 1, 1), true, false, new DateOnly(2022, 12, 25), false, false);
+
+if (days_to_add == null)
+    days_to_add = 1;
+
+NpgsqlRange<DateOnly> non_null_value = (NpgsqlRange<DateOnly>)orig_value;
+
+return new NpgsqlRange<DateOnly>(non_null_value.LowerBound.AddDays((int)days_to_add), non_null_value.LowerBoundIsInclusive, non_null_value.LowerBoundInfinite, non_null_value.UpperBound.AddDays((int)days_to_add), non_null_value.UpperBoundIsInclusive, non_null_value.UpperBoundInfinite);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-daterange', 'IncreaseDateonlyRange1', IncreaseDateonlyRange('[2021-01-01, 2021-01-04)'::DATERANGE, 1) = '[2021-01-02, 2021-01-05)'::DATERANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
@@ -66,6 +114,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-daterange', 'IncreaseDateonlyRange3', IncreaseDateonlyRange('[,)'::DATERANGE, 3) = '(,)'::DATERANGE;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-daterange', 'IncreaseDateonlyRange4', IncreaseDateonlyRange('(2021-01-01, 2021-01-04]'::DATERANGE, 3) = '(2021-01-04, 2021-01-07]'::DATERANGE;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-daterange-null', 'IncreaseDateonlyRange5', IncreaseDateonlyRange(NULL::DATERANGE, 3) = '[2022-01-04,2022-12-28)'::DATERANGE;
 
 --- INT4RANGE Arrays
 CREATE OR REPLACE FUNCTION updateInt4RangeIndex(values_array INT4RANGE[], desired INT4RANGE, index integer[]) RETURNS INT4RANGE[] AS $$

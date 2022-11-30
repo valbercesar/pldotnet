@@ -7,12 +7,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-macaddr', 'returnMacAddress', returnMacAddress(MACADDR '08-00-2b-01-02-03') = MACADDR '08-00-2b-01-02-03';
 
 CREATE OR REPLACE FUNCTION compareMacAddress(address1 MACADDR, address2 MACADDR) RETURNS BOOLEAN AS $$
-return address1.Equals(address2);
-$$ LANGUAGE plcsharp STRICT;
+if (address1 == null)
+    address1 = new PhysicalAddress(new byte[6] {171, 1, 43, 49, 65, 250});
+
+if (address2 == null)
+    address2 = new PhysicalAddress(new byte[6] {171, 1, 43, 49, 65, 250});
+
+return ((PhysicalAddress)address1).Equals(((PhysicalAddress)address2));
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-macaddr', 'compareMacAddress', compareMacAddress(MACADDR '08:00:2a:01:02:03', MACADDR '08-00-2b-01-02-03') is false;
+SELECT 'c#-macaddr', 'compareMacAddress1', compareMacAddress(MACADDR '08:00:2a:01:02:03', MACADDR '08-00-2b-01-02-03') is false;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-macaddr', 'compareMacAddress', compareMacAddress(MACADDR '08:00:2a:01:02:03', MACADDR '08-00-2a-01-02-03') is true;
+SELECT 'c#-macaddr-null', 'compareMacAddress2', compareMacAddress(NULL::MACADDR, MACADDR '08-00-2a-01-02-03') is false;
 
 --- MACADDR8OID
 
@@ -25,10 +31,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-macaddr8', 'addOneMacAddress8', addOneMacAddress8(MACADDR8 '08:00:2b:01:02:03:04:05') = MACADDR8 '08:00:2b:01:02:03:04:06';
 
 CREATE OR REPLACE FUNCTION compareMacAddress8(address1 MACADDR8, address2 MACADDR8) RETURNS BOOLEAN AS $$
+if (address1 == null)
+    address1 = new PhysicalAddress(new byte[8] {171, 1, 43, 49, 65, 250, 171, 172});
+
+if (address2 == null)
+    address2 = new PhysicalAddress(new byte[8] {171, 1, 43, 49, 65, 250, 171, 172});
+
 return address1.Equals(address2);
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-macaddr8', 'compareMacAddress8', compareMacAddress8(MACADDR8 '08:00:2b:01:02:03:04:06', MACADDR8 '08-00-2b-01-02-03-04-06') is true;
+SELECT 'c#-macaddr8', 'compareMacAddress81', compareMacAddress8(MACADDR8 '08:00:2b:01:02:03:04:06', MACADDR8 '08-00-2b-01-02-03-04-06') is true;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-macaddr8-null', 'compareMacAddress82', compareMacAddress8(NULL::MACADDR8, MACADDR8 'ab-01-2b-31-41-fa-ab-ac') is true;
 
 --- INETOID
 
@@ -39,13 +53,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-inet', 'modifyNetMask', modifyNetMask(INET '192.168.0.1/24', 6) = INET '192.168.0.1/30';
 
 CREATE OR REPLACE FUNCTION modifyIP(my_inet INET, n INT) RETURNS INET AS $$
-byte[] bytes = my_inet.Address.GetAddressBytes();
+if (my_inet == null)
+    my_inet = (IPAddress.Parse("127.0.0.1"), 21);
+
+byte[] bytes = (((IPAddress Address, int Netmask))my_inet).Address.GetAddressBytes();
 int size = bytes.Length;
 bytes[size-1]+=(byte)n;
-return (new IPAddress(bytes), my_inet.Netmask);
-$$ LANGUAGE plcsharp STRICT;
+return (new IPAddress(bytes), (((IPAddress Address, int Netmask))my_inet).Netmask);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-inet', 'modifyNetMask', modifyIP(INET '2001:db8:3333:4444:5555:6666:1.2.3.4/25', 20) = INET '2001:db8:3333:4444:5555:6666:1.2.3.24/25';
+SELECT 'c#-inet', 'modifyNetMask1', modifyIP(INET '2001:db8:3333:4444:5555:6666:1.2.3.4/25', 20) = INET '2001:db8:3333:4444:5555:6666:1.2.3.24/25';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-inet-null', 'modifyNetMask2', modifyIP(NULL::INET, 20) = INET '127.0.0.21/21';
 
 --- CIDROID
 
@@ -58,10 +77,16 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-cidr', 'modifyIP_CIDR', modifyIP_CIDR(CIDR '192.168/24', 0, 6) = CIDR '198.168.0.0/24';
 
 CREATE OR REPLACE FUNCTION modifyNetmask_CIDR(my_inet CIDR, delta INT) RETURNS CIDR AS $$
-return (my_inet.Address, my_inet.Netmask + delta);
-$$ LANGUAGE plcsharp STRICT;
+if (my_inet == null)
+    my_inet = (IPAddress.Parse("127.0.0.0"), 21);
+
+(IPAddress Address, int Netmask) originalInet = ((IPAddress Address, int Netmask))my_inet;
+return (originalInet.Address, (int)(originalInet.Netmask + delta));
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-cidr', 'modifyNetmask_CIDR', modifyNetmask_CIDR(CIDR '2001:4f8:3:ba::/64', 10) = CIDR '2001:4f8:3:ba::/74';
+SELECT 'c#-cidr', 'modifyNetmask_CIDR1', modifyNetmask_CIDR(CIDR '2001:4f8:3:ba::/64', 10) = CIDR '2001:4f8:3:ba::/74';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-cidr-null', 'modifyNetmask_CIDR2', modifyNetmask_CIDR(NULL::CIDR, 10) = CIDR '127.0.0.0/31';
 
 --- MACADDROID Arrays
 

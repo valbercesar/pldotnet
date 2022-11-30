@@ -5,10 +5,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int2', 'maxSmallInt', maxSmallInt() = integer '32767';
 
 CREATE OR REPLACE FUNCTION sum2SmallInt(a smallint, b smallint) RETURNS smallint AS $$
+if (a == null)
+    a = 0;
+
+if (b == null)
+    b = 0;
+
 return (short)(a+b); //C# requires short cast
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int2', 'sum2SmallInt', sum2SmallInt(CAST(100 AS smallint), CAST(101 AS smallint)) = smallint '201';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int2-null', 'sum2SmallInt2', sum2SmallInt(NULL::SMALLINT, 30::SMALLINT) = smallint '30';
 
 CREATE OR REPLACE FUNCTION maxInteger() RETURNS integer AS $$
 return 2147483647;
@@ -17,10 +25,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int4', 'maxInteger', maxInteger() = integer '2147483647';
 
 CREATE OR REPLACE FUNCTION sum2Integer(a integer, b integer) RETURNS integer AS $$
+if (a == null)
+    a = 0;
+
+if (b == null)
+    b = 0;
+
 return a+b;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-int4', 'sum2Integer', sum2Integer(32770, 100) = bigint '32870';
+SELECT 'c#-int4', 'sum2Integer1', sum2Integer(32770, 100) = bigint '32870';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int4-null', 'sum2Integer2', sum2Integer(NULL::INTEGER, 100::INTEGER) = INTEGER '100';
 
 CREATE OR REPLACE FUNCTION maxBigInt() RETURNS bigint AS $$
 return 9223372036854775807;
@@ -29,10 +45,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int8', 'maxBigInt', maxBigInt() = bigint '9223372036854775807';
 
 CREATE OR REPLACE FUNCTION sum2BigInt(a bigint, b bigint) RETURNS bigint AS $$
+if (a == null)
+    a = 0;
+
+if (b == null)
+    b = 0;
+
 return a+b;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-int8', 'sum2BigInt', sum2BigInt(9223372036854775707, 100) = bigint '9223372036854775807';
+SELECT 'c#-int8', 'sum2BigInt1', sum2BigInt(9223372036854775707, 100) = bigint '9223372036854775807';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int8-null', 'sum2BigInt2', sum2BigInt(9223372036854775707::BIGINT, NULL::BIGINT) = bigint '9223372036854775707';
 
 CREATE OR REPLACE FUNCTION mixedBigInt(a integer, b integer, c bigint) RETURNS bigint AS $$
 return (long)a+(long)b+c;

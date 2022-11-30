@@ -1,12 +1,20 @@
 --------- POINT 
 CREATE OR REPLACE FUNCTION middlePoint(pointa point, pointb point) RETURNS point AS $$
-double x = (pointa.X + pointb.X)*0.5;
-double y = (pointa.Y + pointb.Y)*0.5;
+if (pointa == null)
+    pointa = new NpgsqlPoint(0, 0);
+
+if (pointb == null)
+    pointb = new NpgsqlPoint(0, 0);
+
+double x = (((NpgsqlPoint)pointa).X + ((NpgsqlPoint)pointb).X)*0.5;
+double y = (((NpgsqlPoint)pointa).Y + ((NpgsqlPoint)pointb).Y)*0.5;
 var new_point = new NpgsqlPoint(x,y);
 return new_point;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-point', 'middlePoint',  middlePoint(POINT(10.0,20.0),POINT(20.0,40.0)) ~= POINT(15.0,30.0);
+SELECT 'c#-point', 'middlePoint1',  middlePoint(POINT(10.0,20.0),POINT(20.0,40.0)) ~= POINT(15.0,30.0);
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-point-null', 'middlePoint2',  middlePoint(NULL::POINT,POINT(20.0,40.0)) ~= POINT(10.0,20.0);
 
 CREATE OR REPLACE FUNCTION distanceBetweenPoints(pointa point, pointb point) RETURNS double precision AS $$
 double dif_x = (pointa.X - pointb.X);
@@ -38,14 +46,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-line', 'createLine', createLine(1.50,-2.750,3.25) = LINE '{1.50,-2.750,3.25}';
 
 CREATE OR REPLACE FUNCTION modifyCoefficients(original_line LINE) RETURNS LINE AS $$
-double a = original_line.A * -1.0;
-double b = original_line.B * -1.0;
-double c = original_line.C * -1.0;
+if (original_line == null)
+    original_line = new NpgsqlLine(2.4, 8.2, -32.43);
+
+double a = ((NpgsqlLine)original_line).A * -1.0;
+double b = ((NpgsqlLine)original_line).B * -1.0;
+double c = ((NpgsqlLine)original_line).C * -1.0;
 NpgsqlLine my_line = new NpgsqlLine(a,b,c);
 return my_line;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-line', 'modifyCoefficients', modifyCoefficients(LINE '{-1.5,2.75,-3.25}') = LINE '{1.50,-2.75,3.25}';
+SELECT 'c#-line', 'modifyCoefficients1', modifyCoefficients(LINE '{-1.5,2.75,-3.25}') = LINE '{1.50,-2.75,3.25}';INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-line-null', 'modifyCoefficients2', modifyCoefficients(NULL::LINE) = LINE '{2.4, 8.2, -32.43}';
 
 CREATE OR REPLACE FUNCTION getMinimumDistance(orig_line LINE, orig_point POINT) RETURNS double precision AS $$
 double a = orig_line.A;
@@ -65,13 +77,18 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-lseg', 'createLineSegment', createLineSegment(POINT(0.088997,1.258456),POINT(5.456102,3.04561)) = LSEG '[(0.088997,1.258456),(5.456102,3.04561)]';
 
 CREATE OR REPLACE FUNCTION getReverseLineSegment(my_line LSEG) RETURNS LSEG AS $$
-NpgsqlPoint firstPoint = my_line.Start;
-NpgsqlPoint secondPoint = my_line.End;
+if (my_line == null)
+    my_line = new NpgsqlLSeg(new NpgsqlPoint(0, 0), new NpgsqlPoint(100, 100));
+
+NpgsqlPoint firstPoint = ((NpgsqlLSeg)my_line).Start;
+NpgsqlPoint secondPoint = ((NpgsqlLSeg)my_line).End;
 NpgsqlLSeg newLine = new NpgsqlLSeg(secondPoint, firstPoint);
 return newLine;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-lseg', 'getReverseLineSegment', getReverseLineSegment(LSEG(POINT(0.0,1.0),POINT(5.0,3.0))) = LSEG '[(5.0,3.0),(0.0,1.0)]';
+SELECT 'c#-lseg', 'getReverseLineSegment1', getReverseLineSegment(LSEG(POINT(0.0,1.0),POINT(5.0,3.0))) = LSEG '[(5.0,3.0),(0.0,1.0)]';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-lseg-null', 'getReverseLineSegment2', getReverseLineSegment(NULL::LSEG) = LSEG '[(100.0,100.0),(0.0,0.0)]';
 
 --------- BOX
 CREATE OR REPLACE FUNCTION testBox(my_box BOX) RETURNS BOX AS $$
@@ -93,6 +110,17 @@ $$ LANGUAGE plcsharp STRICT;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-box', 'returnWidth', returnWidth(POINT '(0.025988, 1.021653)', POINT '(2.052787, 3.005716)') = double precision '2.026799';
 
+CREATE OR REPLACE FUNCTION increaseBox(orig_value BOX) RETURNS BOX AS $$
+if (orig_value == null)
+    orig_value = new NpgsqlBox(new NpgsqlPoint(0, 0), new NpgsqlPoint(100, 100));
+
+NpgsqlBox new_value = new NpgsqlBox(new NpgsqlPoint(((NpgsqlBox)orig_value).UpperRight.X + 1, ((NpgsqlBox)orig_value).UpperRight.Y + 1), new NpgsqlPoint(((NpgsqlBox)orig_value).LowerLeft.X + 1, ((NpgsqlBox)orig_value).LowerLeft.Y + 1));
+
+return new_value;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-box-null', 'increaseBox1', increaseBox(NULL::BOX) = BOX(POINT(101,101),POINT(1,1));
+
 --------- PATH
 CREATE OR REPLACE FUNCTION returnPath(orig_path PATH) RETURNS PATH AS $$
 return orig_path;
@@ -102,19 +130,41 @@ SELECT 'c#-path', 'returnPath - open', returnPath(PATH '[(1.5,2.75),(3.0,4.75),(
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-path', 'returnPath - close', returnPath(PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))') <= PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))';
 
+CREATE OR REPLACE FUNCTION increasePath(orig_value PATH) RETURNS PATH AS $$
+if (orig_value == null)
+    orig_value = new NpgsqlPath(new NpgsqlPoint(0, 0), new NpgsqlPoint(100, 100), new NpgsqlPoint(200, 200));
+
+NpgsqlPath new_value = new NpgsqlPath(((NpgsqlPath)orig_value).Count);
+foreach (NpgsqlPoint polygon_point in ((NpgsqlPath)orig_value)) {
+    new_value.Add(new NpgsqlPoint(((NpgsqlPoint)polygon_point).X + 1, ((NpgsqlPoint)polygon_point).Y + 1));
+}
+
+return new_value;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-path-null', 'increasePath1', increasePath(NULL::PATH) = '((1,1),(101,101),(201,201))'::PATH;
+
 --------- POLYGON
 CREATE OR REPLACE FUNCTION addPointToPolygon(orig_polygon POLYGON, new_point POINT) RETURNS POLYGON AS $$
-int npts = orig_polygon.Count;
+if (orig_polygon == null)
+    orig_polygon = new NpgsqlPolygon(new NpgsqlPoint(0, 0), new NpgsqlPoint(100, 100), new NpgsqlPoint(200, 200));
+
+if (new_point == null)
+    new_point = new NpgsqlPoint(0, 0);
+
+int npts = ((NpgsqlPolygon)orig_polygon).Count;
 NpgsqlPolygon new_polygon = new NpgsqlPolygon(npts+1);
 for(int i = 0; i < npts; i++)
 {
-    new_polygon.Add(orig_polygon[i]);
+    new_polygon.Add(((NpgsqlPolygon)orig_polygon)[i]);
 }
-new_polygon.Add(new_point);
+new_polygon.Add(((NpgsqlPoint)new_point));
 return new_polygon;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-polygon', 'addPointToPolygon', addPointToPolygon(POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0))', POINT '(6.5,8.8)') ~= POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0),(6.5,8.8))';
+SELECT 'c#-polygon', 'addPointToPolygon1', addPointToPolygon(POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0))', POINT '(6.5,8.8)') ~= POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0),(6.5,8.8))';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-polygon-null', 'addPointToPolygon2', addPointToPolygon(NULL::POLYGON, NULL::POINT) ~= POLYGON '((0, 0),(100,100),(200,200),(0,0))';
 
 --------- CIRCLE
 CREATE OR REPLACE FUNCTION returnCircle(orig_circle CIRCLE) RETURNS CIRCLE AS $$
@@ -122,6 +172,17 @@ return orig_circle;
 $$ LANGUAGE plcsharp STRICT; 
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-circle', 'returnCircle', returnCircle(CIRCLE '2.5, 3.5, 12.78') ~= CIRCLE '<(2.5, 3.5), 12.78>';
+
+CREATE OR REPLACE FUNCTION increaseCircle(orig_value CIRCLE) RETURNS CIRCLE AS $$
+if (orig_value == null)
+    orig_value = new NpgsqlCircle(new NpgsqlPoint(0, 0), 3);
+
+NpgsqlCircle new_value = new NpgsqlCircle(((NpgsqlCircle)orig_value).Center, ((NpgsqlCircle)orig_value).Radius + 1);
+
+return new_value;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-circle-null', 'increaseCircle1', increaseCircle(NULL::CIRCLE) = CIRCLE '<(0, 0), 4>';
 
 --- POINT Arrays
 CREATE OR REPLACE FUNCTION updateArrayPointIndex(values_array point[], desired point, index integer[]) RETURNS point[] AS $$
@@ -153,7 +214,7 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-point-null-1array', 'IncreasePoints1', CAST(IncreasePoints(ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), null::point, POINT(40.5,21.3)]) AS TEXT) = CAST(ARRAY[POINT(11.0,21.0), POINT(31.0,56.0), null::point, POINT(41.5,22.3)] AS TEXT);
 
 CREATE OR REPLACE FUNCTION CreatePointMultidimensionalArray() RETURNS point[] AS $$
-NpgsqlPoint objects_value = new NpgsqlPoint(2.4, 8.2);;
+NpgsqlPoint objects_value = new NpgsqlPoint(2.4, 8.2);
 NpgsqlPoint?[, ,] three_dimensional_array = new NpgsqlPoint?[2, 2, 2] {{{objects_value, objects_value}, {null, null}}, {{objects_value, null}, {objects_value, objects_value}}};
 return three_dimensional_array;
 $$ LANGUAGE plcsharp STRICT;

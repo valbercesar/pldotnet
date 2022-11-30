@@ -7,11 +7,19 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-text', 'identityStr', identityStr('dog') = 'dog';
 
 CREATE OR REPLACE FUNCTION concatenateText(a text, b text) RETURNS text AS $$
+    if (a == null)
+        a = "";
+    
+    if (b == null)
+        b = "";
+
     string c = a + " " + b;
     return c;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-text', 'concatenateText', concatenateText('red', 'blue') = 'red blue';
+SELECT 'c#-text', 'concatenateText1', concatenateText('red', 'blue') = 'red blue';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-text-null', 'concatenateText2', concatenateText(NULL::TEXT, 'blue') = ' blue';
 
 CREATE OR REPLACE FUNCTION multiplyText(a text, b int) RETURNS text AS $$
     int i;
@@ -30,17 +38,39 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-bpchar', 'testingBpChar', addGoodbye('HELLO!') = 'HELLO! Goodbye ^.^'::BPCHAR;
 
 CREATE OR REPLACE FUNCTION concatenateChars(a BPCHAR, b BPCHAR, c BPCHAR) RETURNS BPCHAR AS $$
+    if (a == null)
+        a = "";
+    
+    if (b == null)
+        b = "";
+    
+    if (c == null)
+        c = "";
+
     return (a + " " + b + " " + c).ToUpper();
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-bpchar', 'concatenateChars', concatenateChars('hello'::BPCHAR, 'beautiful'::BPCHAR, 'world!'::BPCHAR) = 'HELLO BEAUTIFUL WORLD!'::BPCHAR;
+SELECT 'c#-bpchar', 'concatenateChars1', concatenateChars('hello'::BPCHAR, 'beautiful'::BPCHAR, 'world!'::BPCHAR) = 'HELLO BEAUTIFUL WORLD!'::BPCHAR;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-bpchar-null', 'concatenateChars2', concatenateChars(NULL::BPCHAR, 'beautiful'::BPCHAR, NULL::BPCHAR) = ' BEAUTIFUL '::BPCHAR;
 
 -- VARCHAR
 CREATE OR REPLACE FUNCTION concatenateVarChars(a VARCHAR, b VARCHAR, c BPCHAR) RETURNS VARCHAR AS $$
+    if (a == null)
+        a = "";
+    
+    if (b == null)
+        b = "";
+    
+    if (c == null)
+        c = "";
+        
     return (a + " " + b + " " + c).ToUpper();
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-varchar', 'concatenateVarChars', concatenateVarChars('hello'::VARCHAR, 'beautiful'::VARCHAR, 'world!'::BPCHAR) = 'HELLO BEAUTIFUL WORLD!'::VARCHAR;
+SELECT 'c#-varchar', 'concatenateVarChars1', concatenateVarChars('hello'::VARCHAR, 'beautiful'::VARCHAR, 'world!'::BPCHAR) = 'HELLO BEAUTIFUL WORLD!'::VARCHAR;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-varchar-null', 'concatenateVarChars2', concatenateVarChars(NULL::VARCHAR, 'beautiful'::VARCHAR, NULL::BPCHAR) = ' BEAUTIFUL '::VARCHAR;
 
 CREATE OR REPLACE FUNCTION multiplyVarChar(a VARCHAR, b int) RETURNS VARCHAR AS $$
     string c = "";
@@ -52,12 +82,17 @@ SELECT 'c#-varchar', 'multiplyVarChar', multiplyVarChar('hello '::VARCHAR, 5) = 
 
 -- XML
 CREATE OR REPLACE FUNCTION modifyXml(a XML) RETURNS XML AS $$
-    string new_xml = a.Replace("Hello", "Goodbye");
-    new_xml = new_xml.Replace("World", "beautiful World");
+    if (a == null)
+        a = "<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World, it was null!</title>";
+    
+    string new_xml = ((string)a).Replace("Hello", "Goodbye");
+    new_xml = ((string)new_xml).Replace("World", "beautiful World");
     return new_xml;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-xml', 'modifyXml', modifyXml('<?xml version="1.0" encoding="utf-8"?><title>Hello, World!</title>'::XML)::text = '<?xml version="1.0" encoding="utf-8"?><title>Goodbye, beautiful World!</title>'::XML::text;
+SELECT 'c#-xml', 'modifyXml1', modifyXml('<?xml version="1.0" encoding="utf-8"?><title>Hello, World!</title>'::XML)::text = '<?xml version="1.0" encoding="utf-8"?><title>Goodbye, beautiful World!</title>'::XML::text;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-xml-null', 'modifyXml2', modifyXml(NULL::XML)::text = '<?xml version="1.0" encoding="utf-8"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text;
 
 CREATE OR REPLACE FUNCTION createXml(title TEXT, p1 TEXT, p2 TEXT) RETURNS XML AS $$
     string c = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";

@@ -1,54 +1,94 @@
 --- DATEOID
 CREATE OR REPLACE FUNCTION modifyInputDate(orig_date DATE) RETURNS DATE AS $$
-int day = orig_date.Day;
-int month = orig_date.Month;
-int year = orig_date.Year;
+if (orig_date == null) {
+    orig_date = new DateOnly(2022, 1, 1);
+}
+
+int day = ((DateOnly)orig_date).Day;
+int month = ((DateOnly)orig_date).Month;
+int year = ((DateOnly)orig_date).Year;
 DateOnly new_date = new DateOnly(year+3,month+1,day+6);
 return new_date;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-date', 'modifyInputDate', modifyInputDate(DATE 'Oct-14-2022') = DATE 'Nov-20-2025';
+SELECT 'c#-date', 'modifyInputDate1', modifyInputDate(DATE 'Oct-14-2022') = DATE 'Nov-20-2025';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-date-null', 'modifyInputDate2', modifyInputDate(NULL::DATE) = DATE 'Feb-07-2025';
 
 --- TIMEOID
 CREATE OR REPLACE FUNCTION addMinutes(orig_time TIME, min_to_add INT) RETURNS TIME AS $$
-TimeOnly new_time = orig_time.AddMinutes((double) min_to_add);
+if (orig_time == null) {
+    orig_time = new TimeOnly(0, 30, 20);
+}
+
+TimeOnly new_time = ((TimeOnly)orig_time).AddMinutes((double) min_to_add);
 return new_time;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-time', 'addMinutes', addMinutes(TIME '05:30 PM', 75) = TIME '06:45 PM';
+SELECT 'c#-time', 'addMinutes1', addMinutes(TIME '05:30 PM', 75) = TIME '06:45 PM';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-time-null', 'addMinutes2', addMinutes(NULL::TIME, 75) = TIME '01:45:20';
 
 --- TIMETZOID
 CREATE OR REPLACE FUNCTION addHours(orig_time TIMETZ, hours_to_add FLOAT) RETURNS TIMETZ AS $$
-return orig_time.AddHours((double)hours_to_add);
-$$ LANGUAGE plcsharp STRICT;
+if (orig_time == null) {
+    orig_time = new DateTimeOffset(2022, 1, 1, 8, 30, 20, new TimeSpan(2, 0, 0));
+}
+
+return ((DateTimeOffset)orig_time).AddHours((double)hours_to_add);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-timetz', 'addHours', addHours(TIMETZ '04:05:06-08:00',1.5) = TIMETZ '05:35:06-08:00';
+SELECT 'c#-timetz', 'addHours1', addHours(TIMETZ '04:05:06-08:00',1.5) = TIMETZ '05:35:06-08:00';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-timetz-null', 'addHours2', addHours(NULL::TIMETZ,1.5) = TIMETZ '10:00:20+02:00';
 
 --- TIMESTAMP
 CREATE OR REPLACE FUNCTION setNewDate(orig_timestamp TIMESTAMP, new_date DATE) RETURNS TIMESTAMP AS $$
-int new_day = new_date.Day;
-int new_month = new_date.Month;
-int new_year = new_date.Year;
-DateTime new_timestamp = new DateTime(new_year, new_month, new_day, orig_timestamp.Hour, orig_timestamp.Minute, orig_timestamp.Second);
+if (orig_timestamp == null) {
+    orig_timestamp = new DateTime(2022, 1, 1, 8, 30, 20);
+}
+
+if (new_date == null) {
+    new_date = new DateOnly(2023, 12, 25);
+}
+
+int new_day = ((DateOnly)new_date).Day;
+int new_month = ((DateOnly)new_date).Month;
+int new_year = ((DateOnly)new_date).Year;
+DateTime new_timestamp = new DateTime(new_year, new_month, new_day, ((DateTime)orig_timestamp).Hour, ((DateTime)orig_timestamp).Minute, ((DateTime)orig_timestamp).Second);
 return new_timestamp;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-timestamp', 'setNewDate', setNewDate(TIMESTAMP '2004-10-19 10:23:54 PM', DATE '2022-10-17') = TIMESTAMP '2022-10-17 10:23:54 PM';
+SELECT 'c#-timestamp', 'setNewDate1', setNewDate(TIMESTAMP '2004-10-19 10:23:54 PM', DATE '2022-10-17') = TIMESTAMP '2022-10-17 10:23:54 PM';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-timestamp-null', 'setNewDate2', setNewDate(NULL::TIMESTAMP, NULL::DATE) = TIMESTAMP '2023-12-25 08:30:20';
 
 --- TIMESTAMPTZ
 CREATE OR REPLACE FUNCTION addDays(my_timestamp TIMESTAMP WITH TIME ZONE, days_to_add INT) RETURNS TIMESTAMP WITH TIME ZONE AS $$
-return my_timestamp.AddDays((double)days_to_add);
-$$ LANGUAGE plcsharp STRICT;
+if (my_timestamp == null) {
+    my_timestamp = new DateTime(2022, 1, 1, 8, 30, 20, DateTimeKind.Utc);
+}
+
+return ((DateTime)my_timestamp).AddDays((double)days_to_add);
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-timestamptz', 'addDays', addDays(TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', 2) = TIMESTAMP WITH TIME ZONE '2004-10-21 22:23:54 +02';
+SELECT 'c#-timestamptz', 'addDays1', addDays(TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', 2) = TIMESTAMP WITH TIME ZONE '2004-10-21 22:23:54 +02';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-timestamptz-null', 'addDays2', addDays(NULL::TIMESTAMP WITH TIME ZONE, 2) = TIMESTAMP WITH TIME ZONE '2022-01-03 08:30:20 +00';
 
 --- INTERVAL
 CREATE OR REPLACE FUNCTION modifyInterval(orig_interval INTERVAL, days_to_add INT, months_to_add INT) RETURNS INTERVAL AS $$
-NpgsqlInterval new_interval = new NpgsqlInterval(orig_interval.Months + months_to_add, orig_interval.Days + days_to_add, orig_interval.Time);
+if (orig_interval == null) {
+    orig_interval = new NpgsqlInterval(4, 25, 9000000000);
+}
+
+NpgsqlInterval new_interval = new NpgsqlInterval(((NpgsqlInterval)orig_interval).Months + (int)months_to_add, ((NpgsqlInterval)orig_interval).Days + (int)days_to_add, ((NpgsqlInterval)orig_interval).Time);
 return new_interval;
-$$ LANGUAGE plcsharp STRICT;
+$$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-interval', 'modifyInterval', modifyInterval(INTERVAL '4 hours 5 minutes 6 seconds', 15, 20) = INTERVAL '1 YEAR 8 MONTHS 15 DAYS 4 HOURS 5 MINUTES 6 SECONDS'; 
+SELECT 'c#-interval', 'modifyInterval1', modifyInterval(INTERVAL '4 hours 5 minutes 6 seconds', 15, 20) = INTERVAL '1 YEAR 8 MONTHS 15 DAYS 4 HOURS 5 MINUTES 6 SECONDS';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-interval-null', 'modifyInterval2', modifyInterval(NULL::INTERVAL, 15, 20) = INTERVAL '2 YEAR 40 DAYS 2 HOURS 30 MINUTES';
 
 --- DATEOID Arrays
 CREATE OR REPLACE FUNCTION updateArrayDateIndex(dates DATE[], desired DATE, index integer[]) RETURNS DATE[] AS $$
