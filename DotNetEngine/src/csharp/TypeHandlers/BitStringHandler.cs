@@ -1,6 +1,28 @@
+// <copyright file="BitStringHandler.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
-using System.Runtime.InteropServices;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace PlDotNET.Handler
 {
@@ -42,7 +64,7 @@ namespace PlDotNET.Handler
             byte* bitDat = null;
             pldotnet_getDatumVarBitAttributes(datum, ref bitLen, ref bitDat);
 
-            int byteLen = bitLen / 8 + ((bitLen % 8) > 0 ? 1 : 0);
+            int byteLen = (bitLen / 8) + ((bitLen % 8) > 0 ? 1 : 0);
             byte[] bytes = new byte[byteLen];
             for (int i = 0; i < byteLen; i++)
             {
@@ -50,16 +72,19 @@ namespace PlDotNET.Handler
             }
 
             // the reverse BitArray constructed from byte[]
-            BitArray auxiliar = new BitArray(bytes);
+            BitArray auxiliar = new (bytes);
 
-            BitArray result = new BitArray(bitLen);
+            BitArray result = new (bitLen);
             for (int i = 0, cont = 0; i < byteLen; i++)
             {
                 for (int j = 7; j >= 0; j--)
                 {
                     if (cont == bitLen)
+                    {
                         break;
-                    result[cont++] = auxiliar[i * 8 + j];
+                    }
+
+                    result[cont++] = auxiliar[(i * 8) + j];
                 }
             }
 
@@ -72,17 +97,20 @@ namespace PlDotNET.Handler
         public static IntPtr CreateDatum(BitArray value)
         {
             int bitLen = value.Length;
-            int byteLen = bitLen / 8 + ((bitLen % 8) > 0 ? 1 : 0);
+            int byteLen = (bitLen / 8) + ((bitLen % 8) > 0 ? 1 : 0);
 
             // the reverse BitArray; it will be used to call "CopyTo"
-            BitArray auxiliar = new BitArray(byteLen * 8);
+            BitArray auxiliar = new (byteLen * 8);
             for (int i = 0, cont = 0; i < byteLen; i++)
             {
                 for (int j = 7; j >= 0; j--)
                 {
                     if (cont == bitLen)
+                    {
                         break;
-                    auxiliar[i * 8 + j] = value[cont++];
+                    }
+
+                    auxiliar[(i * 8) + j] = value[cont++];
                 }
             }
 

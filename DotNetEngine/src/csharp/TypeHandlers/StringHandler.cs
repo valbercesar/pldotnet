@@ -1,7 +1,29 @@
+// <copyright file="StringHandler.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Buffers;
 using System.Text.Unicode;
 
 namespace PlDotNET.Handler
@@ -14,7 +36,7 @@ namespace PlDotNET.Handler
     /// </remarks>
     public class StringHandler : ObjectTypeHandler<string>
     {
-        public static UTF8Encoding Utf8 = new UTF8Encoding();
+        public static UTF8Encoding Utf8 = new ();
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
@@ -94,7 +116,8 @@ namespace PlDotNET.Handler
                 default:
                     throw new NotImplementedException($"StringConstructors doesn't support {(OID)this.ElementOID}");
             }
-            ReadOnlySpan<byte> nativeSpan = new ReadOnlySpan<byte>(str_p, strlen);
+
+            ReadOnlySpan<byte> nativeSpan = new (str_p, strlen);
             return Utf8.GetString(nativeSpan.ToArray(), 0, strlen);
         }
 
@@ -103,19 +126,14 @@ namespace PlDotNET.Handler
         {
             byte[] encodedBytes = Utf8.GetBytes(value);
             int len = encodedBytes.Length;
-            switch ((int)this.ElementOID)
+            return (int)this.ElementOID switch
             {
-                case (int)OID.TEXTOID:
-                    return pldotnet_createDatumText(len, encodedBytes);
-                case (int)OID.BPCHAROID:
-                    return pldotnet_createDatumChar(len, encodedBytes);
-                case (int)OID.VARCHAROID:
-                    return pldotnet_createDatumVarChar(len, encodedBytes);
-                case (int)OID.XMLOID:
-                    return pldotnet_createDatumXml(len, encodedBytes);
-                default:
-                    throw new NotImplementedException($"StringConstructors doesn't support {(OID)this.ElementOID}");
-            }
+                (int)OID.TEXTOID => pldotnet_createDatumText(len, encodedBytes),
+                (int)OID.BPCHAROID => pldotnet_createDatumChar(len, encodedBytes),
+                (int)OID.VARCHAROID => pldotnet_createDatumVarChar(len, encodedBytes),
+                (int)OID.XMLOID => pldotnet_createDatumXml(len, encodedBytes),
+                _ => throw new NotImplementedException($"StringConstructors doesn't support {(OID)this.ElementOID}"),
+            };
         }
     }
 

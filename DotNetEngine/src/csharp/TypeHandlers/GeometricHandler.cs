@@ -1,3 +1,25 @@
+// <copyright file="GeometricHandler.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
 using System.Runtime.InteropServices;
 using NpgsqlTypes;
@@ -170,8 +192,8 @@ namespace PlDotNET.Handler
         {
             double x1 = 0.0, y1 = 0.0, x2 = 0.0, y2 = 0.0;
             pldotnet_getDatumBoxAttributes(datum, ref x1, ref y1, ref x2, ref y2);
-            NpgsqlPoint upperRight = new NpgsqlPoint(x1, y1);
-            NpgsqlPoint lowerLeft = new NpgsqlPoint(x2, y2);
+            NpgsqlPoint upperRight = new (x1, y1);
+            NpgsqlPoint lowerLeft = new (x2, y2);
             return new NpgsqlBox(upperRight, lowerLeft);
         }
 
@@ -229,13 +251,14 @@ namespace PlDotNET.Handler
             pldotnet_getDatumPathAttributes(datum, ref npts, ref closed);
             double[] xCoordinates = new double[npts];
             double[] yCoordinates = new double[npts];
-            bool open = closed == 0 ? true : false;
-            NpgsqlPath origPath = new NpgsqlPath(npts, open);
+            bool open = closed == 0;
+            NpgsqlPath origPath = new (npts, open);
             pldotnet_getDatumPathCoordinates(datum, xCoordinates, yCoordinates);
             for (int i = 0; i < npts; i++)
             {
                 origPath.Add(new NpgsqlPoint(xCoordinates[i], yCoordinates[i]));
             }
+
             return origPath;
         }
 
@@ -252,6 +275,7 @@ namespace PlDotNET.Handler
                 xCoordinates[i] = value[i].X;
                 yCoordinates[i] = value[i].Y;
             }
+
             return pldotnet_createDatumPath(npts, closed, xCoordinates, yCoordinates);
         }
     }
@@ -299,12 +323,13 @@ namespace PlDotNET.Handler
             pldotnet_getDatumPolygonAttributes(datum, ref npts);
             double[] xCoordinates = new double[npts];
             double[] yCoordinates = new double[npts];
-            NpgsqlPolygon origPolygon = new NpgsqlPolygon(npts);
+            NpgsqlPolygon origPolygon = new (npts);
             pldotnet_getDatumPolygonCoordinates(datum, xCoordinates, yCoordinates);
             for (int i = 0; i < npts; i++)
             {
                 origPolygon.Add(new NpgsqlPoint(xCoordinates[i], yCoordinates[i]));
             }
+
             return origPolygon;
         }
 
@@ -319,6 +344,7 @@ namespace PlDotNET.Handler
                 xCoordinates[i] = value[i].X;
                 yCoordinates[i] = value[i].Y;
             }
+
             return pldotnet_createDatumPolygon(npts, xCoordinates, yCoordinates);
         }
     }

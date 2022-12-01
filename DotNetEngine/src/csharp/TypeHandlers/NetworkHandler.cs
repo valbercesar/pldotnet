@@ -1,7 +1,29 @@
+// <copyright file="NetworkHandler.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
-using System.Runtime.InteropServices;
-using System.Net.NetworkInformation;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 
 namespace PlDotNET.Handler
 {
@@ -119,13 +141,14 @@ namespace PlDotNET.Handler
             {
                 newBytes[i] = bytes[i];
             }
+
             return (new IPAddress(newBytes), netmask);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue((IPAddress Address, int Netmask) value)
         {
-            return pldotnet_createDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask); ;
+            return pldotnet_createDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask);
         }
     }
 
@@ -155,6 +178,7 @@ namespace PlDotNET.Handler
             {
                 newBytes[i] = bytes[i];
             }
+
             return (new IPAddress(newBytes), netmask);
         }
 
@@ -162,7 +186,7 @@ namespace PlDotNET.Handler
         public override IntPtr OutputValue((IPAddress Address, int Netmask) value)
         {
             Elog.pldotnet_Elog(19, "\n\nWe still need to check if the result CIDR object is acceptable!!!\n\n");
-            return InetHandler.pldotnet_createDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask); ;
+            return InetHandler.pldotnet_createDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask);
         }
     }
 }

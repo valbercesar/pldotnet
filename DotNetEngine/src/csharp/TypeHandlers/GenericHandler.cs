@@ -1,7 +1,29 @@
+// <copyright file="GenericHandler.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace PlDotNET.Handler
 {
@@ -23,7 +45,10 @@ namespace PlDotNET.Handler
         public static unsafe bool CheckNullValue(byte[] nullmap, int offset)
         {
             int byteLen = nullmap.Length;
-            if (byteLen == 0) { return false; }
+            if (byteLen == 0)
+            {
+                return false;
+            }
 
             int bitLen = byteLen * 8;
             if (offset > bitLen)
@@ -36,7 +61,7 @@ namespace PlDotNET.Handler
             byte relevantByte = nullmap[byteOffset];
             int isNull = (relevantByte >> bitOffset) & 0x1;
 
-            return (isNull != 1);
+            return isNull != 1;
         }
     }
 
@@ -44,7 +69,7 @@ namespace PlDotNET.Handler
     /// Base class for all classes which represent the data type handlers.
     /// </summary>
     /// <remarks>
-    /// Do not use it directly. Instead see StructTypeHandler<T> and ObjectTypeHandler<T>,
+    /// Do not use it directly. Instead see StructTypeHandler.<T> and ObjectTypeHandler<T>,
     /// which are defined below.
     /// </remarks>
     public abstract class BaseTypeHandler<T>
@@ -67,21 +92,25 @@ namespace PlDotNET.Handler
         /// <returns> Returns the PostgreSQL datum. </returns>
         public abstract IntPtr OutputValue(T value);
 
-#nullable enable
         /// <summary>
         /// Checks if the PostreSQL array is null. If the datum is null, it returns
         /// null. Otherwise, it calls the InputArray method.
         /// </summary>
+#nullable enable
         public Array? InputNullableArray(IntPtr datum, bool isnull)
         {
-            return (isnull ? null : InputArray(datum));
+            return isnull ? null : this.InputArray(datum);
         }
 #nullable disable
 
+        /// <summary>
+        /// Checks if Array object is null. If so, it returns a Datum Int32, otherwise
+        /// it calls the OutputArray method.
+        /// </summary>
 #nullable enable
         public IntPtr OutputNullableArray(Array? value)
         {
-            return (value == null ? IntHandler.pldotnet_createDatumInt32(0) : OutputArray((Array)value));
+            return value == null ? IntHandler.pldotnet_createDatumInt32(0) : this.OutputArray((Array)value);
         }
 #nullable disable
 
@@ -95,7 +124,7 @@ namespace PlDotNET.Handler
         public unsafe Array InputArray(IntPtr datum)
         {
             int ndims = 0;
-            int[] rawDims = new int[ArrayHandler.maxdim];
+            int[] rawDims = new int[ArrayHandler.Maxdim];
             byte* nullmap = null;
             int typeId = 0;
             ArrayHandler.pldotnet_getArrayAttributes(datum, ref typeId, ref ndims, rawDims, ref nullmap);
@@ -121,12 +150,12 @@ namespace PlDotNET.Handler
             if (nullmap != null)
             {
                 int nullmapLen = (nelems / 8) + 1;
-                ReadOnlySpan<byte> nativeSpan = new ReadOnlySpan<byte>(nullmap, nullmapLen);
+                ReadOnlySpan<byte> nativeSpan = new (nullmap, nullmapLen);
                 byte[] nullmapArray = nativeSpan.ToArray();
-                return InputArrayWithNull(datumList, dims, nullmapArray);
+                return this.InputArrayWithNull(datumList, dims, nullmapArray);
             }
 
-            var ret = datumList.Select((datum, index) => InputValue(datum)).ToArray();
+            var ret = datumList.Select((datum, index) => this.InputValue(datum)).ToArray();
             Array ret2 = Array.CreateInstance(typeof(object), dims);
             ArrayHandler.ReshapeArray(ret, ref ret2);
 
@@ -145,20 +174,28 @@ namespace PlDotNET.Handler
             int nelems = value.Length;
             Array flatArray = Array.CreateInstance(typeof(object), nelems);
             ArrayHandler.FlatArray(value, ref flatArray);
-            // flatArray variable is an one-dimensional array with the .NET types now
 
+            // flatArray variable is an one-dimensional array with the .NET types now
             int dimNumber = value.Rank;
             int[] dimLengths = new int[dimNumber];
             for (int i = 0; i < dimNumber; i++)
+            {
                 dimLengths[i] = value.GetLength(i);
+            }
 
             for (int i = 0; i < nelems; i++)
+            {
                 if (flatArray.GetValue(i) == null)
-                    return OutputArrayWithNull(flatArray, dimLengths);
+                {
+                    return this.OutputArrayWithNull(flatArray, dimLengths);
+                }
+            }
 
             IntPtr[] datums = new IntPtr[nelems]; // datums will be passed to C!
             for (int i = 0; i < nelems; i++)
-                datums[i] = OutputValue((T)flatArray.GetValue(i));
+            {
+                datums[i] = this.OutputValue((T)flatArray.GetValue(i));
+            }
 
             return ArrayHandler.pldotnet_createDatumArray((int)this.ElementOID, dimNumber, dimLengths, datums);
         }
@@ -171,7 +208,7 @@ namespace PlDotNET.Handler
         /// <param name="dims">The size of each dimension.</param>
         /// <param name="nullmap">The PostgreSQL nullmap.</param>
         /// <returns> Returns an Array object (multidimensional or not).</returns>
-        Array InputArrayWithNull(List<IntPtr> datums, int[] dims, byte[] nullmap)
+        private Array InputArrayWithNull(List<IntPtr> datums, int[] dims, byte[] nullmap)
         {
             int nelms = datums.Count;
             object[] ret = new object[nelms];
@@ -179,7 +216,7 @@ namespace PlDotNET.Handler
             for (int i = 0; i < nelms; i++)
             {
                 bool isNull = NullMap.CheckNullValue(nullmap, i);
-                ret[i] = isNull ? null : InputValue(datums[i]);
+                ret[i] = isNull ? null : this.InputValue(datums[i]);
             }
 
             Array ret2 = Array.CreateInstance(typeof(object), dims);
@@ -194,7 +231,7 @@ namespace PlDotNET.Handler
         /// <param name="flatArray">The flat array with the dotnet values.</param>
         /// <param name="dims">The size of each dimension of the original dotnet array.</param>
         /// <returns> Returns a PostgreSQL array.</returns>
-        unsafe IntPtr OutputArrayWithNull(Array flatArray, int[] dims)
+        private unsafe IntPtr OutputArrayWithNull(Array flatArray, int[] dims)
         {
             int nelems = flatArray.Length;
             byte[] nulls = new byte[nelems];
@@ -209,9 +246,10 @@ namespace PlDotNET.Handler
                 }
                 else
                 {
-                    datums[i] = OutputValue((T)flatArray.GetValue(i));
+                    datums[i] = this.OutputValue((T)flatArray.GetValue(i));
                 }
             }
+
             return ArrayHandler.pldotnet_createDatumArray((int)this.ElementOID, dims.Length, dims, datums, nulls);
         }
     }
@@ -222,7 +260,8 @@ namespace PlDotNET.Handler
     /// <remarks>
     /// Use it for int, float, NpgsqlPoint, and other structs.
     /// </remarks>
-    public abstract class StructTypeHandler<T> : BaseTypeHandler<T> where T : struct
+    public abstract class StructTypeHandler<T> : BaseTypeHandler<T>
+        where T : struct
     {
 #nullable enable
         /// <summary>
@@ -231,7 +270,7 @@ namespace PlDotNET.Handler
         /// </summary>
         public T? InputNullableValue(IntPtr datum, bool isnull)
         {
-            return (isnull ? null : InputValue(datum));
+            return isnull ? null : this.InputValue(datum);
         }
 
         /// <summary>
@@ -240,7 +279,7 @@ namespace PlDotNET.Handler
         /// </summary>
         public IntPtr OutputNullableValue(T? value)
         {
-            return (value == null ? IntHandler.pldotnet_createDatumInt32(0) : OutputValue((T)value));
+            return value == null ? IntHandler.pldotnet_createDatumInt32(0) : this.OutputValue((T)value);
         }
 #nullable disable
     }
@@ -251,7 +290,8 @@ namespace PlDotNET.Handler
     /// <remarks>
     /// Use it for string, PhysicalAddress, BitArray, and other classes.
     /// </remarks>
-    public abstract class ObjectTypeHandler<T> : BaseTypeHandler<T> where T : class
+    public abstract class ObjectTypeHandler<T> : BaseTypeHandler<T>
+        where T : class
     {
 #nullable enable
         /// <summary>
@@ -260,7 +300,7 @@ namespace PlDotNET.Handler
         /// </summary>
         public T? InputNullableValue(IntPtr datum, bool isnull)
         {
-            return (isnull ? null : InputValue(datum));
+            return isnull ? null : this.InputValue(datum);
         }
 
         /// <summary>
@@ -269,7 +309,7 @@ namespace PlDotNET.Handler
         /// </summary>
         public IntPtr OutputNullableValue(T? value)
         {
-            return (value == null ? IntHandler.pldotnet_createDatumInt32(0) : OutputValue((T)value));
+            return value == null ? IntHandler.pldotnet_createDatumInt32(0) : this.OutputValue((T)value);
         }
 #nullable disable
     }
@@ -281,10 +321,11 @@ namespace PlDotNET.Handler
     {
         public OID BaseType;
         public OID ArrayType;
-        public OIDHandler(OID BaseType, OID ArrayType)
+
+        public OIDHandler(OID baseType, OID arrayType)
         {
-            this.BaseType = BaseType;
-            this.ArrayType = ArrayType;
+            this.BaseType = baseType;
+            this.ArrayType = arrayType;
         }
     }
 

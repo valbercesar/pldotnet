@@ -1,6 +1,28 @@
+// <copyright file="DateTimeHandler.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using NpgsqlTypes;
 
 namespace PlDotNET.Handler
@@ -14,6 +36,7 @@ namespace PlDotNET.Handler
         public static readonly bool LegacyTimestampBehavior = true;
         public static readonly string InfinityExceptionMessage =
         "Can't read infinity value since UserClass.DisableDateTimeInfinityConversions is enabled";
+
         public static readonly long PostgresTimestampOffsetTicks = 630822816000000000L;
     }
 
@@ -147,13 +170,13 @@ namespace PlDotNET.Handler
             long time = 0;
             int zone = 0;
             pldotnet_getDatumTimeTzAttributes(datum, ref time, ref zone);
-            return new DateTimeOffset(time * 10 + TimeSpan.TicksPerDay, new TimeSpan(0, 0, -zone));
+            return new DateTimeOffset((time * 10) + TimeSpan.TicksPerDay, new TimeSpan(0, 0, -zone));
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(DateTimeOffset value)
         {
-            return pldotnet_createDatumTimeTz(value.TimeOfDay.Ticks / 10, -(int)(value.Offset.Ticks / TimeSpan.TicksPerSecond)); ;
+            return pldotnet_createDatumTimeTz(value.TimeOfDay.Ticks / 10, -(int)(value.Offset.Ticks / TimeSpan.TicksPerSecond));
         }
     }
 
@@ -197,7 +220,7 @@ namespace PlDotNET.Handler
                 {
                     long.MaxValue => ConfigDateTime.DisableDateTimeInfinityConversions ? throw new InvalidCastException(ConfigDateTime.InfinityExceptionMessage) : DateTime.MaxValue,
                     long.MinValue => ConfigDateTime.DisableDateTimeInfinityConversions ? throw new InvalidCastException(ConfigDateTime.InfinityExceptionMessage) : DateTime.MinValue,
-                    var value => new DateTime(value * 10 + ConfigDateTime.PostgresTimestampOffsetTicks, kind)
+                    var value => new DateTime((value * 10) + ConfigDateTime.PostgresTimestampOffsetTicks, kind)
                 };
             }
             catch (ArgumentOutOfRangeException e)
@@ -223,11 +246,13 @@ namespace PlDotNET.Handler
                 {
                     return pldotnet_createDatumTimestamp(long.MaxValue);
                 }
+
                 if (value == DateTime.MinValue)
                 {
                     return pldotnet_createDatumTimestamp(long.MinValue);
                 }
             }
+
             return pldotnet_createDatumTimestamp((long)((value.Ticks - ConfigDateTime.PostgresTimestampOffsetTicks) / 10));
         }
     }
@@ -267,7 +292,7 @@ namespace PlDotNET.Handler
             long timestamp = 0;
             pldotnet_getDatumTimestampTzAttributes(datum, ref timestamp);
             DateTime dateTime = TimestampHandler.CreateDateTimeObject(timestamp, DateTimeKind.Utc);
-            return ConfigDateTime.LegacyTimestampBehavior && (ConfigDateTime.DisableDateTimeInfinityConversions || dateTime != DateTime.MaxValue && dateTime != DateTime.MinValue)
+            return ConfigDateTime.LegacyTimestampBehavior && (ConfigDateTime.DisableDateTimeInfinityConversions || (dateTime != DateTime.MaxValue && dateTime != DateTime.MinValue))
             ? dateTime.ToLocalTime()
             : dateTime;
         }
@@ -290,18 +315,23 @@ namespace PlDotNET.Handler
                 }
             }
             else
+            {
                 Debug.Assert(value.Kind == DateTimeKind.Utc || value == DateTime.MinValue || value == DateTime.MaxValue);
+            }
+
             if (!ConfigDateTime.DisableDateTimeInfinityConversions)
             {
                 if (value == DateTime.MaxValue)
                 {
                     return pldotnet_createDatumTimestampTz(long.MaxValue);
                 }
+
                 if (value == DateTime.MinValue)
                 {
                     return pldotnet_createDatumTimestampTz(long.MinValue);
                 }
             }
+
             return pldotnet_createDatumTimestampTz((long)((value.Ticks - ConfigDateTime.PostgresTimestampOffsetTicks) / 10));
         }
     }

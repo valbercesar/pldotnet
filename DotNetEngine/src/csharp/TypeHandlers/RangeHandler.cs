@@ -1,3 +1,25 @@
+// <copyright file="RangeHandler.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
 using System.Runtime.InteropServices;
 using NpgsqlTypes;
@@ -13,7 +35,7 @@ namespace PlDotNET.Handler
     public abstract class RangeHandler<T, THandler> : StructTypeHandler<NpgsqlRange<T>>
             where THandler : BaseTypeHandler<T>, new()
     {
-        public static THandler HandlerObj = new THandler();
+        public static THandler HandlerObj = new ();
 
         /// <inheritdoc />
         public override unsafe NpgsqlRange<T> InputValue(IntPtr datum)
@@ -28,24 +50,31 @@ namespace PlDotNET.Handler
 
             RangeConstructors.pldotnet_getDatumRangeAttributes(datum, &isEmpty, &lower_range, &upperDange);
 
-            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(upperDange,
-                            &upperDatum, &upperInfinite, &upperInclusive, &upperLower);
-            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(lower_range,
-                            &lowerDatum, &lowerInfinite, &lowerInclusive, &lowerLower);
+            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(
+                upperDange, &upperDatum, &upperInfinite, &upperInclusive, &upperLower);
+            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(
+                lower_range, &lowerDatum, &lowerInfinite, &lowerInclusive, &lowerLower);
 
             // TODO: check upperLower and lowerLower
             lower = HandlerObj.InputValue(lowerDatum);
             upper = HandlerObj.InputValue(upperDatum);
 
-            return new NpgsqlRange<T>(lower, (lowerInclusive > 0), (lowerInfinite > 0),
-                upper, (upperInclusive > 0), (upperInfinite > 0));
+            return new NpgsqlRange<T>(
+                lower,
+                lowerInclusive > 0,
+                lowerInfinite > 0,
+                upper,
+                upperInclusive > 0,
+                upperInfinite > 0);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(NpgsqlRange<T> value)
         {
             if (value.IsEmpty)
+            {
                 return RangeConstructors.pldotnet_createEmptyDatumRange(this.ElementOID);
+            }
 
             byte upperInfinite = (byte)(value.UpperBoundInfinite ? 1 : 0);
             byte lowerInfinite = (byte)(value.LowerBoundInfinite ? 1 : 0);
@@ -59,10 +88,14 @@ namespace PlDotNET.Handler
             // TODO: now, actually construct the range datum down in C
             // - Construct the two RangeBound objects for upper and lower
             // - Combine them to make a Range
-
-            return RangeConstructors.pldotnet_createDatumRange(this.ElementOID,
-                lowerDatum, lowerInfinite, lowerInclusive,
-                upperDatum, upperInfinite, upperInclusive);
+            return RangeConstructors.pldotnet_createDatumRange(
+                this.ElementOID,
+                lowerDatum,
+                lowerInfinite,
+                lowerInclusive,
+                upperDatum,
+                upperInfinite,
+                upperInclusive);
         }
     }
 
@@ -81,8 +114,10 @@ namespace PlDotNET.Handler
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static unsafe extern void pldotnet_getDatumRangeAttributes(
-                IntPtr inputDatum, byte* isEmpty,
-                IntPtr* lowerRange, IntPtr* upperDange);
+                IntPtr inputDatum,
+                byte* isEmpty,
+                IntPtr* lowerRange,
+                IntPtr* upperDange);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
@@ -90,17 +125,25 @@ namespace PlDotNET.Handler
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static unsafe extern void pldotnet_getDatumRangeBoundAttributes(
-                IntPtr inputRange, IntPtr* rangeDatum,
-                byte* infinite, byte* inclusive, byte* lower);
+                IntPtr inputRange,
+                IntPtr* rangeDatum,
+                byte* infinite,
+                byte* inclusive,
+                byte* lower);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_createDatumRange().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static unsafe extern IntPtr pldotnet_createDatumRange(OID rtOid,
-                IntPtr lowerDatum, byte lowerInfinite, byte lowerInclusive,
-                IntPtr upperDatum, byte upperInfinite, byte upperInclusive);
+        public static unsafe extern IntPtr pldotnet_createDatumRange(
+            OID rtOid,
+            IntPtr lowerDatum,
+            byte lowerInfinite,
+            byte lowerInclusive,
+            IntPtr upperDatum,
+            byte upperInfinite,
+            byte upperInclusive);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.

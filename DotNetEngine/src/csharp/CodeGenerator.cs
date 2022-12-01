@@ -1,3 +1,25 @@
+// <copyright file="CodeGenerator.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// </copyright>
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,12 +37,32 @@ namespace PlDotNET
 
         public DotNETLanguage Language;
 
+        public static List<string> FilterHandlers(uint[] inputTypes, uint outputType)
+        {
+            List<string> allHandlers = new ();
+
+            if ((OID)outputType != OID.VOIDOID)
+            {
+                allHandlers.Add(Engine.GetTypeHandler(outputType));
+            }
+
+            for (int i = 0; i < inputTypes.Length; i++)
+            {
+                allHandlers.Add(Engine.GetTypeHandler(inputTypes[i]));
+            }
+
+            return allHandlers.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Returns the source code for the UserHandler according to the programming language.
+        /// </summary>
         public string BuildUserHandlerSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, string funcBody, bool supportNullInput)
         {
             // Check if the file exists
-            if (!File.Exists(UserHandlerTemplatePath))
+            if (!File.Exists(this.UserHandlerTemplatePath))
             {
-                throw new SystemException($"Template file '{UserHandlerTemplatePath}' not found");
+                throw new SystemException($"Template file '{this.UserHandlerTemplatePath}' not found");
             }
 
             bool providedAssembly = funcBody.Contains(".dll");
@@ -36,53 +78,56 @@ namespace PlDotNET
                 funcName = bodySplit[1]; // FunctionName
             }
 
-            string[] dotnetTypes = GetDotNetTypes(paramTypes);
+            string[] dotnetTypes = this.GetDotNetTypes(paramTypes);
 
-            string sourceCode = File.ReadAllText(UserHandlerTemplatePath);
-            sourceCode = sourceCode.Replace("// $handler_objects$", BuildHandlerObjects(paramTypes, returnTypeId));
-            sourceCode = sourceCode.Replace("// $create_arguments", BuildCreateArguments(funcName, paramTypes, supportNullInput));
-            sourceCode = sourceCode.Replace("// $user_function_call$", BuildFunctionCall(funcName, returnTypeId, dotnetTypes, supportNullInput, className));
-            sourceCode = sourceCode.Replace("// $call_set_result$", BuildCallSetResult(returnTypeId));
+            string sourceCode = File.ReadAllText(this.UserHandlerTemplatePath);
+            sourceCode = sourceCode.Replace("// $handler_objects$", this.BuildHandlerObjects(paramTypes, returnTypeId));
+            sourceCode = sourceCode.Replace("// $create_arguments", this.BuildCreateArguments(funcName, paramTypes, supportNullInput));
+            sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall(funcName, returnTypeId, dotnetTypes, supportNullInput, className));
+            sourceCode = sourceCode.Replace("// $call_set_result$", this.BuildCallSetResult(returnTypeId));
 
-            if (Language == DotNETLanguage.FSharp)
-                sourceCode = sourceCode.Replace("// $user_function_declaration$", BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
+            if (this.Language == DotNETLanguage.FSharp)
+            {
+                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
+            }
 
             if (providedAssembly)
+            {
                 sourceCode = sourceCode.Replace("// $user_namespace$", $"using {nampespace};\n");
+            }
 
             return sourceCode;
         }
 
+        /// <summary>
+        /// Returns the source code for the UserFunction.
+        /// </summary>
+        /// If the user provides an assembly file, this function returns the SQL user function body,
+        /// i.e., 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'.
+        /// If the user function uses F#, this function returns an empty string.
+        /// </remarks>
         public string BuildUserFunctionSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, string funcBody, bool supportNullInput)
         {
             if (funcBody.Contains(".dll"))
-                return funcBody;
-
-            if (Language == DotNETLanguage.FSharp)
-                return "";
-
-            if (!File.Exists(UserFunctionTemplatePath))
             {
-                string msg = $"Template file '{UserFunctionTemplatePath}' not found";
+                return funcBody;
+            }
+
+            if (this.Language == DotNETLanguage.FSharp)
+            {
+                return string.Empty;
+            }
+
+            if (!File.Exists(this.UserFunctionTemplatePath))
+            {
+                string msg = $"Template file '{this.UserFunctionTemplatePath}' not found";
                 throw new SystemException(msg);
             }
-            string[] dotnetTypes = GetDotNetTypes(paramTypes);
-            string userFunctionCode = File.ReadAllText(UserFunctionTemplatePath);
-            userFunctionCode = userFunctionCode.Replace("// $user_function_declaration$", BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
+
+            string[] dotnetTypes = this.GetDotNetTypes(paramTypes);
+            string userFunctionCode = File.ReadAllText(this.UserFunctionTemplatePath);
+            userFunctionCode = userFunctionCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
             return userFunctionCode;
-        }
-
-        public List<string> FilterHandlers(uint[] inputTypes, uint outputType)
-        {
-            List<string> allHandlers = new List<string>();
-
-            if ((OID)outputType != OID.VOIDOID)
-                allHandlers.Add(Engine.GetTypeHandler(outputType));
-
-            for (int i = 0; i < inputTypes.Length; i++)
-                allHandlers.Add(Engine.GetTypeHandler(inputTypes[i]));
-
-            return allHandlers.Distinct().ToList();
         }
 
         /// <summary>
@@ -131,7 +176,10 @@ namespace PlDotNET
         {
             var sb = new System.Text.StringBuilder();
             foreach (string handler in FilterHandlers(inputTypes, outputType))
+            {
                 sb.AppendLine($"public static {handler} {handler}Obj = new {handler}();");
+            }
+
             return sb.ToString();
         }
 
@@ -146,6 +194,7 @@ namespace PlDotNET
                 sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
                 sb.AppendLine("// to always check whether the datum is null.\n");
             }
+
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
             int argc = paramTypes.Length;
             for (int i = 0; i < argc; i++)
@@ -154,18 +203,27 @@ namespace PlDotNET
                 if (Engine.HandleArray.ContainsKey((OID)paramTypes[i]))
                 {
                     if (supportNullInput || Engine.AlwaysNullable)
+                    {
                         sb.AppendLine($"var argument_{i} = {handler}Obj.InputNullableArray(arguments[{i}], isnull[{i}]);");
+                    }
                     else
+                    {
                         sb.AppendLine($"var argument_{i} = {handler}Obj.InputArray(arguments[{i}]);");
+                    }
                 }
                 else
                 {
                     if (supportNullInput || Engine.AlwaysNullable)
+                    {
                         sb.AppendLine($"var argument_{i} = {handler}Obj.InputNullableValue(arguments[{i}], isnull[{i}]);");
+                    }
                     else
+                    {
                         sb.AppendLine($"var argument_{i} = {handler}Obj.InputValue(arguments[{i}]);");
+                    }
                 }
             }
+
             sb.Append($"// END create arguments for {funcName}");
             return sb.ToString();
         }
@@ -175,15 +233,21 @@ namespace PlDotNET
         {
             var sb = new System.Text.StringBuilder();
             if ((OID)returnTypeId != OID.VOIDOID)
+            {
                 sb.AppendLine("var result = ");
+            }
+
             sb.Append($"{className}.{funcName}(");
-            string aux = (supportNullInput || Engine.AlwaysNullable) ? "?" : "";
+            string aux = (supportNullInput || Engine.AlwaysNullable) ? "?" : string.Empty;
             for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
             {
                 sb.Append($"({dotnetTypes[i]}{aux}) argument_{i}");
                 if (i < argc - 1)
+                {
                     sb.Append(", ");
+                }
             }
+
             sb.Append(");");
             return sb.ToString();
         }
@@ -199,12 +263,17 @@ namespace PlDotNET
             else
             {
                 if (Engine.HandleArray.ContainsKey((OID)returnTypeId))
+                {
                     sb.AppendLine($"var resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableArray(result);");
+                }
                 else
+                {
                     sb.AppendLine($"var resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableValue(result);");
+                }
 
                 sb.AppendLine("Engine.pldotnet_SetDatumResult(resultDatum, result == null, output);");
             }
+
             return sb.ToString();
         }
 
@@ -213,16 +282,19 @@ namespace PlDotNET
         {
             var sb = new System.Text.StringBuilder();
             string returnType = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
-            string nullAbleOutput = returnType == "void" ? "" : "?";
-            string aux = (supportNullInput || Engine.AlwaysNullable) ? "?" : "";
+            string nullAbleOutput = returnType == "void" ? string.Empty : "?";
+            string aux = (supportNullInput || Engine.AlwaysNullable) ? "?" : string.Empty;
 
             sb.Append($"public static {returnType}{nullAbleOutput} {funcName}(");
             for (int i = 0, length = paramNames.Length; i < length; i++)
             {
                 sb.Append($"{dotnetTypes[i]}{aux} {paramNames[i]}");
                 if (i < length - 1)
+                {
                     sb.Append(", ");
+                }
             }
+
             sb.Append($") {{\n#line 1\n{funcBody}\n}}");
             return sb.ToString();
         }
@@ -235,30 +307,23 @@ namespace PlDotNET
             {
                 dotnetTypes[i] = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ? "Array" : Engine.OidTypes[(OID)paramTypes[i]];
             }
+
             return dotnetTypes;
         }
-
     }
 
     public class FSharpCodeGenerator : CodeGenerator
     {
-        public FSharpCodeGenerator()
+        private static readonly Dictionary<string, string> FSharpTypes =
+               new ()
         {
-            this.Language = DotNETLanguage.FSharp;
-            this.UserHandlerTemplatePath = "@CSHARP_TEMPLATE_DIR/UserHandler.tfs";
-            this.UserFunctionTemplatePath = "@CSHARP_TEMPLATE_DIR/UserFunction.tfs";
-        }
-
-        public static Dictionary<string, string> FSharpTypes =
-               new Dictionary<string, string>()
-        {
-            {"float", "float32"},
-            {"short", "int16"},
-            {"long", "int64"}
+            { "float", "float32" },
+            { "short", "int16" },
+            { "long", "int64" },
         };
 
-        public static List<string> ClassTypes =
-               new List<string>()
+        private static readonly List<string> ClassTypes =
+               new ()
         {
             "Array",
             "byte[]",
@@ -267,12 +332,35 @@ namespace PlDotNET
             "PhysicalAddress",
         };
 
+        public FSharpCodeGenerator()
+        {
+            this.Language = DotNETLanguage.FSharp;
+            this.UserHandlerTemplatePath = "@CSHARP_TEMPLATE_DIR/UserHandler.tfs";
+            this.UserFunctionTemplatePath = "@CSHARP_TEMPLATE_DIR/UserFunction.tfs";
+        }
+
+        public static string IndentCode(string code, uint spaceNumber)
+        {
+            string[] codeLines = code.Split("\n");
+            string indentation = new (' ', (int)spaceNumber);
+            string indentCode = string.Empty;
+            for (int i = 0; i < codeLines.Length; i++)
+            {
+                indentCode += indentation + codeLines[i] + '\n';
+            }
+
+            return indentCode;
+        }
+
         /// <inheritdoc />
         public override string BuildHandlerObjects(uint[] inputTypes, uint outputType)
         {
             var sb = new System.Text.StringBuilder();
             foreach (string handler in FilterHandlers(inputTypes, outputType))
+            {
                 sb.AppendLine($"let {handler}Obj = new {handler}()");
+            }
+
             return "// handler objects\n" + IndentCode(sb.ToString(), 8);
         }
 
@@ -287,6 +375,7 @@ namespace PlDotNET
                 sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
                 sb.AppendLine("// to always check whether the datum is null.\n");
             }
+
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
             int argc = paramTypes.Length;
             for (int i = 0; i < argc; i++)
@@ -295,18 +384,27 @@ namespace PlDotNET
                 if (Engine.HandleArray.ContainsKey((OID)paramTypes[i]))
                 {
                     if (supportNullInput || Engine.AlwaysNullable)
+                    {
                         sb.AppendLine($"let argument_{i} = {handlerName}Obj.InputNullableArray(arguments.[{i}], isnull.[{i}])");
+                    }
                     else
+                    {
                         sb.AppendLine($"let argument_{i} = {handlerName}Obj.InputArray(arguments.[{i}])");
+                    }
                 }
                 else
                 {
                     if (supportNullInput || Engine.AlwaysNullable)
+                    {
                         sb.AppendLine($"let argument_{i} = {handlerName}Obj.InputNullableValue(arguments.[{i}], isnull.[{i}])");
+                    }
                     else
+                    {
                         sb.AppendLine($"let argument_{i} = {handlerName}Obj.InputValue(arguments.[{i}])");
+                    }
                 }
             }
+
             sb.Append($"// END create arguments for {funcName}");
             return "\n" + IndentCode(sb.ToString(), 8);
         }
@@ -316,12 +414,16 @@ namespace PlDotNET
         {
             var sb = new System.Text.StringBuilder();
             if ((OID)returnTypeId != OID.VOIDOID)
+            {
                 sb.Append("let result = ");
+            }
+
             sb.Append($"{className}.{funcName}");
             for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
             {
                 sb.Append($" argument_{i}");
             }
+
             return "//Calling user function\n" + IndentCode(sb.ToString(), 8);
         }
 
@@ -330,7 +432,7 @@ namespace PlDotNET
         {
             var sb = new System.Text.StringBuilder();
             string type = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
-            string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
+            _ = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
 
             if ((OID)returnTypeId == OID.VOIDOID)
             {
@@ -339,12 +441,17 @@ namespace PlDotNET
             else
             {
                 if (Engine.HandleArray.ContainsKey((OID)returnTypeId))
+                {
                     sb.AppendLine($"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableArray(result)");
+                }
                 else
+                {
                     sb.AppendLine($"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableValue(result)");
+                }
 
                 sb.AppendLine("Engine.pldotnet_SetDatumResult(resultDatum, false, output);");
             }
+
             return "// Create PostgreSQL datum\n" + IndentCode(sb.ToString(), 8);
         }
 
@@ -360,17 +467,27 @@ namespace PlDotNET
             for (int i = 0, length = paramNames.Length; i < length; i++)
             {
                 if (supportNullInput && (!ClassTypes.Contains(dotnetTypes[i])))
+                {
                     sb.Append($" ({paramNames[i]}: Nullable<{dotnetTypes[i]}>)");
+                }
                 else
+                {
                     sb.Append($" ({paramNames[i]}: {dotnetTypes[i]})");
+                }
             }
 
             if (ClassTypes.Contains(returnType))
+            {
                 sb.Append($" : {returnType} = {IndentCode(funcBody, 8)}");
+            }
             else if (returnType == "void")
+            {
                 sb.Append($" = {IndentCode(funcBody, 8)}");
+            }
             else
+            {
                 sb.Append($" : Nullable<{returnType}> = {IndentCode(funcBody, 8)}");
+            }
 
             return sb.ToString();
         }
@@ -384,17 +501,8 @@ namespace PlDotNET
                 string type = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ? "Array" : Engine.OidTypes[(OID)paramTypes[i]];
                 dotnetTypes[i] = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
             }
-            return dotnetTypes;
-        }
 
-        public string IndentCode(string code, uint spaceNumber)
-        {
-            string[] codeLines = code.Split("\n");
-            string indentation = new String(' ', (int)spaceNumber);
-            string indentCode = "";
-            for (int i = 0; i < codeLines.Length; i++)
-                indentCode += (indentation + codeLines[i] + '\n');
-            return indentCode;
+            return dotnetTypes;
         }
     }
 }

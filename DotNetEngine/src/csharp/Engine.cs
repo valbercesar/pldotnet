@@ -1,50 +1,49 @@
-/*
- * PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
- *                      procedural languages (PL)
- *
- *
- * Copyright 2019-2020 Brick Abode
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * DotNetEngine/src/csharp/Engine.cs - pldotnet assembly compiler and runner
- *
- */
+// <copyright file="Engine.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright 2019-2020 Brick Abode
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// DotNetEngine/src/csharp/Engine.cs - pldotnet assembly compiler and runner
+// </copyright>
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Runtime.Loader;
-using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Grpc.Net.Client;
-using System.Data;
-using System.Data.Common;
-using System.Text.RegularExpressions;
-
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NpgsqlTypes;
-using PlDotNET.Handler;
 using PlDotNET.FSharp;
+using PlDotNET.Handler;
 
 namespace PlDotNET
 {
@@ -52,122 +51,134 @@ namespace PlDotNET
     {
         CSharp,
         FSharp,
-        VisualBasic
+        VisualBasic,
+    }
+
+    public struct CachedFunction
+    {
+        public string UserHandlerSourceCode;
+        public string UserFunctionSourceCode;
+        public bool SupportNullInput;
+        public Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
+        public AssemblyLoadContext UserAssemblyLoadContext;
+        public DotNETLanguage Language;
     }
 
     public static class Engine
     {
         public static bool AlwaysNullable = false;
 
-        public struct CachedFunction
-        {
-            public string UserHandlerSourceCode;
-            public string UserFunctionSourceCode;
-            public Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
-            public bool SupportNullInput;
-            public AssemblyLoadContext UserAssemblyLoadContext;
-            public DotNETLanguage Language;
-        }
-
         public static Dictionary<OID, OID> HandleArray =
-                       new Dictionary<OID, OID>()
+                       new ()
         {
-            {OID.BOOLARRAYOID, OID.BOOLOID},
-            {OID.INT2ARRAYOID, OID.INT2OID},
-            {OID.INT4ARRAYOID, OID.INT4OID},
-            {OID.INT8ARRAYOID, OID.INT8OID},
-            {OID.FLOAT4ARRAYOID, OID.FLOAT4OID},
-            {OID.FLOAT8ARRAYOID, OID.FLOAT8OID},
-            {OID.POINTARRAYOID, OID.POINTOID},
-            {OID.LINEARRAYOID, OID.LINEOID},
-            {OID.LSEGARRAYOID, OID.LSEGOID},
-            {OID.BOXARRAYOID, OID.BOXOID},
-            {OID.POLYGONARRAYOID, OID.POLYGONOID},
-            {OID.TEXTARRAYOID, OID.TEXTOID},
-            {OID.PATHARRAYOID, OID.PATHOID},
-            {OID.CIRCLEARRAYOID, OID.CIRCLEOID},
-            {OID.DATEARRAYOID, OID.DATEOID},
-            {OID.TIMEARRAYOID, OID.TIMEOID},
-            {OID.TIMETZARRAYOID, OID.TIMETZOID},
-            {OID.TIMESTAMPARRAYOID, OID.TIMESTAMPOID},
-            {OID.TIMESTAMPTZARRAYOID, OID.TIMESTAMPTZOID},
-            {OID.INTERVALARRAYOID, OID.INTERVALOID},
-            {OID.MACADDRARRAYOID, OID.MACADDROID},
-            {OID.MACADDR8ARRAYOID, OID.MACADDR8OID},
-            {OID.INETARRAYOID, OID.INETOID},
-            {OID.CIDRARRAYOID, OID.CIDROID},
-            {OID.MONEYARRAYOID, OID.MONEYOID},
-            {OID.VARBITARRAYOID, OID.VARBITOID},
-            {OID.BITARRAYOID, OID.BITOID},
-            {OID.BYTEAARRAYOID, OID.BYTEAOID},
-            {OID.BPCHARARRAYOID, OID.BPCHAROID},
-            {OID.VARCHARARRAYOID, OID.VARCHAROID},
-            {OID.XMLARRAYOID, OID.XMLOID},
-            {OID.JSONARRAYOID, OID.JSONOID},
-            {OID.UUIDARRAYOID, OID.UUIDOID},
-            {OID.INT4RANGEARRAYOID, OID.INT4RANGEOID},
-            {OID.NUMRANGEARRAYOID, OID.NUMRANGEOID},
-            {OID.TSRANGEARRAYOID, OID.TSRANGEOID},
-            {OID.TSTZRANGEARRAYOID, OID.TSTZRANGEOID},
-            {OID.DATERANGEARRAYOID, OID.DATERANGEOID},
-            {OID.INT8RANGEARRAYOID, OID.INT8RANGEOID},
-            {OID.INT4MULTIRANGEARRAYOID, OID.INT4MULTIRANGEOID},
-            {OID.NUMMULTIRANGEARRAYOID, OID.NUMMULTIRANGEOID},
-            {OID.TSMULTIRANGEARRAYOID, OID.TSMULTIRANGEOID},
-            {OID.TSTZMULTIRANGEARRAYOID, OID.TSTZMULTIRANGEOID},
-            {OID.DATEMULTIRANGEARRAYOID, OID.DATEMULTIRANGEOID},
-            {OID.INT8MULTIRANGEARRAYOID, OID.INT8MULTIRANGEOID},
+            { OID.BOOLARRAYOID, OID.BOOLOID },
+            { OID.INT2ARRAYOID, OID.INT2OID },
+            { OID.INT4ARRAYOID, OID.INT4OID },
+            { OID.INT8ARRAYOID, OID.INT8OID },
+            { OID.FLOAT4ARRAYOID, OID.FLOAT4OID },
+            { OID.FLOAT8ARRAYOID, OID.FLOAT8OID },
+            { OID.POINTARRAYOID, OID.POINTOID },
+            { OID.LINEARRAYOID, OID.LINEOID },
+            { OID.LSEGARRAYOID, OID.LSEGOID },
+            { OID.BOXARRAYOID, OID.BOXOID },
+            { OID.POLYGONARRAYOID, OID.POLYGONOID },
+            { OID.TEXTARRAYOID, OID.TEXTOID },
+            { OID.PATHARRAYOID, OID.PATHOID },
+            { OID.CIRCLEARRAYOID, OID.CIRCLEOID },
+            { OID.DATEARRAYOID, OID.DATEOID },
+            { OID.TIMEARRAYOID, OID.TIMEOID },
+            { OID.TIMETZARRAYOID, OID.TIMETZOID },
+            { OID.TIMESTAMPARRAYOID, OID.TIMESTAMPOID },
+            { OID.TIMESTAMPTZARRAYOID, OID.TIMESTAMPTZOID },
+            { OID.INTERVALARRAYOID, OID.INTERVALOID },
+            { OID.MACADDRARRAYOID, OID.MACADDROID },
+            { OID.MACADDR8ARRAYOID, OID.MACADDR8OID },
+            { OID.INETARRAYOID, OID.INETOID },
+            { OID.CIDRARRAYOID, OID.CIDROID },
+            { OID.MONEYARRAYOID, OID.MONEYOID },
+            { OID.VARBITARRAYOID, OID.VARBITOID },
+            { OID.BITARRAYOID, OID.BITOID },
+            { OID.BYTEAARRAYOID, OID.BYTEAOID },
+            { OID.BPCHARARRAYOID, OID.BPCHAROID },
+            { OID.VARCHARARRAYOID, OID.VARCHAROID },
+            { OID.XMLARRAYOID, OID.XMLOID },
+            { OID.JSONARRAYOID, OID.JSONOID },
+            { OID.UUIDARRAYOID, OID.UUIDOID },
+            { OID.INT4RANGEARRAYOID, OID.INT4RANGEOID },
+            { OID.NUMRANGEARRAYOID, OID.NUMRANGEOID },
+            { OID.TSRANGEARRAYOID, OID.TSRANGEOID },
+            { OID.TSTZRANGEARRAYOID, OID.TSTZRANGEOID },
+            { OID.DATERANGEARRAYOID, OID.DATERANGEOID },
+            { OID.INT8RANGEARRAYOID, OID.INT8RANGEOID },
+            { OID.INT4MULTIRANGEARRAYOID, OID.INT4MULTIRANGEOID },
+            { OID.NUMMULTIRANGEARRAYOID, OID.NUMMULTIRANGEOID },
+            { OID.TSMULTIRANGEARRAYOID, OID.TSMULTIRANGEOID },
+            { OID.TSTZMULTIRANGEARRAYOID, OID.TSTZMULTIRANGEOID },
+            { OID.DATEMULTIRANGEARRAYOID, OID.DATEMULTIRANGEOID },
+            { OID.INT8MULTIRANGEARRAYOID, OID.INT8MULTIRANGEOID },
         };
 
         public static Dictionary<OID, string> OidTypes =
-                       new Dictionary<OID, string>()
+                       new ()
         {
-            {OID.BOOLOID,"bool"},
-            {OID.INT2OID, "short"},
-            {OID.INT4OID, "int"},
-            {OID.INT8OID, "long"},
-            {OID.FLOAT4OID, "float"},
-            {OID.FLOAT8OID, "double"},
-            {OID.POINTOID, "NpgsqlPoint"},
-            {OID.LINEOID, "NpgsqlLine"},
-            {OID.LSEGOID, "NpgsqlLSeg"},
-            {OID.BOXOID, "NpgsqlBox"},
-            {OID.POLYGONOID, "NpgsqlPolygon"},
-            {OID.TEXTOID, "string"},
-            {OID.PATHOID, "NpgsqlPath"},
-            {OID.CIRCLEOID, "NpgsqlCircle"},
-            {OID.DATEOID, "DateOnly"},
-            {OID.TIMEOID, "TimeOnly"},
-            {OID.TIMETZOID, "DateTimeOffset"},
-            {OID.TIMESTAMPOID, "DateTime"},
-            {OID.TIMESTAMPTZOID, "DateTime"},
-            {OID.INTERVALOID, "NpgsqlInterval"},
-            {OID.MACADDROID, "PhysicalAddress"},
-            {OID.MACADDR8OID, "PhysicalAddress"},
-            {OID.INETOID, "(IPAddress Address, int Netmask)"},
-            {OID.CIDROID, "(IPAddress Address, int Netmask)"},
-            {OID.MONEYOID, "decimal"},
-            {OID.VARBITOID, "BitArray"},
-            {OID.BITOID, "BitArray"},
-            {OID.BYTEAOID, "byte[]"},
-            {OID.BPCHAROID, "string"},
-            {OID.VARCHAROID, "string"},
-            {OID.XMLOID, "string"},
-            {OID.JSONOID, "string"},
-            {OID.UUIDOID, "Guid"},
-            {OID.INT4RANGEOID, "NpgsqlRange<int>"},
-            {OID.INT8RANGEOID, "NpgsqlRange<long>"},
-            {OID.TSRANGEOID, "NpgsqlRange<DateTime>"},
-            {OID.TSTZRANGEOID, "NpgsqlRange<DateTime>"},
-            {OID.DATERANGEOID, "NpgsqlRange<DateOnly>"},
-            {OID.VOIDOID, "void"}
+            { OID.BOOLOID, "bool" },
+            { OID.INT2OID, "short" },
+            { OID.INT4OID, "int" },
+            { OID.INT8OID, "long" },
+            { OID.FLOAT4OID, "float" },
+            { OID.FLOAT8OID, "double" },
+            { OID.POINTOID, "NpgsqlPoint" },
+            { OID.LINEOID, "NpgsqlLine" },
+            { OID.LSEGOID, "NpgsqlLSeg" },
+            { OID.BOXOID, "NpgsqlBox" },
+            { OID.POLYGONOID, "NpgsqlPolygon" },
+            { OID.TEXTOID, "string" },
+            { OID.PATHOID, "NpgsqlPath" },
+            { OID.CIRCLEOID, "NpgsqlCircle" },
+            { OID.DATEOID, "DateOnly" },
+            { OID.TIMEOID, "TimeOnly" },
+            { OID.TIMETZOID, "DateTimeOffset" },
+            { OID.TIMESTAMPOID, "DateTime" },
+            { OID.TIMESTAMPTZOID, "DateTime" },
+            { OID.INTERVALOID, "NpgsqlInterval" },
+            { OID.MACADDROID, "PhysicalAddress" },
+            { OID.MACADDR8OID, "PhysicalAddress" },
+            { OID.INETOID, "(IPAddress Address, int Netmask)" },
+            { OID.CIDROID, "(IPAddress Address, int Netmask)" },
+            { OID.MONEYOID, "decimal" },
+            { OID.VARBITOID, "BitArray" },
+            { OID.BITOID, "BitArray" },
+            { OID.BYTEAOID, "byte[]" },
+            { OID.BPCHAROID, "string" },
+            { OID.VARCHAROID, "string" },
+            { OID.XMLOID, "string" },
+            { OID.JSONOID, "string" },
+            { OID.UUIDOID, "Guid" },
+            { OID.INT4RANGEOID, "NpgsqlRange<int>" },
+            { OID.INT8RANGEOID, "NpgsqlRange<long>" },
+            { OID.TSRANGEOID, "NpgsqlRange<DateTime>" },
+            { OID.TSTZRANGEOID, "NpgsqlRange<DateTime>" },
+            { OID.DATERANGEOID, "NpgsqlRange<DateOnly>" },
+            { OID.VOIDOID, "void" },
         };
 
         public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
 
-        public static FSharpCodeGenerator FSharpGenerator = new FSharpCodeGenerator();
+        public static FSharpCodeGenerator FSharpGenerator = new ();
 
-        public static CSharpCodeGenerator CSharpGenerator = new CSharpCodeGenerator();
+        public static CSharpCodeGenerator CSharpGenerator = new ();
+
+        public unsafe delegate int DelCompileUserFunction(uint functionId, IntPtr name, uint returnType, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr dotnetLanguage);
+
+        public unsafe delegate int DelRunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output);
+
+        public delegate void DelFreeGenericGCHandle(IntPtr p);
+
+        public delegate System.IntPtr DelBuildDatumList();
+
+        public delegate void DelAddDatumToList(System.IntPtr list, System.IntPtr datum);
+
+        public delegate void DelUnloadAssemblies(uint functionId);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h to return a void datum.
@@ -268,7 +279,10 @@ namespace PlDotNET
                     return "DateRangeHandler";
                 default:
                     if (HandleArray.ContainsKey((OID)id))
+                    {
                         return GetTypeHandler((uint)HandleArray[(OID)id]);
+                    }
+
                     throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetTypeHandler");
             }
         }
@@ -281,7 +295,8 @@ namespace PlDotNET
         {
             string pattern = @"\d+,\d+";
             string message = diagnostic.ToString();
-            Match m = Regex.Match(message, pattern, RegexOptions.IgnoreCase);
+            _ = Regex.Match(message, pattern, RegexOptions.IgnoreCase);
+
             // TODO(rosicley) - I commented the code below because it was failing.
             // if (m.Success)
             // {
@@ -296,7 +311,6 @@ namespace PlDotNET
             //         return sb.ToString();
             //     }
             // }
-
             return message;
         }
 
@@ -315,7 +329,7 @@ namespace PlDotNET
             Elog.pldotnet_Info("===========================");
 
             var trustedAssembliesPathsArray = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
-            List<string> trustedAssembliesPaths = new();
+            List<string> trustedAssembliesPaths = new ();
             trustedAssembliesPaths.AddRange(trustedAssembliesPathsArray);
             trustedAssembliesPaths.Add(typeof(NpgsqlPoint).Assembly.Location);
             trustedAssembliesPaths.Add(typeof(Engine).Assembly.Location);
@@ -342,7 +356,7 @@ namespace PlDotNET
                 "System.Text",
                 "System.Text.Unicode",
                 "Npgsql",
-                "PlDotNET"
+                "PlDotNET",
             };
 
             List<PortableExecutableReference> references = trustedAssembliesPaths
@@ -351,7 +365,9 @@ namespace PlDotNET
                 .ToList();
 
             if (memStreamUserFunction != null)
+            {
                 references.Add(MetadataReference.CreateFromStream(new MemoryStream(memStreamUserFunction.GetBuffer())));
+            }
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithOptimizationLevel(OptimizationLevel.Release)
@@ -371,7 +387,10 @@ namespace PlDotNET
                 var sb = new System.Text.StringBuilder();
                 sb.AppendLine("\n********ERROR************\n");
                 foreach (var diagnostic in compileResult.Diagnostics)
+                {
                     sb.AppendLine(GetCompilationError(diagnostic, lines));
+                }
+
                 sb.AppendLine("\n********ERROR************\n");
                 Elog.pldotnet_Warning(sb.ToString());
             }
@@ -379,23 +398,21 @@ namespace PlDotNET
             return compileResult;
         }
 
-        public unsafe delegate int DelCompileUserFunction(uint functionId, IntPtr name, uint returnType, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr dotnetLanguage);
-
         // <summary>
-        /// This function is called called from C code and tries to create and
-        /// compile the dynamic code using Roslyn. It also saves the
-        /// CachedFunction in FuncBuiltCodeDict so that any compiled code can
-        /// be called by the user function ID.
-        /// This function returns 0 if all the codes were compiled correctly.
-        /// </summary>
+        // This function is called called from C code and tries to create and
+        // compile the dynamic code using Roslyn. It also saves the
+        // CachedFunction in FuncBuiltCodeDict so that any compiled code can
+        // be called by the user function ID.
+        // This function returns 0 if all the codes were compiled correctly.
+        // </summary>
         public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
         {
-            /// User function Data
+            // User function Data
             string funcName = Marshal.PtrToStringAuto(name);
             string returnType = HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : OidTypes[(OID)returnTypeId];
             string auxParameters = Marshal.PtrToStringAuto(paramNames);
-            string[] paramNameArray = auxParameters == null ? new string[0] : auxParameters.Split(" ");
-            uint[] paramTypeArray = auxParameters == null ? new uint[0] : (new ReadOnlySpan<uint>(paramTypes, paramNameArray.Length)).ToArray();
+            string[] paramNameArray = auxParameters == null ? Array.Empty<string>() : auxParameters.Split(" ");
+            uint[] paramTypeArray = auxParameters == null ? Array.Empty<uint>() : new ReadOnlySpan<uint>(paramTypes, paramNameArray.Length).ToArray();
             string funcBody = Marshal.PtrToStringAuto(body);
 
             CodeGenerator dynamicCodeGenerator;
@@ -415,20 +432,20 @@ namespace PlDotNET
                     return 1;
             }
 
-            /// Generate the UserFunction code
-            /// If the user function uses F#, this variable receives an empty string
+            // Generate the UserFunction code
+            // If the user function uses F#, this variable receives an empty string
             string userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput);
 
-            /// Generate the UserHandler code
+            // Generate the UserHandler code
             string userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput);
 
-            /// Check if the user provided an assembly
+            // Check if the user provided an assembly
             bool useUserAssembly = userFunctionCode.Contains(".dll");
 
-            /// Check if the user function exists in .NET context
+            // Check if the user function exists in .NET context
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
-                /// check PL.NET needs to recompile the source codes
+                // check PL.NET needs to recompile the source codes
                 if (cached.UserHandlerSourceCode == userHandlerCode && cached.UserFunctionSourceCode == userFunctionCode && !useUserAssembly)
                 {
                     Elog.pldotnet_Info("User function hasn't changed, so it doesn't need to be recompiled!");
@@ -441,7 +458,7 @@ namespace PlDotNET
                 }
             }
 
-            MemoryStream memUserFunction = new MemoryStream();
+            MemoryStream memUserFunction = new ();
             if (!useUserAssembly)
             {
                 if (dotnetLanguage == DotNETLanguage.CSharp)
@@ -450,31 +467,31 @@ namespace PlDotNET
 
                     // Verify that the C# code for UserFunction compiled correctly
                     if (!compileResultUserFunction.Success)
+                    {
                         return 1;
+                    }
                 }
             }
             else
             {
                 string userAssemblyPath = userFunctionCode.Split(":")[0];
-                using (var fs = File.Open(userAssemblyPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    fs.CopyTo(memUserFunction);
-                }
+                using var fs = File.Open(userAssemblyPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                fs.CopyTo(memUserFunction);
             }
 
-            MemoryStream memUserHandler = new MemoryStream();
+            MemoryStream memUserHandler = new ();
             if (dotnetLanguage == DotNETLanguage.FSharp)
             {
                 string generatedAssembly = FSharpCompiler.CompileFSharpSourceCode(functionId, userHandlerCode);
 
                 // Verify that the F# code compiled correctly
-                if (generatedAssembly == "")
-                    return 1;
-
-                using (var fs = File.Open(generatedAssembly, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                if (generatedAssembly == string.Empty)
                 {
-                    fs.CopyTo(memUserHandler);
+                    return 1;
                 }
+
+                using var fs = File.Open(generatedAssembly, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                fs.CopyTo(memUserHandler);
             }
             else
             {
@@ -482,25 +499,27 @@ namespace PlDotNET
 
                 // Verify that the C# code for UserHandler compiled correctly
                 if (!compileResultUserHandler.Success)
+                {
                     return 1;
+                }
             }
 
-            /// Load the assemblies into AssemblyLoadContext
-            AssemblyLoadContext userAlc = new AssemblyLoadContext($"UserFunction_{functionId}", true);
+            // Load the assemblies into AssemblyLoadContext
+            AssemblyLoadContext userAlc = new ($"UserFunction_{functionId}", true);
             Assembly npgsqlAssembly = userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location);
             Assembly pldotnetAssembly = userAlc.LoadFromAssemblyPath(typeof(Engine).Assembly.Location);
             Assembly userFunctionAssembly = dotnetLanguage != DotNETLanguage.FSharp ? userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer())) : null;
             Assembly userHandlerAssembly = userAlc.LoadFromStream(new MemoryStream(memUserHandler.GetBuffer()));
 
-            /// Create the CachedFunction to keep the function information
-            CachedFunction newCachedFunction = new CachedFunction()
+            // Create the CachedFunction to keep the function information
+            CachedFunction newCachedFunction = new ()
             {
                 UserFunctionSourceCode = userFunctionCode,
                 UserHandlerSourceCode = userHandlerCode,
                 SupportNullInput = supportNullInput,
                 UserAssemblyLoadContext = userAlc,
                 UserProcedure = GetDirectDelegate(userHandlerAssembly),
-                Language = dotnetLanguage
+                Language = dotnetLanguage,
             };
             Engine.FuncBuiltCodeDict.Add(functionId, newCachedFunction);
 
@@ -518,7 +537,7 @@ namespace PlDotNET
         {
             Type procClassType = compiledAssembly.GetType("PlDotNET.UserSpace.UserHandler");
 
-            if (null == procClassType)
+            if (procClassType == null)
             {
                 Elog.pldotnet_Warning($"Failed to get type PlDotNET.UserSpace.UserHandler");
                 return null;
@@ -529,8 +548,7 @@ namespace PlDotNET
             return (Action<List<IntPtr>, IntPtr, bool[]>)Delegate.CreateDelegate(
                 typeof(Action<List<IntPtr>, IntPtr, bool[]>),
                 null,
-                procMethod
-            );
+                procMethod);
         }
 
         /// <summary>
@@ -547,8 +565,12 @@ namespace PlDotNET
                 var argumentList = (List<IntPtr>)gchList.Target;
                 bool[] isnull = new bool[argumentList.Count];
                 if (cached.SupportNullInput || Engine.AlwaysNullable)
+                {
                     for (int i = 0, nargs = isnull.Length; i < nargs; i++)
-                        isnull[i] = nullmap[i] == 0 ? false : true;
+                    {
+                        isnull[i] = nullmap[i] != 0;
+                    }
+                }
 
                 cached.UserProcedure(argumentList, output, isnull);
             }
@@ -559,7 +581,6 @@ namespace PlDotNET
 
             return 0;
         }
-        public unsafe delegate int DelRunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output);
 
         /// <summary>
         /// Free memmory pointed by a IntPtr.
@@ -569,7 +590,6 @@ namespace PlDotNET
             GCHandle gch = GCHandle.FromIntPtr(p);
             gch.Free();
         }
-        public delegate void DelFreeGenericGCHandle(IntPtr p);
 
         /// <summary>
         /// This functions is called from C and creates a new list of IntPtr,
@@ -581,7 +601,6 @@ namespace PlDotNET
             GCHandle handle = GCHandle.Alloc(l, GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
-        public delegate System.IntPtr DelBuildDatumList();
 
         /// <summary>
         /// This functions is called from C and adds an IntPtr(Datum) to a list,
@@ -593,7 +612,6 @@ namespace PlDotNET
             List<IntPtr> listObj = (List<IntPtr>)gchList.Target;
             listObj.Add(datum);
         }
-        public delegate void DelAddDatumToList(System.IntPtr list, System.IntPtr datum);
 
         /// <summary>
         /// Unloads the assemblies of a specific function.
@@ -610,6 +628,5 @@ namespace PlDotNET
                 Elog.pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
             }
         }
-        public delegate void DelUnloadAssemblies(uint functionId);
     }
 }
