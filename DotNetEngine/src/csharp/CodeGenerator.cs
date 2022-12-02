@@ -25,6 +25,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using PlDotNET.Handler;
 
 namespace PlDotNET
@@ -35,8 +38,13 @@ namespace PlDotNET
 
         public string UserFunctionTemplatePath;
 
+        public string PathToGeneratedCode;
+
         public DotNETLanguage Language;
 
+        /// <summary>
+        /// Filter the necessary handlers that need to be created in the generated code.
+        /// </summary>
         public static List<string> FilterHandlers(uint[] inputTypes, uint outputType)
         {
             List<string> allHandlers = new ();
@@ -96,7 +104,7 @@ namespace PlDotNET
                 sourceCode = sourceCode.Replace("// $user_namespace$", $"using {nampespace};\n");
             }
 
-            return sourceCode;
+            return this.FormatAndSaveGeneratedCode(sourceCode, $"UserHandler_{funcName}");
         }
 
         /// <summary>
@@ -125,9 +133,9 @@ namespace PlDotNET
             }
 
             string[] dotnetTypes = this.GetDotNetTypes(paramTypes);
-            string userFunctionCode = File.ReadAllText(this.UserFunctionTemplatePath);
-            userFunctionCode = userFunctionCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
-            return userFunctionCode;
+            string sourceCode = File.ReadAllText(this.UserFunctionTemplatePath);
+            sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
+            return this.FormatAndSaveGeneratedCode(sourceCode, $"UserFunction_{funcName}");
         }
 
         /// <summary>
@@ -154,12 +162,23 @@ namespace PlDotNET
         /// </summary>
         public abstract string BuildCallSetResult(uint id);
 
-        public abstract string[] GetDotNetTypes(uint[] paramTypes);
-
         /// <summary>
         /// This function creates user function.
         /// </summary>
         public abstract string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, string[] paramNames, string[] dotnetTypes, bool supportNullInput);
+
+        /// <summary>
+        /// Returns the .NET types of the SQL user function according to the language.
+        /// </summary>
+        public abstract string[] GetDotNetTypes(uint[] paramTypes);
+
+        /// <summary>
+        /// This function formats and saves the generated code.
+        /// </summary>
+        /// <returns>
+        /// Returns the formatted code.
+        /// </returns>
+        public abstract string FormatAndSaveGeneratedCode(string sourceCode, string fileName);
     }
 
     public class CSharpCodeGenerator : CodeGenerator
@@ -169,6 +188,11 @@ namespace PlDotNET
             this.UserHandlerTemplatePath = "@CSHARP_TEMPLATE_DIR/UserHandler.tcs";
             this.UserFunctionTemplatePath = "@CSHARP_TEMPLATE_DIR/UserFunction.tcs";
             this.Language = DotNETLanguage.CSharp;
+            this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}csharp";
+            if (!Directory.Exists(this.PathToGeneratedCode))
+            {
+                Directory.CreateDirectory(this.PathToGeneratedCode);
+            }
         }
 
         /// <inheritdoc />
@@ -310,6 +334,16 @@ namespace PlDotNET
 
             return dotnetTypes;
         }
+
+        /// <inheritdoc />
+        public override string FormatAndSaveGeneratedCode(string sourceCode, string fileName)
+        {
+            SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
+            SyntaxNode node = userTree.GetRoot().NormalizeWhitespace();
+            sourceCode = node.ToFullString();
+            File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.cs", sourceCode, Encoding.UTF8);
+            return sourceCode;
+        }
     }
 
     public class FSharpCodeGenerator : CodeGenerator
@@ -337,8 +371,16 @@ namespace PlDotNET
             this.Language = DotNETLanguage.FSharp;
             this.UserHandlerTemplatePath = "@CSHARP_TEMPLATE_DIR/UserHandler.tfs";
             this.UserFunctionTemplatePath = "@CSHARP_TEMPLATE_DIR/UserFunction.tfs";
+            this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}fsharp";
+            if (!Directory.Exists(this.PathToGeneratedCode))
+            {
+                Directory.CreateDirectory(this.PathToGeneratedCode);
+            }
         }
 
+        /// <summary>
+        /// Returns the indented code according to the provided number of space.
+        /// </summary>
         public static string IndentCode(string code, uint spaceNumber)
         {
             string[] codeLines = code.Split("\n");
@@ -431,8 +473,7 @@ namespace PlDotNET
         public override string BuildCallSetResult(uint returnTypeId)
         {
             var sb = new System.Text.StringBuilder();
-            string type = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
-            _ = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
+            _ = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
 
             if ((OID)returnTypeId == OID.VOIDOID)
             {
@@ -503,6 +544,13 @@ namespace PlDotNET
             }
 
             return dotnetTypes;
+        }
+
+        /// <inheritdoc />
+        public override string FormatAndSaveGeneratedCode(string sourceCode, string fileName)
+        {
+            File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.fs", sourceCode, Encoding.UTF8);
+            return sourceCode;
         }
     }
 }

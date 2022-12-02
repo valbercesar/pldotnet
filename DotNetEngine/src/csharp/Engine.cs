@@ -68,6 +68,8 @@ namespace PlDotNET
     {
         public static bool AlwaysNullable = false;
 
+        public static string PathToGeneratedCode = "/tmp/PlDotNET/";
+
         public static Dictionary<OID, OID> HandleArray =
                        new ()
         {
@@ -320,8 +322,6 @@ namespace PlDotNET
         public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
-            SyntaxNode node = userTree.GetRoot().NormalizeWhitespace();
-            sourceCode = node.ToFullString();
 
             Elog.pldotnet_Info("===========================");
             Elog.pldotnet_Info("Compiling source code");

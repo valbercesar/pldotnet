@@ -54,8 +54,8 @@ type FSharpCompiler() =
         pldotnet_Elog(17, $"Source code:\n{sourceCode}");
         pldotnet_Elog(17, "===========================");
         let functionIdString = string functionId
-        let inputFile : string = "/tmp/PlDotNET/UserFunction_" + functionIdString + ".fs"
-        let outputFile : string = "/tmp/PlDotNET/UserFunction_" + functionIdString + ".dll"
+        let inputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".fs"
+        let outputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".dll"
         let options = FSharpCompiler.GetAllFlags inputFile outputFile
         let files = [| (inputFile, sourceCode); (outputFile, "") |]
 
