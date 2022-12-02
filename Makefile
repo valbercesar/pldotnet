@@ -126,14 +126,19 @@ build-package-bash:
 	make build-package
 	docker-compose -f docker-compose-build.yml run --rm pldotnet-build bash
 
+build-dll-test-projects:
+	dotnet build /app/pldotnet/ba-sql/c#_dll_tests_project -c Release
+
 tests:
 	rm -rf automated_test_results
 	mkdir automated_test_results
+	make build-dll-test-projects
 	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres  psql)
 	cat ba-sql/testbit.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbit.out
 	cat ba-sql/testbool.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbool.out
 	cat ba-sql/testbytea.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbytea.out
 	cat ba-sql/testdatetime.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdatetime.out
+	cat ba-sql/testdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdll.out
 	cat ba-sql/testfloats.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfloats.out
 	cat ba-sql/testgeometric.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testgeometric.out
 	cat ba-sql/testintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testintegers.out

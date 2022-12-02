@@ -99,3 +99,6 @@ expected/*
 documentation/*
 
 regression.*
+
+ba-sql/c#_dll_tests_project/bin
+ba-sql/c#_dll_tests_project/obj

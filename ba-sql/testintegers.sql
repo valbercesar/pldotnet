@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION maxSmallInt() RETURNS smallint AS $$
 return (short)32767;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-int2', 'maxSmallInt', maxSmallInt() = integer '32767';
+SELECT 'c#-int2', 'maxSmallInt', maxSmallInt() = smallint '32767';
 
 CREATE OR REPLACE FUNCTION sum2SmallInt(a smallint, b smallint) RETURNS smallint AS $$
 if (a == null)
@@ -34,7 +34,7 @@ if (b == null)
 return a+b;
 $$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-int4', 'sum2Integer1', sum2Integer(32770, 100) = bigint '32870';
+SELECT 'c#-int4', 'sum2Integer1', sum2Integer(32770, 100) = INTEGER '32870';
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int4-null', 'sum2Integer2', sum2Integer(NULL::INTEGER, 100::INTEGER) = INTEGER '100';
 
