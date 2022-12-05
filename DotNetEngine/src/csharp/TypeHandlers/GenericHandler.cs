@@ -350,7 +350,7 @@ namespace PlDotNET.Handler
         }
 
         /// <summary>
-        /// Reports an warning message in PostgreSQL.
+        /// Reports a warning message in PostgreSQL.
         /// </summary>
         public static void pldotnet_Warning(string message)
         {

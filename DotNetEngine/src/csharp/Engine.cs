@@ -58,6 +58,7 @@ namespace PlDotNET
     {
         public string UserHandlerSourceCode;
         public string UserFunctionSourceCode;
+        public string FunctionName;
         public bool SupportNullInput;
         public Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
         public AssemblyLoadContext UserAssemblyLoadContext;
@@ -67,6 +68,8 @@ namespace PlDotNET
     public static class Engine
     {
         public static bool AlwaysNullable = false;
+
+        public static bool PrintSourceCode = false;
 
         public static string PathToGeneratedCode = "/tmp/PlDotNET/";
 
@@ -290,43 +293,11 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// This function returns the compilation errors reported during the
-        /// compilation of the dynamic code using Roslyn.
-        /// </summary>
-        public static string GetCompilationError(Diagnostic diagnostic, string[] lines)
-        {
-            string pattern = @"\d+,\d+";
-            string message = diagnostic.ToString();
-            _ = Regex.Match(message, pattern, RegexOptions.IgnoreCase);
-
-            // TODO(rosicley) - I commented the code below because it was failing.
-            // if (m.Success)
-            // {
-            //     var sb = new System.Text.StringBuilder();
-            //     var split = m.Value.Split(',');
-            //     if (split.Length > 0)
-            //     {
-            //         var l0 = Int32.Parse(split[0]);
-            //         var line = lines[l0 - 1].TrimEnd();
-            //         sb.AppendLine($" > {line}");
-            //         sb.AppendLine($" ^ {message}");
-            //         return sb.ToString();
-            //     }
-            // }
-            return message;
-        }
-
-        /// <summary>
         /// This function compiles the dynamic code using Roslyn.
         /// </summary>
         public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
-
-            Elog.pldotnet_Info("===========================");
-            Elog.pldotnet_Info("Compiling source code");
-            Elog.pldotnet_Info($"Source code:\n{sourceCode}");
-            Elog.pldotnet_Info("===========================");
 
             var trustedAssembliesPathsArray = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
             List<string> trustedAssembliesPaths = new ();
@@ -383,15 +354,17 @@ namespace PlDotNET
 
             if (!compileResult.Success)
             {
-                var lines = sourceCode.Split('\n');
                 var sb = new System.Text.StringBuilder();
-                sb.AppendLine("\n********ERROR************\n");
+                sb.AppendLine($"PL.NET could not compile the following C# generated code:");
+                sb.AppendLine($"**********");
+                sb.AppendLine($"{sourceCode}");
+                sb.AppendLine($"**********");
+                sb.AppendLine($"Here are the compilation results:");
                 foreach (var diagnostic in compileResult.Diagnostics)
                 {
-                    sb.AppendLine(GetCompilationError(diagnostic, lines));
+                    sb.AppendLine(diagnostic.ToString());
                 }
 
-                sb.AppendLine("\n********ERROR************\n");
                 Elog.pldotnet_Warning(sb.ToString());
             }
 
@@ -409,11 +382,15 @@ namespace PlDotNET
         {
             // User function Data
             string funcName = Marshal.PtrToStringAuto(name);
-            string returnType = HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : OidTypes[(OID)returnTypeId];
             string auxParameters = Marshal.PtrToStringAuto(paramNames);
             string[] paramNameArray = auxParameters == null ? Array.Empty<string>() : auxParameters.Split(" ");
             uint[] paramTypeArray = auxParameters == null ? Array.Empty<uint>() : new ReadOnlySpan<uint>(paramTypes, paramNameArray.Length).ToArray();
             string funcBody = Marshal.PtrToStringAuto(body);
+
+            if (!CheckSupportedTypes(returnTypeId, paramTypeArray))
+            {
+                return 1;
+            }
 
             CodeGenerator dynamicCodeGenerator;
             DotNETLanguage dotnetLanguage;
@@ -516,6 +493,7 @@ namespace PlDotNET
             {
                 UserFunctionSourceCode = userFunctionCode,
                 UserHandlerSourceCode = userHandlerCode,
+                FunctionName = funcName,
                 SupportNullInput = supportNullInput,
                 UserAssemblyLoadContext = userAlc,
                 UserProcedure = GetDirectDelegate(userHandlerAssembly),
@@ -561,25 +539,34 @@ namespace PlDotNET
         {
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
-                GCHandle gchList = GCHandle.FromIntPtr(arguments);
-                var argumentList = (List<IntPtr>)gchList.Target;
-                bool[] isnull = new bool[argumentList.Count];
-                if (cached.SupportNullInput || Engine.AlwaysNullable)
+                try
                 {
-                    for (int i = 0, nargs = isnull.Length; i < nargs; i++)
+                    GCHandle gchList = GCHandle.FromIntPtr(arguments);
+                    var argumentList = (List<IntPtr>)gchList.Target;
+                    bool[] isnull = new bool[argumentList.Count];
+                    if (cached.SupportNullInput || Engine.AlwaysNullable)
                     {
-                        isnull[i] = nullmap[i] != 0;
+                        for (int i = 0, nargs = isnull.Length; i < nargs; i++)
+                        {
+                            isnull[i] = nullmap[i] != 0;
+                        }
                     }
+
+                    cached.UserProcedure(argumentList, output, isnull);
+                    return 0;
                 }
-
-                cached.UserProcedure(argumentList, output, isnull);
+                catch (Exception e)
+                {
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"PL.NET could not run the function \"{cached.FunctionName}\", due to the following exception:\n");
+                    sb.AppendLine(e.ToString());
+                    Elog.pldotnet_Warning(sb.ToString());
+                    return 1;
+                }
             }
-            else
-            {
-                Elog.pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
-            }
 
-            return 0;
+            Elog.pldotnet_Warning($"PL.NET could not find the user function (ID: {functionId})");
+            return 1;
         }
 
         /// <summary>
@@ -625,8 +612,51 @@ namespace PlDotNET
             }
             else
             {
-                Elog.pldotnet_Elog(21, $"[pldotnet]: could not find the generated function (ID: {functionId})");
+                Elog.pldotnet_Warning($"PL.NET could not find the generated function to unload its assemblies (ID: {functionId})");
             }
+        }
+
+        /// <summary>
+        /// Checks if PL.NET supports all the PostgreSQL types of the SQL user function.
+        /// </summary>
+        /// <returns>
+        /// Returns true if all types are supported.
+        /// </returns>
+        public static bool CheckSupportedTypes(uint returnTypeId, uint[] paramTypes)
+        {
+            List<string> unsupportedTypes = new ();
+
+            if (!(HandleArray.ContainsKey((OID)returnTypeId) || OidTypes.ContainsKey((OID)returnTypeId)))
+            {
+                unsupportedTypes.Add($"{(OID)returnTypeId}");
+            }
+
+            for (int i = 0, length = paramTypes.Length; i < length; i++)
+            {
+                if (!(HandleArray.ContainsKey((OID)paramTypes[i]) || OidTypes.ContainsKey((OID)paramTypes[i])))
+                {
+                    unsupportedTypes.Add($"{(OID)paramTypes[i]}");
+                }
+            }
+
+            if (unsupportedTypes.Count == 0)
+            {
+                return true;
+            }
+
+            unsupportedTypes = unsupportedTypes.Distinct().ToList();
+
+            var sb = new System.Text.StringBuilder();
+
+            for (int i = 0, length = unsupportedTypes.Count; i < length; i++)
+            {
+                sb.AppendLine($"PL.NET does not support the PostgreSQL {unsupportedTypes[i]} type.");
+            }
+
+            sb.AppendLine("Please contact Brick Abode. <tlewis@brickabode.com>");
+            Elog.pldotnet_Warning("\n" + sb.ToString());
+
+            return false;
         }
     }
 }

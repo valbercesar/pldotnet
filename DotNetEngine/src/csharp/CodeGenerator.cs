@@ -63,6 +63,32 @@ namespace PlDotNET
         }
 
         /// <summary>
+        /// Prints the source code if Engine.PrintSourceCode is true.
+        /// </summary>
+        public static void PrintSourceCode(string sourceCode)
+        {
+            if (Engine.PrintSourceCode)
+            {
+                Elog.pldotnet_Info("===========================");
+                Elog.pldotnet_Info($"Source code:\n{sourceCode}");
+                Elog.pldotnet_Info("===========================");
+            }
+        }
+
+        /// <summary>
+        /// Returns the Nullable message to insert it into the dynamic code.
+        /// </summary>
+        public static string GetNullableMessage(string funcName)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"// As the SQL function named {funcName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
+            sb.AppendLine("// `PL.NET` doesn't check whether any argument datum is null.");
+            sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
+            sb.AppendLine("// to always check whether the datum is null.\n");
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Returns the source code for the UserHandler according to the programming language.
         /// </summary>
         public string BuildUserHandlerSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, string funcBody, bool supportNullInput)
@@ -213,10 +239,7 @@ namespace PlDotNET
             var sb = new System.Text.StringBuilder();
             if (!supportNullInput)
             {
-                sb.AppendLine($"// As the SQL function named {funcName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
-                sb.AppendLine("// `PL.NET` doesn't check whether any argument datum is null.");
-                sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
-                sb.AppendLine("// to always check whether the datum is null.\n");
+                sb.AppendLine(GetNullableMessage(funcName));
             }
 
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
@@ -342,6 +365,7 @@ namespace PlDotNET
             SyntaxNode node = userTree.GetRoot().NormalizeWhitespace();
             sourceCode = node.ToFullString();
             File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.cs", sourceCode, Encoding.UTF8);
+            PrintSourceCode(sourceCode);
             return sourceCode;
         }
     }
@@ -412,10 +436,7 @@ namespace PlDotNET
             var sb = new System.Text.StringBuilder();
             if (!supportNullInput)
             {
-                sb.AppendLine($"// As the SQL function named {funcName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
-                sb.AppendLine("// `PL.NET` doesn't check whether any argument datum is null.");
-                sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
-                sb.AppendLine("// to always check whether the datum is null.\n");
+                sb.AppendLine(GetNullableMessage(funcName));
             }
 
             sb.AppendLine($"// BEGIN create arguments for {funcName}");
@@ -550,6 +571,7 @@ namespace PlDotNET
         public override string FormatAndSaveGeneratedCode(string sourceCode, string fileName)
         {
             File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.fs", sourceCode, Encoding.UTF8);
+            PrintSourceCode(sourceCode);
             return sourceCode;
         }
     }

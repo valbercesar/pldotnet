@@ -17,7 +17,6 @@ open PlDotNET;
 
 type UserFunction() =
     // $user_function_declaration$
-
 type UserHandler() =
     static member CallUserFunction (arguments: List<IntPtr>, output: IntPtr, isnull: bool[]) =
         // $handler_objects$

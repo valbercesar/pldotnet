@@ -49,10 +49,6 @@ type FSharpCompiler() =
     static member checker = FSharpChecker.Create()
 
     static member CompileFSharpSourceCode (functionId: uint) (sourceCode: string) : string =
-        pldotnet_Elog(17, "===========================");
-        pldotnet_Elog(17, "Compiling F# source code");
-        pldotnet_Elog(17, $"Source code:\n{sourceCode}");
-        pldotnet_Elog(17, "===========================");
         let functionIdString = string functionId
         let inputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".fs"
         let outputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".dll"
@@ -71,7 +67,11 @@ type FSharpCompiler() =
             outputFile
         | _ ->
             let sb = new System.Text.StringBuilder()
-            sb.AppendLine("\n********ERROR************\n") |> ignore
+            sb.AppendLine($"PL.NET could not compile the following F# generated code:") |> ignore
+            sb.AppendLine($"**********") |> ignore
+            sb.AppendLine(sourceCode) |> ignore
+            sb.AppendLine($"**********") |> ignore
+            sb.AppendLine($"Here are the compilation results:") |> ignore
             for e in errors do
                 sb.AppendLine(e.ToString()) |> ignore
             sb.AppendLine("\n********ERROR************\n") |> ignore

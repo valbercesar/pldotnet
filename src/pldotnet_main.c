@@ -448,10 +448,7 @@ static Datum pldotnet_generic_handler(FunctionCallInfo fcinfo, bool is_inline,
         pldotnet_ResetMemoryContext(&memory_context);
     }
     PG_CATCH();
-    {
-        elog(WARNING, "[pldotnet]: Exception on PG context");
-        PG_RE_THROW();
-    }
+    { PG_RE_THROW(); }
 
     PG_END_TRY();
 
@@ -484,11 +481,7 @@ static Datum pldotnet_validator(FunctionCallInfo fcinfo,
         pldotnet_ResetMemoryContext(&memory_context);
     }
     PG_CATCH();
-    {
-        /* Do the exception handling */
-        elog(WARNING, "[pldotnet]: Exception on PG context");
-        PG_RE_THROW();
-    }
+    { PG_RE_THROW(); }
     PG_END_TRY();
 
     PG_RETURN_VOID();
@@ -503,6 +496,7 @@ static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
     void *arglist = nullptr;
     bool *nullmap = nullptr;
     pldotnet_Result output;
+    int res;
     output.value = (Datum)0;
 
     /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END
@@ -526,8 +520,11 @@ static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
                   ? pldotnet_BuildNullArgumentList(fcinfo, procst)
                   : nullptr;
 
-    run_user_function(function_decl->func_oid, arglist, &nullmap[0],
-                      (void *)&output);
+    res = run_user_function(function_decl->func_oid, arglist, &nullmap[0],
+                            (void *)&output);
+
+    if (res != 0)
+        elog(ERROR, "PL.NET function \"%s\".", function_decl->func_name);
 
     if (output.is_null)
         fcinfo->isnull = true;
@@ -578,9 +575,7 @@ static bool pldotnet_BuildFunctionDecl(
         elog(ERROR, "[pldotnet]: Could not obtain the source code");
 
     if (!pldotnet_CompileUserFunction(function_decl))
-        elog(ERROR,
-             "[pldotnet]: Could not compile this "
-             "function using the new method.");
+        elog(ERROR, "PL.NET function \"%s\".", function_decl->func_name);
 
     return true;
 }
