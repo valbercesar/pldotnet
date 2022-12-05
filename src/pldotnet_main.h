@@ -170,9 +170,6 @@ bool pldotnet_BuildPaths(void);
 /**
  * @brief Sets the assembly_loader object.
  *
- * @param config_path
- * @param prefix
- *
  * @return true if the assembly_loader was already defined or was found
  * correctly.
  * @return false if the assembly_loader was not found.
@@ -181,8 +178,6 @@ bool pldotnet_SetNetLoader(void);
 
 /**
  * @brief Sets the .NET methods for the C function pointers.
- *
- * @param library_path The .NET library.
  *
  * @return true if all the .NET functions were found.
  * @return false if any .NET functions were not found.
