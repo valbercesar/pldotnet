@@ -421,8 +421,8 @@ void pldotnet_Elog(int level, char *message) {
     elog(level, "%s", message);
 }
 
-void pldotnet_SetDatumResult(void *value, bool isnull, void *native_result) {
-    pldotnet_Result *result = (pldotnet_Result *)native_result;
+void pldotnet_SetDatumResult(void *value, bool isNull, void *nativeResult) {
+    pldotnet_Result *result = (pldotnet_Result *)nativeResult;
     result->is_null = isnull;
     result->value = (Datum)value;
 }

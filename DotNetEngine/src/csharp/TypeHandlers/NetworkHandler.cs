@@ -44,30 +44,30 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumMacAddressAttributes().
+        /// See ::pldotnet_GetDatumMacAddressAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumMacAddressAttributes(IntPtr datum, int length, byte[] bytes);
+        public static extern void pldotnet_GetDatumMacAddressAttributes(IntPtr datum, int length, byte[] bytes);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumMacAddress().
+        /// See ::pldotnet_CreateDatumMacAddress().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumMacAddress(int length, byte[] bytes);
+        public static extern IntPtr pldotnet_CreateDatumMacAddress(int length, byte[] bytes);
 
         /// <inheritdoc />
         public override PhysicalAddress InputValue(IntPtr datum)
         {
             byte[] bytes = new byte[6];
-            pldotnet_getDatumMacAddressAttributes(datum, 6, bytes);
+            pldotnet_GetDatumMacAddressAttributes(datum, 6, bytes);
             return new PhysicalAddress(bytes);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(PhysicalAddress value)
         {
-            return pldotnet_createDatumMacAddress(6, value.GetAddressBytes());
+            return pldotnet_CreateDatumMacAddress(6, value.GetAddressBytes());
         }
     }
 
@@ -90,14 +90,14 @@ namespace PlDotNET.Handler
         public override PhysicalAddress InputValue(IntPtr datum)
         {
             byte[] bytes = new byte[8];
-            MacaddrHandler.pldotnet_getDatumMacAddressAttributes(datum, 8, bytes);
+            MacaddrHandler.pldotnet_GetDatumMacAddressAttributes(datum, 8, bytes);
             return new PhysicalAddress(bytes);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(PhysicalAddress value)
         {
-            return MacaddrHandler.pldotnet_createDatumMacAddress(8, value.GetAddressBytes());
+            return MacaddrHandler.pldotnet_CreateDatumMacAddress(8, value.GetAddressBytes());
         }
     }
 
@@ -118,24 +118,24 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumInetAttributes().
+        /// See ::pldotnet_GetDatumInetAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumInetAttributes(IntPtr datum, ref int nelem, byte[] bytes, ref int netmask);
+        public static extern void pldotnet_GetDatumInetAttributes(IntPtr datum, ref int nelem, byte[] bytes, ref int netmask);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumInet().
+        /// See ::pldotnet_CreateDatumInet().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInet(int length, byte[] bytes, int netmask);
+        public static extern IntPtr pldotnet_CreateDatumInet(int length, byte[] bytes, int netmask);
 
         /// <inheritdoc />
         public override (IPAddress Address, int Netmask) InputValue(IntPtr datum)
         {
             int nelem = 0, netmask = 0;
             byte[] bytes = new byte[16];
-            pldotnet_getDatumInetAttributes(datum, ref nelem, bytes, ref netmask);
+            pldotnet_GetDatumInetAttributes(datum, ref nelem, bytes, ref netmask);
             byte[] newBytes = new byte[nelem];
             for (int i = 0; i < nelem; i++)
             {
@@ -148,7 +148,7 @@ namespace PlDotNET.Handler
         /// <inheritdoc />
         public override IntPtr OutputValue((IPAddress Address, int Netmask) value)
         {
-            return pldotnet_createDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask);
+            return pldotnet_CreateDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask);
         }
     }
 
@@ -172,7 +172,7 @@ namespace PlDotNET.Handler
         {
             int nelem = 0, netmask = 0;
             byte[] bytes = new byte[16];
-            InetHandler.pldotnet_getDatumInetAttributes(datum, ref nelem, bytes, ref netmask);
+            InetHandler.pldotnet_GetDatumInetAttributes(datum, ref nelem, bytes, ref netmask);
             byte[] newBytes = new byte[nelem];
             for (int i = 0; i < nelem; i++)
             {
@@ -186,7 +186,7 @@ namespace PlDotNET.Handler
         public override IntPtr OutputValue((IPAddress Address, int Netmask) value)
         {
             Elog.pldotnet_Elog(19, "\n\nWe still need to check if the result CIDR object is acceptable!!!\n\n");
-            return InetHandler.pldotnet_createDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask);
+            return InetHandler.pldotnet_CreateDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask);
         }
     }
 }

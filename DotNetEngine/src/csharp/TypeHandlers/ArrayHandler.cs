@@ -30,35 +30,35 @@ namespace PlDotNET.Handler
     /// </summary>
     public static class ArrayHandler
     {
-        public static int Maxdim = get_maxdim();
+        public static int Maxdim = get_Maxdim();
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::get_maxdim().
+        /// See ::get_Maxdim().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int get_maxdim();
+        public static extern int get_Maxdim();
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getArrayAttributes().
+        /// See ::pldotnet_GetArrayAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getArrayAttributes(IntPtr datum, ref int type_id, ref int ndims, int[] dims, ref byte* nullmap);
+        public static extern unsafe void pldotnet_GetArrayAttributes(IntPtr datum, ref int typeId, ref int nDims, int[] dims, ref byte* nullmap);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getArrayDatum().
+        /// See ::pldotnet_GetArrayDatum().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe int pldotnet_getArrayDatum(IntPtr arrayDatum, IntPtr[] results, int nelems, int type_id);
+        public static extern unsafe int pldotnet_GetArrayDatum(IntPtr arrayDatum, IntPtr[] results, int nElems, int typeId);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumArray().
+        /// See ::pldotnet_CreateDatumArray().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumArray(int elementId, int dimNumber, int[] dimLengths, IntPtr[] datums, byte[] nullmap = null);
+        public static extern IntPtr pldotnet_CreateDatumArray(int elementId, int dimNumber, int[] dimLengths, IntPtr[] datums, byte[] nullmap = null);
 
         /// <summary>
         /// This is a recursive function that aims to create a multidimensional

@@ -43,43 +43,43 @@
 //// Datum -> Npgsql or C# type ////
 ////////////////////////////////////
 
-int16_t pldotnet_getInt16(void *datum) {
+int16_t pldotnet_GetInt16(void *datum) {
     int16_t value = DatumGetInt16((Datum)datum);
     return value;
 }
 
-int32_t pldotnet_getInt32(void *datum) {
+int32_t pldotnet_GetInt32(void *datum) {
     int32_t value = DatumGetInt32((Datum)datum);
     return value;
 }
 
-int64_t pldotnet_getInt64(void *datum) {
+int64_t pldotnet_GetInt64(void *datum) {
     int64_t value = DatumGetInt64((Datum)datum);
     return value;
 }
 
-float pldotnet_getFloat(void *datum) {
+float pldotnet_GetFloat(void *datum) {
     float value = DatumGetFloat4((Datum)datum);
     return value;
 }
 
-double pldotnet_getDouble(void *datum) {
+double pldotnet_GetDouble(void *datum) {
     double value = DatumGetFloat8((Datum)datum);
     return value;
 }
 
-bool pldotnet_getBoolean(void *datum) {
+bool pldotnet_GetBoolean(void *datum) {
     bool value = DatumGetBool((Datum)datum);
     return value;
 }
 
-void pldotnet_getDatumPointAttributes(void *datum, double *x, double *y) {
+void pldotnet_GetDatumPointAttributes(void *datum, double *x, double *y) {
     Point *orig_p = DatumGetPointP((Datum)datum);
     *x = orig_p->x;
     *y = orig_p->y;
 }
 
-void pldotnet_getDatumLineAttributes(void *datum, double *a, double *b,
+void pldotnet_GetDatumLineAttributes(void *datum, double *a, double *b,
                                      double *c) {
     LINE *orig_l = DatumGetLineP((Datum)datum);
     *a = orig_l->A;
@@ -87,7 +87,7 @@ void pldotnet_getDatumLineAttributes(void *datum, double *a, double *b,
     *c = orig_l->C;
 }
 
-void pldotnet_getDatumLineSegmentAttributes(void *datum, double *x1, double *y1,
+void pldotnet_GetDatumLineSegmentAttributes(void *datum, double *x1, double *y1,
                                             double *x2, double *y2) {
     LSEG *orig_l = DatumGetLsegP((Datum)datum);
     *x1 = orig_l->p[0].x;
@@ -96,7 +96,7 @@ void pldotnet_getDatumLineSegmentAttributes(void *datum, double *x1, double *y1,
     *y2 = orig_l->p[1].y;
 }
 
-void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
+void pldotnet_GetDatumBoxAttributes(void *datum, double *x1, double *y1,
                                     double *x2, double *y2) {
     BOX *orig_b = DatumGetBoxP((Datum)datum);
     *x1 = orig_b->high.x;
@@ -105,14 +105,14 @@ void pldotnet_getDatumBoxAttributes(void *datum, double *x1, double *y1,
     *y2 = orig_b->low.y;
 }
 
-void pldotnet_getDatumPathAttributes(void *datum, int *pointNumber,
+void pldotnet_GetDatumPathAttributes(void *datum, int *pointNumber,
                                      int *closed) {
     PATH *orig_p = DatumGetPathP((Datum)datum);
     *pointNumber = orig_p->npts;
     *closed = orig_p->closed;
 }
 
-void pldotnet_getDatumPathCoordinates(void *datum, double *xCoordinates,
+void pldotnet_GetDatumPathCoordinates(void *datum, double *xCoordinates,
                                       double *yCoordinates) {
     PATH *orig_p = DatumGetPathP((Datum)datum);
     for (int i = 0, npts = orig_p->npts; i < npts; i++) {
@@ -121,12 +121,12 @@ void pldotnet_getDatumPathCoordinates(void *datum, double *xCoordinates,
     }
 }
 
-void pldotnet_getDatumPolygonAttributes(void *datum, int *pointNumber) {
+void pldotnet_GetDatumPolygonAttributes(void *datum, int *pointNumber) {
     POLYGON *orig_p = DatumGetPolygonP((Datum)datum);
     *pointNumber = orig_p->npts;
 }
 
-void pldotnet_getDatumPolygonCoordinates(void *datum, double *xCoordinates,
+void pldotnet_GetDatumPolygonCoordinates(void *datum, double *xCoordinates,
                                          double *yCoordinates) {
     POLYGON *orig_p = DatumGetPolygonP((Datum)datum);
     for (int i = 0, npts = orig_p->npts; i < npts; i++) {
@@ -135,7 +135,7 @@ void pldotnet_getDatumPolygonCoordinates(void *datum, double *xCoordinates,
     }
 }
 
-void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
+void pldotnet_GetDatumCircleAttributes(void *datum, double *x, double *y,
                                        double *r) {
     CIRCLE *orig_c = DatumGetCircleP((Datum)datum);
     *x = orig_c->center.x;
@@ -143,70 +143,70 @@ void pldotnet_getDatumCircleAttributes(void *datum, double *x, double *y,
     *r = orig_c->radius;
 }
 
-void pldotnet_getDatumTextAttributes(void *datum, int *len, char **buf) {
+void pldotnet_GetDatumTextAttributes(void *datum, int *len, char **buf) {
     text *t = DatumGetTextPP((Datum)datum);
     const size_t datum_len = VARSIZE_ANY_EXHDR(t);
     *len = datum_len;
     *buf = VARDATA_ANY(t);
 }
 
-void pldotnet_getDatumCharAttributes(void *datum, int *len, char **buf) {
+void pldotnet_GetDatumCharAttributes(void *datum, int *len, char **buf) {
     BpChar *orig_bpc = DatumGetBpCharPP((Datum)datum);
     *len = VARSIZE_ANY_EXHDR(orig_bpc);
     *buf = VARDATA_ANY(orig_bpc);
 }
 
-void pldotnet_getDatumVarCharAttributes(void *datum, int *len, char **buf) {
+void pldotnet_GetDatumVarCharAttributes(void *datum, int *len, char **buf) {
     VarChar *orig_bpc = DatumGetVarCharPP((Datum)datum);
     *len = VARSIZE_ANY_EXHDR(orig_bpc);
     *buf = VARDATA_ANY(orig_bpc);
 }
 
-void pldotnet_getDatumByteaAttributes(void *datum, int *len, char **buf) {
+void pldotnet_GetDatumByteaAttributes(void *datum, int *len, char **buf) {
     bytea *orig_b = DatumGetByteaPP((Datum)datum);
     *len = VARSIZE_ANY_EXHDR(orig_b);
     *buf = VARDATA_ANY(orig_b);
 }
 
-void pldotnet_getDatumXmlAttributes(void *datum, int *len, char **buf) {
+void pldotnet_GetDatumXmlAttributes(void *datum, int *len, char **buf) {
     xmltype *orig_x = DatumGetXmlP((Datum)datum);
     *len = VARSIZE_ANY_EXHDR(orig_x);
     *buf = VARDATA_ANY(orig_x);
 }
 
-void pldotnet_getDatumJsonAttributes(void *datum, int *len, char **buf) {
+void pldotnet_GetDatumJsonAttributes(void *datum, int *len, char **buf) {
     text *orig_j = DatumGetTextPP((Datum)datum);
     *len = VARSIZE_ANY_EXHDR(orig_j);
     *buf = VARDATA_ANY(orig_j);
 }
 
-void pldotnet_getDatumDateAttributes(void *datum, int *date) {
+void pldotnet_GetDatumDateAttributes(void *datum, int *date) {
     DateADT orig_d = DatumGetDateADT((Datum)datum);
     *date = orig_d;
 }
 
-void pldotnet_getDatumTimeAttributes(void *datum, long *time) {
+void pldotnet_GetDatumTimeAttributes(void *datum, long *time) {
     TimeADT orig_t = DatumGetTimeADT((Datum)datum);
     *time = orig_t;
 }
 
-void pldotnet_getDatumTimeTzAttributes(void *datum, long *time, int *zone) {
+void pldotnet_GetDatumTimeTzAttributes(void *datum, long *time, int *zone) {
     TimeTzADT *orig_tz = DatumGetTimeTzADTP((Datum)datum);
     *time = orig_tz->time;
     *zone = orig_tz->zone;
 }
 
-void pldotnet_getDatumTimestampAttributes(void *datum, long *timestamp) {
+void pldotnet_GetDatumTimestampAttributes(void *datum, long *timestamp) {
     Timestamp orig_ts = DatumGetTimestamp((Datum)datum);
     *timestamp = orig_ts;
 }
 
-void pldotnet_getDatumTimestampTzAttributes(void *datum, long *timestamp) {
+void pldotnet_GetDatumTimestampTzAttributes(void *datum, long *timestamp) {
     TimestampTz orig_ts = DatumGetTimestampTz((Datum)datum);
     *timestamp = orig_ts;
 }
 
-void pldotnet_getDatumIntervalAttributes(void *datum, long *time, int *day,
+void pldotnet_GetDatumIntervalAttributes(void *datum, long *time, int *day,
                                          int *month) {
     Interval *orig_i = DatumGetIntervalP((Datum)datum);
     *time = orig_i->time;
@@ -214,7 +214,7 @@ void pldotnet_getDatumIntervalAttributes(void *datum, long *time, int *day,
     *month = orig_i->month;
 }
 
-void pldotnet_getDatumMacAddressAttributes(void *datum, int length,
+void pldotnet_GetDatumMacAddressAttributes(void *datum, int length,
                                            unsigned char *bytes) {
     macaddr *orig_ma;
     macaddr8 *orig_ma8;
@@ -239,7 +239,7 @@ void pldotnet_getDatumMacAddressAttributes(void *datum, int length,
     bytes[7] = orig_ma8->h;
 }
 
-void pldotnet_getDatumInetAttributes(void *datum, int *nelem,
+void pldotnet_GetDatumInetAttributes(void *datum, int *nelem,
                                      unsigned char *bytes, int *netmask) {
     inet *orig_i = DatumGetInetP((Datum)datum);
     if (orig_i->inet_data.family == PGSQL_AF_INET)
@@ -256,79 +256,79 @@ void pldotnet_getDatumInetAttributes(void *datum, int *nelem,
     }
 }
 
-void pldotnet_getDatumMoneyAttributes(void *datum, long *value) {
+void pldotnet_GetDatumMoneyAttributes(void *datum, long *value) {
     Cash orig_c = DatumGetCash((Datum)datum);
     *value = orig_c;
 }
 
-void pldotnet_getDatumVarBitAttributes(void *datum, int *len, bits8 **dat) {
+void pldotnet_GetDatumVarBitAttributes(void *datum, int *len, bits8 **dat) {
     VarBit *orig_vb = DatumGetVarBitP((Datum)datum);
     *len = orig_vb->bit_len;
     *dat = &orig_vb->bit_dat[0];
 }
 
-void pldotnet_getDatumUuidAttributes(void *datum, unsigned char *data) {
+void pldotnet_GetDatumUuidAttributes(void *datum, unsigned char *data) {
     pg_uuid_t *orig_uuid = DatumGetUUIDP((Datum)datum);
     for (int i = 0; i < 16; i++)
         data[i] = orig_uuid->data[i];
 }
 
-void pldotnet_getDatumRangeAttributes(Datum input_datum, bool *is_empty,
-                                      RangeBound **lower_range,
-                                      RangeBound **upper_range) {
+void pldotnet_GetDatumRangeAttributes(Datum inputDatum, bool *isEmpty,
+                                      RangeBound **lowerRange,
+                                      RangeBound **upperDange) {
     RangeType *orig_r = nullptr;
     TypeCacheEntry *typcache = nullptr;
     Oid rt_oid;
 
 #if PG_VERSION_NUM >= 110000
-    orig_r = DatumGetRangeTypeP(input_datum);
+    orig_r = DatumGetRangeTypeP(inputDatum);
 #else
-    orig_r = DatumGetRangeType(input_datum);
+    orig_r = DatumGetRangeType(inputDatum);
 #endif
 
     rt_oid = RangeTypeGetOid(orig_r);
 
-    *lower_range = palloc(sizeof(RangeBound));
-    *upper_range = palloc(sizeof(RangeBound));
+    *lowerRange = palloc(sizeof(RangeBound));
+    *upperDange = palloc(sizeof(RangeBound));
 
     typcache = lookup_type_cache(rt_oid, TYPECACHE_RANGE_INFO);
-    range_deserialize(typcache, orig_r, *lower_range, *upper_range, is_empty);
+    range_deserialize(typcache, orig_r, *lowerRange, *upperDange, isEmpty);
 }
 
-void pldotnet_getDatumRangeBoundAttributes(RangeBound *input_range,
-                                           Datum *range_datum, bool *infinite,
+void pldotnet_GetDatumRangeBoundAttributes(RangeBound *inputRange,
+                                           Datum *rangeDatum, bool *infinite,
                                            bool *inclusive, bool *lower) {
-    *range_datum = input_range->val;
-    *infinite = input_range->infinite;
-    *inclusive = input_range->inclusive;
-    *lower = input_range->lower;
+    *rangeDatum = inputRange->val;
+    *infinite = inputRange->infinite;
+    *inclusive = inputRange->inclusive;
+    *lower = inputRange->lower;
 }
 
-int get_maxdim(void) { return MAXDIM; }
+int get_Maxdim(void) { return MAXDIM; }
 
-void pldotnet_getArrayAttributes(void *datum, int *element_typeid, int *ndims,
+void pldotnet_GetArrayAttributes(void *datum, int *typeId, int *nDims,
                                  int *dims, uint8_t **nullmap) {
     /* the size of dims needs to be MAXDIM */
     ArrayType *array = DatumGetArrayTypeP((Datum)datum);
     int *dims_in;
     int i;
 
-    *ndims = ARR_NDIM(array);
+    *nDims = ARR_NDIM(array);
     Assert(ndim <= MAXDIM);
     *nullmap = ARR_NULLBITMAP(array);
-    *element_typeid = ARR_ELEMTYPE(array);
+    *typeId = ARR_ELEMTYPE(array);
 
     dims_in = ARR_DIMS(array);
-    for (i = 0; i < *ndims; i++) {
+    for (i = 0; i < *nDims; i++) {
         dims[i] = dims_in[i];
     }
 }
 
-int pldotnet_getArrayDatum(Datum array_datum, Datum *results, int nelems,
-                           int element_typeid) {
+int pldotnet_GetArrayDatum(Datum arrayDatum, Datum *results, int nElems,
+                           int typeId) {
     // converts the PostgreSQL array to a linear array of `Datum`
     // returns 0 on success, other on failure
-    ArrayType *array = DatumGetArrayTypeP(array_datum);
+    ArrayType *array = DatumGetArrayTypeP(arrayDatum);
     int ndim = ARR_NDIM(array);
     int *dims = ARR_DIMS(array);
     char *dataptr = ARR_DATA_PTR(array);
@@ -348,16 +348,16 @@ int pldotnet_getArrayDatum(Datum array_datum, Datum *results, int nelems,
     for (i = 0; i < ndim; i++) {
         computed_nelems *= dims[i];
     }
-    if (computed_nelems != nelems) {
+    if (computed_nelems != nElems) {
         elog(22, "# C ERROR: (computed_nelems(%d)!=nelems(%d))\n",
-             computed_nelems, nelems);
+             computed_nelems, nElems);
         return -2;
     }
 
     // this will be cleaned up later into parameters
-    get_typlenbyvalalign((Oid)element_typeid, &typlen, &typbyval, &typalign);
+    get_typlenbyvalalign((Oid)typeId, &typlen, &typbyval, &typalign);
 
-    for (i = 0; i < nelems; i++) {
+    for (i = 0; i < nElems; i++) {
         /* checking for NULL */
         if (bitmap && (*bitmap & bitmask) == 0) {
             results[i] = (Datum)0;
@@ -382,44 +382,44 @@ int pldotnet_getArrayDatum(Datum array_datum, Datum *results, int nelems,
 //// Npgsql or C# type -> Datum ////
 ////////////////////////////////////
 
-Datum pldotnet_createDatumInt16(int16_t dotnetValue) {
-    Datum value = Int16GetDatum(dotnetValue);
-    return value;
+Datum pldotnet_CreateDatumInt16(int16_t value) {
+    Datum dValue = Int16GetDatum(value);
+    return dValue;
 }
 
-Datum pldotnet_createDatumInt32(int32_t dotnetValue) {
-    Datum value = Int32GetDatum(dotnetValue);
-    return value;
+Datum pldotnet_CreateDatumInt32(int32_t value) {
+    Datum dValue = Int32GetDatum(value);
+    return dValue;
 }
 
-Datum pldotnet_createDatumInt64(int64_t dotnetValue) {
-    Datum value = Int64GetDatum(dotnetValue);
-    return value;
+Datum pldotnet_CreateDatumInt64(int64_t value) {
+    Datum dValue = Int64GetDatum(value);
+    return dValue;
 }
 
-Datum pldotnet_createDatumFloat(float dotnetValue) {
-    Datum value = Float4GetDatum(dotnetValue);
-    return value;
+Datum pldotnet_CreateDatumFloat(float value) {
+    Datum dValue = Float4GetDatum(value);
+    return dValue;
 }
 
-Datum pldotnet_createDatumDouble(double dotnetValue) {
-    Datum value = Float8GetDatum(dotnetValue);
-    return value;
+Datum pldotnet_CreateDatumDouble(double value) {
+    Datum dValue = Float8GetDatum(value);
+    return dValue;
 }
 
-Datum pldotnet_createDatumBoolean(bool dotnetValue) {
-    Datum value = BoolGetDatum(dotnetValue);
-    return value;
+Datum pldotnet_CreateDatumBoolean(bool value) {
+    Datum dValue = BoolGetDatum(value);
+    return dValue;
 }
 
-Datum pldotnet_createDatumPoint(double x, double y) {
+Datum pldotnet_CreateDatumPoint(double x, double y) {
     Point *new_p = (Point *)palloc(sizeof(Point));
     new_p->x = x;
     new_p->y = y;
     return PointerGetDatum(new_p);
 }
 
-Datum pldotnet_createDatumLine(double a, double b, double c) {
+Datum pldotnet_CreateDatumLine(double a, double b, double c) {
     LINE *new_l = (LINE *)palloc(sizeof(LINE));
     new_l->A = a;
     new_l->B = b;
@@ -427,7 +427,7 @@ Datum pldotnet_createDatumLine(double a, double b, double c) {
     return LinePGetDatum(new_l);
 }
 
-Datum pldotnet_createDatumLineSegment(double x1, double y1, double x2,
+Datum pldotnet_CreateDatumLineSegment(double x1, double y1, double x2,
                                       double y2) {
     LSEG *new_l = (LSEG *)palloc(sizeof(LSEG));
     new_l->p[0].x = x1;
@@ -437,7 +437,7 @@ Datum pldotnet_createDatumLineSegment(double x1, double y1, double x2,
     return LsegPGetDatum(new_l);
 }
 
-Datum pldotnet_createDatumBox(double x1, double y1, double x2, double y2) {
+Datum pldotnet_CreateDatumBox(double x1, double y1, double x2, double y2) {
     BOX *new_b = (BOX *)palloc(sizeof(BOX));
     new_b->high.x = x1;
     new_b->high.y = y1;
@@ -446,7 +446,7 @@ Datum pldotnet_createDatumBox(double x1, double y1, double x2, double y2) {
     return BoxPGetDatum(new_b);
 }
 
-Datum pldotnet_createDatumPath(int npts, int closed, double *xCoordinates,
+Datum pldotnet_CreateDatumPath(int npts, int closed, double *xCoordinates,
                                double *yCoordinates) {
     size_t path_size = sizeof(PATH) + ((size_t)npts * sizeof(Point));
     PATH *new_p = (PATH *)palloc(path_size);
@@ -461,7 +461,7 @@ Datum pldotnet_createDatumPath(int npts, int closed, double *xCoordinates,
     return PathPGetDatum(new_p);
 }
 
-Datum pldotnet_createDatumPolygon(int npts, double *xCoordinates,
+Datum pldotnet_CreateDatumPolygon(int npts, double *xCoordinates,
                                   double *yCoordinates) {
     size_t poly_size = sizeof(POLYGON) + ((size_t)npts * sizeof(Point));
     POLYGON *new_p = (POLYGON *)palloc(poly_size);
@@ -474,7 +474,7 @@ Datum pldotnet_createDatumPolygon(int npts, double *xCoordinates,
     return PolygonPGetDatum(new_p);
 }
 
-Datum pldotnet_createDatumCircle(double x, double y, double r) {
+Datum pldotnet_CreateDatumCircle(double x, double y, double r) {
     CIRCLE *new_c = (CIRCLE *)palloc(sizeof(CIRCLE));
     new_c->center.x = x;
     new_c->center.y = y;
@@ -482,7 +482,7 @@ Datum pldotnet_createDatumCircle(double x, double y, double r) {
     return CirclePGetDatum(new_c);
 }
 
-Datum pldotnet_createDatumText(int len, char *buf) {
+Datum pldotnet_CreateDatumText(int len, char *buf) {
     const size_t new_size = VARHDRSZ + len;
     text *new_t = (text *)palloc(new_size);
 
@@ -491,7 +491,7 @@ Datum pldotnet_createDatumText(int len, char *buf) {
     PG_RETURN_TEXT_P(new_t);
 }
 
-Datum pldotnet_createDatumChar(int len, char *buf) {
+Datum pldotnet_CreateDatumChar(int len, char *buf) {
     const size_t new_size = VARHDRSZ + len;
     BpChar *new_bpc = (BpChar *)palloc(new_size);
 
@@ -500,7 +500,7 @@ Datum pldotnet_createDatumChar(int len, char *buf) {
     PG_RETURN_BPCHAR_P(new_bpc);
 }
 
-Datum pldotnet_createDatumVarChar(int len, char *buf) {
+Datum pldotnet_CreateDatumVarChar(int len, char *buf) {
     const size_t new_size = VARHDRSZ + len;
     VarChar *new_bpc = (VarChar *)palloc(new_size);
 
@@ -509,7 +509,7 @@ Datum pldotnet_createDatumVarChar(int len, char *buf) {
     PG_RETURN_VARCHAR_P(new_bpc);
 }
 
-Datum pldotnet_createDatumBytea(int len, char *buf) {
+Datum pldotnet_CreateDatumBytea(int len, char *buf) {
     const size_t new_size = VARHDRSZ + len;
     bytea *new_b = (bytea *)palloc(new_size);
 
@@ -518,7 +518,7 @@ Datum pldotnet_createDatumBytea(int len, char *buf) {
     PG_RETURN_BYTEA_P(new_b);
 }
 
-Datum pldotnet_createDatumXml(int len, char *buf) {
+Datum pldotnet_CreateDatumXml(int len, char *buf) {
     const size_t new_size = VARHDRSZ + len;
     xmltype *new_x = (xmltype *)palloc(new_size);
 
@@ -527,7 +527,7 @@ Datum pldotnet_createDatumXml(int len, char *buf) {
     PG_RETURN_XML_P(new_x);
 }
 
-Datum pldotnet_createDatumJson(int len, char *buf) {
+Datum pldotnet_CreateDatumJson(int len, char *buf) {
     const size_t new_size = VARHDRSZ + len;
     text *new_j = (text *)palloc(new_size);
 
@@ -536,26 +536,26 @@ Datum pldotnet_createDatumJson(int len, char *buf) {
     PG_RETURN_TEXT_P(new_j);
 }
 
-Datum pldotnet_createDatumDate(int date) { return DateADTGetDatum(date); }
+Datum pldotnet_CreateDatumDate(int date) { return DateADTGetDatum(date); }
 
-Datum pldotnet_createDatumTime(long time) { return TimeADTGetDatum(time); }
+Datum pldotnet_CreateDatumTime(long time) { return TimeADTGetDatum(time); }
 
-Datum pldotnet_createDatumTimeTz(long time, int zone) {
+Datum pldotnet_CreateDatumTimeTz(long time, int zone) {
     TimeTzADT *new_tz = (TimeTzADT *)palloc(sizeof(TimeTzADT));
     new_tz->time = time;
     new_tz->zone = zone;
     return TimeTzADTPGetDatum(new_tz);
 }
 
-Datum pldotnet_createDatumTimestamp(long timestamp) {
+Datum pldotnet_CreateDatumTimestamp(long timestamp) {
     return TimestampGetDatum(timestamp);
 }
 
-Datum pldotnet_createDatumTimestampTz(long timestamp) {
+Datum pldotnet_CreateDatumTimestampTz(long timestamp) {
     return TimestampTzGetDatum(timestamp);
 }
 
-Datum pldotnet_createDatumInterval(long time, int day, int month) {
+Datum pldotnet_CreateDatumInterval(long time, int day, int month) {
     Interval *new_i = (Interval *)palloc(sizeof(Interval));
     new_i->time = time;
     new_i->day = day;
@@ -563,7 +563,7 @@ Datum pldotnet_createDatumInterval(long time, int day, int month) {
     return IntervalPGetDatum(new_i);
 }
 
-Datum pldotnet_createDatumMacAddress(int length, unsigned char *bytes) {
+Datum pldotnet_CreateDatumMacAddress(int length, unsigned char *bytes) {
     macaddr *new_ma;
     macaddr8 *new_ma8;
     if (length == 6) {
@@ -588,7 +588,7 @@ Datum pldotnet_createDatumMacAddress(int length, unsigned char *bytes) {
     return Macaddr8PGetDatum(new_ma8);
 }
 
-Datum pldotnet_createDatumInet(int length, unsigned char *bytes, int netmask) {
+Datum pldotnet_CreateDatumInet(int length, unsigned char *bytes, int netmask) {
     inet *new_i = (inet *)palloc(sizeof(inet));
     SET_VARSIZE(new_i, sizeof(inet));
     if (length == 4)
@@ -605,36 +605,36 @@ Datum pldotnet_createDatumInet(int length, unsigned char *bytes, int netmask) {
     return InetPGetDatum(new_i);
 }
 
-Datum pldotnet_createDatumMoney(long value) {
+Datum pldotnet_CreateDatumMoney(long value) {
     Datum new_m = CashGetDatum(value);
     return CashGetDatum(new_m);
 }
 
-Datum pldotnet_createDatumVarBit(int len, bits8 *bytes) {
+Datum pldotnet_CreateDatumVarBit(int len, bits8 *dat) {
     size_t size = VARBITTOTALLEN(len);
     VarBit *new_vb = (VarBit *)palloc(size);
     SET_VARSIZE(new_vb, size);
     new_vb->bit_len = len;
     for (int i = 0; i < len; i++)
-        new_vb->bit_dat[i] = bytes[i];
+        new_vb->bit_dat[i] = dat[i];
     return VarBitPGetDatum(new_vb);
 }
 
-Datum pldotnet_createDatumUuid(unsigned char *data) {
+Datum pldotnet_CreateDatumUuid(unsigned char *data) {
     pg_uuid_t *new_uuid = (pg_uuid_t *)palloc(sizeof(pg_uuid_t));
     for (int i = 0; i < 16; i++)
         new_uuid->data[i] = data[i];
     return UUIDPGetDatum(new_uuid);
 }
 
-Datum pldotnet_createEmptyDatumRange(Oid rangetypid) {
+Datum pldotnet_CreateEmptyDatumRange(Oid rangeTypeId) {
     // return an empty range for the oid
     size_t len = sizeof(RangeType) + sizeof(char);  // header plus flag
     RangeType *retval = (RangeType *)palloc(len);
     char *flag_ptr = (char *)retval;
 
     SET_VARSIZE(retval, len);
-    retval->rangetypid = rangetypid;
+    retval->rangeTypeId = rangeTypeId;
     flag_ptr[len - 1] = RANGE_EMPTY;
 
 #if PG_VERSION_NUM >= 110000
@@ -644,25 +644,25 @@ Datum pldotnet_createEmptyDatumRange(Oid rangetypid) {
 #endif
 }
 
-Datum pldotnet_createDatumRange(Oid rt_oid, Datum lower_datum,
-                                bool lower_infinite, bool lower_inclusive,
-                                Datum upper_datum, bool upper_infinite,
-                                bool upper_inclusive) {
+Datum pldotnet_CreateDatumRange(Oid rtOid, Datum lowerDatum,
+                                bool lowerInfinite, bool lowerInclusive,
+                                Datum upperDatum, bool upperInfinite,
+                                bool upperInclusive) {
     TypeCacheEntry *typcache;
     RangeBound lower;
     RangeBound upper;
 
-    lower.val = lower_datum;
-    lower.infinite = lower_infinite;
-    lower.inclusive = lower_inclusive;
+    lower.val = lowerDatum;
+    lower.infinite = lowerInfinite;
+    lower.inclusive = lowerInclusive;
     lower.lower = 1;
 
-    upper.val = upper_datum;
-    upper.infinite = upper_infinite;
-    upper.inclusive = upper_inclusive;
+    upper.val = upperDatum;
+    upper.infinite = upperInfinite;
+    upper.inclusive = upperInclusive;
     upper.lower = 0;
 
-    typcache = lookup_type_cache(rt_oid, TYPECACHE_RANGE_INFO);
+    typcache = lookup_type_cache(rtOid, TYPECACHE_RANGE_INFO);
 
 #if PG_VERSION_NUM >= 110000
     PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
@@ -671,9 +671,9 @@ Datum pldotnet_createDatumRange(Oid rt_oid, Datum lower_datum,
 #endif
 }
 
-Datum pldotnet_createDatumArray(int element_id, int dimNumber, int *dimLengths,
+Datum pldotnet_CreateDatumArray(int elementId, int dimNumber, int *dimLengths,
                                 Datum *datums, bool *nulls) {
-    Oid element_type = (Oid)element_id;
+    Oid element_type = (Oid)elementId;
     ArrayType *at;
     int16 typlen;
     bool typbyval;
@@ -692,4 +692,4 @@ Datum pldotnet_createDatumArray(int element_id, int dimNumber, int *dimLengths,
     PG_RETURN_ARRAYTYPE_P(at);
 }
 
-Datum pldotnet_createDatumVoid(void) { PG_RETURN_VOID(); }
+Datum pldotnet_CreateDatumVoid(void) { PG_RETURN_VOID(); }

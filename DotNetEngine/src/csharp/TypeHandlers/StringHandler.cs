@@ -40,59 +40,59 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumTextAttributes().
+        /// See ::pldotnet_GetDatumTextAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumTextAttributes(IntPtr datum, ref int len, ref byte* buf);
+        public static extern unsafe void pldotnet_GetDatumTextAttributes(IntPtr datum, ref int len, ref byte* buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumText().
+        /// See ::pldotnet_CreateDatumText().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumText(int len, byte[] buf);
+        public static extern IntPtr pldotnet_CreateDatumText(int len, byte[] buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumCharAttributes().
+        /// See ::pldotnet_GetDatumCharAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumCharAttributes(IntPtr datum, ref int len, ref byte* buf);
+        public static extern unsafe void pldotnet_GetDatumCharAttributes(IntPtr datum, ref int len, ref byte* buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumChar().
+        /// See ::pldotnet_CreateDatumChar().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumChar(int len, byte[] buf);
+        public static extern IntPtr pldotnet_CreateDatumChar(int len, byte[] buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumVarCharAttributes().
+        /// See ::pldotnet_GetDatumVarCharAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumVarCharAttributes(IntPtr datum, ref int len, ref byte* buf);
+        public static extern unsafe void pldotnet_GetDatumVarCharAttributes(IntPtr datum, ref int len, ref byte* buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumVarChar().
+        /// See ::pldotnet_CreateDatumVarChar().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumVarChar(int len, byte[] buf);
+        public static extern IntPtr pldotnet_CreateDatumVarChar(int len, byte[] buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumXmlAttributes().
+        /// See ::pldotnet_GetDatumXmlAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumXmlAttributes(IntPtr datum, ref int len, ref byte* buf);
+        public static extern unsafe void pldotnet_GetDatumXmlAttributes(IntPtr datum, ref int len, ref byte* buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumXml().
+        /// See ::pldotnet_CreateDatumXml().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumXml(int len, byte[] buf);
+        public static extern IntPtr pldotnet_CreateDatumXml(int len, byte[] buf);
 
         /// <inheritdoc />
         public override unsafe string InputValue(IntPtr datum)
@@ -102,16 +102,16 @@ namespace PlDotNET.Handler
             switch ((int)this.ElementOID)
             {
                 case (int)OID.TEXTOID:
-                    pldotnet_getDatumTextAttributes(datum, ref strlen, ref str_p);
+                    pldotnet_GetDatumTextAttributes(datum, ref strlen, ref str_p);
                     break;
                 case (int)OID.BPCHAROID:
-                    pldotnet_getDatumCharAttributes(datum, ref strlen, ref str_p);
+                    pldotnet_GetDatumCharAttributes(datum, ref strlen, ref str_p);
                     break;
                 case (int)OID.VARCHAROID:
-                    pldotnet_getDatumVarCharAttributes(datum, ref strlen, ref str_p);
+                    pldotnet_GetDatumVarCharAttributes(datum, ref strlen, ref str_p);
                     break;
                 case (int)OID.XMLOID:
-                    pldotnet_getDatumXmlAttributes(datum, ref strlen, ref str_p);
+                    pldotnet_GetDatumXmlAttributes(datum, ref strlen, ref str_p);
                     break;
                 default:
                     throw new NotImplementedException($"StringConstructors doesn't support {(OID)this.ElementOID}");
@@ -128,10 +128,10 @@ namespace PlDotNET.Handler
             int len = encodedBytes.Length;
             return (int)this.ElementOID switch
             {
-                (int)OID.TEXTOID => pldotnet_createDatumText(len, encodedBytes),
-                (int)OID.BPCHAROID => pldotnet_createDatumChar(len, encodedBytes),
-                (int)OID.VARCHAROID => pldotnet_createDatumVarChar(len, encodedBytes),
-                (int)OID.XMLOID => pldotnet_createDatumXml(len, encodedBytes),
+                (int)OID.TEXTOID => pldotnet_CreateDatumText(len, encodedBytes),
+                (int)OID.BPCHAROID => pldotnet_CreateDatumChar(len, encodedBytes),
+                (int)OID.VARCHAROID => pldotnet_CreateDatumVarChar(len, encodedBytes),
+                (int)OID.XMLOID => pldotnet_CreateDatumXml(len, encodedBytes),
                 _ => throw new NotImplementedException($"StringConstructors doesn't support {(OID)this.ElementOID}"),
             };
         }

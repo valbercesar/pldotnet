@@ -42,17 +42,17 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumMoneyAttributes().
+        /// See ::pldotnet_GetDatumMoneyAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumMoneyAttributes(IntPtr datum, ref long value);
+        public static extern void pldotnet_GetDatumMoneyAttributes(IntPtr datum, ref long value);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumMoney().
+        /// See ::pldotnet_CreateDatumMoney().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumMoney(long value);
+        public static extern IntPtr pldotnet_CreateDatumMoney(long value);
 
         /// <summary>
         /// Checks the limits of the decimal value before converting it into PostgreSQL money data type.
@@ -69,7 +69,7 @@ namespace PlDotNET.Handler
         public override decimal InputValue(IntPtr datum)
         {
             long value = 0;
-            pldotnet_getDatumMoneyAttributes(datum, ref value);
+            pldotnet_GetDatumMoneyAttributes(datum, ref value);
             decimal datumValue = new (value);
             return datumValue / 100.0M;
         }
@@ -78,7 +78,7 @@ namespace PlDotNET.Handler
         public override IntPtr OutputValue(decimal value)
         {
             CheckLimits(value);
-            return pldotnet_createDatumMoney(decimal.ToInt64(Math.Round(100.0M * value)));
+            return pldotnet_CreateDatumMoney(decimal.ToInt64(Math.Round(100.0M * value)));
         }
     }
 }

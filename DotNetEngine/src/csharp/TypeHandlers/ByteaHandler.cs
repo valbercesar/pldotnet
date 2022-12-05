@@ -45,24 +45,24 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumByteaAttributes().
+        /// See ::pldotnet_GetDatumByteaAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumByteaAttributes(IntPtr datum, ref int len, ref byte* buf);
+        public static extern unsafe void pldotnet_GetDatumByteaAttributes(IntPtr datum, ref int len, ref byte* buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumBytea().
+        /// See ::pldotnet_CreateDatumBytea().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumBytea(int len, byte[] buf);
+        public static extern IntPtr pldotnet_CreateDatumBytea(int len, byte[] buf);
 
         /// <inheritdoc />
         public override unsafe byte[] InputValue(IntPtr datum)
         {
             int len = 0;
             byte* buf = null;
-            pldotnet_getDatumByteaAttributes(datum, ref len, ref buf);
+            pldotnet_GetDatumByteaAttributes(datum, ref len, ref buf);
             ReadOnlySpan<byte> nativeSpan = new (buf, len);
             return nativeSpan.ToArray();
         }
@@ -70,7 +70,7 @@ namespace PlDotNET.Handler
         /// <inheritdoc />
         public override IntPtr OutputValue(byte[] value)
         {
-            return pldotnet_createDatumBytea(value.Length, value);
+            return pldotnet_CreateDatumBytea(value.Length, value);
         }
     }
 }

@@ -48,11 +48,11 @@ namespace PlDotNET.Handler
             byte upperLower, lowerLower;
             T upper, lower;
 
-            RangeConstructors.pldotnet_getDatumRangeAttributes(datum, &isEmpty, &lower_range, &upperDange);
+            RangeConstructors.pldotnet_GetDatumRangeAttributes(datum, &isEmpty, &lower_range, &upperDange);
 
-            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(
+            RangeConstructors.pldotnet_GetDatumRangeBoundAttributes(
                 upperDange, &upperDatum, &upperInfinite, &upperInclusive, &upperLower);
-            RangeConstructors.pldotnet_getDatumRangeBoundAttributes(
+            RangeConstructors.pldotnet_GetDatumRangeBoundAttributes(
                 lower_range, &lowerDatum, &lowerInfinite, &lowerInclusive, &lowerLower);
 
             // TODO: check upperLower and lowerLower
@@ -73,7 +73,7 @@ namespace PlDotNET.Handler
         {
             if (value.IsEmpty)
             {
-                return RangeConstructors.pldotnet_createEmptyDatumRange(this.ElementOID);
+                return RangeConstructors.pldotnet_CreateEmptyDatumRange(this.ElementOID);
             }
 
             byte upperInfinite = (byte)(value.UpperBoundInfinite ? 1 : 0);
@@ -88,7 +88,7 @@ namespace PlDotNET.Handler
             // TODO: now, actually construct the range datum down in C
             // - Construct the two RangeBound objects for upper and lower
             // - Combine them to make a Range
-            return RangeConstructors.pldotnet_createDatumRange(
+            return RangeConstructors.pldotnet_CreateDatumRange(
                 this.ElementOID,
                 lowerDatum,
                 lowerInfinite,
@@ -110,10 +110,10 @@ namespace PlDotNET.Handler
     {
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumRangeAttributes().
+        /// See ::pldotnet_GetDatumRangeAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static unsafe extern void pldotnet_getDatumRangeAttributes(
+        public static unsafe extern void pldotnet_GetDatumRangeAttributes(
                 IntPtr inputDatum,
                 byte* isEmpty,
                 IntPtr* lowerRange,
@@ -121,10 +121,10 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumRangeBoundAttributes().
+        /// See ::pldotnet_GetDatumRangeBoundAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static unsafe extern void pldotnet_getDatumRangeBoundAttributes(
+        public static unsafe extern void pldotnet_GetDatumRangeBoundAttributes(
                 IntPtr inputRange,
                 IntPtr* rangeDatum,
                 byte* infinite,
@@ -133,10 +133,10 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumRange().
+        /// See ::pldotnet_CreateDatumRange().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static unsafe extern IntPtr pldotnet_createDatumRange(
+        public static unsafe extern IntPtr pldotnet_CreateDatumRange(
             OID rtOid,
             IntPtr lowerDatum,
             byte lowerInfinite,
@@ -147,10 +147,10 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createEmptyDatumRange().
+        /// See ::pldotnet_CreateEmptyDatumRange().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static unsafe extern IntPtr pldotnet_createEmptyDatumRange(OID rangeTypeId);
+        public static unsafe extern IntPtr pldotnet_CreateEmptyDatumRange(OID rangeTypeId);
     }
 
     /// <summary>

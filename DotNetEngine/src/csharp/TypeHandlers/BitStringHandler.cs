@@ -43,17 +43,17 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumVarBitAttributes().
+        /// See ::pldotnet_GetDatumVarBitAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumVarBitAttributes(IntPtr datum, ref int len, ref byte* dat);
+        public static extern unsafe void pldotnet_GetDatumVarBitAttributes(IntPtr datum, ref int len, ref byte* dat);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumVarBit().
+        /// See ::pldotnet_CreateDatumVarBit().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumVarBit(int len, byte[] dat);
+        public static extern IntPtr pldotnet_CreateDatumVarBit(int len, byte[] dat);
 
         /// <summary>
         /// Creates a BitArray object from a PostgreSQL bit string data type.
@@ -62,7 +62,7 @@ namespace PlDotNET.Handler
         {
             int bitLen = 0;
             byte* bitDat = null;
-            pldotnet_getDatumVarBitAttributes(datum, ref bitLen, ref bitDat);
+            pldotnet_GetDatumVarBitAttributes(datum, ref bitLen, ref bitDat);
 
             int byteLen = (bitLen / 8) + ((bitLen % 8) > 0 ? 1 : 0);
             byte[] bytes = new byte[byteLen];
@@ -117,7 +117,7 @@ namespace PlDotNET.Handler
             byte[] bytes = new byte[byteLen];
             auxiliar.CopyTo(bytes, 0);
 
-            return pldotnet_createDatumVarBit(bitLen, bytes);
+            return pldotnet_CreateDatumVarBit(bitLen, bytes);
         }
 
         /// <inheritdoc />

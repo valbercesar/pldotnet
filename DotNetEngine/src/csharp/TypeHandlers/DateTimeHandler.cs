@@ -57,23 +57,23 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumDateAttributes().
+        /// See ::pldotnet_GetDatumDateAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumDateAttributes(IntPtr datum, ref int date);
+        public static extern void pldotnet_GetDatumDateAttributes(IntPtr datum, ref int date);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumDate().
+        /// See ::pldotnet_CreateDatumDate().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumDate(int date);
+        public static extern IntPtr pldotnet_CreateDatumDate(int date);
 
         /// <inheritdoc />
         public override DateOnly InputValue(IntPtr datum)
         {
             int date = 0;
-            pldotnet_getDatumDateAttributes(datum, ref date);
+            pldotnet_GetDatumDateAttributes(datum, ref date);
             return date switch
             {
                 int.MaxValue => ConfigDateTime.DisableDateTimeInfinityConversions ?
@@ -87,7 +87,7 @@ namespace PlDotNET.Handler
         /// <inheritdoc />
         public override IntPtr OutputValue(DateOnly value)
         {
-            return pldotnet_createDatumDate(value.DayNumber - 730119);
+            return pldotnet_CreateDatumDate(value.DayNumber - 730119);
         }
     }
 
@@ -108,30 +108,30 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumTimeAttributes().
+        /// See ::pldotnet_GetDatumTimeAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimeAttributes(IntPtr datum, ref long time);
+        public static extern void pldotnet_GetDatumTimeAttributes(IntPtr datum, ref long time);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumTime().
+        /// See ::pldotnet_CreateDatumTime().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTime(long time);
+        public static extern IntPtr pldotnet_CreateDatumTime(long time);
 
         /// <inheritdoc />
         public override TimeOnly InputValue(IntPtr datum)
         {
             long time = 0;
-            pldotnet_getDatumTimeAttributes(datum, ref time);
+            pldotnet_GetDatumTimeAttributes(datum, ref time);
             return new TimeOnly(time * 10);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(TimeOnly value)
         {
-            return pldotnet_createDatumTime(value.Ticks / 10);
+            return pldotnet_CreateDatumTime(value.Ticks / 10);
         }
     }
 
@@ -152,31 +152,31 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumTimeTzAttributes().
+        /// See ::pldotnet_GetDatumTimeTzAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimeTzAttributes(IntPtr datum, ref long time, ref int zone);
+        public static extern void pldotnet_GetDatumTimeTzAttributes(IntPtr datum, ref long time, ref int zone);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumTimeTz().
+        /// See ::pldotnet_CreateDatumTimeTz().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTimeTz(long time, int zone);
+        public static extern IntPtr pldotnet_CreateDatumTimeTz(long time, int zone);
 
         /// <inheritdoc />
         public override DateTimeOffset InputValue(IntPtr datum)
         {
             long time = 0;
             int zone = 0;
-            pldotnet_getDatumTimeTzAttributes(datum, ref time, ref zone);
+            pldotnet_GetDatumTimeTzAttributes(datum, ref time, ref zone);
             return new DateTimeOffset((time * 10) + TimeSpan.TicksPerDay, new TimeSpan(0, 0, -zone));
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(DateTimeOffset value)
         {
-            return pldotnet_createDatumTimeTz(value.TimeOfDay.Ticks / 10, -(int)(value.Offset.Ticks / TimeSpan.TicksPerSecond));
+            return pldotnet_CreateDatumTimeTz(value.TimeOfDay.Ticks / 10, -(int)(value.Offset.Ticks / TimeSpan.TicksPerSecond));
         }
     }
 
@@ -197,17 +197,17 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumTimestampAttributes().
+        /// See ::pldotnet_GetDatumTimestampAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimestampAttributes(IntPtr datum, ref long timestamp);
+        public static extern void pldotnet_GetDatumTimestampAttributes(IntPtr datum, ref long timestamp);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumTimestamp().
+        /// See ::pldotnet_CreateDatumTimestamp().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTimestamp(long timestamp);
+        public static extern IntPtr pldotnet_CreateDatumTimestamp(long timestamp);
 
         /// <summary>
         /// Creates the DateTime object according to the provided parameters.
@@ -233,7 +233,7 @@ namespace PlDotNET.Handler
         public override DateTime InputValue(IntPtr datum)
         {
             long timestamp = 0;
-            pldotnet_getDatumTimestampAttributes(datum, ref timestamp);
+            pldotnet_GetDatumTimestampAttributes(datum, ref timestamp);
             return CreateDateTimeObject(timestamp, DateTimeKind.Unspecified);
         }
 
@@ -244,16 +244,16 @@ namespace PlDotNET.Handler
             {
                 if (value == DateTime.MaxValue)
                 {
-                    return pldotnet_createDatumTimestamp(long.MaxValue);
+                    return pldotnet_CreateDatumTimestamp(long.MaxValue);
                 }
 
                 if (value == DateTime.MinValue)
                 {
-                    return pldotnet_createDatumTimestamp(long.MinValue);
+                    return pldotnet_CreateDatumTimestamp(long.MinValue);
                 }
             }
 
-            return pldotnet_createDatumTimestamp((long)((value.Ticks - ConfigDateTime.PostgresTimestampOffsetTicks) / 10));
+            return pldotnet_CreateDatumTimestamp((long)((value.Ticks - ConfigDateTime.PostgresTimestampOffsetTicks) / 10));
         }
     }
 
@@ -274,23 +274,23 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumTimestampTzAttributes().
+        /// See ::pldotnet_GetDatumTimestampTzAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumTimestampTzAttributes(IntPtr datum, ref long timestamp);
+        public static extern void pldotnet_GetDatumTimestampTzAttributes(IntPtr datum, ref long timestamp);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumTimestampTz().
+        /// See ::pldotnet_CreateDatumTimestampTz().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumTimestampTz(long timestamp);
+        public static extern IntPtr pldotnet_CreateDatumTimestampTz(long timestamp);
 
         /// <inheritdoc />
         public override DateTime InputValue(IntPtr datum)
         {
             long timestamp = 0;
-            pldotnet_getDatumTimestampTzAttributes(datum, ref timestamp);
+            pldotnet_GetDatumTimestampTzAttributes(datum, ref timestamp);
             DateTime dateTime = TimestampHandler.CreateDateTimeObject(timestamp, DateTimeKind.Utc);
             return ConfigDateTime.LegacyTimestampBehavior && (ConfigDateTime.DisableDateTimeInfinityConversions || (dateTime != DateTime.MaxValue && dateTime != DateTime.MinValue))
             ? dateTime.ToLocalTime()
@@ -323,16 +323,16 @@ namespace PlDotNET.Handler
             {
                 if (value == DateTime.MaxValue)
                 {
-                    return pldotnet_createDatumTimestampTz(long.MaxValue);
+                    return pldotnet_CreateDatumTimestampTz(long.MaxValue);
                 }
 
                 if (value == DateTime.MinValue)
                 {
-                    return pldotnet_createDatumTimestampTz(long.MinValue);
+                    return pldotnet_CreateDatumTimestampTz(long.MinValue);
                 }
             }
 
-            return pldotnet_createDatumTimestampTz((long)((value.Ticks - ConfigDateTime.PostgresTimestampOffsetTicks) / 10));
+            return pldotnet_CreateDatumTimestampTz((long)((value.Ticks - ConfigDateTime.PostgresTimestampOffsetTicks) / 10));
         }
     }
 
@@ -353,31 +353,31 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumIntervalAttributes().
+        /// See ::pldotnet_GetDatumIntervalAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumIntervalAttributes(IntPtr datum, ref long time, ref int day, ref int month);
+        public static extern void pldotnet_GetDatumIntervalAttributes(IntPtr datum, ref long time, ref int day, ref int month);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumInterval().
+        /// See ::pldotnet_CreateDatumInterval().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInterval(long time, int day, int month);
+        public static extern IntPtr pldotnet_CreateDatumInterval(long time, int day, int month);
 
         /// <inheritdoc />
         public override NpgsqlInterval InputValue(IntPtr datum)
         {
             long time = 0;
             int day = 0, month = 0;
-            pldotnet_getDatumIntervalAttributes(datum, ref time, ref day, ref month);
+            pldotnet_GetDatumIntervalAttributes(datum, ref time, ref day, ref month);
             return new NpgsqlInterval(month, day, time);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(NpgsqlInterval value)
         {
-            return pldotnet_createDatumInterval(value.Time, value.Days, value.Months);
+            return pldotnet_CreateDatumInterval(value.Time, value.Days, value.Months);
         }
     }
 }

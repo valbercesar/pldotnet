@@ -202,12 +202,12 @@ extern void pldotnet_Elog(int level, char *message);
  * Datum of the user function.
  *
  * @param value a Datum object.
- * @param isnull whether the Datum is null.
- * @param native_result a "pldotnet_Result" object created on
+ * @param isNull whether the Datum is null.
+ * @param nativeResult a "pldotnet_Result" object created on
  * "pldotnet_CompileAndRunUserFunction" and contains the Datum that will be
  * returned.
  */
-extern void pldotnet_SetDatumResult(void *value, bool isnull,
-                                    void *native_result);
+extern void pldotnet_SetDatumResult(void *value, bool isNull,
+                                    void *nativeResult);
 
 #endif  // PLDOTNET_MAIN_H_

@@ -43,30 +43,30 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumPointAttributes().
+        /// See ::pldotnet_GetDatumPointAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPointAttributes(IntPtr datum, ref double x, ref double y);
+        public static extern void pldotnet_GetDatumPointAttributes(IntPtr datum, ref double x, ref double y);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumPoint().
+        /// See ::pldotnet_CreateDatumPoint().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumPoint(double x, double y);
+        public static extern IntPtr pldotnet_CreateDatumPoint(double x, double y);
 
         /// <inheritdoc />
         public override NpgsqlPoint InputValue(IntPtr datum)
         {
             double x = 0.0, y = 0.0;
-            pldotnet_getDatumPointAttributes(datum, ref x, ref y);
+            pldotnet_GetDatumPointAttributes(datum, ref x, ref y);
             return new NpgsqlPoint(x, y);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(NpgsqlPoint value)
         {
-            return pldotnet_createDatumPoint(value.X, value.Y);
+            return pldotnet_CreateDatumPoint(value.X, value.Y);
         }
     }
 
@@ -87,30 +87,30 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumLineAttributes().
+        /// See ::pldotnet_GetDatumLineAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumLineAttributes(IntPtr datum, ref double a, ref double b, ref double c);
+        public static extern void pldotnet_GetDatumLineAttributes(IntPtr datum, ref double a, ref double b, ref double c);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumLine().
+        /// See ::pldotnet_CreateDatumLine().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumLine(double a, double b, double c);
+        public static extern IntPtr pldotnet_CreateDatumLine(double a, double b, double c);
 
         /// <inheritdoc />
         public override NpgsqlLine InputValue(IntPtr datum)
         {
             double a = 0.0, b = 0.0, c = 0.0;
-            pldotnet_getDatumLineAttributes(datum, ref a, ref b, ref c);
+            pldotnet_GetDatumLineAttributes(datum, ref a, ref b, ref c);
             return new NpgsqlLine(a, b, c);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(NpgsqlLine value)
         {
-            return pldotnet_createDatumLine(value.A, value.B, value.C);
+            return pldotnet_CreateDatumLine(value.A, value.B, value.C);
         }
     }
 
@@ -131,30 +131,30 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumLineSegmentAttributes().
+        /// See ::pldotnet_GetDatumLineSegmentAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumLineSegmentAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
+        public static extern void pldotnet_GetDatumLineSegmentAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumLineSegment().
+        /// See ::pldotnet_CreateDatumLineSegment().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumLineSegment(double x1, double y1, double x2, double y2);
+        public static extern IntPtr pldotnet_CreateDatumLineSegment(double x1, double y1, double x2, double y2);
 
         /// <inheritdoc />
         public override NpgsqlLSeg InputValue(IntPtr datum)
         {
             double x1 = 0.0, y1 = 0.0, x2 = 0.0, y2 = 0.0;
-            pldotnet_getDatumLineSegmentAttributes(datum, ref x1, ref y1, ref x2, ref y2);
+            pldotnet_GetDatumLineSegmentAttributes(datum, ref x1, ref y1, ref x2, ref y2);
             return new NpgsqlLSeg(x1, y1, x2, y2);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(NpgsqlLSeg value)
         {
-            return pldotnet_createDatumLineSegment(value.Start.X, value.Start.Y, value.End.X, value.End.Y);
+            return pldotnet_CreateDatumLineSegment(value.Start.X, value.Start.Y, value.End.X, value.End.Y);
         }
     }
 
@@ -175,23 +175,23 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumBoxAttributes().
+        /// See ::pldotnet_GetDatumBoxAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumBoxAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
+        public static extern void pldotnet_GetDatumBoxAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumBox().
+        /// See ::pldotnet_CreateDatumBox().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumBox(double x1, double y1, double x2, double y2);
+        public static extern IntPtr pldotnet_CreateDatumBox(double x1, double y1, double x2, double y2);
 
         /// <inheritdoc />
         public override NpgsqlBox InputValue(IntPtr datum)
         {
             double x1 = 0.0, y1 = 0.0, x2 = 0.0, y2 = 0.0;
-            pldotnet_getDatumBoxAttributes(datum, ref x1, ref y1, ref x2, ref y2);
+            pldotnet_GetDatumBoxAttributes(datum, ref x1, ref y1, ref x2, ref y2);
             NpgsqlPoint upperRight = new (x1, y1);
             NpgsqlPoint lowerLeft = new (x2, y2);
             return new NpgsqlBox(upperRight, lowerLeft);
@@ -204,7 +204,7 @@ namespace PlDotNET.Handler
             var y1 = Math.Max(value.UpperRight.Y, value.LowerLeft.Y);
             var x2 = Math.Min(value.UpperRight.X, value.LowerLeft.X);
             var y2 = Math.Min(value.UpperRight.Y, value.LowerLeft.Y);
-            return pldotnet_createDatumBox(x1, y1, x2, y2);
+            return pldotnet_CreateDatumBox(x1, y1, x2, y2);
         }
     }
 
@@ -225,35 +225,35 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumPathAttributes().
+        /// See ::pldotnet_GetDatumPathAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPathAttributes(IntPtr datum, ref int pointNumber, ref int closed);
+        public static extern void pldotnet_GetDatumPathAttributes(IntPtr datum, ref int pointNumber, ref int closed);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumPathCoordinates().
+        /// See ::pldotnet_GetDatumPathCoordinates().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPathCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
+        public static extern void pldotnet_GetDatumPathCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumPath().
+        /// See ::pldotnet_CreateDatumPath().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumPath(int npts, int closed, double[] xCoordinates, double[] yCoordinates);
+        public static extern IntPtr pldotnet_CreateDatumPath(int npts, int closed, double[] xCoordinates, double[] yCoordinates);
 
         /// <inheritdoc />
         public override NpgsqlPath InputValue(IntPtr datum)
         {
             int npts = 0, closed = 0;
-            pldotnet_getDatumPathAttributes(datum, ref npts, ref closed);
+            pldotnet_GetDatumPathAttributes(datum, ref npts, ref closed);
             double[] xCoordinates = new double[npts];
             double[] yCoordinates = new double[npts];
             bool open = closed == 0;
             NpgsqlPath origPath = new (npts, open);
-            pldotnet_getDatumPathCoordinates(datum, xCoordinates, yCoordinates);
+            pldotnet_GetDatumPathCoordinates(datum, xCoordinates, yCoordinates);
             for (int i = 0; i < npts; i++)
             {
                 origPath.Add(new NpgsqlPoint(xCoordinates[i], yCoordinates[i]));
@@ -276,7 +276,7 @@ namespace PlDotNET.Handler
                 yCoordinates[i] = value[i].Y;
             }
 
-            return pldotnet_createDatumPath(npts, closed, xCoordinates, yCoordinates);
+            return pldotnet_CreateDatumPath(npts, closed, xCoordinates, yCoordinates);
         }
     }
 
@@ -297,34 +297,34 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumPolygonAttributes().
+        /// See ::pldotnet_GetDatumPolygonAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPolygonAttributes(IntPtr datum, ref int pointNumber);
+        public static extern void pldotnet_GetDatumPolygonAttributes(IntPtr datum, ref int pointNumber);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumPolygonCoordinates().
+        /// See ::pldotnet_GetDatumPolygonCoordinates().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumPolygonCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
+        public static extern void pldotnet_GetDatumPolygonCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumPolygon().
+        /// See ::pldotnet_CreateDatumPolygon().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumPolygon(int npts, double[] xCoordinates, double[] yCoordinates);
+        public static extern IntPtr pldotnet_CreateDatumPolygon(int npts, double[] xCoordinates, double[] yCoordinates);
 
         /// <inheritdoc />
         public override NpgsqlPolygon InputValue(IntPtr datum)
         {
             int npts = 0;
-            pldotnet_getDatumPolygonAttributes(datum, ref npts);
+            pldotnet_GetDatumPolygonAttributes(datum, ref npts);
             double[] xCoordinates = new double[npts];
             double[] yCoordinates = new double[npts];
             NpgsqlPolygon origPolygon = new (npts);
-            pldotnet_getDatumPolygonCoordinates(datum, xCoordinates, yCoordinates);
+            pldotnet_GetDatumPolygonCoordinates(datum, xCoordinates, yCoordinates);
             for (int i = 0; i < npts; i++)
             {
                 origPolygon.Add(new NpgsqlPoint(xCoordinates[i], yCoordinates[i]));
@@ -345,7 +345,7 @@ namespace PlDotNET.Handler
                 yCoordinates[i] = value[i].Y;
             }
 
-            return pldotnet_createDatumPolygon(npts, xCoordinates, yCoordinates);
+            return pldotnet_CreateDatumPolygon(npts, xCoordinates, yCoordinates);
         }
     }
 
@@ -366,30 +366,30 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumCircleAttributes().
+        /// See ::pldotnet_GetDatumCircleAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumCircleAttributes(IntPtr datum, ref double x, ref double y, ref double r);
+        public static extern void pldotnet_GetDatumCircleAttributes(IntPtr datum, ref double x, ref double y, ref double r);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumCircle().
+        /// See ::pldotnet_CreateDatumCircle().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumCircle(double x, double y, double r);
+        public static extern IntPtr pldotnet_CreateDatumCircle(double x, double y, double r);
 
         /// <inheritdoc />
         public override NpgsqlCircle InputValue(IntPtr datum)
         {
             double x = 0.0, y = 0.0, r = 0.0;
-            pldotnet_getDatumCircleAttributes(datum, ref x, ref y, ref r);
+            pldotnet_GetDatumCircleAttributes(datum, ref x, ref y, ref r);
             return new NpgsqlCircle(x, y, r);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(NpgsqlCircle value)
         {
-            return pldotnet_createDatumCircle(value.Center.X, value.Center.Y, value.Radius);
+            return pldotnet_CreateDatumCircle(value.Center.X, value.Center.Y, value.Radius);
         }
     }
 }

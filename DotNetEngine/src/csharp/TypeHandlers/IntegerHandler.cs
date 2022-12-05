@@ -42,28 +42,28 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getInt16().
+        /// See ::pldotnet_GetInt16().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern short pldotnet_getInt16(IntPtr datum);
+        public static extern short pldotnet_GetInt16(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumInt16().
+        /// See ::pldotnet_CreateDatumInt16().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInt16(short value);
+        public static extern IntPtr pldotnet_CreateDatumInt16(short value);
 
         /// <inheritdoc />
         public override short InputValue(IntPtr datum)
         {
-            return pldotnet_getInt16(datum);
+            return pldotnet_GetInt16(datum);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(short value)
         {
-            return pldotnet_createDatumInt16(value);
+            return pldotnet_CreateDatumInt16(value);
         }
     }
 
@@ -84,28 +84,28 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getInt32().
+        /// See ::pldotnet_GetInt32().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int pldotnet_getInt32(IntPtr datum);
+        public static extern int pldotnet_GetInt32(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumInt32().
+        /// See ::pldotnet_CreateDatumInt32().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInt32(int value);
+        public static extern IntPtr pldotnet_CreateDatumInt32(int value);
 
         /// <inheritdoc />
         public override int InputValue(IntPtr datum)
         {
-            return pldotnet_getInt32(datum);
+            return pldotnet_GetInt32(datum);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(int value)
         {
-            return pldotnet_createDatumInt32(value);
+            return pldotnet_CreateDatumInt32(value);
         }
     }
 
@@ -126,28 +126,28 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getInt64().
+        /// See ::pldotnet_GetInt64().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern long pldotnet_getInt64(IntPtr datum);
+        public static extern long pldotnet_GetInt64(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumInt64().
+        /// See ::pldotnet_CreateDatumInt64().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumInt64(long value);
+        public static extern IntPtr pldotnet_CreateDatumInt64(long value);
 
         /// <inheritdoc />
         public override long InputValue(IntPtr datum)
         {
-            return pldotnet_getInt64(datum);
+            return pldotnet_GetInt64(datum);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(long value)
         {
-            return pldotnet_createDatumInt64(value);
+            return pldotnet_CreateDatumInt64(value);
         }
     }
 }

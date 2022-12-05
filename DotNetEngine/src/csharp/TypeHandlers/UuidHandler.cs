@@ -42,23 +42,23 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumUuidAttributes().
+        /// See ::pldotnet_GetDatumUuidAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_getDatumUuidAttributes(IntPtr datum, byte[] data);
+        public static extern void pldotnet_GetDatumUuidAttributes(IntPtr datum, byte[] data);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumUuid().
+        /// See ::pldotnet_CreateDatumUuid().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumUuid(byte[] data);
+        public static extern IntPtr pldotnet_CreateDatumUuid(byte[] data);
 
         /// <inheritdoc />
         public override Guid InputValue(IntPtr datum)
         {
             byte[] data = new byte[16];
-            pldotnet_getDatumUuidAttributes(datum, data);
+            pldotnet_GetDatumUuidAttributes(datum, data);
 
             byte[] data1 = data[0..4];
             byte[] data2 = data[4..6];
@@ -91,7 +91,7 @@ namespace PlDotNET.Handler
             data3.CopyTo(psql_data, 6);
             data[8..].CopyTo(psql_data, 8);
 
-            return pldotnet_createDatumUuid(psql_data);
+            return pldotnet_CreateDatumUuid(psql_data);
         }
     }
 }

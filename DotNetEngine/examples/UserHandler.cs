@@ -10,7 +10,7 @@ using PlDotNET.Handler;
 
 /// <summary>
 /// This namespace contains the classes dynamically created by PL.NET.
-/// </summary> 
+/// </summary>
 namespace PlDotNET.UserSpace
 {
     /// <summary>
@@ -36,16 +36,16 @@ namespace PlDotNET.UserSpace
         /// <summary>
         /// C function declared in pldotnet_common.h to set the datum result.
         /// See ::pldotnet_SetDatumResult().
-        /// </summary> 
+        /// </summary>
         [DllImport("/usr/lib/postgresql/14/lib/pldotnet.so")]
-        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isnull, IntPtr nativeResult);
+        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isNull, IntPtr nativeResult);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h to return a void datum.
-        /// See ::pldotnet_createDatumVoid().
-        /// </summary> 
+        /// See ::pldotnet_CreateDatumVoid().
+        /// </summary>
         [DllImport("/usr/lib/postgresql/14/lib/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumVoid();
+        public static extern IntPtr pldotnet_CreateDatumVoid();
 
         /// <summary>
         /// The generated CallUserFunction for the SQL function.

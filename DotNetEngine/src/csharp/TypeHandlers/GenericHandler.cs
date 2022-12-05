@@ -110,7 +110,7 @@ namespace PlDotNET.Handler
 #nullable enable
         public IntPtr OutputNullableArray(Array? value)
         {
-            return value == null ? IntHandler.pldotnet_createDatumInt32(0) : this.OutputArray((Array)value);
+            return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputArray((Array)value);
         }
 #nullable disable
 
@@ -127,7 +127,7 @@ namespace PlDotNET.Handler
             int[] rawDims = new int[ArrayHandler.Maxdim];
             byte* nullmap = null;
             int typeId = 0;
-            ArrayHandler.pldotnet_getArrayAttributes(datum, ref typeId, ref ndims, rawDims, ref nullmap);
+            ArrayHandler.pldotnet_GetArrayAttributes(datum, ref typeId, ref ndims, rawDims, ref nullmap);
 
             int[] dims = rawDims[..ndims];
             int nelems = 1;
@@ -137,11 +137,11 @@ namespace PlDotNET.Handler
             }
 
             IntPtr[] datums = new IntPtr[nelems];
-            int arrayRet = ArrayHandler.pldotnet_getArrayDatum(datum, datums, nelems, typeId);
+            int arrayRet = ArrayHandler.pldotnet_GetArrayDatum(datum, datums, nelems, typeId);
 
             if (arrayRet != 0)
             {
-                throw new System.Exception($"Got error from pldotnet_getArrayDatum(): {arrayRet}");
+                throw new System.Exception($"Got error from pldotnet_GetArrayDatum(): {arrayRet}");
             }
 
             var datumList = new List<IntPtr>();
@@ -197,7 +197,7 @@ namespace PlDotNET.Handler
                 datums[i] = this.OutputValue((T)flatArray.GetValue(i));
             }
 
-            return ArrayHandler.pldotnet_createDatumArray((int)this.ElementOID, dimNumber, dimLengths, datums);
+            return ArrayHandler.pldotnet_CreateDatumArray((int)this.ElementOID, dimNumber, dimLengths, datums);
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace PlDotNET.Handler
                 if (flatArray.GetValue(i) == null)
                 {
                     nulls[i] = 1;
-                    datums[i] = IntHandler.pldotnet_createDatumInt32(0);
+                    datums[i] = IntHandler.pldotnet_CreateDatumInt32(0);
                 }
                 else
                 {
@@ -250,7 +250,7 @@ namespace PlDotNET.Handler
                 }
             }
 
-            return ArrayHandler.pldotnet_createDatumArray((int)this.ElementOID, dims.Length, dims, datums, nulls);
+            return ArrayHandler.pldotnet_CreateDatumArray((int)this.ElementOID, dims.Length, dims, datums, nulls);
         }
     }
 
@@ -279,7 +279,7 @@ namespace PlDotNET.Handler
         /// </summary>
         public IntPtr OutputNullableValue(T? value)
         {
-            return value == null ? IntHandler.pldotnet_createDatumInt32(0) : this.OutputValue((T)value);
+            return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue((T)value);
         }
 #nullable disable
     }
@@ -309,7 +309,7 @@ namespace PlDotNET.Handler
         /// </summary>
         public IntPtr OutputNullableValue(T? value)
         {
-            return value == null ? IntHandler.pldotnet_createDatumInt32(0) : this.OutputValue((T)value);
+            return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue((T)value);
         }
 #nullable disable
     }

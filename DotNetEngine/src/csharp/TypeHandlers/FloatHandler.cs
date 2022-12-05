@@ -42,28 +42,28 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getFloat().
+        /// See ::pldotnet_GetFloat().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern float pldotnet_getFloat(IntPtr datum);
+        public static extern float pldotnet_GetFloat(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumFloat().
+        /// See ::pldotnet_CreateDatumFloat().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumFloat(float value);
+        public static extern IntPtr pldotnet_CreateDatumFloat(float value);
 
         /// <inheritdoc />
         public override float InputValue(IntPtr datum)
         {
-            return pldotnet_getFloat(datum);
+            return pldotnet_GetFloat(datum);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(float value)
         {
-            return pldotnet_createDatumFloat(value);
+            return pldotnet_CreateDatumFloat(value);
         }
     }
 
@@ -84,28 +84,28 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDouble().
+        /// See ::pldotnet_GetDouble().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern double pldotnet_getDouble(IntPtr datum);
+        public static extern double pldotnet_GetDouble(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumDouble().
+        /// See ::pldotnet_CreateDatumDouble().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumDouble(double value);
+        public static extern IntPtr pldotnet_CreateDatumDouble(double value);
 
         /// <inheritdoc />
         public override double InputValue(IntPtr datum)
         {
-            return pldotnet_getDouble(datum);
+            return pldotnet_GetDouble(datum);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(double value)
         {
-            return pldotnet_createDatumDouble(value);
+            return pldotnet_CreateDatumDouble(value);
         }
     }
 }

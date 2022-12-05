@@ -47,24 +47,24 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getDatumJsonAttributes().
+        /// See ::pldotnet_GetDatumJsonAttributes().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_getDatumJsonAttributes(IntPtr datum, ref int len, ref byte* buf);
+        public static extern unsafe void pldotnet_GetDatumJsonAttributes(IntPtr datum, ref int len, ref byte* buf);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumJson().
+        /// See ::pldotnet_CreateDatumJson().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumJson(int len, byte[] buf);
+        public static extern IntPtr pldotnet_CreateDatumJson(int len, byte[] buf);
 
         /// <inheritdoc />
         public override unsafe string InputValue(IntPtr datum)
         {
             int len = 0;
             byte* buf = null;
-            pldotnet_getDatumJsonAttributes(datum, ref len, ref buf);
+            pldotnet_GetDatumJsonAttributes(datum, ref len, ref buf);
             ReadOnlySpan<byte> nativeSpan = new (buf, len);
             string s1 = Utf8E.GetString(nativeSpan.ToArray(), 0, len);
             return s1;
@@ -75,7 +75,7 @@ namespace PlDotNET.Handler
         {
             byte[] encodedBytes = Utf8E.GetBytes(value);
             int len = encodedBytes.Length;
-            return pldotnet_createDatumJson(len, encodedBytes);
+            return pldotnet_CreateDatumJson(len, encodedBytes);
         }
     }
 }

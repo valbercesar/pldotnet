@@ -187,17 +187,17 @@ namespace PlDotNET
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h to return a void datum.
-        /// See ::pldotnet_createDatumVoid().
+        /// See ::pldotnet_CreateDatumVoid().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumVoid();
+        public static extern IntPtr pldotnet_CreateDatumVoid();
 
         /// <summary>
         /// C function declared in pldotnet_common.h to set the datum result.
         /// See ::pldotnet_SetDatumResult().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isnull, IntPtr nativeResult);
+        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isNull, IntPtr nativeResult);
 
         /// <summary>
         /// Returns the handler object NAME for the specified OID.

@@ -42,29 +42,29 @@ namespace PlDotNET.Handler
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_getBoolean().
+        /// See ::pldotnet_GetBoolean().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool pldotnet_getBoolean(IntPtr datum);
+        public static extern bool pldotnet_GetBoolean(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
-        /// See ::pldotnet_createDatumBoolean().
+        /// See ::pldotnet_CreateDatumBoolean().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_createDatumBoolean(bool value);
+        public static extern IntPtr pldotnet_CreateDatumBoolean(bool value);
 
         /// <inheritdoc />
         public override bool InputValue(IntPtr datum)
         {
-            return pldotnet_getBoolean(datum);
+            return pldotnet_GetBoolean(datum);
         }
 
         /// <inheritdoc />
         public override IntPtr OutputValue(bool value)
         {
-            return pldotnet_createDatumBoolean(value);
+            return pldotnet_CreateDatumBoolean(value);
         }
     }
 }
