@@ -423,7 +423,7 @@ void pldotnet_Elog(int level, char *message) {
 
 void pldotnet_SetDatumResult(void *value, bool isNull, void *nativeResult) {
     pldotnet_Result *result = (pldotnet_Result *)nativeResult;
-    result->is_null = isnull;
+    result->is_null = isNull;
     result->value = (Datum)value;
 }
 

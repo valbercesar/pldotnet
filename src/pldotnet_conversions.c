@@ -634,7 +634,7 @@ Datum pldotnet_CreateEmptyDatumRange(Oid rangeTypeId) {
     char *flag_ptr = (char *)retval;
 
     SET_VARSIZE(retval, len);
-    retval->rangeTypeId = rangeTypeId;
+    retval->rangetypid = rangeTypeId;
     flag_ptr[len - 1] = RANGE_EMPTY;
 
 #if PG_VERSION_NUM >= 110000
