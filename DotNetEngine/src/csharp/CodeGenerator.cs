@@ -84,7 +84,7 @@ namespace PlDotNET
             sb.AppendLine($"// As the SQL function named {funcName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
             sb.AppendLine("// `PL.NET` doesn't check whether any argument datum is null.");
             sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
-            sb.AppendLine("// to always check whether the datum is null.\n");
+            sb.AppendLine("// to always check whether the datum is null.");
             return sb.ToString();
         }
 
@@ -99,7 +99,7 @@ namespace PlDotNET
                 throw new SystemException($"Template file '{this.UserHandlerTemplatePath}' not found");
             }
 
-            bool providedAssembly = funcBody.Contains(".dll");
+            bool providedAssembly = funcBody.Contains(".dll:");
             string nampespace = "PlDotNET.UserSpace";
             string className = "UserFunction";
             if (providedAssembly)
@@ -120,14 +120,14 @@ namespace PlDotNET
             sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall(funcName, returnTypeId, dotnetTypes, supportNullInput, className));
             sourceCode = sourceCode.Replace("// $call_set_result$", this.BuildCallSetResult(returnTypeId));
 
-            if (this.Language == DotNETLanguage.FSharp)
-            {
-                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
-            }
-
             if (providedAssembly)
             {
                 sourceCode = sourceCode.Replace("// $user_namespace$", $"using {nampespace};\n");
+            }
+            else if (this.Language == DotNETLanguage.FSharp)
+            {
+                // Creates the UserFunction type with the SQL user function
+                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
             }
 
             return this.FormatAndSaveGeneratedCode(sourceCode, $"UserHandler_{funcName}");
@@ -142,7 +142,7 @@ namespace PlDotNET
         /// </remarks>
         public string BuildUserFunctionSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, string funcBody, bool supportNullInput)
         {
-            if (funcBody.Contains(".dll"))
+            if (funcBody.Contains(".dll:"))
             {
                 return funcBody;
             }
@@ -409,13 +409,21 @@ namespace PlDotNET
         {
             string[] codeLines = code.Split("\n");
             string indentation = new (' ', (int)spaceNumber);
-            string indentCode = string.Empty;
-            for (int i = 0; i < codeLines.Length; i++)
+            var sb = new System.Text.StringBuilder();
+
+            for (int i = 0, length = codeLines.Length; i < length; i++)
             {
-                indentCode += indentation + codeLines[i] + '\n';
+                if (i < length - 1)
+                {
+                    sb.AppendLine($"{indentation}{codeLines[i]}");
+                }
+                else
+                {
+                    sb.Append($"{indentation}{codeLines[i]}");
+                }
             }
 
-            return indentCode;
+            return sb.ToString();
         }
 
         /// <inheritdoc />

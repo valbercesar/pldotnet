@@ -100,5 +100,8 @@ documentation/*
 
 regression.*
 
-ba-sql/c#_dll_tests_project/bin
-ba-sql/c#_dll_tests_project/obj
+ba-sql/DotNetTestProject/csharp/bin
+ba-sql/DotNetTestProject/csharp/obj
+
+ba-sql/DotNetTestProject/fsharp/bin
+ba-sql/DotNetTestProject/fsharp/obj

@@ -1,19 +1,19 @@
 namespace PlDotNET.UserSpace
 
-open System;
-open System.Buffers;
-open System.Collections;
-open System.Collections.Generic;
-open System.Diagnostics;
-open System.Linq;
-open System.Net;
-open System.Net.NetworkInformation;
-open System.Runtime.InteropServices;
-open System.Text;
-open System.Text.Unicode;
-open NpgsqlTypes;
-open PlDotNET.Handler;
-open PlDotNET;
+open System
+open System.Buffers
+open System.Collections
+open System.Collections.Generic
+open System.Diagnostics
+open System.Linq
+open System.Net
+open System.Net.NetworkInformation
+open System.Runtime.InteropServices
+open System.Text
+open System.Text.Unicode
+open NpgsqlTypes
+open PlDotNET.Handler
+open PlDotNET
 
 type UserFunction() =
     // $user_function_declaration$

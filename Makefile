@@ -127,7 +127,8 @@ build-package-bash:
 	docker-compose -f docker-compose-build.yml run --rm pldotnet-build bash
 
 build-dll-test-projects:
-	dotnet build /app/pldotnet/ba-sql/c#_dll_tests_project -c Release
+	dotnet build /app/pldotnet/ba-sql/DotNetTestProject/csharp -c Release
+	dotnet build /app/pldotnet/ba-sql/DotNetTestProject/fsharp -c Release
 
 tests:
 	rm -rf automated_test_results
@@ -153,6 +154,7 @@ tests:
 	cat ba-sql/testcreate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcreate.out
 	cat ba-sql/testcall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcall.out
 	cat ba-sql/testfsintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsintegers.out
+	cat ba-sql/testfsdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdll.out
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u postgres  psql 2>&1) | tee automated_test_results/automated_test_results.out
 
 install-pls:

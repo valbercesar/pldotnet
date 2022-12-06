@@ -48,11 +48,11 @@ type FSharpCompiler() =
 
     static member checker = FSharpChecker.Create()
 
-    static member CompileFSharpSourceCode (functionId: uint) (sourceCode: string) : string =
+    static member CompileFSharpSourceCode (functionId: uint) (sourceCode: string) (extraAssemblies: string[]) : string =
         let functionIdString = string functionId
         let inputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".fs"
         let outputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".dll"
-        let options = FSharpCompiler.GetAllFlags inputFile outputFile
+        let options = FSharpCompiler.GetAllFlags inputFile outputFile extraAssemblies
         let files = [| (inputFile, sourceCode); (outputFile, "") |]
 
         // set a virtual file system to avoid read/write to disk
@@ -78,7 +78,7 @@ type FSharpCompiler() =
             pldotnet_Elog(19, sb.ToString())
             ""
 
-    static member GetAllFlags (input : string) (output : string) =
+    static member GetAllFlags (input : string) (output : string) (extraAssemblies : string[]) =
         let sysLib nm =
             if System.Environment.OSVersion.Platform = System.PlatformID.Win32NT then // file references only valid on Windows
                 System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86) +
@@ -126,9 +126,9 @@ type FSharpCompiler() =
                    sysLib "System.Runtime.InteropServices"
                    sysLib "System.Runtime.Extensions"
                    sysLib "System.Net.NetworkInformation"
-                   "/var/lib/DotNetEngine/src/csharp/bin/Release/net6.0/PlDotNET.dll"
-                   "/var/lib/DotNetEngine/src/csharp/bin/Release/net6.0/Npgsql.dll"
                    fsCore4300() ]
                for r in references do
+                     yield "-r:" + r
+               for r in extraAssemblies do
                      yield "-r:" + r |]
         allFlags

@@ -166,7 +166,6 @@ static bool pldotnet_GetSourceCode(
     bool is_inline, bool validation,
     pldotnet_UserFunctionDeclaration *user_function_decl,
     pldotnet_Language language);
-////// TODO(rosicley) - remove here - start functions from common.h
 
 /**
  * @brief Find and return a specified .NET method.

@@ -16,6 +16,7 @@ namespace PlDotNET.UserSpace
 
         public static unsafe void CallUserFunction(List<IntPtr> arguments, IntPtr output, bool[] isnull)
         {
+            #line 1
             // $create_arguments
 
             // $user_function_call$

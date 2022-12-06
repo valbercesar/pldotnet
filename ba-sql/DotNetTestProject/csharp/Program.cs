@@ -32,9 +32,9 @@ using NpgsqlTypes;
 #pragma warning disable CS8605
 #pragma warning disable CS8600
 
-namespace testDLLFunctions
+namespace TestDLLFunctions
 {
-    public class testClass
+    public class TestClass
     {
         public static int FlatArray(Array originalArray, ref Array flatArray, int[] auxiliar = null, int contEl = 0, int loc = 1)
         {
@@ -155,7 +155,7 @@ namespace testDLLFunctions
         public static double? sumdoublearray(Array doubles)
         {
             Array flatten_doubles = Array.CreateInstance(typeof(object), doubles.Length);
-            testClass.FlatArray(doubles, ref flatten_doubles);
+            TestClass.FlatArray(doubles, ref flatten_doubles);
             double double_sum = 0;
             for (int i = 0; i < flatten_doubles.Length; i++)
             {
@@ -215,7 +215,7 @@ namespace testDLLFunctions
         public static Array? increasemoney(Array values_array)
         {
             Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-            testClass.FlatArray(values_array, ref flatten_values);
+            TestClass.FlatArray(values_array, ref flatten_values);
             for (int i = 0; i < flatten_values.Length; i++)
             {
                 if (flatten_values.GetValue(i) == null)
@@ -234,7 +234,7 @@ namespace testDLLFunctions
         public static Array? increasemacaddress8(Array values_array)
         {
             Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-            testClass.FlatArray(values_array, ref flatten_values);
+            TestClass.FlatArray(values_array, ref flatten_values);
             for (int i = 0; i < flatten_values.Length; i++)
             {
                 if (flatten_values.GetValue(i) == null)
@@ -255,7 +255,7 @@ namespace testDLLFunctions
         public static Array? increasecidraddress(Array values_array)
         {
             Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-            testClass.FlatArray(values_array, ref flatten_values);
+            TestClass.FlatArray(values_array, ref flatten_values);
             for (int i = 0; i < flatten_values.Length; i++)
             {
                 if (flatten_values.GetValue(i) == null)
@@ -276,7 +276,7 @@ namespace testDLLFunctions
         public static Array? increaseint8ranges(Array values_array)
         {
             Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-            testClass.FlatArray(values_array, ref flatten_values);
+            TestClass.FlatArray(values_array, ref flatten_values);
             for (int i = 0; i < flatten_values.Length; i++)
             {
                 if (flatten_values.GetValue(i) == null)
@@ -295,7 +295,7 @@ namespace testDLLFunctions
         public static Array? increasedateonlyranges(Array values_array)
         {
             Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-            testClass.FlatArray(values_array, ref flatten_values);
+            TestClass.FlatArray(values_array, ref flatten_values);
             for (int i = 0; i < flatten_values.Length; i++)
             {
                 if (flatten_values.GetValue(i) == null)
