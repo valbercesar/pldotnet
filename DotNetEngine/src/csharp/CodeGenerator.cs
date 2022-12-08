@@ -99,32 +99,19 @@ namespace PlDotNET
                 throw new SystemException($"Template file '{this.UserHandlerTemplatePath}' not found");
             }
 
-            bool providedAssembly = funcBody.Contains(".dll:");
-            string nampespace = "PlDotNET.UserSpace";
-            string className = "UserFunction";
-            if (providedAssembly)
-            {
-                string[] bodySplit = funcBody.Split(':');
-                bodySplit = bodySplit[1].Split('.');
-                nampespace = bodySplit[0]; // UserNamespace
-                bodySplit = bodySplit[1].Split('!');
-                className = bodySplit[0]; // UserClass
-                funcName = bodySplit[1]; // FunctionName
-            }
+            string userFunctionPrefix = "PlDotNET.UserSpace.UserFunction";
+            string assemblyPath = string.Empty;
+            bool providedAssembly = Engine.GetInformationFromUserAssembly(funcBody, ref assemblyPath, ref userFunctionPrefix, ref funcName);
 
             string[] dotnetTypes = this.GetDotNetTypes(paramTypes);
 
             string sourceCode = File.ReadAllText(this.UserHandlerTemplatePath);
             sourceCode = sourceCode.Replace("// $handler_objects$", this.BuildHandlerObjects(paramTypes, returnTypeId));
             sourceCode = sourceCode.Replace("// $create_arguments", this.BuildCreateArguments(funcName, paramTypes, supportNullInput));
-            sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall(funcName, returnTypeId, dotnetTypes, supportNullInput, className));
+            sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall(funcName, returnTypeId, dotnetTypes, supportNullInput, userFunctionPrefix));
             sourceCode = sourceCode.Replace("// $call_set_result$", this.BuildCallSetResult(returnTypeId));
 
-            if (providedAssembly)
-            {
-                sourceCode = sourceCode.Replace("// $user_namespace$", $"using {nampespace};\n");
-            }
-            else if (this.Language == DotNETLanguage.FSharp)
+            if (this.Language == DotNETLanguage.FSharp)
             {
                 // Creates the UserFunction type with the SQL user function
                 sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
@@ -142,7 +129,7 @@ namespace PlDotNET
         /// </remarks>
         public string BuildUserFunctionSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, string funcBody, bool supportNullInput)
         {
-            if (funcBody.Contains(".dll:"))
+            if (Engine.ValidateUserAssembly(funcBody))
             {
                 return funcBody;
             }
@@ -179,7 +166,7 @@ namespace PlDotNET
         /// <summary>
         /// This function creates code to call the user function.
         /// </summary>
-        public abstract string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, bool supportNullInput, string className = "UserFunction");
+        public abstract string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, bool supportNullInput, string prefix);
 
         /// <summary>
         /// This function returns the code to create the Datum result according
@@ -276,7 +263,7 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, bool supportNullInput, string className = "UserFunction")
+        public override string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, bool supportNullInput, string prefix)
         {
             var sb = new System.Text.StringBuilder();
             if ((OID)returnTypeId != OID.VOIDOID)
@@ -284,7 +271,7 @@ namespace PlDotNET
                 sb.AppendLine("var result = ");
             }
 
-            sb.Append($"{className}.{funcName}(");
+            sb.Append($"{prefix}.{funcName}(");
             string aux = (supportNullInput || Engine.AlwaysNullable) ? "?" : string.Empty;
             for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
             {
@@ -481,7 +468,7 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, bool supportNullInput, string className = "UserFunction")
+        public override string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, bool supportNullInput, string prefix)
         {
             var sb = new System.Text.StringBuilder();
             if ((OID)returnTypeId != OID.VOIDOID)
@@ -489,7 +476,7 @@ namespace PlDotNET
                 sb.Append("let result = ");
             }
 
-            sb.Append($"{className}.{funcName}");
+            sb.Append($"UserFunction.{funcName}");
             for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
             {
                 sb.Append($" argument_{i}");

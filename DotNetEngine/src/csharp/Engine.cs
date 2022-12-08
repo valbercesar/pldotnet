@@ -395,7 +395,7 @@ namespace PlDotNET
 
             // Check if the user provides an assembly with the user function
             // The syntax for that is 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'
-            bool useUserAssembly = funcBody.Contains(".dll:");
+            bool useUserAssembly = ValidateUserAssembly(funcBody);
 
             // The language name (just csharp or fsharp for now)
             string plLanguage = Marshal.PtrToStringAuto(language);
@@ -713,6 +713,38 @@ namespace PlDotNET
 
             sb.AppendLine("Please contact Brick Abode. <tlewis@brickabode.com>");
             Elog.pldotnet_Warning("\n" + sb.ToString());
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if the user provides a valid Assembly.
+        /// </summary>
+        /// <returns>
+        /// Returns true if the user provides a valid assembly, that is, 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'.
+        /// </returns>
+        public static bool ValidateUserAssembly(string code)
+        {
+            return Regex.IsMatch(code, @"^([-/.a-zA-Z0-9]+.dll):([a-zA-Z0-9.]+)!([a-zA-Z0-9]+)$");
+        }
+
+        /// <summary>
+        /// Checks if the user provides a valid Assembly. If so, modify the arguments with the assembly path, namespace and class names, and the method name.
+        /// </summary>
+        /// <returns>
+        /// Returns true if the user provides a valid assembly, that is, 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'.
+        /// </returns>
+        public static bool GetInformationFromUserAssembly(string code, ref string assemblyPath, ref string namespaceAndClass, ref string methodName)
+        {
+            Regex regex = new ("^([-/.a-zA-Z0-9]+.dll):([a-zA-Z0-9.]+)!([a-zA-Z0-9]+)$");
+            if (regex.IsMatch(code))
+            {
+                string[] matches = regex.Split(code);
+                assemblyPath = matches[1];
+                namespaceAndClass = matches[2];
+                methodName = matches[3];
+                return true;
+            }
 
             return false;
         }

@@ -123,7 +123,7 @@
         <Rule Id="SA1400"  Action="Warning" />          <!-- Access modifier should be declared -->
         <Rule Id="SA1401"  Action="None" />          <!-- Fields should be private -->
         <Rule Id="SA1402"  Action="None" />          <!-- File may only contain a single type -->
-        <Rule Id="SA1403"  Action="Warning" />          <!-- File may only contain a single namespace -->
+        <Rule Id="SA1403"  Action="None" />          <!-- File may only contain a single namespace -->
         <Rule Id="SA1404"  Action="Warning" />          <!-- Code analysis suppression should have justification -->
         <Rule Id="SA1405"  Action="None" />          <!-- Debug.Assert should provide message text -->
         <Rule Id="SA1406"  Action="Warning" />          <!-- Debug.Fail should provide message text -->

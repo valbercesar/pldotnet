@@ -6,7 +6,6 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using NpgsqlTypes;
 using PlDotNET.Handler;
-// $user_namespace$
 
 namespace PlDotNET.UserSpace
 {

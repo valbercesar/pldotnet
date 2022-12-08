@@ -341,3 +341,37 @@ namespace TestDLLFunctions
         }
     }
 }
+
+namespace TestDLLFunctions.OtherTests
+{
+    public class TestClass
+    {
+        public static NpgsqlPoint? middlePointStrict(NpgsqlPoint pointa, NpgsqlPoint pointb)
+        {
+            double x = (pointa.X + pointb.X) * 0.5;
+            double y = (pointa.Y + pointb.Y) * 0.5;
+            var new_point = new NpgsqlPoint(x, y);
+
+            return new_point;
+        }
+
+        public static NpgsqlPoint? middlePointDefault(NpgsqlPoint? pointa, NpgsqlPoint? pointb)
+        {
+            if (pointa == null)
+            {
+                pointa = new NpgsqlPoint(0, 0);
+            }
+
+            if (pointb == null)
+            {
+                pointb = new NpgsqlPoint(0, 0);
+            }
+
+            double x = (((NpgsqlPoint)pointa).X + ((NpgsqlPoint)pointb).X) * 0.5;
+            double y = (((NpgsqlPoint)pointa).Y + ((NpgsqlPoint)pointb).Y) * 0.5;
+            var new_point = new NpgsqlPoint(x, y);
+
+            return new_point;
+        }
+    }
+}

@@ -136,3 +136,26 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-uuid-dll', 'combineUUIDsDLL2', combineUUIDsDLL('123e4567-e89b-12d3-a456-426614174000'::UUID, '024be913-3bf8-4499-9694-12769239b763'::UUID) = '123e4567-e89b-12d3-9694-12769239b763'::UUID;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-uuid-null-dll', 'combineUUIDsDLL3', combineUUIDsDLL(NULL::UUID, '024be913-3bf8-4499-9694-12769239b763'::UUID) = 'a0eebc99-9c0b-4ef8-9694-12769239b763'::UUID;
+
+--- TESTING VALID FUNCTIONS
+
+--- STRICT FUNCTION CALLS C# FUNCTION WITH T
+CREATE OR REPLACE FUNCTION middlePointStrictCallStrict(pointa point, pointb point) RETURNS point AS
+'/app/pldotnet/ba-sql/DotNetTestProject/csharp/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.OtherTests.TestClass!middlePointStrict'
+LANGUAGE plcsharp STRICT;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-point-dll', 'middlePointStrictCallStrict', middlePointStrictCallStrict(POINT(10.0,20.0), POINT(20.0,40.0)) ~= POINT(15.0,30.0);
+
+-- STRICT FUNCTION CALLS C# FUNCTION WITH T?
+CREATE OR REPLACE FUNCTION middlePointStrictCallDefault(pointa point, pointb point) RETURNS point AS
+'/app/pldotnet/ba-sql/DotNetTestProject/csharp/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.OtherTests.TestClass!middlePointDefault'
+LANGUAGE plcsharp STRICT;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-point-dll', 'middlePointStrictCallDefault', middlePointStrictCallDefault(POINT(10.0,20.0), POINT(20.0,40.0)) ~= POINT(15.0,30.0);
+
+--- DEFAULT FUNCTION CALLS C# FUNCTION WITH T?
+CREATE OR REPLACE FUNCTION middlePointDefaultCallDefault(pointa point, pointb point) RETURNS point AS
+'/app/pldotnet/ba-sql/DotNetTestProject/csharp/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.OtherTests.TestClass!middlePointDefault'
+LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-point-null-dll', 'middlePointDefaultCallDefault', middlePointDefaultCallDefault(NULL::POINT, POINT(20.0,40.0)) ~= POINT(10.0,20.0);
