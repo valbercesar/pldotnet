@@ -24,13 +24,15 @@
 #define PLDOTNET_MAIN_H_
 
 #include <postgres.h>
-#include <utils/fmgrprotos.h>
 #include <access/htup_details.h>
 #include <catalog/pg_proc.h>
-#include <glib.h>
-#include <utils/syscache.h>
-#include <utils/builtins.h>
+#include <catalog/pg_type.h>
 #include <funcapi.h>
+#include <glib.h>
+#include <utils/builtins.h>
+#include <utils/fmgrprotos.h>
+#include <utils/syscache.h>
+#include <utils/memutils.h>
 
 #include "pldotnet_hostfxr.h"
 
