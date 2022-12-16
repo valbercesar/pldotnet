@@ -52,8 +52,40 @@ create_cluster_and_install_extension:
 	service postgresql stop
 	rsync -a ${PGDATA}/* /var/lib/postgresql/pgnet_backup_cluster
 
+install_pls:
+	echo "# Installing plpython..."
+	apt install -y postgresql-plpython3-14
+
+	echo "# Installing pljava..."
+	apt install -y default-jre-headless openjdk-11-jre-headless default-jdk maven
+	wget -q \
+		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-pljava-common_1.6.4-1.pgdg20.04+1_all.deb \
+		-O package-pljava-common.deb
+	dpkg -i package-pljava-common.deb
+	wget -q \
+		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-14-pljava_1.6.4-1.pgdg20.04+1_amd64.deb \
+		-O package-pljava-14.deb
+	dpkg -i package-pljava-14.deb
+	mvn install:install-file \
+   		-Dfile=/usr/share/postgresql/14/pljava/pljava-api-1.6.4.jar \
+   		-DgroupId=org.postgresql \
+   		-DartifactId=pljava-api \
+   		-Dversion=1.6.4 \
+   		-Dpackaging=jar \
+   		-DgeneratePom=true
+
+	echo "# Installing pllua..."
+	apt install -y liblua5.3-0 postgresql-14-pllua
+
+	echo "# Installing plperl..."
+	apt install -y postgresql-plperl-14
+
+	echo "# Installing plr..."
+	apt install -y postgresql-14-plr
+
+	echo "# Installing tcl..."
+	apt install -y postgresql-pltcl-14
+
 # these targets correspond to the original Dockerfiles which this Makefile replaces
 deb_build: install_pg_dev install_dotnet_deb
-ubuntu22_install: install_pg_dev install_dotnet_ubuntu
-
-
+ubuntu22_install: install_pg_dev install_dotnet_ubuntu install_pls

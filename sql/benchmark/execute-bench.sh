@@ -3,7 +3,7 @@
 FILENAME=$1
 
 # Create header
-echo "Test Case;pldotnet;plpython" >> $FILENAME
+echo "Test Case;plcsharp;plpython;plpgsql;pljava;plperl;pllua;pltcl;plr" >> $FILENAME
 
 # Create the content
 for file in sql/benchmark/bench-*.sql

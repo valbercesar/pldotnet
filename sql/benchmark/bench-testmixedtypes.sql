@@ -1,25 +1,53 @@
 \i sql/benchmark/includes.sql
 
 \i sql/testmixedtypes.sql
+-- \i sql/v8javascript/testmixedtypes.sql
 \i sql/python/testmixedtypes.sql
---- \i sql/java/testmixedtypes.sql
+\i sql/pgsql/testmixedtypes.sql
+\i sql/java/testmixedtypes.sql
+\i sql/perl/testmixedtypes.sql
+\i sql/lua/testmixedtypes.sql
+\i sql/tcl/testmixedtypes.sql
+\i sql/r/testmixedtypes.sql
+-- \i sql/testfsmixedtypes.sql
 
 \set runs 1000
 
 SELECT
     'ageTest(Billy)',
     plbench('SELECT ageTest(''Billy'', 10, ''The KID'')', :runs) as plcsharp,
-    plbench('SELECT ageTestPython(''Billy'', 10, ''The KID'')', :runs) as plpython;
-    --- plbench('SELECT ageTestJava(''Billy'', 10, ''The KID'')', :runs) as pljava;
+    -- plbench('SELECT ageTestV8(''Billy'', 10, ''The KID'')', :runs) as plv8,
+    -- plbench('SELECT ageTestFSharp(''Billy'', 10, ''The KID'')', :runs) as plfsharp;
+    plbench('SELECT ageTestPython(''Billy'', 10, ''The KID'')', :runs) as plpython,
+    plbench('SELECT ageTestPg(''Billy'', 10, ''The KID'')', :runs) as plpgsql,
+    plbench('SELECT ageTestJava(''Billy'', 10, ''The KID'')', :runs) as pljava,
+    plbench('SELECT ageTestPerl(''Billy'', 10, ''The KID'')', :runs) as plperl,
+    plbench('SELECT ageTestLua(''Billy'', 10, ''The KID'')', :runs) as pllua,
+    plbench('SELECT ageTestTcl(''Billy'', 10, ''The KID'')', :runs) as pltcl,
+    plbench('SELECT ageTestR(''Billy'', 10, ''The KID'')', :runs) as plr;
 
 SELECT
     'ageTest(John)',
     plbench('SELECT ageTest(''John'', 33, ''Smith'')', :runs) as plcsharp,
-    plbench('SELECT ageTestPython(''John'', 33, ''Smith'')', :runs) as plpython;
-    --- plbench('SELECT ageTestJava(''John'', 33, ''Smith'')', :runs) as pljava;
+    -- plbench('SELECT ageTestV8(''John'', 33, ''Smith'')', :runs) as plv8,
+    -- plbench('SELECT ageTestFSharp(''John'', 33, ''Smith'')', :runs) as plfsharp;
+    plbench('SELECT ageTestPython(''John'', 33, ''Smith'')', :runs) as plpython,
+    plbench('SELECT ageTestPg(''John'', 33, ''Smith'')', :runs) as plpgsql,
+    plbench('SELECT ageTestJava(''John'', 33, ''Smith'')', :runs) as pljava,
+    plbench('SELECT ageTestPerl(''John'', 33, ''Smith'')', :runs) as plperl,
+    plbench('SELECT ageTestLua(''John'', 33, ''Smith'')', :runs) as pllua,
+    plbench('SELECT ageTestTcl(''John'', 33, ''Smith'')', :runs) as pltcl,
+    plbench('SELECT ageTestR(''John'', 33, ''Smith'')', :runs) as plr;
 
 SELECT
     'ageTest(Robson)',
     plbench('SELECT ageTest(''Robson'', 41, ''Cruzoe'')', :runs) as plcsharp,
-    plbench('SELECT ageTestPython(''Robson'', 41, ''Cruzoe'')', :runs) as plpython;
-    --- plbench('SELECT ageTestJava(''Robson'', 41, ''Cruzoe'')', :runs) as pljava;
+    -- plbench('SELECT ageTestV8(''Robson'', 41, ''Cruzoe'')', :runs) as plv8,
+    -- plbench('SELECT ageTestFSharp(''Robson'', 41, ''Cruzoe'')', :runs) as plfsharp;
+    plbench('SELECT ageTestPython(''Robson'', 41, ''Cruzoe'')', :runs) as plpython,
+    plbench('SELECT ageTestPg(''Robson'', 41, ''Cruzoe'')', :runs) as plpgsql,
+    plbench('SELECT ageTestJava(''Robson'', 41, ''Cruzoe'')', :runs) as pljava,
+    plbench('SELECT ageTestPerl(''Robson'', 41, ''Cruzoe'')', :runs) as plperl,
+    plbench('SELECT ageTestLua(''Robson'', 41, ''Cruzoe'')', :runs) as pllua,
+    plbench('SELECT ageTestTcl(''Robson'', 41, ''Cruzoe'')', :runs) as pltcl,
+    plbench('SELECT ageTestR(''Robson'', 41, ''Cruzoe'')', :runs) as plr;

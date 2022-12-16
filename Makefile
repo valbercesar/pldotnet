@@ -132,37 +132,45 @@ build-dll-test-projects:
 
 tests:
 	rm -rf automated_test_results
-	mkdir automated_test_results
+	mkdir -p automated_test_results
 	make build-dll-test-projects
-	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres  psql)
-	cat ba-sql/testbit.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbit.out
-	cat ba-sql/testbool.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbool.out
-	cat ba-sql/testbytea.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbytea.out
-	cat ba-sql/testdatetime.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdatetime.out
-	cat ba-sql/testdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdll.out
-	cat ba-sql/testfloats.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfloats.out
-	cat ba-sql/testgeometric.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testgeometric.out
-	cat ba-sql/testintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testintegers.out
-	cat ba-sql/testjson.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testjson.out
-	cat ba-sql/testmoney.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testmoney.out
-	cat ba-sql/testnetwork.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testnetwork.out
-	cat ba-sql/testrange.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testrange.out
-	cat ba-sql/teststring.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/teststring.out
-	cat ba-sql/testuuid.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testuuid.out
-	cat ba-sql/testdo.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdo.out
-	cat ba-sql/testprocedure.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testprocedure.out
-	cat ba-sql/testcreate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcreate.out
-	cat ba-sql/testcall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcall.out
-	cat ba-sql/testfsintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsintegers.out
-	cat ba-sql/testfsdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdll.out
-	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u postgres  psql 2>&1) | tee automated_test_results/automated_test_results.out
-
-install-pls:
-	sudo apt-get install -y  postgresql-plpython3 default-jre maven
-	sudo -u postgres psql -f "sql/python/init-extension.sql"
+	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres psql)
+	cat ba-sql/testbit.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testbit.out
+	cat ba-sql/testbool.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testbool.out
+	cat ba-sql/testbytea.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testbytea.out
+	cat ba-sql/testdatetime.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testdatetime.out
+	cat ba-sql/testdll.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testdll.out
+	cat ba-sql/testfloats.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testfloats.out
+	cat ba-sql/testgeometric.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testgeometric.out
+	cat ba-sql/testintegers.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testintegers.out
+	cat ba-sql/testjson.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testjson.out
+	cat ba-sql/testmoney.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testmoney.out
+	cat ba-sql/testnetwork.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testnetwork.out
+	cat ba-sql/testrange.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testrange.out
+	cat ba-sql/teststring.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/teststring.out
+	cat ba-sql/testuuid.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testuuid.out
+	cat ba-sql/testdo.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testdo.out
+	cat ba-sql/testprocedure.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testprocedure.out
+	cat ba-sql/testcreate.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testcreate.out
+	cat ba-sql/testcall.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testcall.out
+	cat ba-sql/testfsintegers.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testfsintegers.out
+	cat ba-sql/testfsdll.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testfsdll.out
+	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u postgres psql 2>&1) | tee automated_test_results/automated_test_results.out
 
 stress-test:
 	rm -rf automated_test_results
-	mkdir automated_test_results
+	mkdir -p automated_test_results
 	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres psql)
 	sudo bash stress_test.sh
+
+benchmark-tests:
+	cat sql/python/init-extension.sql | (sudo -u postgres psql)
+	cat sql/java/init-extension.sql | (sudo -u postgres psql)
+	cat sql/perl/init-extension.sql | (sudo -u postgres psql)
+	cat sql/lua/init-extension.sql | (sudo -u postgres psql)
+	cat sql/tcl/init-extension.sql | (sudo -u postgres psql)
+	cat sql/r/init-extension.sql | (sudo -u postgres psql)
+	cd /app/pldotnet/sql/java/test-suite && mvn install && cd /app/pldotnet/
+	echo "select sqlj.install_jar('file:/app/pldotnet/sql/java/test-suite/target/test-suite-1.0.0.jar', 'testsuite', true);" | (sudo -u postgres psql)
+	echo "select sqlj.set_classpath('public', 'testsuite');" | (sudo -u postgres psql)
+	bash sql/benchmark/benchmark.sh

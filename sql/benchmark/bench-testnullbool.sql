@@ -1,103 +1,222 @@
 \i sql/benchmark/includes.sql
 
 \i sql/testnullbool.sql
+-- \i sql/v8javascript/testnullbool.sql
 \i sql/python/testnullbool.sql
---- \i sql/java/testnullbool.sql
+\i sql/pgsql/testnullbool.sql
+\i sql/java/testnullbool.sql
+\i sql/perl/testnullbool.sql
+\i sql/lua/testnullbool.sql
+\i sql/tcl/testnullbool.sql
+\i sql/r/testnullbool.sql
+-- \i sql/testfsnullbool.sql
 
 \set runs 1000
 
 SELECT
     'returnNullBool',
     plbench('SELECT returnNullBool()', :runs) as plcsharp,
-    plbench('SELECT returnNullBoolPython()', :runs) as plpython;
-    --- plbench('SELECT returnNullBoolJava()', :runs) as pljava;
+    -- plbench('SELECT returnNullBoolFSharp()', :runs) as plfsharp;
+    -- plbench('SELECT returnNullBoolV8()', :runs) as plv8,
+    plbench('SELECT returnNullBoolPython()', :runs) as plpython,
+    plbench('SELECT returnNullBoolPg()', :runs) as plpgsql,
+    plbench('SELECT returnNullBoolJava()', :runs) as pljava,
+    plbench('SELECT returnNullBoolPerl()', :runs) as plperl,
+    plbench('SELECT returnNullBoolLua()', :runs) as pllua,
+    plbench('SELECT returnNullBoolTcl()', :runs) as pltcl,
+    plbench('SELECT returnNullBoolR()', :runs) as plr;
 
 SELECT
     'BooleanNullAnd(true, null)',
     plbench('SELECT BooleanNullAnd(true, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullAndPython(true, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullAndJava(true, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullAndFSharp(true, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullAndV8(true, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullAndPython(true, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullAndPg(true, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullAndJava(true, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullAndPerl(true, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullAndLua(true, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullAndTcl(true, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullAndR(true, null)', :runs) as plr;
 
 SELECT
     'BooleanNullAnd(null, true)',
     plbench('SELECT BooleanNullAnd(null, true)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullAndPython(null, true)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullAndJava(null, true)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullAndFSharp(null, true)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullAndV8(null, true)', :runs) as plv8,
+    plbench('SELECT BooleanNullAndPython(null, true)', :runs) as plpython,
+    plbench('SELECT BooleanNullAndPg(null, true)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullAndJava(null, true)', :runs) as pljava,
+    plbench('SELECT BooleanNullAndPerl(null, true)', :runs) as plperl,
+    plbench('SELECT BooleanNullAndLua(null, true)', :runs) as pllua,
+    plbench('SELECT BooleanNullAndTcl(null, true)', :runs) as pltcl,
+    plbench('SELECT BooleanNullAndR(null, true)', :runs) as plr;
 
 SELECT
     'BooleanNullAnd(false, null)',
     plbench('SELECT BooleanNullAnd(false, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullAndPython(false, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullAndJava(false, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullAndFSharp(false, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullAndV8(false, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullAndPython(false, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullAndPg(false, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullAndJava(false, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullAndPerl(false, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullAndLua(false, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullAndTcl(false, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullAndR(false, null)', :runs) as plr;
 
 SELECT
     'BooleanNullAnd(null, false)',
     plbench('SELECT BooleanNullAnd(null, false)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullAndPython(null, false)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullAndJava(null, false)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullAndFSharp(null, false)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullAndV8(null, false)', :runs) as plv8,
+    plbench('SELECT BooleanNullAndPython(null, false)', :runs) as plpython,
+    plbench('SELECT BooleanNullAndPg(null, false)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullAndJava(null, false)', :runs) as pljava,
+    plbench('SELECT BooleanNullAndPerl(null, false)', :runs) as plperl,
+    plbench('SELECT BooleanNullAndLua(null, false)', :runs) as pllua,
+    plbench('SELECT BooleanNullAndTcl(null, false)', :runs) as pltcl,
+    plbench('SELECT BooleanNullAndR(null, false)', :runs) as plr;
 
 SELECT
     'BooleanNullAnd(null, null)',
     plbench('SELECT BooleanNullAnd(null, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullAndPython(null, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullAndJava(null, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullAndFSharp(null, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullAndV8(null, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullAndPython(null, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullAndPg(null, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullAndJava(null, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullAndPerl(null, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullAndLua(null, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullAndTcl(null, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullAndR(null, null)', :runs) as plr;
 
 SELECT
     'BooleanNullOr(true, null)',
     plbench('SELECT BooleanNullOr(true, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullOrPython(true, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullOrJava(true, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullOrFSharp(true, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullOrV8(true, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullOrPython(true, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullOrPg(true, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullOrJava(true, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullOrPerl(true, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullOrLua(true, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullOrTcl(true, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullOrR(true, null)', :runs) as plr;
 
 SELECT
     'retuBooleanNullOr(null, true)rnBool',
     plbench('SELECT BooleanNullOr(null, true)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullOrPython(null, true)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullOrJava(null, true)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullOrFSharp(null, true)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullOrV8(null, true)', :runs) as plv8,
+    plbench('SELECT BooleanNullOrPython(null, true)', :runs) as plpython,
+    plbench('SELECT BooleanNullOrPg(null, true)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullOrJava(null, true)', :runs) as pljava,
+    plbench('SELECT BooleanNullOrPerl(null, true)', :runs) as plperl,
+    plbench('SELECT BooleanNullOrLua(null, true)', :runs) as pllua,
+    plbench('SELECT BooleanNullOrTcl(null, true)', :runs) as pltcl,
+    plbench('SELECT BooleanNullOrR(null, true)', :runs) as plr;
 
 SELECT
     'BooleanNullOr(false, null)',
     plbench('SELECT BooleanNullOr(false, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullOrPython(false, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullOrJava(false, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullOrFSharp(false, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullOrV8(false, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullOrPython(false, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullOrPg(false, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullOrJava(false, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullOrPerl(false, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullOrLua(false, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullOrTcl(false, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullOrR(false, null)', :runs) as plr;
 
 SELECT
     'BooleanNullOr(null, false)',
     plbench('SELECT BooleanNullOr(null, false)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullOrPython(null, false)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullOrJava(null, false)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullOrFSharp(null, false)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullOrV8(null, false)', :runs) as plv8,
+    plbench('SELECT BooleanNullOrPython(null, false)', :runs) as plpython,
+    plbench('SELECT BooleanNullOrPg(null, false)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullOrJava(null, false)', :runs) as pljava,
+    plbench('SELECT BooleanNullOrPerl(null, false)', :runs) as plperl,
+    plbench('SELECT BooleanNullOrLua(null, false)', :runs) as pllua,
+    plbench('SELECT BooleanNullOrTcl(null, false)', :runs) as pltcl,
+    plbench('SELECT BooleanNullOrR(null, false)', :runs) as plr;
 
 SELECT
     'BooleanNullOr(null, null)',
     plbench('SELECT BooleanNullOr(null, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullOrPython(null, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullOrJava(null, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullOrFSharp(null, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullOrV8(null, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullOrPython(null, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullOrPg(null, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullOrJava(null, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullOrPerl(null, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullOrLua(null, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullOrTcl(null, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullOrR(null, null)', :runs) as plr;
 
 SELECT
     'BooleanNullXor(true, null)',
     plbench('SELECT BooleanNullXor(true, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullXorPython(true, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullXorJava(true, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullXorFSharp(true, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullXorV8(true, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullXorPython(true, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullXorPg(true, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullXorJava(true, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullXorPerl(true, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullXorLua(true, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullXorTcl(true, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullXorR(true, null)', :runs) as plr;
 
 SELECT
     'BooleanNullXor(null, true)',
     plbench('SELECT BooleanNullXor(null, true)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullXorPython(null, true)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullXorJava(null, true)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullXorFSharp(null, true)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullXorV8(null, true)', :runs) as plv8,
+    plbench('SELECT BooleanNullXorPython(null, true)', :runs) as plpython,
+    plbench('SELECT BooleanNullXorPg(null, true)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullXorJava(null, true)', :runs) as pljava,
+    plbench('SELECT BooleanNullXorPerl(null, true)', :runs) as plperl,
+    plbench('SELECT BooleanNullXorLua(null, true)', :runs) as pllua,
+    plbench('SELECT BooleanNullXorTcl(null, true)', :runs) as pltcl,
+    plbench('SELECT BooleanNullXorR(null, true)', :runs) as plr;
 
 SELECT
     'BooleanNullXor(false, null)',
     plbench('SELECT BooleanNullXor(false, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullXorPython(false, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullXorJava(false, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullXorFSharp(false, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullXorV8(false, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullXorPython(false, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullXorPg(false, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullXorJava(false, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullXorPerl(false, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullXorLua(false, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullXorTcl(false, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullXorR(false, null)', :runs) as plr;
 
 SELECT
     'BooleanNullXor(null, false)',
     plbench('SELECT BooleanNullXor(null, false)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullXorPython(null, false)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullXorJava(null, false)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullXorFSharp(null, false)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullXorV8(null, false)', :runs) as plv8,
+    plbench('SELECT BooleanNullXorPython(null, false)', :runs) as plpython,
+    plbench('SELECT BooleanNullXorPg(null, false)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullXorJava(null, false)', :runs) as pljava,
+    plbench('SELECT BooleanNullXorPerl(null, false)', :runs) as plperl,
+    plbench('SELECT BooleanNullXorLua(null, false)', :runs) as pllua,
+    plbench('SELECT BooleanNullXorTcl(null, false)', :runs) as pltcl,
+    plbench('SELECT BooleanNullXorR(null, false)', :runs) as plr;
 
 SELECT
     'BooleanNullXor(null, null)',
     plbench('SELECT BooleanNullXor(null, null)', :runs) as plcsharp,
-    plbench('SELECT BooleanNullXorPython(null, null)', :runs) as plpython;
-    --- plbench('SELECT BooleanNullXorJava(null, null)', :runs) as pljava;
+    -- plbench('SELECT BooleanNullXorFSharp(null, null)', :runs) as plfsharp;
+    -- plbench('SELECT BooleanNullXorV8(null, null)', :runs) as plv8,
+    plbench('SELECT BooleanNullXorPython(null, null)', :runs) as plpython,
+    plbench('SELECT BooleanNullXorPg(null, null)', :runs) as plpgsql,
+    plbench('SELECT BooleanNullXorJava(null, null)', :runs) as pljava,
+    plbench('SELECT BooleanNullXorPerl(null, null)', :runs) as plperl,
+    plbench('SELECT BooleanNullXorLua(null, null)', :runs) as pllua,
+    plbench('SELECT BooleanNullXorTcl(null, null)', :runs) as pltcl,
+    plbench('SELECT BooleanNullXorR(null, null)', :runs) as plr;

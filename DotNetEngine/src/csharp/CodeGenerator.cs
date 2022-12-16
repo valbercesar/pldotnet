@@ -101,7 +101,7 @@ namespace PlDotNET
 
             string userFunctionPrefix = "PlDotNET.UserSpace.UserFunction";
             string assemblyPath = string.Empty;
-            bool providedAssembly = Engine.GetInformationFromUserAssembly(funcBody, ref assemblyPath, ref userFunctionPrefix, ref funcName);
+            _ = Engine.GetInformationFromUserAssembly(funcBody, ref assemblyPath, ref userFunctionPrefix, ref funcName);
 
             string[] dotnetTypes = this.GetDotNetTypes(paramTypes);
 
