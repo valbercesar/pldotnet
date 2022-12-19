@@ -462,7 +462,7 @@ namespace PlDotNET
                 memUserFunction = CreateMemoryStreamForUserFunctionCode(dotnetLanguage, functionId, useUserAssembly, userFunctionCode);
 
                 // Compile the UserHandler source code and then copy the assembly to a MemoryStream object
-                memUserHandler = CreateMemoryStreamForUserHandlerCode(dotnetLanguage, functionId, userHandlerCode, memUserFunction);
+                memUserHandler = CreateMemoryStreamForUserHandlerCode(dotnetLanguage, functionId, funcName, userHandlerCode, memUserFunction);
             }
             catch
             {
@@ -473,6 +473,7 @@ namespace PlDotNET
             AssemblyLoadContext userAlc = new ($"UserFunction_{functionId}", true);
             _ = userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location); // Npgsql Assembly
             _ = userAlc.LoadFromAssemblyPath(typeof(Engine).Assembly.Location); // PlDotNET Assembly
+            _ = dotnetLanguage == DotNETLanguage.FSharp ? userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location.Replace("Npgsql", "FSharp.Core")) : null; // FSharp.Core
             _ = dotnetLanguage != DotNETLanguage.FSharp ? userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer())) : null; // UserFunction Assembly
             Assembly userHandlerAssembly = userAlc.LoadFromStream(new MemoryStream(memUserHandler.GetBuffer())); // UserHandler Assembly
 
@@ -529,7 +530,7 @@ namespace PlDotNET
         // <summary>
         // This function returns a MemoryStream object which contains the Assembly for the UserHandler code.
         // </summary>
-        public static MemoryStream CreateMemoryStreamForUserHandlerCode(DotNETLanguage language, uint functionId, string userHandlerCode, MemoryStream assemblyToInclude)
+        public static MemoryStream CreateMemoryStreamForUserHandlerCode(DotNETLanguage language, uint functionId, string functionName, string userHandlerCode, MemoryStream assemblyToInclude)
         {
             MemoryStream memUserHandler = new ();
             if (language == DotNETLanguage.FSharp)
@@ -540,7 +541,7 @@ namespace PlDotNET
                     typeof(Engine).Assembly.Location,
                 };
 
-                string generatedAssembly = FSharpCompiler.CompileFSharpSourceCode(functionId, userHandlerCode, extraAssemblies.ToArray());
+                string generatedAssembly = FSharpCompiler.CompileFSharpSourceCode(functionId, functionName, userHandlerCode, extraAssemblies.ToArray());
 
                 // Verify that the F# code compiled correctly
                 if (generatedAssembly == string.Empty)

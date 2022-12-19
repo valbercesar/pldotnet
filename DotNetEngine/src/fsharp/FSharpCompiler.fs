@@ -27,19 +27,16 @@
 namespace PlDotNET.FSharp
 
 open System
-open System.IO
-open System.Text
-open System.Reflection
+open System.Collections.Generic
 open System.Diagnostics
+open System.IO
+open System.Reflection
 open System.Runtime.InteropServices
 open System.Runtime.Loader
-open FSharp.Compiler.SourceCodeServices
-open FSharp.Compiler.AbstractIL.Internal
-open FSharp.Compiler.AbstractIL.Internal.Library
+open System.Text
 
-open System.Collections.Generic
-
-open PlDotNET.FSharp.VirtualFileSystem
+open FSharp.Compiler.CodeAnalysis
+open FSharp.Compiler.Text
 
 type FSharpCompiler() =
 
@@ -48,15 +45,11 @@ type FSharpCompiler() =
 
     static member checker = FSharpChecker.Create()
 
-    static member CompileFSharpSourceCode (functionId: uint) (sourceCode: string) (extraAssemblies: string[]) : string =
+    static member CompileFSharpSourceCode (functionId: uint) (functionName: string) (sourceCode: string) (extraAssemblies: string[]) : string =
         let functionIdString = string functionId
-        let inputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".fs"
-        let outputFile : string = "/tmp/PlDotNET/dlls/UserFunction_" + functionIdString + ".dll"
+        let inputFile : string = "/tmp/PlDotNET/fsharp/UserHandler_" + functionName + ".fs"
+        let outputFile : string = "/tmp/PlDotNET/dlls/UserHandler_" + functionIdString + ".dll"
         let options = FSharpCompiler.GetAllFlags inputFile outputFile extraAssemblies
-        let files = [| (inputFile, sourceCode); (outputFile, "") |]
-
-        // set a virtual file system to avoid read/write to disk
-        let vfs = VirtualFileSystem.SetVirtualFileSystem files Shim.FileSystem
 
         let errors, exitCode =
             FSharpCompiler.checker.Compile(options)
@@ -74,7 +67,6 @@ type FSharpCompiler() =
             sb.AppendLine($"Here are the compilation results:") |> ignore
             for e in errors do
                 sb.AppendLine(e.ToString()) |> ignore
-            sb.AppendLine("\n********ERROR************\n") |> ignore
             pldotnet_Elog(19, sb.ToString())
             ""
 

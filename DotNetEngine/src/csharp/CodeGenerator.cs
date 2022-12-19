@@ -489,7 +489,8 @@ namespace PlDotNET
         public override string BuildCallSetResult(uint returnTypeId)
         {
             var sb = new System.Text.StringBuilder();
-            _ = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
+            string type = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
+            string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
 
             if ((OID)returnTypeId == OID.VOIDOID)
             {
@@ -506,7 +507,18 @@ namespace PlDotNET
                     sb.AppendLine($"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableValue(result)");
                 }
 
-                sb.AppendLine("Engine.pldotnet_SetDatumResult(resultDatum, false, output);");
+                if (ClassTypes.Contains(returnType))
+                {
+                    sb.AppendLine("match result with");
+                    sb.AppendLine("| null -> Engine.pldotnet_SetDatumResult(resultDatum, true, output);");
+                    sb.AppendLine("| _ -> Engine.pldotnet_SetDatumResult(resultDatum, false, output);");
+                }
+                else
+                {
+                    sb.AppendLine("match result.HasValue with");
+                    sb.AppendLine("| false -> Engine.pldotnet_SetDatumResult(resultDatum, true, output);");
+                    sb.AppendLine("| _ -> Engine.pldotnet_SetDatumResult(resultDatum, false, output);");
+                }
             }
 
             return "// Create PostgreSQL datum\n" + IndentCode(sb.ToString(), 8);
