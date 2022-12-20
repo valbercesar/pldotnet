@@ -49,6 +49,22 @@ SELECT 'f#-int8', 'mixedBigIntFSharp2', mixedBigIntFSharp2('32767'::int2,  '550'
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-int8', 'mixedBigIntFSharp2', mixedBigIntFSharp2('32767'::int2,  '5500'::int4, '500'::int8) = int8 '90109250000';
 
+CREATE OR REPLACE FUNCTION mult2IntFSharp(a INT4, b INT4) RETURNS INT4 AS $$
+    match (a.HasValue, b.HasValue) with
+    | (false, false) -> System.Nullable()
+    | (true, false) -> Nullable(a.Value)
+    | (false, true) -> Nullable(b.Value)
+    | (true, true) -> Nullable (a.Value*b.Value)
+$$ LANGUAGE plfsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'f#-int4-mult-some-some', 'mult2IntFSharp1', mult2IntFSharp('25'::INT2, '30'::INT2) = '750'::INT4;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'f#-int4-mult-some-null', 'mult2IntFSharp2', mult2IntFSharp('25'::INT2, NULL::INT2) = '25'::INT4;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'f#-int4-mult-null-some', 'mult2IntFSharp3', mult2IntFSharp(NULL::INT2, '30'::INT2) = '30'::INT4;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'f#-int4-mult-null-null', 'mult2IntFSharp4', mult2IntFSharp(NULL::INT2, NULL::INT2) is NULL;
+
 --- SMALLINT[]
 CREATE OR REPLACE FUNCTION returnSmallIntArrayFSharp(small_integers int2[]) RETURNS int2[] AS $$
 small_integers

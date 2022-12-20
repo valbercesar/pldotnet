@@ -137,32 +137,56 @@ build-dll-test-projects:
 	dotnet build /app/pldotnet/ba-sql/DotNetTestProject/csharp -c Release
 	dotnet build /app/pldotnet/ba-sql/DotNetTestProject/fsharp -c Release
 
-tests:
+pre-tests-script:
 	rm -rf automated_test_results
 	mkdir -p automated_test_results
 	make build-dll-test-projects
-	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres psql)
-	cat ba-sql/testbit.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testbit.out
-	cat ba-sql/testbool.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testbool.out
-	cat ba-sql/testbytea.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testbytea.out
-	cat ba-sql/testdatetime.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testdatetime.out
-	cat ba-sql/testdll.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testdll.out
-	cat ba-sql/testfloats.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testfloats.out
-	cat ba-sql/testgeometric.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testgeometric.out
-	cat ba-sql/testintegers.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testintegers.out
-	cat ba-sql/testjson.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testjson.out
-	cat ba-sql/testmoney.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testmoney.out
-	cat ba-sql/testnetwork.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testnetwork.out
-	cat ba-sql/testrange.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testrange.out
-	cat ba-sql/teststring.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/teststring.out
-	cat ba-sql/testuuid.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testuuid.out
-	cat ba-sql/testdo.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testdo.out
-	cat ba-sql/testprocedure.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testprocedure.out
-	cat ba-sql/testcreate.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testcreate.out
-	cat ba-sql/testcall.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testcall.out
-	cat ba-sql/testfsintegers.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testfsintegers.out
-	cat ba-sql/testfsdll.sql | (sudo -u postgres psql 2>&1) | tee automated_test_results/testfsdll.out
-	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u postgres psql 2>&1) | tee automated_test_results/automated_test_results.out
+	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres  psql)
+
+post-tests-script:
+	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u postgres  psql 2>&1) | tee automated_test_results/automated_test_results.out
+
+csharp-tests-cats:
+	cat ba-sql/testbit.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbit.out
+	cat ba-sql/testbool.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbool.out
+	cat ba-sql/testbytea.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbytea.out
+	cat ba-sql/testdatetime.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdatetime.out
+	cat ba-sql/testdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdll.out
+	cat ba-sql/testfloats.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfloats.out
+	cat ba-sql/testgeometric.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testgeometric.out
+	cat ba-sql/testintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testintegers.out
+	cat ba-sql/testjson.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testjson.out
+	cat ba-sql/testmoney.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testmoney.out
+	cat ba-sql/testnetwork.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testnetwork.out
+	cat ba-sql/testrange.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testrange.out
+	cat ba-sql/teststring.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/teststring.out
+	cat ba-sql/testuuid.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testuuid.out
+	cat ba-sql/testdo.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdo.out
+	cat ba-sql/testprocedure.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testprocedure.out
+	cat ba-sql/testcreate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcreate.out
+	cat ba-sql/testcall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcall.out
+
+fsharp-tests-cats:
+	cat ba-sql/testfsintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsintegers.out
+	cat ba-sql/testfsdate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdate.out
+	cat ba-sql/testfsstring.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsstring.out
+	cat ba-sql/testfsdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdll.out
+
+tests:
+	make pre-tests-script
+	make fsharp-tests-cats
+	make csharp-tests-cats
+	make post-tests-script
+
+csharp-tests:
+	make pre-tests-script
+	make csharp-tests-cats
+	make post-tests-script
+
+fsharp-tests:
+	make pre-tests-script
+	make fsharp-tests-cats
+	make post-tests-script
 
 stress-test:
 	rm -rf automated_test_results
