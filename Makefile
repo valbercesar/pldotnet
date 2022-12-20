@@ -6,7 +6,7 @@ DOTNET_VER = $(shell dotnet --info | grep 'Host' -A 3 | sed -n 's/Version: \(.*\
 DOTNET_HOSTDIR ?= $(shell dpkg -L dotnet-apphost-pack-6.0 | grep hostfxr.h | head -1 | xargs dirname)
 DOTNET_LIBDIR  ?= $(shell dpkg -L dotnet-apphost-pack-6.0 | grep hostfxr.h | head -1 | xargs dirname)
 DOTNET_INCHOSTDIR ?= $(DOTNET_HOSTDIR) $(shell env > /tmp/pgdotnet-make-env)
-DOTNET_HOSTLIB ?= -L$(DOTNET_LIBDIR) -lnethost
+DOTNET_HOSTLIB ?= -L$(DOTNET_LIBDIR) -lnethost -Wl,-rpath $(DOTNET_LIBDIR)
 GLIB_INC := `pkg-config --cflags --libs glib-2.0`
 PLNET_ENGINE_ROOT ?= /var/lib
 PLNET_ENGINE_DIR := -D PLNET_ENGINE_DIR=$(PLNET_ENGINE_ROOT)/DotNetEngine
@@ -125,6 +125,13 @@ build-package:
 build-package-bash:
 	make build-package
 	docker-compose -f docker-compose-build.yml run --rm pldotnet-build bash
+
+build-package-arm:
+	docker-compose -f docker-compose-build.yml up pldotnet-build-arm | tee package-build-arm-log.txt
+
+build-package-arm-bash:
+	make build-package-arm
+	docker-compose -f docker-compose-build.yml run --rm pldotnet-build-arm bash
 
 build-dll-test-projects:
 	dotnet build /app/pldotnet/ba-sql/DotNetTestProject/csharp -c Release

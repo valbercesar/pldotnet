@@ -21,6 +21,7 @@
 #include <dlfcn.h>
 #include <limits.h>
 #include <postgres.h>
+#include <stdio.h>
 
 #define nullptr ((void *)0)
 #define MAX_PATH PATH_MAX
@@ -73,6 +74,22 @@ static void *pldotnet_dlsym(void *handle, const char *symbol) {
     return dlsym(handle, symbol);
 }
 
+static int pldotnet_GetHostFxrPath(char_t *buffer, size_t bufferSize) {
+    FILE *out = popen(
+        "dpkg -L dotnet-hostfxr-6.0 | grep libhostfxr.so | head -1 | xargs "
+        "dirname",
+        "r");
+    const char *aux = "/libhostfxr.so";
+    if (NULL == out) {
+        return 1;
+    }
+    while (fgets(buffer, bufferSize, out) != NULL) puts(buffer);
+    buffer[strlen(buffer) - 1] = '\0';
+    strcat(buffer, aux);
+    pclose(out);
+    return 0;
+}
+
 int pldotnet_LoadHostfxr(void) {
     void *lib;
     /* Pre-allocate a large buffer for the path to hostfxr */
@@ -80,7 +97,8 @@ int pldotnet_LoadHostfxr(void) {
     size_t buffer_size = sizeof(hostfxr_path) / sizeof(char_t);
 
     if (get_hostfxr_path(hostfxr_path, &buffer_size, nullptr) != 0)
-        return 0;
+        if (pldotnet_GetHostFxrPath(hostfxr_path, buffer_size) != 0)
+            return 0;
 
     /* Load hostfxr and get desired exports */
     lib = pldotnet_dlopen(hostfxr_path);

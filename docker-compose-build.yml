@@ -20,7 +20,7 @@ services:
       USE_DOTNETBUILD: "FALSE"
       PGDATA: /var/lib/postgresql/data1/
       POSTGRES_HOST_AUTH_METHOD: trust
-      # POSTGRES_PASSWORD: # your password
+      # POSTGRES_PASSWORD: # yosur password
     volumes:
       - ./src/:/app/pldotnet/src/
       - ./Makefile:/app/pldotnet/Makefile
@@ -28,4 +28,26 @@ services:
       - ./ba-sql/:/app/pldotnet/ba-sql/
       - ./debian/packages/:/app/pldotnet/debian/packages/
       - ./debian/pgversions:/app/pldotnet/debian/pgversions
+      - ./debian/rules:/app/pldotnet/debian/rules
+
+  pldotnet-build-arm:
+    container_name: pldotnet-build-arm
+    image: pldotnet:build
+    <<: *interactive
+    command: sh -c "bash /app/pldotnet/Dockerfiles/scripts/build_packages.sh"
+    build:
+      dockerfile: Dockerfiles/deb_package/Dockerfile_ubuntu-build-arm
+      <<: *build-args
+    environment:
+      USE_DOTNETBUILD: "FALSE"
+      PGDATA: /var/lib/postgresql/data1/
+      POSTGRES_HOST_AUTH_METHOD: trust
+      # POSTGRES_PASSWORD: # your password
+    volumes:
+      - ./src/:/app/pldotnet/src/
+      - ./Makefile:/app/pldotnet/Makefile
+      - ./DotNetEngine/:/app/pldotnet/DotNetEngine/
+      - ./ba-sql/:/app/pldotnet/ba-sql/
+      - ./debian/packages/:/app/pldotnet/debian/packages/
+      - ./debian/pgversions-arm:/app/pldotnet/debian/pgversions
       - ./debian/rules:/app/pldotnet/debian/rules
