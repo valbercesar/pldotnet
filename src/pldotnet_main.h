@@ -67,7 +67,6 @@ typedef struct pldotnet_PathConfig {
     char prefix[MAXPGPATH];
     char config_path[MAXPGPATH];
     char library_path[MAXPGPATH];
-    char src_lib_path[MAXPGPATH];
 } pldotnet_PathConfig;
 
 typedef struct pldotnet_Result {

@@ -4,9 +4,9 @@ set -e
 # Source debconf library.
 . /usr/share/debconf/confmodule
 
-PLNET_ENGINE_DIR=/var/lib/DotNetEngine
+PLDOTNET_ENGINE_DIR=/var/lib/PlDotNET
 
-rm -rf $PLNET_ENGINE_DIR/
+rm -rf $PLDOTNET_ENGINE_DIR/
 rm -f /etc/ld.so.conf.d/nethost_pldotnet.conf
 rm -f /lib/x86_64-linux-gnu/libnethost.so
 

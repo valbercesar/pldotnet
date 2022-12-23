@@ -69,8 +69,10 @@ dkms.conf
 .kate-swp
 
 # ouput from dotnet engine
-DotNetEngine/src/*/obj/
-DotNetEngine/src/*/bin/
+dotnet_src/obj/
+dotnet_src/bin/
+dotnet_src/FSharp/obj/
+dotnet_src/FSharp/bin/
 
 # cache extensions
 *.cache
@@ -92,16 +94,17 @@ automated_test_results/
 *.substvars
 build*/
 
-sql/*
-!sql/benchmark/
+tests/benchmark/java/test-suite/
 automated_test_results/*
 expected/*
-documentation/*
+docs/html/*
 
 regression.*
 
-ba-sql/DotNetTestProject/csharp/bin
-ba-sql/DotNetTestProject/csharp/obj
+tests/csharp/DotNetTestProject/bin
+tests/csharp/DotNetTestProject/obj
 
-ba-sql/DotNetTestProject/fsharp/bin
-ba-sql/DotNetTestProject/fsharp/obj
+tests/fsharp/DotNetTestProject/bin
+tests/fsharp/DotNetTestProject/obj
+
+package-build-log.txt

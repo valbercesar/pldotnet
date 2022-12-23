@@ -40,10 +40,10 @@ PG_FUNCTION_INFO_V1(plfsharp_validator);
 /*
  * Directories where C#/F# projects for user code are built when
  * USE_DOTNETBUILD is defined. Otherwise that is where our C#/F# compiler
- * projects are located. Default for Linux is /var/lib/DotNetEngine/
+ * projects are located. Default for Linux is /var/lib/PlDotNet/
  */
 char *root_path = NULL;
-char *dnldir = STR(PLNET_ENGINE_DIR);
+char *dnldir = STR(PLDOTNET_ENGINE_DIR);
 
 GHashTable *procedures = nullptr;
 
@@ -356,22 +356,16 @@ Datum plfsharp_validator(PG_FUNCTION_ARGS) {
 }
 
 bool pldotnet_BuildPaths(void) {
-    char prefix[MAXPGPATH];
     const char json_path_suffix[] =
         "/bin/Release/net6.0/PlDotNET."
         "runtimeconfig.json";
-    const char src_path_suffix[] = "/Lib.cs";
     const char dll_path_suffix[] = "/bin/Release/net6.0/PlDotNET.dll";
-    char lang[] = "csharp";
 
-    SNPRINTF(path_config.prefix, MAXPGPATH, "%s%s", root_path, "/src/");
-    SNPRINTF(prefix, MAXPGPATH, "%s%s", path_config.prefix, lang);
-    SNPRINTF(path_config.config_path, MAXPGPATH, "%s%s", prefix,
+    SNPRINTF(path_config.prefix, MAXPGPATH, "%s", root_path);
+    SNPRINTF(path_config.config_path, MAXPGPATH, "%s%s", root_path,
              json_path_suffix);
-    SNPRINTF(path_config.library_path, MAXPGPATH, "%s%s", prefix,
+    SNPRINTF(path_config.library_path, MAXPGPATH, "%s%s", root_path,
              dll_path_suffix);
-    SNPRINTF(path_config.src_lib_path, MAXPGPATH, "%s%s", prefix,
-             src_path_suffix);
     return true;
 }
 

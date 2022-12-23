@@ -38,7 +38,7 @@ services:
     <<: *interactive
     <<: *command
     build:
-      dockerfile: Dockerfiles/default/Dockerfile_ubuntu22
+      dockerfile: docker/Dockerfile_ubuntu22
       <<: *build-args
     <<: *environment
     <<: *ports
@@ -47,3 +47,47 @@ services:
     volumes:
       - ./:/app/pldotnet/
       - ./postgres-data/ubuntu22:/var/lib/postgresql/data
+
+  pldotnet-build:
+    container_name: pldotnet-build
+    image: pldotnet:build
+    <<: *interactive
+    command: sh -c "bash /app/pldotnet/docker/scripts/build_packages.sh"
+    build:
+      dockerfile: docker/Dockerfile_deb-build
+      <<: *build-args
+    <<: *environment
+    volumes:
+      - ./src/:/app/pldotnet/src/
+      - ./Makefile:/app/pldotnet/Makefile
+      - ./dotnet_src/:/app/pldotnet/dotnet_src/
+      - ./tests/:/app/pldotnet/tests/
+      - ./debian/packages/:/app/pldotnet/debian/packages/
+      - ./debian/pgversions:/app/pldotnet/debian/pgversions
+      - ./debian/rules:/app/pldotnet/debian/rules
+      - ./debian/prerm:/app/pldotnet/debian/prerm
+      - ./debian/preinst:/app/pldotnet/debian/preinst
+      - ./debian/postrm:/app/pldotnet/debian/postrm
+      - ./debian/postinst:/app/pldotnet/debian/postinst
+
+  pldotnet-build-arm:
+    container_name: pldotnet-build-arm
+    image: pldotnet:build
+    <<: *interactive
+    command: sh -c "bash /app/pldotnet/docker/scripts/build_packages.sh"
+    build:
+      dockerfile: docker/Dockerfile_ubuntu-build-arm
+      <<: *build-args
+    <<: *environment
+    volumes:
+      - ./src/:/app/pldotnet/src/
+      - ./Makefile:/app/pldotnet/Makefile
+      - ./dotnet_src/:/app/pldotnet/dotnet_src/
+      - ./tests/:/app/pldotnet/tests/
+      - ./debian/packages/:/app/pldotnet/debian/packages/
+      - ./debian/pgversions-arm:/app/pldotnet/debian/pgversions
+      - ./debian/rules:/app/pldotnet/debian/rules
+      - ./debian/prerm:/app/pldotnet/debian/prerm
+      - ./debian/preinst:/app/pldotnet/debian/preinst
+      - ./debian/postrm:/app/pldotnet/debian/postrm
+      - ./debian/postinst:/app/pldotnet/debian/postinst
