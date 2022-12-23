@@ -365,6 +365,7 @@ namespace PlDotNET
             { "float", "float32" },
             { "short", "int16" },
             { "long", "int64" },
+            { "NpgsqlRange<long>", "NpgsqlRange<int64>" },
         };
 
         private static readonly List<string> ClassTypes =
