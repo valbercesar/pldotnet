@@ -117,6 +117,7 @@ type FSharpCompiler() =
                    sysLib "System.Runtime.InteropServices"
                    sysLib "System.Runtime.Extensions"
                    sysLib "System.Net.NetworkInformation"
+                   sysLib "System.Net.Primitives"
                    fsCore4300() ]
                for r in references do
                      yield "-r:" + r

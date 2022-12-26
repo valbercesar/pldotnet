@@ -366,6 +366,7 @@ namespace PlDotNET
             { "short", "int16" },
             { "long", "int64" },
             { "NpgsqlRange<long>", "NpgsqlRange<int64>" },
+            { "(IPAddress Address, int Netmask)", "struct(IPAddress*int)" },
         };
 
         private static readonly List<string> ClassTypes =
