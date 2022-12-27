@@ -133,10 +133,24 @@ csharp-tests-cats:
 	cat tests/csharp/testcall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcall.out
 
 fsharp-tests-cats:
-	cat tests/fsharp/testfsintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsintegers.out
+	cat tests/fsharp/testfsbit.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsbit.out
+	cat tests/fsharp/testfsbool.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsbool.out
+	cat tests/fsharp/testfsbytea.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsbytea.out
 	cat tests/fsharp/testfsdate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdate.out
-	cat tests/fsharp/testfsstring.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsstring.out
+	cat tests/fsharp/testfsdatetime.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdatetime.out
+	cat tests/fsharp/testfsdo.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdo.out
+	cat tests/fsharp/testfsprocedure.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsprocedure.out
 	cat tests/fsharp/testfsdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdll.out
+	cat tests/fsharp/testfsfloats.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsfloats.out
+	cat tests/fsharp/testfsgeometric.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsgeometric.out
+	cat tests/fsharp/testfsintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsintegers.out
+	cat tests/fsharp/testfsjson.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsjson.out
+	cat tests/fsharp/testfsnetwork.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsnetwork.out
+	cat tests/fsharp/testfsrange.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsrange.out
+	cat tests/fsharp/testfsstring.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsstring.out
+	cat tests/fsharp/testfsuuid.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsuuid.out
+	cat tests/fsharp/testfscreate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfscreate.out
+	cat tests/fsharp/testfscall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfscall.out
 
 pldotnet-tests:
 	make pre-tests-script

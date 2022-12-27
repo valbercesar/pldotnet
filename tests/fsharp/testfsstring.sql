@@ -62,16 +62,20 @@ SELECT 'f#-varchar', 'multiplyVarCharFSharp', multiplyVarCharFSharp('hello '::VA
 -- XML
 CREATE OR REPLACE FUNCTION modifyXmlFSharp(a XML) RETURNS XML AS $$
     let mutable new_xml: string = ""
-    if a.Equals("") then
+    if System.Object.ReferenceEquals(a, null) ||a.Equals("") then
         new_xml <- "<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World, it was null!</title>"
     else
         new_xml <- a
     new_xml <- (new_xml.Replace("Hello", "Goodbye")).Replace("World", "beautiful World")
 
     new_xml
-$$ LANGUAGE plfsharp STRICT;
+$$ LANGUAGE plfsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-xml', 'modifyXmlFSharp1', modifyXmlFSharp('<?xml version="1.0" encoding="utf-8"?><title>Hello, World!</title>'::XML)::text = '<?xml version="1.0" encoding="utf-8"?><title>Goodbye, beautiful World!</title>'::XML::text;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'f#-xml', 'modifyXmlFSharp2', modifyXmlFSharp(''::XML)::text = '<?xml version="1.0" encoding="utf-8"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'f#-xml-null', 'modifyXmlFSharp2', modifyXmlFSharp(NULL::XML)::text = '<?xml version="1.0" encoding="utf-8"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text;
 
 CREATE OR REPLACE FUNCTION createXmlFSharp(title TEXT, p1 TEXT, p2 TEXT) RETURNS XML AS $$
     "<?xml version=\"1.0\" encoding=\"utf-8\"?><title>" + title.ToUpper() + "</title><body><p>" + p1 + "</p><p>" + p2 + "</p></body>"

@@ -9,22 +9,22 @@ SELECT 'f#-date', 'createDateFSharp', createDateFSharp(CAST(2022 AS int), CAST(1
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-date-null', 'createDateFSharp2', createDateFSharp(NULL::int, NULL::int, NULL::int) is NULL;
 
-CREATE OR REPLACE FUNCTION addMinutesFSharp(orig_time TIME, minutes int) RETURNS TIME AS $$
+CREATE OR REPLACE FUNCTION addMinutesTimeFSharp(orig_time TIME, minutes int) RETURNS TIME AS $$
     match (orig_time.HasValue, minutes.HasValue) with
         | (true, true) ->
             Nullable((orig_time.Value).AddMinutes(double minutes.Value))
         | (true, false) -> Nullable(orig_time.Value)
-        | (false, true) -> Nullable((new TimeOnly(0, 0, 0)).AddMinutes(double minutes.Value))
-        | (false, false) -> Nullable(new TimeOnly(0, 0, 0))
+        | (false, true) -> Nullable((TimeOnly(0, 0, 0)).AddMinutes(double minutes.Value))
+        | (false, false) -> Nullable(TimeOnly(0, 0, 0))
 $$ LANGUAGE plfsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'f#-date-min-some-some', 'addMinutesFSharp1', addMinutesFSharp(TIME '05:30 PM', CAST(75 AS int)) = TIME '06:45 PM';
+SELECT 'f#-date', 'addMinutesTimeFSharp1', addMinutesTimeFSharp(TIME '05:30 PM', CAST(75 AS int)) = TIME '06:45 PM';
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'f#-date-min-some-null', 'addMinutesFSharp2', addMinutesFSharp(TIME '05:30 PM', NULL::int) = TIME '05:30 PM';
+SELECT 'f#-date-null', 'addMinutesTimeFSharp2', addMinutesTimeFSharp(TIME '05:30 PM', NULL::int) = TIME '05:30 PM';
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'f#-date-min-null-some', 'addMinutesFSharp3', addMinutesFSharp(NULL::TIME, CAST(75 AS int)) = TIME '01:15:00';
+SELECT 'f#-date-null', 'addMinutesTimeFSharp3', addMinutesTimeFSharp(NULL::TIME, CAST(75 AS int)) = TIME '01:15:00';
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'f#-date-min-null-null', 'addMinutesFSharp4', addMinutesFSharp(NULL::TIME, NULL::int) = TIME '00:00:00';
+SELECT 'f#-date-null', 'addMinutesTimeFSharp4', addMinutesTimeFSharp(NULL::TIME, NULL::int) = TIME '00:00:00';
 
 CREATE OR REPLACE FUNCTION modifyTimestampArrayFSharp(a TIMESTAMP[], b TIMESTAMP) RETURNS TIMESTAMP[] AS $$
 #line 1

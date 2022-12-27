@@ -35,4 +35,3 @@ $$
 LANGUAGE plfsharp;
 SELECT sum4FSHarp(4,3,2,1) = integer '10';
 
-
