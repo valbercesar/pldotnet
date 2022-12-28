@@ -3,7 +3,7 @@
 \i tests/benchmark/csharp/testarray.sql
 -- \i tests/benchmark/csharp/testfsarray.sql
 \i tests/benchmark/python/testarray.sql
--- \i tests/benchmark/v8javascript/testarray.sql
+\i tests/benchmark/v8javascript/testarray.sql
 \i tests/benchmark/pgsql/testarray.sql
 \i tests/benchmark/java/testarray.sql
 \i tests/benchmark/perl/testarray.sql
@@ -17,7 +17,7 @@ SELECT
     'sumArrayInt',
     plbench('SELECT sumArrayInt( ARRAY[4,1,5] )', :runs) as plcsharp,
     -- plbench('SELECT sumArrayIntFSharp( ARRAY[4,1,5] )', :runs) as plfsharp;
-    -- plbench('SELECT sumArrayIntV8( ARRAY[4,1,5] )', :runs) as plv8,
+    plbench('SELECT sumArrayIntV8( ARRAY[4,1,5] )', :runs) as plv8,
     plbench('SELECT sumArrayIntPython( ARRAY[4,1,5] )', :runs) as plpython,
     plbench('SELECT sumArrayIntPg( ARRAY[4,1,5] )', :runs) as plpgsql,
     plbench('SELECT sumArrayIntJava( ARRAY[4,1,5] )', :runs) as pljava,
@@ -45,7 +45,7 @@ SELECT
     'sumArrayText',
     plbench('SELECT sumArrayText( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', :runs) as plcsharp,
     -- plbench('SELECT sumArrayTextFSharp( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', :runs) as plfsharp;
-    -- plbench('SELECT sumArrayTextV8( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''])', :runs) as plv8,
+    plbench('SELECT sumArrayTextV8( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''])', :runs) as plv8,
     plbench('SELECT sumArrayTextPython( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''])', :runs) as plpython,
     plbench('SELECT sumArrayTextPg( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''])', :runs) as plpgsql,
     plbench('SELECT sumArrayTextJava( ARRAY[''Rodrigo'', ''Silva'', ''Lima'', ''Bahia''] )', :runs) as pljava,

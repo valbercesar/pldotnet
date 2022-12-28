@@ -2,7 +2,7 @@
 
 \i tests/benchmark/csharp/testchar.sql
 -- \i tests/benchmark/fsharp/testfschar.sql
--- \i tests/benchmark/v8javascript/testchar.sql
+\i tests/benchmark/v8javascript/testchar.sql
 \i tests/benchmark/python/testchar.sql
 \i tests/benchmark/pgsql/testchar.sql
 \i tests/benchmark/java/testchar.sql
@@ -17,7 +17,7 @@ SELECT
     'retVarChar',
     plbench('SELECT retVarChar(''Rodrigo'')', :runs) as plcsharp,
     -- plbench('SELECT retVarCharFSharp(''Rodrigo'')', :runs) as plfsharp;
-    -- plbench('SELECT retVarCharV8(''Rodrigo'')', :runs) as plv8,
+    plbench('SELECT retVarCharV8(''Rodrigo'')', :runs) as plv8,
     plbench('SELECT retVarCharPython(''Rodrigo'')', :runs) as plpython,
     plbench('SELECT retVarCharPg(''Rodrigo'')', :runs) as plpgsql,
     plbench('SELECT retVarCharJava(''Rodrigo'')', :runs) as pljava,
@@ -30,7 +30,7 @@ SELECT
     'retConcatVarChar',
     plbench('SELECT retConcatVarChar(''João '', ''da Silva'')', :runs) as plcsharp,
     -- plbench('SELECT retConcatVarCharFSharp(''João '', ''da Silva'')', :runs) as plfsharp;
-    -- plbench('SELECT retConcatVarCharV8(''João '', ''da Silva'')', :runs) as plv8,
+    plbench('SELECT retConcatVarCharV8(''João '', ''da Silva'')', :runs) as plv8,
     plbench('SELECT retConcatVarCharPython(''João '', ''da Silva'')', :runs) as plpython,
     plbench('SELECT retConcatVarCharPg(''João '', ''da Silva'')', :runs) as plpgsql,
     plbench('SELECT retConcatVarCharJava(''João '', ''da Silva'')', :runs) as pljava,
@@ -43,7 +43,7 @@ SELECT
     'retConcatText',
     plbench('SELECT retConcatText(''João '', ''da Silva'')', :runs) as plcsharp,
     -- plbench('SELECT retConcatTextFSharp(''João '', ''da Silva'')', :runs) as plfsharp;
-    -- plbench('SELECT retConcatTextV8(''João '', ''da Silva'')', :runs) as plv8,
+    plbench('SELECT retConcatTextV8(''João '', ''da Silva'')', :runs) as plv8,
     plbench('SELECT retConcatTextPython(''João '', ''da Silva'')', :runs) as plpython,
     plbench('SELECT retConcatTextPg(''João '', ''da Silva'')', :runs) as plpgsql,
     plbench('SELECT retConcatTextJava(''João '', ''da Silva'')', :runs) as pljava,
@@ -56,7 +56,7 @@ SELECT
     'retVarCharText',
     plbench('SELECT retVarCharText(''Homer Jay '', ''Simpson'')', :runs) as plcsharp,
     -- plbench('SELECT retVarCharTextFSharp(''Homer Jay '', ''Simpson'')', :runs) as plfsharp;
-    -- plbench('SELECT retVarCharTextV8(''Homer Jay '', ''Simpson'')', :runs) as plv8,
+    plbench('SELECT retVarCharTextV8(''Homer Jay '', ''Simpson'')', :runs) as plv8,
     plbench('SELECT retVarCharTextPython(''Homer Jay '', ''Simpson'')', :runs) as plpython,
     plbench('SELECT retVarCharTextPg(''Homer Jay '', ''Simpson'')', :runs) as plpgsql,
     plbench('SELECT retVarCharTextJava(''Homer Jay '', ''Simpson'')', :runs) as pljava,
@@ -69,7 +69,7 @@ SELECT
     'retChar',
     plbench('SELECT retChar(''R'')', :runs) as plcsharp,
     -- plbench('SELECT retCharFSharp(''R'')', :runs) as plfsharp;
-    -- plbench('SELECT retCharV8(''R'')', :runs) as plv8,
+    plbench('SELECT retCharV8(''R'')', :runs) as plv8,
     plbench('SELECT retCharPython(''R'')', :runs) as plpython,
     plbench('SELECT retCharPg(''R'')', :runs) as plpgsql,
     plbench('SELECT retCharJava(''R'')', :runs) as pljava,
@@ -82,7 +82,7 @@ SELECT
     'retConcatLetters',
     plbench('SELECT retConcatLetters(''R'', ''C'')', :runs) as plcsharp,
     -- plbench('SELECT retConcatLettersFSharp(''R'', ''C'')', :runs) as plfsharp;
-    -- plbench('SELECT retConcatLettersV8(''R'', ''C'')', :runs) as plv8,
+    plbench('SELECT retConcatLettersV8(''R'', ''C'')', :runs) as plv8,
     plbench('SELECT retConcatLettersPython(''R'', ''C'')', :runs) as plpython,
     plbench('SELECT retConcatLettersPg(''R'', ''C'')', :runs) as plpgsql,
     plbench('SELECT retConcatLettersJava(''R'', ''C'')', :runs) as pljava,
@@ -95,7 +95,7 @@ SELECT
     'retConcatChars',
     plbench('SELECT retConcatChars(''H.'', ''Simpson'')', :runs) as plcsharp,
     -- plbench('SELECT retConcatCharsFSharp(''H.'', ''Simpson'')', :runs) as plfsharp;
-    -- plbench('SELECT retConcatCharsV8(''H.'', ''Simpson'')', :runs) as plv8,
+    plbench('SELECT retConcatCharsV8(''H.'', ''Simpson'')', :runs) as plv8,
     plbench('SELECT retConcatCharsPython(''H.'', ''Simpson'')', :runs) as plpython,
     plbench('SELECT retConcatCharsPg(''H.'', ''Simpson'')', :runs) as plpgsql,
     plbench('SELECT retConcatCharsJava(''H.'', ''Simpson'')', :runs) as pljava,
@@ -108,7 +108,7 @@ SELECT
     'retConcatVarChars',
     plbench('SELECT retConcatVarChars(''H.'', ''Simpson'')', :runs) as plcsharp,
     -- plbench('SELECT retConcatVarCharsFSharp(''H.'', ''Simpson'')', :runs) as plfsharp;
-    -- plbench('SELECT retConcatVarCharsV8(''H.'', ''Simpson'')', :runs) as plv8,
+    plbench('SELECT retConcatVarCharsV8(''H.'', ''Simpson'')', :runs) as plv8,
     plbench('SELECT retConcatVarCharsPython(''H.'', ''Simpson'')', :runs) as plpython,
     plbench('SELECT retConcatVarCharsPg(''H.'', ''Simpson'')', :runs) as plpgsql,
     plbench('SELECT retConcatVarCharsJava(''H.'', ''Simpson'')', :runs) as pljava,
@@ -121,7 +121,7 @@ SELECT
     'retConcatVarChars(H. あ)',
     plbench('SELECT retConcatVarChars(''H. あ'', ''Simpson'')', :runs) as plcsharp,
     -- plbench('SELECT retConcatVarCharsFSharp(''H. あ'', ''Simpson'')', :runs) as plfsharp;
-    -- plbench('SELECT retConcatVarCharsV8(''H. あ'', ''Simpson'')', :runs) as plv8,
+    plbench('SELECT retConcatVarCharsV8(''H. あ'', ''Simpson'')', :runs) as plv8,
     plbench('SELECT retConcatVarCharsPython(''H. あ'', ''Simpson'')', :runs) as plpython,
     plbench('SELECT retConcatVarCharsPg(''H. あ'', ''Simpson'')', :runs) as plpgsql,
     plbench('SELECT retConcatVarCharsJava(''H. あ'', ''Simpson'')', :runs) as pljava,
@@ -134,7 +134,7 @@ SELECT
     'retNonRegularEncoding(漢字)',
     plbench('SELECT retNonRegularEncoding(''漢字'')', :runs) as plcsharp,
     -- plbench('SELECT retNonRegularEncodingFsharp (''漢字'')', :runs) as plfsharp;
-    -- plbench('SELECT retNonRegularEncodingV8(''漢字'')', :runs) as plv8,
+    plbench('SELECT retNonRegularEncodingV8(''漢字'')', :runs) as plv8,
     plbench('SELECT retNonRegularEncodingPython(''漢字'')', :runs) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''漢字'')', :runs) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''漢字'')', :runs) as pljava,
@@ -147,7 +147,7 @@ SELECT
     'retNonRegularEncoding',
     plbench('SELECT retNonRegularEncoding(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', :runs) as plcsharp,
     -- plbench('SELECT retNonRegularEncodingFSharp(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', :runs) as plfsharp;
-    -- plbench('SELECT retNonRegularEncodingV8(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', :runs) as plv8,
+    plbench('SELECT retNonRegularEncodingV8(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', :runs) as plv8,
     plbench('SELECT retNonRegularEncodingPython(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', :runs) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', :runs) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ'')', :runs) as pljava,
@@ -160,7 +160,7 @@ SELECT
     'retNonRegularEncoding(ŁĄŻĘĆŃŚŹ)',
     plbench('SELECT retNonRegularEncoding(''ŁĄŻĘĆŃŚŹ'')', :runs) as plcsharp,
     -- plbench('SELECT retNonRegularEncodingFSharp(''ŁĄŻĘĆŃŚŹ'')', :runs) as plfsharp;
-    -- plbench('SELECT retNonRegularEncodingV8(''ŁĄŻĘĆŃŚŹ'')', :runs) as plv8,
+    plbench('SELECT retNonRegularEncodingV8(''ŁĄŻĘĆŃŚŹ'')', :runs) as plv8,
     plbench('SELECT retNonRegularEncodingPython(''ŁĄŻĘĆŃŚŹ'')', :runs) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''ŁĄŻĘĆŃŚŹ'')', :runs) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''ŁĄŻĘĆŃŚŹ'')', :runs) as pljava,
@@ -173,7 +173,7 @@ SELECT
     'retNonRegularEncoding(Unicode)',
     plbench('SELECT retNonRegularEncoding(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', :runs) as plcsharp,
     -- plbench('SELECT retNonRegularEncodingFSharp(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', :runs) as plfsharp;
-    -- plbench('SELECT retNonRegularEncodingV8(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', :runs) as plv8,
+    plbench('SELECT retNonRegularEncodingV8(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', :runs) as plv8,
     plbench('SELECT retNonRegularEncodingPython(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', :runs) as plpython,
     plbench('SELECT retNonRegularEncodingPg(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', :runs) as plpgsql,
     plbench('SELECT retNonRegularEncodingJava(''Unicode, которая состоится 10-12 марта 1997 года в Майнце в Германии.'')', :runs) as pljava,

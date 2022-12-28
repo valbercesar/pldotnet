@@ -2,7 +2,7 @@
 
 \i tests/benchmark/csharp/testfloats.sql
 -- \i tests/benchmark/fsharp/testfsfloats.sql
--- \i tests/benchmark/v8javascript/testfloats.sql
+\i tests/benchmark/v8javascript/testfloats.sql
 \i tests/benchmark/python/testfloats.sql
 \i tests/benchmark/pgsql/testfloats.sql
 \i tests/benchmark/java/testfloats.sql
@@ -17,7 +17,7 @@ SELECT
     'returnReal',
     plbench('SELECT returnReal()', :runs) as plcsharp,
     -- plbench('SELECT returnRealFSharp()', :runs) as plfsharp;
-    -- plbench('SELECT returnRealV8()', :runs) as plv8,
+    plbench('SELECT returnRealV8()', :runs) as plv8,
     plbench('SELECT returnRealPython()', :runs) as plpython,
     plbench('SELECT returnRealPg()', :runs) as plpgsql,
     plbench('SELECT returnRealJava()', :runs) as pljava,
@@ -30,7 +30,7 @@ SELECT
     'sumReal',
     plbench('SELECT sumReal(1.50055, 1.50054)', :runs) as plcsharp,
     -- plbench('SELECT sumRealFSharp(1.50055, 1.50054)', :runs) as plfsharp;
-    -- plbench('SELECT sumRealV8(1.50055, 1.50054)', :runs) as plv8,
+    plbench('SELECT sumRealV8(1.50055, 1.50054)', :runs) as plv8,
     plbench('SELECT sumRealPython(1.50055, 1.50054)', :runs) as plpython,
     plbench('SELECT sumRealPg(1.50055, 1.50054)', :runs) as plpgsql,
     plbench('SELECT sumRealJava(1.50055, 1.50054)', :runs) as pljava,
@@ -43,7 +43,7 @@ SELECT
     'returnDouble',
     plbench('SELECT returnDouble()', :runs) as plcsharp,
     -- plbench('SELECT returnDoubleFSharp()', :runs) as plfsharp;
-    -- plbench('SELECT returnDoubleV8()', :runs) as plv8,
+    plbench('SELECT returnDoubleV8()', :runs) as plv8,
     plbench('SELECT returnDoublePython()', :runs) as plpython,
     plbench('SELECT returnDoublePg()', :runs) as plpgsql,
     plbench('SELECT returnDoubleJava()', :runs) as pljava,
@@ -56,7 +56,7 @@ SELECT
     'sumDouble',
     plbench('SELECT sumDouble(10.5000000000055, 10.5000000000054)', :runs) as plcsharp,
     -- plbench('SELECT sumDoubleFSharp(10.5000000000055, 10.5000000000054)', :runs) as plfsharp;
-    -- plbench('SELECT sumDoubleV8(10.5000000000055, 10.5000000000054)', :runs) as plv8,
+    plbench('SELECT sumDoubleV8(10.5000000000055, 10.5000000000054)', :runs) as plv8,
     plbench('SELECT sumDoublePython(10.5000000000055, 10.5000000000054)', :runs) as plpython,
     plbench('SELECT sumDoublePg(10.5000000000055, 10.5000000000054)', :runs) as plpgsql,
     plbench('SELECT sumDoubleJava(10.5000000000055, 10.5000000000054)', :runs) as pljava,

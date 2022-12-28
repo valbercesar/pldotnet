@@ -34,6 +34,12 @@ SELECT sumNullArgSmallIntV8(CAST(101 AS smallint),null) = integer '101';
 SELECT sumNullArgSmallIntV8(CAST(101 AS smallint),CAST(101 AS smallint)) = smallint '202';
 
 CREATE OR REPLACE FUNCTION sumNullArgBigIntV8(a bigint, b bigint) RETURNS bigint AS $$
+if (a == null) {
+    a = 0n;
+}
+if (b == null ) {
+    b = 0n;
+}
 return a + b;
 $$
 LANGUAGE plv8;
@@ -86,7 +92,7 @@ CREATE OR REPLACE FUNCTION checkedSumNullArgMixedV8(a integer, b smallint, c big
 if(!a || !b || !c)
     return null;
 else
-    return a + b + c;
+    return BigInt(a) + BigInt(b) + c;
 $$
 LANGUAGE plv8;
 SELECT checkedSumNullArgMixedV8(null,null,null) is NULL;
