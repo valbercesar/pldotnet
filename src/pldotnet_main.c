@@ -78,12 +78,16 @@ pldotnet_PathConfig path_config;
 static Datum pldotnet_generic_handler(FunctionCallInfo fcinfo, bool is_inline,
                                       pldotnet_Language language);
 
-/**
- * @brief TODO(rosicley) - add documentation
+ /**
+ * @brief The validator function will inspect the function body for syntactical
+ * correctness, but it can also look at other properties of the function,
+ * for example if the language cannot handle certain argument types.
+ * This functions calls the C# function to create and compile the user function
+ * into .NET Framework.
  *
  * @param fcinfo The standard parameter list for fmgr-compatible functions.
  * @param language The .NET language (C# or F#).
- * @return The datum that can be stored in a PostgreSQL table.
+ * @return a void datum.
  */
 static Datum pldotnet_validator(FunctionCallInfo fcinfo,
                                 pldotnet_Language language);
@@ -100,7 +104,7 @@ static Datum pldotnet_validator(FunctionCallInfo fcinfo,
  * function pointers and calls Engine.Compile() and Engine.Run() to retrieve the
  * desired results. After calling the user function, it saves the current
  * pldotnet_UserFunctionDeclaration into a global hash table called procedures
- * (see pldotnet_common.h).
+ * (see pldotnet_main.h).
  *
  *  Case 2: if there is a previous cached function, then it just calls
  * Engine.RunUserFunction()
@@ -122,7 +126,7 @@ static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
  * @param is_inline whether it is a inline function or not
  * @param validation whether the function should be validated.
  * @param language The .NET language (C# or F#).
- * @return pldotnet_UserFunctionDeclaration*  the function created by the user.
+ * @return pldotnet_UserFunctionDeclaration* the function created by the user.
  */
 static pldotnet_UserFunctionDeclaration *pldotnet_GetFunctionDecl(
     Oid oid, FunctionCallInfo fcinfo, HeapTuple proc, bool is_inline,
@@ -187,7 +191,8 @@ static void *pldotnet_GetDotNetMethod(const char *library_path,
  * which is defined through the "declaration" argument.
  *
  * @param declaration The object that contains the user's function information.
- * @return true if the process successful.
+ * @return true if the process succeeded.
+ * @return false if the process failed.
  */
 static bool pldotnet_CompileUserFunction(
     pldotnet_UserFunctionDeclaration *declaration);
@@ -227,14 +232,14 @@ static const char *pldotnet_GetSqlParamsName(HeapTuple proc,
  *
  * @param proc the HeapTuple object.
  * @param procst the Form_pg_proc object.
- * @return int* that points to an array with the OID of the arguments.
+ * @return const Oid* with the OID of the arguments.
  */
 static const Oid *pldotnet_GetSqlParamsType(HeapTuple proc,
                                             Form_pg_proc procst);
 
 /**
- * @brief Creates a list of IntPtr, adds the user arguments in this list and
- * returns the created list.
+ * @brief Creates a list of IntPtr using C# methods and then adds the user
+ * arguments in this list and returns the created list.
  *
  * @param fcinfo the FunctionCallInfo object.
  * @param procst the Form_pg_proc object.
@@ -248,14 +253,14 @@ static void *pldotnet_BuildArgumentList(FunctionCallInfo fcinfo,
  *
  * @param fcinfo the function information
  * @param index the argument index
- * @return Datum
+ * @return Datum of the provided index of the arguments list.
  */
 static Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo, size_t index);
 
 /**
  * @brief Maps the NULL Datums in the user argument list.
  *
- * @return bool* the pointer that points to the nullmap of user arguments.
+ * @return bool* the pointer to the nullmap of user arguments.
  */
 static bool *pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
                                             Form_pg_proc procst);
@@ -286,7 +291,8 @@ static HeapTuple pldotnet_GetPostgresHeapTuple(Oid oid);
 static void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc);
 
 /**
- * @brief
+ * @brief Allocate to the memory a pldotnet_UserFunctionDeclaration
+ * struct and return it.
  *
  * @return pldotnet_UserFunctionDeclaration*
  */
@@ -426,9 +432,6 @@ static Datum pldotnet_generic_handler(FunctionCallInfo fcinfo, bool is_inline,
     MemoryContextWrapper memory_context;
     Datum retval = 0;
 
-    // if (!pldotnet_SPIReady())
-    //     return retval;
-
     PG_TRY();
     {
         /* START NEW MEM CONTEXT */
@@ -444,8 +447,6 @@ static Datum pldotnet_generic_handler(FunctionCallInfo fcinfo, bool is_inline,
     { PG_RE_THROW(); }
 
     PG_END_TRY();
-
-    // pldotnet_SPIFinish();
 
     return retval;
 }
@@ -492,16 +493,12 @@ static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
     int res;
     output.value = (Datum)0;
 
-    /* WARNING WE NEED TO RELEASE THE SYSCACHE AT THE END
-     * IF PROC != nullptr */
-    /* START */
     proc = pldotnet_GetPostgresHeapTuple(fcinfo->flinfo->fn_oid);
 
     function_decl = pldotnet_GetFunctionDecl(fcinfo->flinfo->fn_oid, fcinfo,
                                              proc, is_inline, false, language);
 
     procst = (Form_pg_proc)GETSTRUCT(proc);
-    /* END */
 
     pldotnet_ReleasePostgresHeapTuple(proc);
 
@@ -668,7 +665,6 @@ static void pldotnet_ResetFunctionDecl(
     if (nullptr == function_decl)
         return;
 
-    /* this is the new user declaration */
     function_decl->language = nullptr;
     function_decl->func_name = nullptr;
     function_decl->func_ret_type = 0;

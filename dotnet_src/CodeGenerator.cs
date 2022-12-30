@@ -45,6 +45,9 @@ namespace PlDotNET
         /// <summary>
         /// Filter the necessary handlers that need to be created in the generated code.
         /// </summary>
+        /// <returns>
+        /// Returns the type handlers that need to be added in the dynamic code.
+        /// </returns>
         public static List<string> FilterHandlers(uint[] inputTypes, uint outputType)
         {
             List<string> allHandlers = new ();
@@ -76,8 +79,11 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Returns the Nullable message to insert it into the dynamic code.
+        /// A Nullable message to insert it into the dynamic code.
         /// </summary>
+        /// <returns>
+        /// Returns the Nullable message.
+        /// </returns>
         public static string GetNullableMessage(string funcName)
         {
             var sb = new System.Text.StringBuilder();
@@ -89,8 +95,11 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Returns the source code for the UserHandler according to the programming language.
+        /// Creates the source code for the UserHandler according to the programming language.
         /// </summary>
+        /// <returns>
+        /// Returns the generated UserHandler source code.
+        /// </returns>
         public string BuildUserHandlerSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, string funcBody, bool supportNullInput)
         {
             // Check if the file exists
@@ -121,12 +130,16 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Returns the source code for the UserFunction.
+        /// Creates the source code for the UserFunction.
         /// </summary>
+        /// <remarks>
         /// If the user provides an assembly file, this function returns the SQL user function body,
         /// i.e., 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'.
         /// If the user function uses F#, this function returns an empty string.
         /// </remarks>
+        /// <returns>
+        /// Returns the generated UserFunction source code.
+        /// </returns>
         public string BuildUserFunctionSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, string funcBody, bool supportNullInput)
         {
             if (Engine.ValidateUserAssembly(funcBody))
@@ -152,8 +165,11 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Returns the code to create the handler object that will be used.
+        /// Creates the code to create the handler objects that will be used to make the conversions.
         /// </summary>
+        /// <returns>
+        /// Returns the code to create the handler objects.
+        /// </returns>
         public abstract string BuildHandlerObjects(uint[] inputTypes, uint outputType);
 
         /// <summary>
@@ -161,28 +177,43 @@ namespace PlDotNET
         /// do the process of converting a Postgres type to an equivalente .NET
         /// type.
         /// </summary>
+        /// <returns>
+        /// Returns the user function arguments.
+        /// </returns>
         public abstract string BuildCreateArguments(string funcName, uint[] paramTypes, bool supportNullInput);
 
         /// <summary>
         /// This function creates code to call the user function.
         /// </summary>
+        /// <returns>
+        /// Returns the code to call the user function.
+        /// </returns>
         public abstract string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, bool supportNullInput, string prefix);
 
         /// <summary>
-        /// This function returns the code to create the Datum result according
+        /// This function creates the code to create the Datum result according
         /// to the OID of the result function. It also adds the code to set the
         /// Datum object to the function output.
         /// </summary>
+        /// <returns>
+        /// Returns the created code as string.
+        /// </returns>
         public abstract string BuildCallSetResult(uint id);
 
         /// <summary>
         /// This function creates user function.
         /// </summary>
+        /// <returns>
+        /// Returns user function as string.
+        /// </returns>
         public abstract string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, string[] paramNames, string[] dotnetTypes, bool supportNullInput);
 
         /// <summary>
-        /// Returns the .NET types of the SQL user function according to the language.
+        /// Get the .NET types of the SQL user function according to the language.
         /// </summary>
+        /// <returns>
+        /// Returns the types of each function argument.
+        /// </returns>
         public abstract string[] GetDotNetTypes(uint[] paramTypes);
 
         /// <summary>
@@ -236,7 +267,7 @@ namespace PlDotNET
                 string handler = Engine.GetTypeHandler(paramTypes[i]);
                 if (Engine.HandleArray.ContainsKey((OID)paramTypes[i]))
                 {
-                    if (supportNullInput || Engine.AlwaysNullable)
+                    if (supportNullInput)
                     {
                         sb.AppendLine($"var argument_{i} = {handler}Obj.InputNullableArray(arguments[{i}], isnull[{i}]);");
                     }
@@ -247,7 +278,7 @@ namespace PlDotNET
                 }
                 else
                 {
-                    if (supportNullInput || Engine.AlwaysNullable)
+                    if (supportNullInput)
                     {
                         sb.AppendLine($"var argument_{i} = {handler}Obj.InputNullableValue(arguments[{i}], isnull[{i}]);");
                     }
@@ -272,7 +303,7 @@ namespace PlDotNET
             }
 
             sb.Append($"{prefix}.{funcName}(");
-            string aux = (supportNullInput || Engine.AlwaysNullable) ? "?" : string.Empty;
+            string aux = supportNullInput ? "?" : string.Empty;
             for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
             {
                 sb.Append($"({dotnetTypes[i]}{aux}) argument_{i}");
@@ -317,7 +348,7 @@ namespace PlDotNET
             var sb = new System.Text.StringBuilder();
             string returnType = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
             string nullAbleOutput = returnType == "void" ? string.Empty : "?";
-            string aux = (supportNullInput || Engine.AlwaysNullable) ? "?" : string.Empty;
+            string aux = supportNullInput ? "?" : string.Empty;
 
             sb.Append($"public static {returnType}{nullAbleOutput} {funcName}(");
             for (int i = 0, length = paramNames.Length; i < length; i++)
@@ -359,26 +390,6 @@ namespace PlDotNET
 
     public class FSharpCodeGenerator : CodeGenerator
     {
-        private static readonly Dictionary<string, string> FSharpTypes =
-               new ()
-        {
-            { "float", "float32" },
-            { "short", "int16" },
-            { "long", "int64" },
-            { "NpgsqlRange<long>", "NpgsqlRange<int64>" },
-            { "(IPAddress Address, int Netmask)", "struct(IPAddress*int)" },
-        };
-
-        private static readonly List<string> ClassTypes =
-               new ()
-        {
-            "Array",
-            "byte[]",
-            "BitArray",
-            "string",
-            "PhysicalAddress",
-        };
-
         public FSharpCodeGenerator()
         {
             this.Language = DotNETLanguage.FSharp;
@@ -392,8 +403,37 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Returns the indented code according to the provided number of space.
+        /// This Dictionary contains the C# types that differs from F# type names.
         /// </summary>
+        private static readonly Dictionary<string, string> FSharpTypes =
+               new ()
+        {
+            { "float", "float32" },
+            { "short", "int16" },
+            { "long", "int64" },
+            { "NpgsqlRange<long>", "NpgsqlRange<int64>" },
+            { "(IPAddress Address, int Netmask)", "struct(IPAddress*int)" },
+        };
+
+        /// <summary>
+        /// This List contains the .NET Classes used to map the PostgreSQL Types.
+        /// </summary>
+        private static readonly List<string> ClassTypes =
+               new ()
+        {
+            "Array",
+            "byte[]",
+            "BitArray",
+            "string",
+            "PhysicalAddress",
+        };
+
+        /// <summary>
+        /// Indents code according to the provided number of space.
+        /// </summary>
+        /// <returns>
+        /// Returns the indented code.
+        /// </returns>
         public static string IndentCode(string code, uint spaceNumber)
         {
             string[] codeLines = code.Split("\n");
@@ -443,7 +483,7 @@ namespace PlDotNET
                 string handlerName = Engine.GetTypeHandler(paramTypes[i]);
                 if (Engine.HandleArray.ContainsKey((OID)paramTypes[i]))
                 {
-                    if (supportNullInput || Engine.AlwaysNullable)
+                    if (supportNullInput)
                     {
                         sb.AppendLine($"let argument_{i} = {handlerName}Obj.InputNullableArray(arguments.[{i}], isnull.[{i}])");
                     }
@@ -454,7 +494,7 @@ namespace PlDotNET
                 }
                 else
                 {
-                    if (supportNullInput || Engine.AlwaysNullable)
+                    if (supportNullInput)
                     {
                         sb.AppendLine($"let argument_{i} = {handlerName}Obj.InputNullableValue(arguments.[{i}], isnull.[{i}])");
                     }

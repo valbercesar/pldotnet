@@ -38,13 +38,28 @@ open System.Text
 open FSharp.Compiler.CodeAnalysis
 open FSharp.Compiler.Text
 
+/// The FSharpCompiler type provides methods for compiling F# source code.
 type FSharpCompiler() =
 
+    /// C function declared in pldotnet_main.h.
+    /// See ::pldotnet_Elog().
     [<DllImport("@PKG_LIBDIR/pldotnet.so", CallingConvention=CallingConvention.Cdecl)>]
     static extern void pldotnet_Elog(int level, string nessage)
 
+    /// The F# checker used for compiling F# source code.
+    ///
+    /// @see FSharpChecker
+    /// @see FSharpChecker.Create
     static member checker = FSharpChecker.Create()
 
+    /// Compiles the given F# source code and returns the path to the generated DLL.
+    /// If the compilation fails, an error message is logged and an empty string is returned.
+    ///
+    /// @param functionId The ID of the function.
+    /// @param functionName The name of the function.
+    /// @param sourceCode The F# source code to be compiled.
+    /// @param extraAssemblies An array of strings containing the paths to any extra assemblies that should be included in the compilation.
+    /// @return The path to the generated DLL, or an empty string if the compilation failed.
     static member CompileFSharpSourceCode (functionId: uint) (functionName: string) (sourceCode: string) (extraAssemblies: string[]) : string =
         let functionIdString = string functionId
         let inputFile : string = "/tmp/PlDotNET/fsharp/UserHandler_" + functionName + ".fs"
@@ -70,6 +85,13 @@ type FSharpCompiler() =
             pldotnet_Elog(19, sb.ToString())
             ""
 
+    /// Generates an array of strings containing the command-line flags to be passed to the F# compiler.
+    ///
+    /// @param input The path to the input F# source file.
+    /// @param output The path to the output DLL file.
+    /// @param extraAssemblies An array of strings containing the paths to any extra assemblies that should be included in the compilation.
+    /// @return An array of strings containing the command-line flags to be passed to the F# compiler.
+    /// @remarks The generated array includes the paths to the required system assemblies and the F# Core library.
     static member GetAllFlags (input : string) (output : string) (extraAssemblies : string[]) =
         let sysLib nm =
             if System.Environment.OSVersion.Platform = System.PlatformID.Win32NT then // file references only valid on Windows

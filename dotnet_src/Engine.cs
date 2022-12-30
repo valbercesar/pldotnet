@@ -181,14 +181,7 @@ namespace PlDotNET
         public delegate void DelUnloadAssemblies(uint functionId);
 
         /// <summary>
-        /// C function declared in pldotnet_conversions.h to return a void datum.
-        /// See ::pldotnet_CreateDatumVoid().
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumVoid();
-
-        /// <summary>
-        /// C function declared in pldotnet_common.h to set the datum result.
+        /// C function declared in pldotnet_main.h to set the datum result.
         /// See ::pldotnet_SetDatumResult().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
@@ -197,6 +190,9 @@ namespace PlDotNET
         /// <summary>
         /// Returns the handler object NAME for the specified OID.
         /// </summary>
+        /// <returns>
+        /// Returns The TypeHandler name.
+        /// </returns>
         public static string GetTypeHandler(uint id)
         {
             switch (id)
@@ -290,6 +286,9 @@ namespace PlDotNET
         /// <summary>
         /// This function compiles the dynamic code using Roslyn.
         /// </summary>
+        /// <returns>
+        /// Returns The response of the dynamic code compiled with Roslyn.
+        /// </returns>
         public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
@@ -366,13 +365,16 @@ namespace PlDotNET
             return compileResult;
         }
 
-        // <summary>
-        // This function is called called from C code and tries to create and
-        // compile the dynamic code using Roslyn. It also saves the
-        // CachedFunction in FuncBuiltCodeDict so that any compiled code can
-        // be called by the user function ID.
-        // This function returns 0 if all the codes were compiled correctly.
-        // </summary>
+        /// <summary>
+        /// This function is called called from C code and tries to create and
+        /// compile the dynamic code using Roslyn. It also saves the
+        /// CachedFunction in FuncBuiltCodeDict so that any compiled code can
+        /// be called by the user function ID.
+        /// This function returns 0 if all the codes were compiled correctly.
+        /// </summary>
+        /// <returns>
+        /// Returns 0 when the proccess succeeded, otherwise returns 1.
+        /// </returns>
         public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
         {
             // User function Data
@@ -421,13 +423,17 @@ namespace PlDotNET
                 // If the user provides his own assembly, this variable receives the assembly information.
                 // If the user function uses F#, this variable receives an empty string, since PL.NET creates the UserFunction
                 // together with the UserHandler.
-                userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput);
+                userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput || Engine.AlwaysNullable);
 
                 // Generate the UserHandler code
-                userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput);
+                userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput || Engine.AlwaysNullable);
             }
-            catch
+            catch (Exception e)
             {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine($"PL.NET could not build the dynamic codes for \"{funcName}\", due to the following exception:\n");
+                sb.AppendLine(e.ToString());
+                Elog.pldotnet_Warning(sb.ToString());
                 return 1;
             }
 
@@ -459,8 +465,12 @@ namespace PlDotNET
                 // Compile the UserHandler source code and then copy the assembly to a MemoryStream object
                 memUserHandler = CreateMemoryStreamForUserHandlerCode(dotnetLanguage, functionId, funcName, userHandlerCode, memUserFunction);
             }
-            catch
+            catch (Exception e)
             {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine($"PL.NET could not compile the dynamic code for \"{funcName}\", due to the following exception:\n");
+                sb.AppendLine(e.ToString());
+                Elog.pldotnet_Warning(sb.ToString());
                 return 1;
             }
 
@@ -493,9 +503,12 @@ namespace PlDotNET
             return 0;
         }
 
-        // <summary>
-        // This function returns a MemoryStream object which contains the Assembly for the UserFunction code.
-        // </summary>
+        /// <summary>
+        /// This function returns a MemoryStream object which contains the Assembly for the UserFunction code.
+        /// </summary>
+        /// <returns>
+        /// Returns a memory stream object with the compiled UserFunction code.
+        /// </returns>
         public static MemoryStream CreateMemoryStreamForUserFunctionCode(DotNETLanguage language, uint functionId, bool useUserAssembly, string userFunctionCode)
         {
             MemoryStream memUserFunction = new ();
@@ -522,9 +535,12 @@ namespace PlDotNET
             return memUserFunction;
         }
 
-        // <summary>
-        // This function returns a MemoryStream object which contains the Assembly for the UserHandler code.
-        // </summary>
+        /// <summary>
+        /// This function returns a MemoryStream object which contains the Assembly for the UserHandler code.
+        /// </summary>
+        /// <returns>
+        /// Returns a memory stream object with the compiled UserHandler code.
+        /// </returns>
         public static MemoryStream CreateMemoryStreamForUserHandlerCode(DotNETLanguage language, uint functionId, string functionName, string userHandlerCode, MemoryStream assemblyToInclude)
         {
             MemoryStream memUserHandler = new ();
@@ -565,6 +581,9 @@ namespace PlDotNET
         /// It creates the Delegate function for the CallUserFunction function,
         /// which was compiled by Roslyn.
         /// </summary>
+        /// <returns>
+        /// Returns the Action object of the delegated CallUserFunction or Null for a failed proccess.
+        /// </returns>
         public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(Assembly compiledAssembly)
         {
             Type procClassType = compiledAssembly.GetType("PlDotNET.UserSpace.UserHandler");
@@ -589,6 +608,9 @@ namespace PlDotNET
         /// found, an error message is reported. Otherwise, it calls the
         /// function compiled by Roslyn.
         /// </summary>
+        /// <returns>
+        /// Returns 0 when the proccess succeeded, otherwise returns 1.
+        /// </returns>
         public static unsafe int RunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output)
         {
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
@@ -636,6 +658,9 @@ namespace PlDotNET
         /// This functions is called from C and creates a new list of IntPtr,
         /// which pldotnet adds the Datums and passes to RunUserFunction.
         /// </summary>
+        /// <returns>
+        /// Returns an empty list of IntPtr.
+        /// </returns>
         public static unsafe System.IntPtr BuildDatumList()
         {
             var l = new List<IntPtr>();

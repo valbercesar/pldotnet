@@ -28,12 +28,12 @@
 #include <utils/rangetypes.h>
 
 ////////////////////////////////////
-//// Datum -> Npgsql or C# type ////
+/// Datum -> Npgsql or .NET type ///
 ////////////////////////////////////
 
 /**
  * @brief Returns the int16_t value that corresponds to a PostgreSQL small
- * integer. It is used to convert from PostgreSQL type to C#.
+ * integer. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @return int16_t value.
@@ -42,7 +42,7 @@ extern int16_t pldotnet_GetInt16(void *datum);
 
 /**
  * @brief Returns the int32_t value that corresponds to a PostgreSQL integer. It
- * is used to convert from PostgreSQL type to C#.
+ * is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @return int32_t value.
@@ -51,7 +51,7 @@ extern int32_t pldotnet_GetInt32(void *datum);
 
 /**
  * @brief Returns the int64_t value that corresponds to a PostgreSQL big
- * integer. It is used to convert from PostgreSQL type to C#.
+ * integer. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @return int64_t value.
@@ -60,7 +60,7 @@ extern int64_t pldotnet_GetInt64(void *datum);
 
 /**
  * @brief Returns the float value that corresponds to a PostgreSQL float. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @return float value.
@@ -69,7 +69,7 @@ extern float pldotnet_GetFloat(void *datum);
 
 /**
  * @brief Returns the float value that corresponds to a PostgreSQL double. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @return double value.
@@ -78,7 +78,7 @@ extern double pldotnet_GetDouble(void *datum);
 
 /**
  * @brief Returns the boolean value that corresponds to a PostgreSQL boolean. It
- * is used to convert from PostgreSQL type to C#.
+ * is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @return bool value.
@@ -87,7 +87,7 @@ extern bool pldotnet_GetBoolean(void *datum);
 
 /**
  * @brief Modifies the arguments with the coordinates of a PostgreSQL Point. It
- * is used to convert from PostgreSQL type to C#.
+ * is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param x the x coordinate.
@@ -97,7 +97,7 @@ extern void pldotnet_GetDatumPointAttributes(void *datum, double *x, double *y);
 
 /**
  * @brief Modifies the arguments with the parameters of a PostgreSQL Line. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param a the line parameter.
@@ -109,7 +109,7 @@ extern void pldotnet_GetDatumLineAttributes(void *datum, double *a, double *b,
 
 /**
  * @brief Modifies the arguments with the point coordinates that make up a
- * PostgreSQL Line Segment. It is used to convert from PostgreSQL type to C#.
+ * PostgreSQL Line Segment. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param x1 the x coordinate of the first point.
@@ -122,7 +122,7 @@ extern void pldotnet_GetDatumLineSegmentAttributes(void *datum, double *x1,
                                                    double *y2);
 /**
  * @brief Modifies the arguments with the point coordinates that make up a
- * PostgreSQL Box. It is used to convert from PostgreSQL type to C#.
+ * PostgreSQL Box. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param x1 the x coordinate of the upper right corner.
@@ -136,10 +136,10 @@ extern void pldotnet_GetDatumBoxAttributes(void *datum, double *x1, double *y1,
 /**
  * @brief Modifies the arguments with the number of points and whether the
  * PostgreSQL Path is closed or not. It is used to convert from PostgreSQL type
- * to C#.
+ * to .NET type.
  *
  * @param datum the datum object.
- * @param pointNumber the number of point of PostgreSQL Path.
+ * @param pointNumber is the number of points of the PostgreSQL Path.
  * @param closed whether the Path is closed or not.
  */
 extern void pldotnet_GetDatumPathAttributes(void *datum, int *pointNumber,
@@ -147,7 +147,7 @@ extern void pldotnet_GetDatumPathAttributes(void *datum, int *pointNumber,
 
 /**
  * @brief Sets the coordinates of the points that make up the PostgreSQL Path to
- * two arrays. It is used to convert from PostgreSQL type to C#.
+ * two arrays. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param xCoordinates the array with the x coordinates.
@@ -158,16 +158,16 @@ extern void pldotnet_GetDatumPathCoordinates(void *datum, double *xCoordinates,
 
 /**
  * @brief Modifies the argument with the number of points that make up the
- * PostgreSQL Polygon. It is used to convert from PostgreSQL type to C#.
+ * PostgreSQL Polygon. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
- * @param pointNumber an pointer to the number of points.
+ * @param pointNumber is a pointer to the number of points.
  */
 extern void pldotnet_GetDatumPolygonAttributes(void *datum, int *pointNumber);
 
 /**
  * @brief Sets the coordinates of the points that make up the PostgreSQL Path to
- * two arrays. It is used to convert from PostgreSQL type to C#.
+ * two arrays. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param xCoordinates the array with the x coordinates.
@@ -179,7 +179,7 @@ extern void pldotnet_GetDatumPolygonCoordinates(void *datum,
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Circle. It
- * is used to convert from PostgreSQL type to C#.
+ * is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param x the x coordinate of the center point.
@@ -191,7 +191,7 @@ extern void pldotnet_GetDatumCircleAttributes(void *datum, double *x, double *y,
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Text. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param len the number of characters.
@@ -201,7 +201,7 @@ extern void pldotnet_GetDatumTextAttributes(void *datum, int *len, char **buf);
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Character
- * (n). It is used to convert from PostgreSQL type to C#.
+ * (n). It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param len the number of characters.
@@ -211,7 +211,7 @@ extern void pldotnet_GetDatumCharAttributes(void *datum, int *len, char **buf);
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Character
- * Varying (n). It is used to convert from PostgreSQL type to C#.
+ * Varying (n). It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param len the number of characters.
@@ -222,7 +222,7 @@ extern void pldotnet_GetDatumVarCharAttributes(void *datum, int *len,
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Bytea. It
- * is used to convert from PostgreSQL type to C#.
+ * is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param len the number of characters.
@@ -232,7 +232,7 @@ extern void pldotnet_GetDatumByteaAttributes(void *datum, int *len, char **buf);
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Xml. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param len the number of characters.
@@ -241,9 +241,9 @@ extern void pldotnet_GetDatumByteaAttributes(void *datum, int *len, char **buf);
 extern void pldotnet_GetDatumXmlAttributes(void *datum, int *len, char **buf);
 
 /**
- * @brief Modifies the arguments with the properties of a PostgreSQL json. It is
- * used to convert from PostgreSQL type to C#.
- * @remark a PostgreSQL json is treated as text.
+ * @brief Modifies the arguments with the properties of a PostgreSQL JSON. It is
+ * used to convert from PostgreSQL type to .NET type.
+ * @remark a PostgreSQL JSON is treated as text.
  *
  * @param datum the datum object.
  * @param len the number of characters.
@@ -253,7 +253,7 @@ extern void pldotnet_GetDatumJsonAttributes(void *datum, int *len, char **buf);
 
 /**
  * @brief Modifies the argument with the property of a PostgreSQL Date. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param date the int32 value that represents a Date in PostgreSQL.
@@ -262,7 +262,7 @@ extern void pldotnet_GetDatumDateAttributes(void *datum, int *date);
 
 /**
  * @brief Modifies the argument with the property of a PostgreSQL Time. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param time the int64 value that represents a Date in PostgreSQL.
@@ -271,36 +271,36 @@ extern void pldotnet_GetDatumTimeAttributes(void *datum, long *time);
 
 /**
  * @brief Modifies the argument with the property of a PostgreSQL Time. It is
- * used to convert from PostgreSQL type to C#.
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
- * @param time the int64 value that represents a Time in PostgreSQL.
+ * @param time is the int64 value that represents a Time in PostgreSQL.
  */
 extern void pldotnet_GetDatumTimeTzAttributes(void *datum, long *time,
                                               int *zone);
 
 /**
  * @brief Modifies the argument with the property of a PostgreSQL Timestamp
- * without time noe. It is used to convert from PostgreSQL type to C#.
+ * without time now. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
- * @param time the int64 value that represents a Timestamp in PostgreSQL.
+ * @param time is the int64 value that represents a Timestamp in PostgreSQL.
  */
 extern void pldotnet_GetDatumTimestampAttributes(void *datum, long *timestamp);
 
 /**
  * @brief Modifies the argument with the property of a PostgreSQL Timestamp wit
- * time noe. It is used to convert from PostgreSQL type to C#.
+ * time now. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
- * @param time the int64 value that represents a Timestamp in PostgreSQL.
+ * @param time is the int64 value that represents a Timestamp in PostgreSQL.
  */
 extern void pldotnet_GetDatumTimestampTzAttributes(void *datum,
                                                    long *timestamp);
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Interval.
- * It is used to convert from PostgreSQL type to C#.
+ * It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param time the ticks of time.
@@ -313,18 +313,18 @@ extern void pldotnet_GetDatumIntervalAttributes(void *datum, long *time,
 /**
  * @brief Modifies an argument with the properties of a PostgreSQL Mac Address.
  * The MAC address length must be 6 or 8. It is used to convert from PostgreSQL
- * type to C#.
+ * type to .NET type.
  *
  * @param datum the datum object.
  * @param length the MAC address length.
- * @param bytes an array with the byte value that make up the MAC address.
+ * @param bytes an array with the byte value that makes up the MAC address.
  */
 extern void pldotnet_GetDatumMacAddressAttributes(void *datum, int length,
                                                   unsigned char *bytes);
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL INET or
- * CIDR. It is used to convert from PostgreSQL type to C#.
+ * CIDR. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param nelem the number of elements.
@@ -335,43 +335,43 @@ extern void pldotnet_GetDatumInetAttributes(void *datum, int *nelem,
                                             unsigned char *bytes, int *netmask);
 
 /**
- * @brief Modifies the argument with the property of a PostgreSQL Money. It is
- * used to convert from PostgreSQL type to C#.
+ * @brief Modifies the argument with the property of PostgreSQL Money. It is
+ * used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
- * @param value the long integer that represents the PostgreSQL Money.
+ * @param value is the long integer that represents the PostgreSQL Money.
  */
 extern void pldotnet_GetDatumMoneyAttributes(void *datum, long *value);
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Bit or
- * VarBit. It is used to convert from PostgreSQL type to C#.
+ * VarBit. It is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param len the length of the bit string.
- * @param dat an pointer that points to an array of unsigned char.
+ * @param dat a pointer that points to an array of unsigned char.
  */
 extern void pldotnet_GetDatumVarBitAttributes(void *datum, int *len,
                                               bits8 **dat);
 
 /**
  * @brief Modifies the array argument with the UUID data. It is used to convert
- * from PostgreSQL type to C#.
+ * from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
- * @param data an pointer that points to an array of unsigned char.
+ * @param data a pointer that points to an array of unsigned char.
  */
 extern void pldotnet_GetDatumUuidAttributes(void *datum, unsigned char *data);
 
 /**
  * @brief Modifies the arguments with the properties of a PostgreSQL Array. It
- * is used to convert from PostgreSQL type to C#.
+ * is used to convert from PostgreSQL type to .NET type.
  *
  * @param datum the datum object.
  * @param typeId the OID of the elements.
  * @param nDims the number of dimensions.
  * @param dims the array with the lengths of each dimension.
- * @param nullmap the pointer that points to an array with the nullmap of the
+ * @param nullmap is the pointer that points to an array with the nullmap of the
  * PostgreSQL Array.
  */
 extern void pldotnet_GetArrayAttributes(void *datum, int *typeId,
@@ -379,9 +379,9 @@ extern void pldotnet_GetArrayAttributes(void *datum, int *typeId,
                                         uint8_t **nullmap);
 
 /**
- * @brief Get maximum number of dimensions of an PostgreSQL Array.
+ * @brief Get a maximum number of dimensions of a PostgreSQL Array.
  *
- * @return the maximum number of dimensions of an PostgreSQL Array.
+ * @return the maximum number of dimensions of a PostgreSQL Array.
  */
 extern int get_Maxdim(void);
 
@@ -389,10 +389,10 @@ extern int get_Maxdim(void);
  * @brief Modifies the arguments with the properties of a PostgreSQL Array.
  *
  * @param arrayDatum the PostgreSQL Array.
- * @param results the flat array with the datum objects.
+ * @param results in the flat array with the datum objects.
  * @param nElems the number of elements.
  * @param typeId the OID of the elements.
- * @return int an integer to control errors.
+ * @return int an integer to control errors: 0 on success, other on failure.
  */
 extern int pldotnet_GetArrayDatum(Datum arrayDatum, Datum *results, int nElems,
                                   int typeId);
@@ -407,11 +407,11 @@ extern void pldotnet_GetDatumRangeAttributes(Datum inputDatum, bool *isEmpty,
                                              RangeBound **upperDange);
 
 ////////////////////////////////////
-//// Npgsql or C# type -> Datum ////
+/// Npgsql or .NET type -> Datum ///
 ////////////////////////////////////
 
 /**
- * @brief Creates a PostgreSQL small integer from a int16_t value. It is used to
+ * @brief Creates a PostgreSQL small integer from an int16_t value. It is used to
  * convert from a .NET type to a PostgreSQL Datum.
  *
  * @param value
@@ -420,7 +420,7 @@ extern void pldotnet_GetDatumRangeAttributes(Datum inputDatum, bool *isEmpty,
 extern Datum pldotnet_CreateDatumInt16(int16_t value);
 
 /**
- * @brief Creates a PostgreSQL integer from a int32_t value. It is used to
+ * @brief Creates a PostgreSQL integer from an int32_t value. It is used to
  * convert from a .NET type to a PostgreSQL Datum.
  *
  * @param value
@@ -429,7 +429,7 @@ extern Datum pldotnet_CreateDatumInt16(int16_t value);
 extern Datum pldotnet_CreateDatumInt32(int32_t value);
 
 /**
- * @brief Creates a PostgreSQL big integer from a int64_t value. It is used to
+ * @brief Creates a PostgreSQL big integer from an int64_t value. It is used to
  * convert from a .NET type to a PostgreSQL Datum.
  *
  * @param value
@@ -541,8 +541,8 @@ extern Datum pldotnet_CreateDatumPolygon(int npts, double *xCoordinates,
  * @brief Creates a PostgreSQL Circle from its properties. It is used to convert
  * from a .NET type to a PostgreSQL Datum.
  *
- * @param x the x coordinate of center point.
- * @param y the y coordinate of center point.
+ * @param x the x coordinate of the center point.
+ * @param y the y coordinate of the center point.
  * @param r the radius of the circle.
  * @return Datum the datum object.
  */
@@ -599,9 +599,9 @@ extern Datum pldotnet_CreateDatumBytea(int len, char *buf);
 extern Datum pldotnet_CreateDatumXml(int len, char *buf);
 
 /**
- * @brief Creates a PostgreSQL json. It is used to convert from a .NET type to a
+ * @brief Creates a PostgreSQL JSON. It is used to convert from a .NET type to a
  * PostgreSQL Datum.
- * @remark a PostgreSQL json is treated as text.
+ * @remark a PostgreSQL JSON is treated as text.
  *
  * @param len the number of characters.
  * @param buf the array with byte values.
@@ -613,7 +613,7 @@ extern Datum pldotnet_CreateDatumJson(int len, char *buf);
  * @brief Creates a PostgreSQL Date. It is used to convert from a .NET type to a
  * PostgreSQL Datum.
  *
- * @param date the integer value that represents a Date in PostgreSQL.
+ * @param date is the integer value that represents a Date in PostgreSQL.
  * @return Datum the datum object.
  */
 extern Datum pldotnet_CreateDatumDate(int date);
@@ -622,35 +622,35 @@ extern Datum pldotnet_CreateDatumDate(int date);
  * @brief Creates a PostgreSQL Time. It is used to convert from a .NET type to a
  * PostgreSQL Datum.
  *
- * @param time the long integer value that represents a Time in PostgreSQL.
+ * @param time is the long integer value that represents a Time in PostgreSQL.
  * @return Datum the datum object.
  */
 extern Datum pldotnet_CreateDatumTime(long time);
 
 /**
- * @brief Creates a PostgreSQL Time with time zone. It is used to convert from a
+ * @brief Creates a PostgreSQL Time with the time zone. It is used to convert from a
  * .NET type to a PostgreSQL Datum.
  *
- * @param time the long integer value that represents a Time in PostgreSQL.
+ * @param time is the long integer value that represents a Time in PostgreSQL.
  * @param zone the zone value.
  * @return Datum the datum object.
  */
 extern Datum pldotnet_CreateDatumTimeTz(long time, int zone);
 
 /**
- * @brief Creates a PostgreSQL Timestamp without time zone. It is used to
+ * @brief Creates a PostgreSQL Timestamp without a time zone. It is used to
  * convert from a .NET type to a PostgreSQL Datum.
  *
- * @param time the long integer value that represents a Timestamp in PostgreSQL.
+ * @param time is the long integer value that represents a Timestamp in PostgreSQL.
  * @return Datum the datum object.
  */
 extern Datum pldotnet_CreateDatumTimestamp(long timestamp);
 
 /**
- * @brief Creates a PostgreSQL Timestamp with time zone. It is used to convert
+ * @brief Creates a PostgreSQL Timestamp with the time zone. It is used to convert
  * from a .NET type to a PostgreSQL Datum.
  *
- * @param time the long integer value that represents a Timestamp in PostgreSQL.
+ * @param time is the long integer value that represents a Timestamp in PostgreSQL.
  * @return Datum the datum object.
  */
 extern Datum pldotnet_CreateDatumTimestampTz(long timestamp);
@@ -659,7 +659,7 @@ extern Datum pldotnet_CreateDatumTimestampTz(long timestamp);
  * @brief Creates a PostgreSQL Interval. It is used to convert from a .NET type
  * to a PostgreSQL Datum.
  *
- * @param time the long integer value that represents a time in PostgreSQL.
+ * @param time is the long integer value that represents a time in PostgreSQL.
  * @param day the number of days.
  * @param month the number of months.
  * @return Datum the datum object.
@@ -682,14 +682,14 @@ extern Datum pldotnet_CreateDatumMacAddress(int length, unsigned char *bytes);
  *
  * @param length the number of elements.
  * @param bytes the array with byte values.
- * @param netmask  the number of bits in the netmask.
+ * @param netmask the number of bits in the netmask.
  * @return Datum the datum object.
  */
 extern Datum pldotnet_CreateDatumInet(int length, unsigned char *bytes,
                                       int netmask);
 
 /**
- * @brief Creates a PostgreSQL Money. It is used to convert from a .NET type to
+ * @brief Creates PostgreSQL Money. It is used to convert from a .NET type to
  * a PostgreSQL Datum.
  *
  * @param value the long integer that represents the money in PostgreSQL
@@ -716,7 +716,7 @@ extern Datum pldotnet_CreateDatumVarBit(int len, bits8 *dat);
 extern Datum pldotnet_CreateDatumUuid(unsigned char *data);
 
 /**
- * @brief Creates a empty PostgreSQL range. It is used to convert from a .NET
+ * @brief Creates an empty PostgreSQL range. It is used to convert from a .NET
  * type to a PostgreSQL Datum.
  *
  * @param rangeTypeId the Oid of the range.
@@ -747,7 +747,7 @@ extern Datum pldotnet_CreateDatumRange(Oid rtOid, Datum lowerDatum,
  * @brief Creates a PostgreSQL Array of the specified type. It is used to
  * convert from a .NET type to a PostgreSQL Datum.
  *
- * @param elementId the OID of the elements.
+ * @param elementId is the OID of the elements.
  * @param dimNumber the number of dimensions.
  * @param dimLengths the array with the lengths in each dimension.
  * @param datums the flat array with the datum objects.
@@ -757,12 +757,5 @@ extern Datum pldotnet_CreateDatumRange(Oid rtOid, Datum lowerDatum,
 extern Datum pldotnet_CreateDatumArray(int elementId, int dimNumber,
                                        int *dimLengths, Datum *datums,
                                        bool *nulls);
-
-/**
- * @brief Creates a PostgreSQL void.
- *
- * @return Datum void
- */
-extern Datum pldotnet_CreateDatumVoid(void);
 
 #endif  // PLDOTNET_CONVERSIONS_H_

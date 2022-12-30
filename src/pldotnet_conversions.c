@@ -39,7 +39,7 @@
 #include <utils/json.h>
 
 ////////////////////////////////////
-//// Datum -> Npgsql or C# type ////
+/// Datum -> Npgsql or .NET type ///
 ////////////////////////////////////
 
 int16_t pldotnet_GetInt16(void *datum) {
@@ -353,7 +353,6 @@ int pldotnet_GetArrayDatum(Datum arrayDatum, Datum *results, int nElems,
         return -2;
     }
 
-    // this will be cleaned up later into parameters
     get_typlenbyvalalign((Oid)typeId, &typlen, &typbyval, &typalign);
 
     for (i = 0; i < nElems; i++) {
@@ -368,7 +367,7 @@ int pldotnet_GetArrayDatum(Datum arrayDatum, Datum *results, int nElems,
         /* advance bitmap pointer if any */
         if (bitmap) {
             bitmask <<= 1;
-            if (bitmask == 0x100 /* (1<<8) */) {
+            if (bitmask == 0x100) {
                 bitmap++;
                 bitmask = 1;
             }
@@ -378,7 +377,7 @@ int pldotnet_GetArrayDatum(Datum arrayDatum, Datum *results, int nElems,
 }
 
 ////////////////////////////////////
-//// Npgsql or C# type -> Datum ////
+/// Npgsql or .NET type -> Datum ///
 ////////////////////////////////////
 
 Datum pldotnet_CreateDatumInt16(int16_t value) {
@@ -690,5 +689,3 @@ Datum pldotnet_CreateDatumArray(int elementId, int dimNumber, int *dimLengths,
 
     PG_RETURN_ARRAYTYPE_P(at);
 }
-
-Datum pldotnet_CreateDatumVoid(void) { PG_RETURN_VOID(); }

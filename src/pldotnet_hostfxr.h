@@ -55,7 +55,7 @@ typedef struct hostfxr_initialize_parameters {
 typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_initialize_for_runtime_config_fn)(
     const char_t *runtime_config_path,
     const hostfxr_initialize_parameters *parameters,
-    /*out*/ hostfxr_handle *host_context_handle);
+    hostfxr_handle *host_context_handle);
 
 typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_set_runtime_property_value_fn)(
     const hostfxr_handle host_context_handle, const char_t *name,
@@ -63,7 +63,7 @@ typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_set_runtime_property_value_fn)(
 
 typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_get_runtime_delegate_fn)(
     const hostfxr_handle host_context_handle, enum hostfxr_delegate_type type,
-    /*out*/ void **delegate);
+    void **delegate);
 
 typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_close_fn)(
     const hostfxr_handle host_context_handle);
@@ -71,7 +71,7 @@ typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_close_fn)(
 typedef load_assembly_and_get_function_pointer_fn dotnet_loader;
 
 /**
- * @brief A function pointer that points to Engine.CompileUserFunction().
+ * @brief A function pointer that references Engine.CompileUserFunction().
  *
  */
 typedef int(CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
@@ -80,34 +80,34 @@ typedef int(CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
     bool support_null_input, char *dotnet_language);
 
 /**
- * @brief A function pointer that points to Engine.RunUserFunction().
+ * @brief A function pointer that references Engine.RunUserFunction().
  *
  */
 typedef int(CORECLR_DELEGATE_CALLTYPE *run_user_fn)(
     uint32_t functionId, void *arguments, bool *nullmap, void *output);
 
 /**
- * @brief A function pointer that points to Engine.BuildDatumList().
+ * @brief A function pointer that references Engine.BuildDatumList().
  *
  */
 typedef void *(CORECLR_DELEGATE_CALLTYPE *build_datum_list_fn)(void);
 
 /**
- * @brief A function pointer that points to Engine.AddDatumToList().
+ * @brief A function pointer that references Engine.AddDatumToList().
  *
  */
 typedef void(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_fn)(void *list,
                                                              void *datum);
 
 /**
- * @brief A function pointer that points to Engine.FreeGenericGCHandle().
+ * @brief A function pointer that references Engine.FreeGenericGCHandle().
  *
  */
 typedef void(CORECLR_DELEGATE_CALLTYPE *free_generic_gchandle_fn)(
     void *gchandle);
 
 /**
- * @brief A function pointer that points to Engine.UnloadAssemblies().
+ * @brief A function pointer that references Engine.UnloadAssemblies().
  *
  */
 typedef void(CORECLR_DELEGATE_CALLTYPE *unload_assemblies_fn)(

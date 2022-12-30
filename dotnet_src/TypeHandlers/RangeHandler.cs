@@ -55,7 +55,6 @@ namespace PlDotNET.Handler
             RangeConstructors.pldotnet_GetDatumRangeBoundAttributes(
                 lower_range, &lowerDatum, &lowerInfinite, &lowerInclusive, &lowerLower);
 
-            // TODO: check upperLower and lowerLower
             lower = HandlerObj.InputValue(lowerDatum);
             upper = HandlerObj.InputValue(upperDatum);
 
@@ -85,9 +84,6 @@ namespace PlDotNET.Handler
             IntPtr upperDatum = HandlerObj.OutputValue(upper);
             IntPtr lowerDatum = HandlerObj.OutputValue(lower);
 
-            // TODO: now, actually construct the range datum down in C
-            // - Construct the two RangeBound objects for upper and lower
-            // - Combine them to make a Range
             return RangeConstructors.pldotnet_CreateDatumRange(
                 this.ElementOID,
                 lowerDatum,

@@ -93,6 +93,9 @@ automated_test_results/
 *.ddeb
 *.substvars
 build*/
+package-build-log.txt
+debian/postgresql-*-pldotnet/
+debian/.debhelper
 
 tests/benchmark/java/test-suite/
 automated_test_results/*
@@ -106,5 +109,3 @@ tests/csharp/DotNetTestProject/obj
 
 tests/fsharp/DotNetTestProject/bin
 tests/fsharp/DotNetTestProject/obj
-
-package-build-log.txt

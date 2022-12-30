@@ -42,6 +42,9 @@ namespace PlDotNET.Handler
         /// </remarks>
         /// <param name="nullmap">The PostgreSQL nullmap.</param>
         /// <param name="offset">The element offset.</param>
+        /// <returns>
+        /// Whether the nullmap contains any null values.
+        /// </returns>
         public static unsafe bool CheckNullValue(byte[] nullmap, int offset)
         {
             int byteLen = nullmap.Length;
@@ -96,6 +99,9 @@ namespace PlDotNET.Handler
         /// Checks if the PostreSQL array is null. If the datum is null, it returns
         /// null. Otherwise, it calls the InputArray method.
         /// </summary>
+        /// <returns>
+        /// An Array Object if the Datum is not null. Otherwise returns null.
+        /// </returns>
 #nullable enable
         public Array? InputNullableArray(IntPtr datum, bool isnull)
         {
@@ -107,6 +113,9 @@ namespace PlDotNET.Handler
         /// Checks if Array object is null. If so, it returns a Datum Int32, otherwise
         /// it calls the OutputArray method.
         /// </summary>
+        /// <returns>
+        /// An Array Datum if the value is not null. Otherwise returns an Integer Datum.
+        /// </returns>
 #nullable enable
         public IntPtr OutputNullableArray(Array? value)
         {
@@ -120,7 +129,7 @@ namespace PlDotNET.Handler
         /// to correctly handle with this array.
         /// </summary>
         /// <param name="datum">The PostgreSQL array.</param>
-        /// <returns> Returns an Array object (multidimensional or not).</returns>
+        /// <returns> An Array object (multidimensional or not).</returns>
         public unsafe Array InputArray(IntPtr datum)
         {
             int ndims = 0;
@@ -268,6 +277,9 @@ namespace PlDotNET.Handler
         /// Check if the PostgreSQL datum is null. If the datum is null, it returns null.
         /// Otherwise, call the abstract method InputValue.
         /// </summary>
+        /// <returns>
+        /// A .NET type if the Datum is not null. Otherwise returns null.
+        /// </returns>
         public T? InputNullableValue(IntPtr datum, bool isnull)
         {
             return isnull ? null : this.InputValue(datum);
@@ -277,6 +289,9 @@ namespace PlDotNET.Handler
         /// Check if the .NET value is null. If the value is null, it returns a Datum(0).
         /// Otherwise, call the abstract method OutputValue.
         /// </summary>
+        /// <returns>
+        /// The suitable Datum if the .NET value is not null. Oherwise returns an Integer Datum.
+        /// </returns>
         public IntPtr OutputNullableValue(T? value)
         {
             return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue((T)value);
@@ -295,9 +310,12 @@ namespace PlDotNET.Handler
     {
 #nullable enable
         /// <summary>
-        /// Check if the PostgreSQL datum is null. If the datum is null, it returns null.
+        /// Check if the PostgreSQL datum is null. If the Datum is null, it returns null.
         /// Otherwise, call the abstract method InputValue.
         /// </summary>
+        /// <returns>
+        /// A .NET type if the Datum is not null. Otherwise returns null.
+        /// </returns>
         public T? InputNullableValue(IntPtr datum, bool isnull)
         {
             return isnull ? null : this.InputValue(datum);
@@ -307,6 +325,9 @@ namespace PlDotNET.Handler
         /// Check if the .NET value is null. If the value is null, it returns a Datum(0).
         /// Otherwise, call the abstract method OutputValue.
         /// </summary>
+        /// <returns>
+        /// The suitable Datum if the .NET value is not null. Oherwise returns an Integer Datum.
+        /// </returns>
         public IntPtr OutputNullableValue(T? value)
         {
             return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue((T)value);
@@ -335,7 +356,7 @@ namespace PlDotNET.Handler
     public class Elog
     {
         /// <summary>
-        /// C function declared in pldotnet_common.h.
+        /// C function declared in pldotnet_main.h.
         /// See ::pldotnet_Elog().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]

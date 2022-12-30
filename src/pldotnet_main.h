@@ -47,8 +47,19 @@ extern GHashTable *procedures;
 extern char *root_path;
 extern char *dnldir;
 
-/* As a reminder snprintf is defined as pg_snprintf.  TODO - CHECK HERE
- * Check port.h into postgres codebase
+/**
+ * @brief Writes formatted output to a string using snprintf and checks if the
+ * output exceeds the size of the buffer.
+ *
+ * If the output exceeds the size of the buffer, this macro calls elog with an
+ * error message indicating that the string was too long for the buffer.
+ *
+ * @param dst Pointer to the destination buffer where the formatted output will
+ * be written.
+ * @param size Size of the destination buffer.
+ * @param fmt Format string that specifies how the formatted output should be
+ * written.
+ * @param ... List of arguments for the format specifiers in the format string.
  */
 #define SNPRINTF(dst, size, fmt, ...)                                      \
     if (snprintf(dst, size, fmt, __VA_ARGS__) >= size) {                   \
@@ -125,7 +136,7 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS);
 
 /**
  * @brief The call_handler will be called to execute the procedural
- * language's functions.  The call handler receives a pointer to a
+ * language's functions. The call handler receives a pointer to a
  * FunctionCallInfoData struct containing argument values and information
  * about the called function, and it is expected to return a Datum result.
  *
@@ -162,9 +173,9 @@ Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
 Datum plfsharp_validator(PG_FUNCTION_ARGS);
 
 /**
- * @brief Build the config paths related do .NET.
+ * @brief Build the config paths related to .NET.
  *
- * @param paths the variable that stores the config paths related to dotnet.
+ * @param paths is the variable that stores the config paths related to dotnet.
  */
 bool pldotnet_BuildPaths(void);
 
@@ -181,20 +192,20 @@ bool pldotnet_SetNetLoader(void);
  * @brief Sets the .NET methods for the C function pointers.
  *
  * @return true if all the .NET functions were found.
- * @return false if any .NET functions were not found.
+ * @return false if no .NET functions were found.
  */
 bool pldotnet_SetDotNetMethods(void);
 
 /**
- * @brief Calls the "elog" function to report a message os PostgreSQL.
+ * @brief Calls the "elog" function to report a message of PostgreSQL.
  *
- * @param level The message level. For example, INFO, ERROR, WARNING...
+ * @param level The message level. For example, INFO, ERROR, WARNING, etc...
  * @param message The message that will be reported.
  */
 extern void pldotnet_Elog(int level, char *message);
 
 /**
- * @brief This functions is called from the dynamic C# code to set the result
+ * @brief This function is called from the dynamic C# code to set the result
  * Datum of the user function.
  *
  * @param value a Datum object.
