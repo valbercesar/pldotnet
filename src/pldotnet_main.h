@@ -204,17 +204,4 @@ bool pldotnet_SetDotNetMethods(void);
  */
 extern void pldotnet_Elog(int level, char *message);
 
-/**
- * @brief This function is called from the dynamic C# code to set the result
- * Datum of the user function.
- *
- * @param value a Datum object.
- * @param isNull whether the Datum is null.
- * @param nativeResult a "pldotnet_Result" object created on
- * "pldotnet_CompileAndRunUserFunction" and contains the Datum that will be
- * returned.
- */
-extern void pldotnet_SetDatumResult(void *value, bool isNull,
-                                    void *nativeResult);
-
 #endif  // PLDOTNET_MAIN_H_

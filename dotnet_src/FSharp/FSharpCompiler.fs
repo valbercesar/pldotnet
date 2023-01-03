@@ -60,19 +60,28 @@ type FSharpCompiler() =
     /// @param sourceCode The F# source code to be compiled.
     /// @param extraAssemblies An array of strings containing the paths to any extra assemblies that should be included in the compilation.
     /// @return The path to the generated DLL, or an empty string if the compilation failed.
-    static member CompileFSharpSourceCode (functionId: uint) (functionName: string) (sourceCode: string) (extraAssemblies: string[]) : string =
+    static member CompileFSharpSourceCode (functionId: uint) (functionName: string) (sourceCode: string) (extraAssemblies: string[]) : MemoryStream =
         let functionIdString = string functionId
-        let inputFile : string = "/tmp/PlDotNET/fsharp/UserHandler_" + functionName + ".fs"
-        let outputFile : string = "/tmp/PlDotNET/dlls/UserHandler_" + functionIdString + ".dll"
+        let inputFile : string = "/tmp/UserHandler.fs"
+        let outputFile : string = "/tmp/UserHandler.dll"
         let options = FSharpCompiler.GetAllFlags inputFile outputFile extraAssemblies
+
+        File.WriteAllText(inputFile, sourceCode, Encoding.UTF8)
 
         let errors, exitCode =
             FSharpCompiler.checker.Compile(options)
                 |> Async.RunSynchronously
 
+        File.Delete(inputFile) |> ignore
+
         match (exitCode) with
         | 0 ->
-            outputFile
+            let memUserHandler = new MemoryStream()
+            let fs = File.Open(outputFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            fs.CopyTo(memUserHandler) |> ignore
+            File.Delete(outputFile) |> ignore
+            File.Delete("/tmp/UserHandler.pdb") |> ignore
+            memUserHandler
         | _ ->
             let sb = new System.Text.StringBuilder()
             sb.AppendLine($"PL.NET could not compile the following F# generated code:") |> ignore
@@ -83,7 +92,8 @@ type FSharpCompiler() =
             for e in errors do
                 sb.AppendLine(e.ToString()) |> ignore
             pldotnet_Elog(19, sb.ToString())
-            ""
+            failwith "PL.NET could not compile the generated F# code."
+            null
 
     /// Generates an array of strings containing the command-line flags to be passed to the F# compiler.
     ///

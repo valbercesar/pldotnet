@@ -66,6 +66,8 @@ namespace PlDotNET
 
         public static bool PrintSourceCode = false;
 
+        public static bool SaveSourceCode = false;
+
         public static string PathToGeneratedCode = "/tmp/PlDotNET/";
 
         public static Dictionary<OID, OID> HandleArray =
@@ -179,13 +181,6 @@ namespace PlDotNET
         public delegate void DelAddDatumToList(System.IntPtr list, System.IntPtr datum);
 
         public delegate void DelUnloadAssemblies(uint functionId);
-
-        /// <summary>
-        /// C function declared in pldotnet_main.h to set the datum result.
-        /// See ::pldotnet_SetDatumResult().
-        /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_SetDatumResult(IntPtr value, [MarshalAs(UnmanagedType.I1)] bool isNull, IntPtr nativeResult);
 
         /// <summary>
         /// Returns the handler object NAME for the specified OID.
@@ -552,16 +547,7 @@ namespace PlDotNET
                     typeof(Engine).Assembly.Location,
                 };
 
-                string generatedAssembly = FSharpCompiler.CompileFSharpSourceCode(functionId, functionName, userHandlerCode, extraAssemblies.ToArray());
-
-                // Verify that the F# code compiled correctly
-                if (generatedAssembly == string.Empty)
-                {
-                    throw new SystemException("PL.NET could not compile the generated F# code.");
-                }
-
-                using var fs = File.Open(generatedAssembly, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                fs.CopyTo(memUserHandler);
+                return FSharpCompiler.CompileFSharpSourceCode(functionId, functionName, userHandlerCode, extraAssemblies.ToArray());
             }
             else
             {

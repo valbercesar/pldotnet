@@ -378,4 +378,42 @@ namespace PlDotNET.Handler
             pldotnet_Elog(19, message);
         }
     }
+
+    /// <summary>
+    /// Provides a set of methods for setting the result datum of a user function to an output object.
+    /// </summary>
+    public class OutputResult
+    {
+        /// <summary>
+        /// Sets the result datum of a user function to an output object.
+        /// </summary>
+        /// <param name="resultDatum">A pointer to the result datum to be set.</param>
+        /// <param name="isNull">A value indicating whether the result datum is null. Set to `true` if
+        /// the result datum is null, and `false` otherwise.</param>
+        /// <param name="output">A pointer to the output object where the result datum will be set.</param>
+        public static unsafe void SetDatumResult(IntPtr resultDatum, bool isNull, IntPtr output)
+        {
+            Result* pOutput = (Result*)output.ToPointer();
+            pOutput->Value = resultDatum;
+            pOutput->IsNull = isNull;
+        }
+
+        /// <summary>
+        /// Represents a result object containing a value and a nullability flag.
+        /// </summary>
+        private struct Result
+        {
+            /// <summary>
+            /// A pointer to the value of the result datum.
+            /// </summary>
+            public IntPtr Value;
+
+            /// <summary>
+            /// A value indicating whether the result is null. Set to `true` if the result is null,
+            /// and `false` otherwise.
+            /// </summary>
+            [MarshalAs(UnmanagedType.I1)]
+            public bool IsNull;
+        }
+    }
 }

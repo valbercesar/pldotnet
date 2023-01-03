@@ -23,7 +23,7 @@ install_dotnet_ubuntu: add_dotnet
 
 install_requirements: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential sudo vim apt-utils pkg-config doxygen graphviz
+	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential apt-utils pkg-config doxygen graphviz
 
 install_pg_dev: install_requirements
 	# installs postgresql dev packages
@@ -87,7 +87,7 @@ install_pls:
 	apt install -y postgresql-pltcl-14
 
 	echo "# Installing plv8"
-	apt install -y g++ python2 pkg-config libc++-dev libc++abi-dev libglib2.0-dev libtinfo5 ninja-build
+	apt install -y g++ python2 libc++-dev libc++abi-dev libtinfo5 ninja-build
 	sudo ln -s -f /usr/bin/python2 /usr/bin/python
 	cd .. && wget https://github.com/plv8/plv8/archive/v3.0.0.tar.gz && tar -xvzf v3.0.0.tar.gz && cd plv8-3.0.0 && make && make install
 

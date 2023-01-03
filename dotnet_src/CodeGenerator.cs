@@ -95,6 +95,18 @@ namespace PlDotNET
         }
 
         /// <summary>
+        /// Saves the source code if Engine.SaveSourceCode is true.
+        /// </summary>
+        public void SaveSourceCode(string sourceCode, string fileName)
+        {
+            if (Engine.SaveSourceCode)
+            {
+                string extension = this.Language == DotNETLanguage.CSharp ? "cs" : "fs";
+                File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.{extension}", sourceCode, Encoding.UTF8);
+            }
+        }
+
+        /// <summary>
         /// Creates the source code for the UserHandler according to the programming language.
         /// </summary>
         /// <returns>
@@ -126,7 +138,12 @@ namespace PlDotNET
                 sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
             }
 
-            return this.FormatAndSaveGeneratedCode(sourceCode, $"UserHandler_{funcName}");
+            sourceCode = this.FormatGeneratedCode(sourceCode);
+
+            PrintSourceCode(sourceCode);
+            this.SaveSourceCode(sourceCode, $"UserFunction_{funcName}");
+
+            return sourceCode;
         }
 
         /// <summary>
@@ -161,7 +178,13 @@ namespace PlDotNET
             string[] dotnetTypes = this.GetDotNetTypes(paramTypes);
             string sourceCode = File.ReadAllText(this.UserFunctionTemplatePath);
             sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, dotnetTypes, supportNullInput));
-            return this.FormatAndSaveGeneratedCode(sourceCode, $"UserFunction_{funcName}");
+
+            sourceCode = this.FormatGeneratedCode(sourceCode);
+
+            PrintSourceCode(sourceCode);
+            this.SaveSourceCode(sourceCode, $"UserFunction_{funcName}");
+
+            return sourceCode;
         }
 
         /// <summary>
@@ -217,12 +240,12 @@ namespace PlDotNET
         public abstract string[] GetDotNetTypes(uint[] paramTypes);
 
         /// <summary>
-        /// This function formats and saves the generated code.
+        /// This function formats the generated code.
         /// </summary>
         /// <returns>
         /// Returns the formatted code.
         /// </returns>
-        public abstract string FormatAndSaveGeneratedCode(string sourceCode, string fileName);
+        public abstract string FormatGeneratedCode(string sourceCode);
     }
 
     public class CSharpCodeGenerator : CodeGenerator
@@ -232,10 +255,13 @@ namespace PlDotNET
             this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tcs";
             this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tcs";
             this.Language = DotNETLanguage.CSharp;
-            this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}csharp";
-            if (!Directory.Exists(this.PathToGeneratedCode))
+            if (Engine.SaveSourceCode)
             {
-                Directory.CreateDirectory(this.PathToGeneratedCode);
+                this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}csharp";
+                if (!Directory.Exists(this.PathToGeneratedCode))
+                {
+                    Directory.CreateDirectory(this.PathToGeneratedCode);
+                }
             }
         }
 
@@ -320,24 +346,23 @@ namespace PlDotNET
         /// <inheritdoc />
         public override string BuildCallSetResult(uint returnTypeId)
         {
-            var sb = new System.Text.StringBuilder();
             if ((OID)returnTypeId == OID.VOIDOID)
             {
-                sb.AppendLine("Engine.pldotnet_SetDatumResult(new IntPtr(0), false, output);");
+                return string.Empty;
+            }
+
+            var sb = new System.Text.StringBuilder();
+
+            if (Engine.HandleArray.ContainsKey((OID)returnTypeId))
+            {
+                sb.AppendLine($"var resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableArray(result);");
             }
             else
             {
-                if (Engine.HandleArray.ContainsKey((OID)returnTypeId))
-                {
-                    sb.AppendLine($"var resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableArray(result);");
-                }
-                else
-                {
-                    sb.AppendLine($"var resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableValue(result);");
-                }
-
-                sb.AppendLine("Engine.pldotnet_SetDatumResult(resultDatum, result == null, output);");
+                sb.AppendLine($"var resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableValue(result);");
             }
+
+            sb.AppendLine("OutputResult.SetDatumResult(resultDatum, result == null, output);");
 
             return sb.ToString();
         }
@@ -377,31 +402,17 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string FormatAndSaveGeneratedCode(string sourceCode, string fileName)
+        public override string FormatGeneratedCode(string sourceCode)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
             SyntaxNode node = userTree.GetRoot().NormalizeWhitespace();
             sourceCode = node.ToFullString();
-            File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.cs", sourceCode, Encoding.UTF8);
-            PrintSourceCode(sourceCode);
             return sourceCode;
         }
     }
 
     public class FSharpCodeGenerator : CodeGenerator
     {
-        public FSharpCodeGenerator()
-        {
-            this.Language = DotNETLanguage.FSharp;
-            this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tfs";
-            this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tfs";
-            this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}fsharp";
-            if (!Directory.Exists(this.PathToGeneratedCode))
-            {
-                Directory.CreateDirectory(this.PathToGeneratedCode);
-            }
-        }
-
         /// <summary>
         /// This Dictionary contains the C# types that differs from F# type names.
         /// </summary>
@@ -427,6 +438,21 @@ namespace PlDotNET
             "string",
             "PhysicalAddress",
         };
+
+        public FSharpCodeGenerator()
+        {
+            this.Language = DotNETLanguage.FSharp;
+            this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tfs";
+            this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tfs";
+            if (Engine.SaveSourceCode)
+            {
+                this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}fsharp";
+                if (!Directory.Exists(this.PathToGeneratedCode))
+                {
+                    Directory.CreateDirectory(this.PathToGeneratedCode);
+                }
+            }
+        }
 
         /// <summary>
         /// Indents code according to the provided number of space.
@@ -530,37 +556,31 @@ namespace PlDotNET
         /// <inheritdoc />
         public override string BuildCallSetResult(uint returnTypeId)
         {
+            if ((OID)returnTypeId == OID.VOIDOID)
+            {
+                return string.Empty;
+            }
+
             var sb = new System.Text.StringBuilder();
             string type = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
             string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
 
-            if ((OID)returnTypeId == OID.VOIDOID)
+            if (Engine.HandleArray.ContainsKey((OID)returnTypeId))
             {
-                sb.AppendLine("Engine.pldotnet_SetDatumResult(new IntPtr(0), false, output);");
+                sb.AppendLine($"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableArray(result)");
             }
             else
             {
-                if (Engine.HandleArray.ContainsKey((OID)returnTypeId))
-                {
-                    sb.AppendLine($"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableArray(result)");
-                }
-                else
-                {
-                    sb.AppendLine($"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableValue(result)");
-                }
+                sb.AppendLine($"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.OutputNullableValue(result)");
+            }
 
-                if (ClassTypes.Contains(returnType))
-                {
-                    sb.AppendLine("match result with");
-                    sb.AppendLine("| null -> Engine.pldotnet_SetDatumResult(resultDatum, true, output);");
-                    sb.AppendLine("| _ -> Engine.pldotnet_SetDatumResult(resultDatum, false, output);");
-                }
-                else
-                {
-                    sb.AppendLine("match result.HasValue with");
-                    sb.AppendLine("| false -> Engine.pldotnet_SetDatumResult(resultDatum, true, output);");
-                    sb.AppendLine("| _ -> Engine.pldotnet_SetDatumResult(resultDatum, false, output);");
-                }
+            if (ClassTypes.Contains(returnType))
+            {
+                sb.AppendLine("OutputResult.SetDatumResult(resultDatum, Object.ReferenceEquals(result, null), output)");
+            }
+            else
+            {
+                sb.AppendLine("OutputResult.SetDatumResult(resultDatum, not result.HasValue, output)");
             }
 
             return "// Create PostgreSQL datum\n" + IndentCode(sb.ToString(), 8);
@@ -617,10 +637,8 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string FormatAndSaveGeneratedCode(string sourceCode, string fileName)
+        public override string FormatGeneratedCode(string sourceCode)
         {
-            File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.fs", sourceCode, Encoding.UTF8);
-            PrintSourceCode(sourceCode);
             return sourceCode;
         }
     }

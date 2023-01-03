@@ -421,12 +421,6 @@ void pldotnet_Elog(int level, char *message) {
     elog(level, "%s", message);
 }
 
-void pldotnet_SetDatumResult(void *value, bool isNull, void *nativeResult) {
-    pldotnet_Result *result = (pldotnet_Result *)nativeResult;
-    result->is_null = isNull;
-    result->value = (Datum)value;
-}
-
 static Datum pldotnet_generic_handler(FunctionCallInfo fcinfo, bool is_inline,
                                       pldotnet_Language language) {
     MemoryContextWrapper memory_context;
@@ -492,6 +486,7 @@ static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
     pldotnet_Result output;
     int res;
     output.value = (Datum)0;
+    output.is_null = false;
 
     proc = pldotnet_GetPostgresHeapTuple(fcinfo->flinfo->fn_oid);
 
