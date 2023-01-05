@@ -4,7 +4,7 @@
 //                      procedural languages (PL)
 //
 //
-// Copyright 2019-2020 Brick Abode
+// Copyright 2023 Brick Abode
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,7 +68,9 @@ namespace PlDotNET
 
         public static bool SaveSourceCode = false;
 
-        public static string PathToGeneratedCode = "/tmp/PlDotNET/";
+        public static string PathToSaveSourceCode = "/tmp/PlDotNET/GeneratedCodes";
+
+        public static string PathToTemporaryFiles = "/tmp/PlDotNET/";
 
         public static Dictionary<OID, OID> HandleArray =
                        new ()
@@ -385,6 +387,17 @@ namespace PlDotNET
                 return 1;
             }
 
+            // Check the directiores access. They need to be 0700.
+            try
+            {
+                CheckDirectoriesAccess();
+            }
+            catch (Exception e)
+            {
+                Elog.pldotnet_Warning(e.ToString());
+                return 1;
+            }
+
             // Check if the user provides an assembly with the user function
             // The syntax for that is 'UserAssembly.dll:UserNamespace.UserClass!FunctionName'
             bool useUserAssembly = ValidateUserAssembly(funcBody);
@@ -547,7 +560,7 @@ namespace PlDotNET
                     typeof(Engine).Assembly.Location,
                 };
 
-                return FSharpCompiler.CompileFSharpSourceCode(functionId, functionName, userHandlerCode, extraAssemblies.ToArray());
+                return FSharpCompiler.CompileFSharpSourceCode(functionId, Engine.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
             }
             else
             {
@@ -754,6 +767,74 @@ namespace PlDotNET
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Check the access of the specified directories.
+        /// </summary>
+        /// <param name="language">The language of the source code.</param>
+        /// <exception cref="SystemException">Thrown if the source code directory or the temporary files directory does not have a mode of 0700.</exception>
+        public static void CheckDirectoriesAccess()
+        {
+            // Check the access of the directory to save the source codes.
+            if (Engine.SaveSourceCode)
+            {
+                if (!Directory.Exists(Engine.PathToSaveSourceCode))
+                {
+                    // Create the directory if it doesn't exist
+                    Directory.CreateDirectory(Engine.PathToSaveSourceCode);
+                }
+
+                if (!CheckDirectoryMode(Engine.PathToSaveSourceCode))
+                {
+                    // Throw an exception if the directory doesn't have the correct mode
+                    throw new SystemException("Please specify a directory where the source codes can be saved and the directory must have a mode of 0700.");
+                }
+            }
+
+            // Check the access of the temporary files directory
+            if (!Directory.Exists(Engine.PathToTemporaryFiles))
+            {
+                // Create the directory if it doesn't exist
+                Directory.CreateDirectory(Engine.PathToTemporaryFiles);
+            }
+
+            if (!CheckDirectoryMode(Engine.PathToTemporaryFiles))
+            {
+                // Throw an exception if the directory doesn't have the correct mode
+                throw new SystemException("Please specify a directory where the temporary files can be saved and the directory must have a mode of 0700.");
+            }
+        }
+
+        /// <summary>
+        /// Check the mode of the specified directory.
+        /// </summary>
+        /// <param name="path">The path to the directory.</param>
+        /// <returns>True if the mode of the directory is 0700, false otherwise.</returns>
+        public static bool CheckDirectoryMode(string path)
+        {
+            // Get the mode of the specified directory
+            string mode = string.Empty;
+
+            // Execute the "stat" command to get information about the directory
+            Process p = new ();
+            p.StartInfo.FileName = "/usr/bin/stat";
+            p.StartInfo.Arguments = path;
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.Start();
+
+            // Read the output of the "stat" command
+            string output = p.StandardOutput.ReadToEnd();
+
+            // Use a regular expression to parse the output and extract the mode
+            Match m = Regex.Match(output, @"Access:\s+\(([0-9]+)/");
+            if (m.Success)
+            {
+                mode = m.Groups[1].Value;
+            }
+
+            return mode == "0700";
         }
     }
 }

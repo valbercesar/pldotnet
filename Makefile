@@ -5,7 +5,6 @@
 DOTNET_VER = $(shell dotnet --info | grep 'Host' -A 3 | sed -n 's/Version: \(.*\)/\1/p' | xargs)
 DOTNET_HOSTDIR ?= $(shell dpkg -L dotnet-apphost-pack-6.0 | grep hostfxr.h | head -1 | xargs dirname)
 DOTNET_LIBDIR  ?= $(shell dpkg -L dotnet-apphost-pack-6.0 | grep hostfxr.h | head -1 | xargs dirname)
-DOTNET_INCHOSTDIR ?= $(DOTNET_HOSTDIR) $(shell env > /tmp/pgdotnet-make-env)
 DOTNET_HOSTLIB ?= -L$(DOTNET_LIBDIR) -lnethost -Wl,-rpath $(DOTNET_LIBDIR)
 GLIB_INC := `pkg-config --cflags --libs glib-2.0`
 PLDOTNET_ENGINE_ROOT ?= /var/lib
@@ -29,7 +28,7 @@ DATA = pldotnet--0.0.1.sql
 
 OBJS = src/pldotnet_hostfxr.o src/pldotnet.o src/pldotnet_conversions.o src/pldotnet_main.o
 
-PG_CPPFLAGS = -I$(DOTNET_INCHOSTDIR) \
+PG_CPPFLAGS = -I$(DOTNET_HOSTDIR) \
 			  -Iinc -D LINUX $(DEFINE_DOTNET_BUILD) $(PLDOTNET_ENGINE_DIR) \
 			  $(GLIB_INC) -D PKG_LIBDIR=$(PKG_LIBDIR)
 

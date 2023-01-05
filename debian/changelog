@@ -1,11 +1,5 @@
 pldotnet (0.1-1) UNRELEASED; urgency=medium
 
-  * Closes itp bug
+  * Initial release.
 
- -- Caio Cesar Moraes de Oliveira <caio@brickabode.com>  Fri, 8 Oct 2021 10:40:10 +0000
-
-pldotnet (0.1-1) unstable; urgency=medium
-
-  * Initial Alpha release.
-
- -- Rafael da Veiga Cabral <rvc@brickabode.com>  Mon, 30 Dec 2019 10:43:10 +0000
+ -- Todd Lewis <tlewis@brickabode.com> Wed, 04 Jan 2023 14:14:23 -0300

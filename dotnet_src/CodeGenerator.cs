@@ -4,7 +4,7 @@
 //                      procedural languages (PL)
 //
 //
-// Copyright 2019-2020 Brick Abode
+// Copyright 2023 Brick Abode
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ namespace PlDotNET
         public string UserHandlerTemplatePath;
 
         public string UserFunctionTemplatePath;
-
-        public string PathToGeneratedCode;
 
         public DotNETLanguage Language;
 
@@ -101,8 +99,9 @@ namespace PlDotNET
         {
             if (Engine.SaveSourceCode)
             {
-                string extension = this.Language == DotNETLanguage.CSharp ? "cs" : "fs";
-                File.WriteAllText($"{this.PathToGeneratedCode}/{fileName}.{extension}", sourceCode, Encoding.UTF8);
+                string path = Path.Combine(Engine.PathToSaveSourceCode, fileName);
+                path = Path.ChangeExtension(path, this.Language == DotNETLanguage.CSharp ? ".cs" : ".fs");
+                File.WriteAllText(path, sourceCode, Encoding.UTF8);
             }
         }
 
@@ -141,7 +140,7 @@ namespace PlDotNET
             sourceCode = this.FormatGeneratedCode(sourceCode);
 
             PrintSourceCode(sourceCode);
-            this.SaveSourceCode(sourceCode, $"UserFunction_{funcName}");
+            this.SaveSourceCode(sourceCode, $"UserHandler_{funcName}");
 
             return sourceCode;
         }
@@ -255,14 +254,6 @@ namespace PlDotNET
             this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tcs";
             this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tcs";
             this.Language = DotNETLanguage.CSharp;
-            if (Engine.SaveSourceCode)
-            {
-                this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}csharp";
-                if (!Directory.Exists(this.PathToGeneratedCode))
-                {
-                    Directory.CreateDirectory(this.PathToGeneratedCode);
-                }
-            }
         }
 
         /// <inheritdoc />
@@ -444,14 +435,6 @@ namespace PlDotNET
             this.Language = DotNETLanguage.FSharp;
             this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tfs";
             this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tfs";
-            if (Engine.SaveSourceCode)
-            {
-                this.PathToGeneratedCode = $"{Engine.PathToGeneratedCode}fsharp";
-                if (!Directory.Exists(this.PathToGeneratedCode))
-                {
-                    Directory.CreateDirectory(this.PathToGeneratedCode);
-                }
-            }
         }
 
         /// <summary>
