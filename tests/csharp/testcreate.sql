@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION fibonacci(n integer) RETURNS BIGINT AS $$
     if (n <= 0)
     {
-        Elog.pldotnet_Info("Fibonacci number must be greater than 0.");
+        Elog.Info("Fibonacci number must be greater than 0.");
         return null;
     }
     else if (n <= 2)

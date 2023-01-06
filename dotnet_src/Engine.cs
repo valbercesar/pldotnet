@@ -356,7 +356,7 @@ namespace PlDotNET
                     sb.AppendLine(diagnostic.ToString());
                 }
 
-                Elog.pldotnet_Warning(sb.ToString());
+                Elog.Warning(sb.ToString());
             }
 
             return compileResult;
@@ -394,7 +394,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.pldotnet_Warning(e.ToString());
+                Elog.Warning($"{e.GetType().Name}: {e.Message}");
                 return 1;
             }
 
@@ -438,10 +438,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                var sb = new System.Text.StringBuilder();
-                sb.AppendLine($"PL.NET could not build the dynamic codes for \"{funcName}\", due to the following exception:\n");
-                sb.AppendLine(e.ToString());
-                Elog.pldotnet_Warning(sb.ToString());
+                Elog.Warning($"{e.GetType().Name}: {e.Message}");
                 return 1;
             }
 
@@ -451,7 +448,6 @@ namespace PlDotNET
                 // check PL.NET needs to recompile the source codes
                 if (cached.UserHandlerSourceCode == userHandlerCode && cached.UserFunctionSourceCode == userFunctionCode && !useUserAssembly)
                 {
-                    Elog.pldotnet_Info("User function hasn't changed, so it doesn't need to be recompiled!");
                     return 0;
                 }
                 else
@@ -475,10 +471,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                var sb = new System.Text.StringBuilder();
-                sb.AppendLine($"PL.NET could not compile the dynamic code for \"{funcName}\", due to the following exception:\n");
-                sb.AppendLine(e.ToString());
-                Elog.pldotnet_Warning(sb.ToString());
+                Elog.Warning($"{e.GetType().Name}: {e.Message}");
                 return 1;
             }
 
@@ -589,7 +582,7 @@ namespace PlDotNET
 
             if (procClassType == null)
             {
-                Elog.pldotnet_Warning($"Failed to get type PlDotNET.UserSpace.UserHandler");
+                Elog.Warning($"Failed to get type PlDotNET.UserSpace.UserHandler");
                 return null;
             }
 
@@ -632,15 +625,12 @@ namespace PlDotNET
                 }
                 catch (Exception e)
                 {
-                    var sb = new System.Text.StringBuilder();
-                    sb.AppendLine($"PL.NET could not run the function \"{cached.FunctionName}\", due to the following exception:\n");
-                    sb.AppendLine(e.ToString());
-                    Elog.pldotnet_Warning(sb.ToString());
+                    Elog.Warning($"{e.GetType().Name}: {e.Message}");
                     return 1;
                 }
             }
 
-            Elog.pldotnet_Warning($"PL.NET could not find the user function (ID: {functionId})");
+            Elog.Warning($"PL.NET could not find the user function (ID: {functionId})");
             return 1;
         }
 
@@ -690,7 +680,7 @@ namespace PlDotNET
             }
             else
             {
-                Elog.pldotnet_Warning($"PL.NET could not find the generated function to unload its assemblies (ID: {functionId})");
+                Elog.Warning($"PL.NET could not find the generated function to unload its assemblies (ID: {functionId})");
             }
         }
 
@@ -732,7 +722,7 @@ namespace PlDotNET
             }
 
             sb.AppendLine("Please contact Brick Abode. <tlewis@brickabode.com>");
-            Elog.pldotnet_Warning("\n" + sb.ToString());
+            Elog.Warning("\n" + sb.ToString());
 
             return false;
         }

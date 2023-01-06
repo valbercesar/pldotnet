@@ -70,9 +70,9 @@ namespace PlDotNET
         {
             if (Engine.PrintSourceCode)
             {
-                Elog.pldotnet_Info("===========================");
-                Elog.pldotnet_Info($"Source code:\n{sourceCode}");
-                Elog.pldotnet_Info("===========================");
+                Elog.Info("===========================");
+                Elog.Info($"Source code:\n{sourceCode}");
+                Elog.Info("===========================");
             }
         }
 

@@ -185,8 +185,31 @@ namespace PlDotNET.Handler
         /// <inheritdoc />
         public override IntPtr OutputValue((IPAddress Address, int Netmask) value)
         {
-            Elog.pldotnet_Elog(19, "\n\nWe still need to check if the result CIDR object is acceptable!!!\n\n");
-            return InetHandler.pldotnet_CreateDatumInet(value.Address.GetAddressBytes().Length, value.Address.GetAddressBytes(), value.Netmask);
+            // Get the address as an array of bytes.
+            byte[] bytes = value.Address.GetAddressBytes();
+            int byteLen = value.Address.GetAddressBytes().Length;
+
+            // Convert the bytes to an array of binary.
+            int bitLen = byteLen * 8;
+            bool[] bits = new bool[bitLen];
+            for (int i = 0, cont = 0; i < byteLen; i++)
+            {
+                for (int j = 7; j >= 0; j--)
+                {
+                    bits[cont++] = (bytes[i] & (1 << j)) != 0;
+                }
+            }
+
+            // Look for nonzero bits to the right of the netmask.
+            for (int i = value.Netmask; i < bitLen; i++)
+            {
+                if (bits[i] == true)
+                {
+                    throw new Exception("The resulting CIDR has bits set to right of mask.");
+                }
+            }
+
+            return InetHandler.pldotnet_CreateDatumInet(byteLen, bytes, value.Netmask);
         }
     }
 }

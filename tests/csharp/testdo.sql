@@ -1,11 +1,11 @@
 do $$
     int c = 10 + 25;
-    Elog.pldotnet_Info($"c = {c}");
+    Elog.Info($"c = {c}");
 $$ language plcsharp;
 
 do $$
     int c = 1450 + 275;
-    Elog.pldotnet_Info($"c = {c}");
+    Elog.Info($"c = {c}");
 $$ language plcsharp;
 
 do $$
@@ -16,7 +16,7 @@ do $$
         double value = (double)doublevalues.GetValue(i);
         min = min < value ? min : value;
     }
-    Elog.pldotnet_Info($"Minimum value = {min}");
+    Elog.Info($"Minimum value = {min}");
 $$ language plcsharp;
 
 do $$
@@ -27,5 +27,5 @@ do $$
         double value = (double)doublevalues.GetValue(i);
         min = min < value ? min : value;
     }
-    Elog.pldotnet_Info($"Minimum value = {min}");
+    Elog.Info($"Minimum value = {min}");
 $$ language plcsharp;
