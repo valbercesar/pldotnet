@@ -36,7 +36,7 @@ SELECT
 --     plbench('SELECT sumArrayNumPg( ARRAY[1.00002, 1.00003, 1.00004] )', :runs) as plpgsql,
 --     plbench('SELECT sumArrayNumJava( ARRAY[1.00002, 1.00003, 1.00004] )', :runs) as pljava,
 --     plbench('SELECT sumArrayNumPerl( ARRAY[1.00002, 1.00003, 1.00004] )', :runs) as plperl,
---     '-' as pllua,
+--     'NULL' as pllua,
 --     -- plbench('SELECT sumArrayNumLua( ARRAY[1.00002, 1.00003, 1.00004] )', :runs) as pllua,
 --     plbench('SELECT sumArrayNumTcl( ARRAY[1.00002, 1.00003, 1.00004] )', :runs) as pltcl,
 --     plbench('SELECT sumArrayNumR( ARRAY[1.00002, 1.00003, 1.00004] )', :runs) as plr;

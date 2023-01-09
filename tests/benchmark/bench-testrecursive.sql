@@ -17,10 +17,10 @@ SELECT
     plbench('SELECT fibbbPython(25)', 10) as plpython,
     plbench('SELECT fibbbPg(25)', 10) as plpgsql,
     plbench('SELECT fibbbJava(25)', 10) as pljava,
-    '-' as plperl,
-    '-' as pllua,
-    '-' as pltcl,
-    '-' as plr;
+    'NULL' as plperl,
+    'NULL' as pllua,
+    'NULL' as pltcl,
+    'NULL' as plr;
 
 SELECT
     'fact',
@@ -30,10 +30,10 @@ SELECT
     plbench('SELECT factPython(12)', :runs) as plpython,
     plbench('SELECT factPg(12)', :runs) as plpgsql,
     plbench('SELECT factJava(12)', :runs) as pljava,
-    '-' as plperl,
-    '-' as pllua,
-    '-' as pltcl,
-    '-' as plr;
+    'NULL' as plperl,
+    'NULL' as pllua,
+    'NULL' as pltcl,
+    'NULL' as plr;
 
 -- PL.NET doens't have support for numeric data type.
 -- SELECT
@@ -44,10 +44,10 @@ SELECT
 --     plbench('SELECT naturalPython(10)', :runs) as plpython,
 --     plbench('SELECT naturalPg(10)', :runs) as plpgsql,
 --     plbench('SELECT naturalJava(10)', :runs) as pljava,
---     '-' as plperl,
---     '-' as pllua,
---     '-' as pltcl,
---     '-' as plr;
+--     'NULL' as plperl,
+--     'NULL' as pllua,
+--     'NULL' as pltcl,
+--     'NULL' as plr;
 
 -- SELECT
 --     'natural(10.5)',
@@ -57,7 +57,7 @@ SELECT
 --     plbench('SELECT naturalPython(10.5)', :runs) as plpython,
 --     plbench('SELECT naturalPg(10.5)', :runs) as plpgsql,
 --     plbench('SELECT naturalJava(10.5)', :runs) as pljava,
---     '-' as plperl,
---     '-' as pllua,
---     '-' as pltcl,
---     '-' as plr;
+--     'NULL' as plperl,
+--     'NULL' as pllua,
+--     'NULL' as pltcl,
+--     'NULL' as plr;

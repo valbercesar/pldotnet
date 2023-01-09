@@ -89,7 +89,7 @@ SELECT
     plbench('SELECT sum2BigIntPerl(9223372036854775707, 100)', :runs) as plperl,
     plbench('SELECT sum2BigIntLua(9223372036854775707, 100)', :runs) as pllua,
     plbench('SELECT sum2BigIntTcl(9223372036854775707, 100)', :runs) as pltcl,
-    '-' as plr;
+    'NULL' as plr;
 
 SELECT
     'mixedBigInt',
@@ -102,7 +102,7 @@ SELECT
     plbench('SELECT mixedBigIntPerl(32767,  2147483647, 100)', :runs) as plperl,
     plbench('SELECT mixedBigIntLua(32767,  2147483647, 100)', :runs) as pllua,
     plbench('SELECT mixedBigIntTcl(32767,  2147483647, 100)', :runs) as pltcl,
-    '-' as plr;
+    'NULL' as plr;
 
 SELECT
     'mixedInt',

@@ -191,7 +191,7 @@ SELECT
     plbench('SELECT sumNullArgBigIntPg(9223372036854775707,null)', :runs) as plpgsql,
     plbench('SELECT sumNullArgBigIntJava(9223372036854775707,null)', :runs) as pljava,
     -- plbench('SELECT sumNullArgBigIntPerl(9223372036854775707,null)', :runs) as plperl,
-    '-' as plperl,
+    'NULL' as plperl,
     plbench('SELECT sumNullArgBigIntLua(9223372036854775707,null)', :runs) as pllua,
     plbench('SELECT sumNullArgBigIntTcl(9223372036854775707,null)', :runs) as pltcl,
     plbench('SELECT sumNullArgBigIntR(9223372036854775707,null)', :runs) as plr;
@@ -207,7 +207,7 @@ SELECT
     plbench('SELECT sumNullArgBigIntPerl(9223372036854775707,100)', :runs) as plperl,
     plbench('SELECT sumNullArgBigIntLua(9223372036854775707,100)', :runs) as pllua,
     plbench('SELECT sumNullArgBigIntTcl(9223372036854775707,100)', :runs) as pltcl,
-    '-' as plr;
+    'NULL' as plr;
 
 SELECT
     'checkedSumNullArgInt(null,null)',
@@ -348,7 +348,7 @@ SELECT
     plbench('SELECT checkedSumNullArgBigIntPg(9223372036854775707,null)', :runs) as plpgsql,
     plbench('SELECT checkedSumNullArgBigIntJava(9223372036854775707,null)', :runs) as pljava,
     -- plbench('SELECT checkedSumNullArgBigIntPerl(9223372036854775707,null)', :runs) as plperl,
-    '-' as plperl,
+    'NULL' as plperl,
     plbench('SELECT checkedSumNullArgBigIntLua(9223372036854775707,null)', :runs) as pllua,
     plbench('SELECT checkedSumNullArgBigIntTcl(9223372036854775707,null)', :runs) as pltcl,
     plbench('SELECT checkedSumNullArgBigIntR(9223372036854775707,null)', :runs) as plr;
@@ -364,7 +364,7 @@ SELECT
     plbench('SELECT checkedSumNullArgBigIntPerl(9223372036854775707,100)', :runs) as plperl,
     plbench('SELECT checkedSumNullArgBigIntLua(9223372036854775707,100)', :runs) as pllua,
     plbench('SELECT checkedSumNullArgBigIntTcl(9223372036854775707,100)', :runs) as pltcl,
-    '-' as plr;
+    'NULL' as plr;
 
 SELECT
     'checkedSumNullArgMixed(null,null,null)',
