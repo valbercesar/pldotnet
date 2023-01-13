@@ -29,3 +29,28 @@ do $$
     }
     Elog.Info($"Minimum value = {min}");
 $$ language plcsharp;
+
+do $$
+    string arabic = "هل تتكلم العربية؟";
+    Elog.Info($"Do you speak Arabic? => {arabic}");
+
+    string chinese = "你会说中文吗？";
+    Elog.Info($"Do you speak Chinese? => {chinese}");
+
+    string japonese = "あなたは日本語を話しますか？";
+    Elog.Info($"Do you speak Japonese? => {japonese}");
+
+    string portuguese = "Você fala português?";
+    Elog.Info($"Do yo speak Portuguese? => {portuguese}");
+
+    string russian = "а ты говоришь по русски?";
+    Elog.Info($"Do you speak Russian? => {russian}");
+$$ language plcsharp;
+
+do $$
+    string emoji = "🐂";
+    Elog.Info($"The emoji \"{emoji}\" has lenght {emoji.Length}.");
+
+    emoji = "\ud83e\udd70";
+    Elog.Info($"The emoji \"{emoji}\" has lenght {emoji.Length}.");
+$$ language plcsharp;

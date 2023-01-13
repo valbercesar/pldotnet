@@ -9,7 +9,7 @@ SELECT 'c#-text', 'identityStr', identityStr('dog') = 'dog';
 CREATE OR REPLACE FUNCTION concatenateText(a text, b text) RETURNS text AS $$
     if (a == null)
         a = "";
-    
+
     if (b == null)
         b = "";
 
@@ -20,6 +20,14 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-text', 'concatenateText1', concatenateText('red', 'blue') = 'red blue';
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-text-null', 'concatenateText2', concatenateText(NULL::TEXT, 'blue') = ' blue';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-text', 'concatenateText3', concatenateText('КРАСНЫЙ', 'СИНИЙ') = 'КРАСНЫЙ СИНИЙ'::TEXT;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-text', 'concatenateText4', concatenateText('赤', '青い') = '赤 青い'::TEXT;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-text', 'concatenateText5', concatenateText('紅色的', '藍色的') = '紅色的 藍色的'::TEXT;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-text', 'concatenateText6', concatenateText('🐂', '🥰') = '🐂 🥰'::TEXT;
 
 CREATE OR REPLACE FUNCTION multiplyText(a text, b int) RETURNS text AS $$
     int i;
@@ -40,10 +48,10 @@ SELECT 'c#-bpchar', 'testingBpChar', addGoodbye('HELLO!') = 'HELLO! Goodbye ^.^'
 CREATE OR REPLACE FUNCTION concatenateChars(a BPCHAR, b BPCHAR, c BPCHAR) RETURNS BPCHAR AS $$
     if (a == null)
         a = "";
-    
+
     if (b == null)
         b = "";
-    
+
     if (c == null)
         c = "";
 
@@ -58,13 +66,13 @@ SELECT 'c#-bpchar-null', 'concatenateChars2', concatenateChars(NULL::BPCHAR, 'be
 CREATE OR REPLACE FUNCTION concatenateVarChars(a VARCHAR, b VARCHAR, c BPCHAR) RETURNS VARCHAR AS $$
     if (a == null)
         a = "";
-    
+
     if (b == null)
         b = "";
-    
+
     if (c == null)
         c = "";
-        
+
     return (a + " " + b + " " + c).ToUpper();
 $$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
@@ -84,7 +92,7 @@ SELECT 'c#-varchar', 'multiplyVarChar', multiplyVarChar('hello '::VARCHAR, 5) = 
 CREATE OR REPLACE FUNCTION modifyXml(a XML) RETURNS XML AS $$
     if (a == null)
         a = "<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World, it was null!</title>";
-    
+
     string new_xml = ((string)a).Replace("Hello", "Goodbye");
     new_xml = ((string)new_xml).Replace("World", "beautiful World");
     return new_xml;
@@ -122,7 +130,7 @@ Array flatten_texts = Array.CreateInstance(typeof(object), texts.Length);
 ArrayHandler.FlatArray(texts, ref flatten_texts);
 string result = "";
 for(int i = 0; i < flatten_texts.Length; i++)
-{   
+{
     if (flatten_texts.GetValue(i) == null)
         continue;
     result = (string)(result + (string)flatten_texts.GetValue(i));
@@ -168,13 +176,13 @@ CREATE OR REPLACE FUNCTION AddSmileToChars(values_array BPCHAR[]) RETURNS BPCHAR
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
 ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
-{   
+{
     if (flatten_values.GetValue(i) == null)
         continue;
 
     string orig_value = (string)flatten_values.GetValue(i);
     string new_value = orig_value + " :)";
-    
+
     flatten_values.SetValue((string)new_value, i);
 }
 return flatten_values;
@@ -205,13 +213,13 @@ CREATE OR REPLACE FUNCTION AddSmileToVarchars(values_array VARCHAR[]) RETURNS VA
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
 ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
-{   
+{
     if (flatten_values.GetValue(i) == null)
         continue;
 
     string orig_value = (string)flatten_values.GetValue(i);
     string new_value = orig_value + " :)";
-    
+
     flatten_values.SetValue((string)new_value, i);
 }
 return flatten_values;
@@ -242,13 +250,13 @@ CREATE OR REPLACE FUNCTION ReplaceXMLsWord(values_array XML[]) RETURNS XML[] AS 
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
 ArrayHandler.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
-{   
+{
     if (flatten_values.GetValue(i) == null)
         continue;
 
     string orig_value = (string)flatten_values.GetValue(i);
     string new_value = orig_value.Replace("Hello", "Goodbye");
-    
+
     flatten_values.SetValue((string)new_value, i);
 }
 return flatten_values;
