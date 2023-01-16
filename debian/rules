@@ -5,7 +5,6 @@ PG_VER = $(shell pg_buildext supported-versions)
 DOTNET_VER = $(shell dotnet --info | grep 'Host' -A 3 | sed -n 's/Version: \(.*\)/\1/p' | xargs)
 DOTNET_LIBDIR ?= $(shell dpkg -L dotnet-apphost-pack-6.0 | grep hostfxr.h | head -1 | xargs dirname)
 DOTNET_SRC = dotnet_src/
-DEBIAN_ROOT_DIR = debian/postgresql-${PG_VER}-pldotnet/
 USR_LIBDIR = var/lib/
 include /usr/share/postgresql-common/pgxs_debian_control.mk
 
@@ -31,6 +30,15 @@ override_dh_installdeb:
 		cp -R ${DOTNET_SRC} "debian/postgresql-"$${VER}"-pldotnet/${USR_LIBDIR}/PlDotNET" ; \
 		cp debian/preinst debian/postinst debian/prerm debian/postrm "debian/postgresql-"$${VER}"-pldotnet/DEBIAN/" ; \
 		chmod 755 -R "debian/postgresql-"$${VER}"-pldotnet/DEBIAN/" ; \
+	done
+
+override_dh_install-arch:
+	for VER in $(PG_VER); do \
+		mkdir -p "debian/postgresql-"$${VER}"-pldotnet/usr/share/doc/postgresql-"$${VER}"-pldotnet" ; \
+		[ -e docs/FAQ.md ] && cp docs/FAQ.md "debian/postgresql-"$${VER}"-pldotnet/usr/share/doc/postgresql-"$${VER}"-pldotnet" ; \
+		[ -e docs/*.pdf ] && cp docs/*.pdf "debian/postgresql-"$${VER}"-pldotnet/usr/share/doc/postgresql-"$${VER}"-pldotnet" ; \
+		[ -d docs/html ] && cp -r docs/html "debian/postgresql-"$${VER}"-pldotnet/usr/share/doc/postgresql-"$${VER}"-pldotnet/doxygen" ; \
+		[ -d docs/wiki ] && cp -r docs/wiki "debian/postgresql-"$${VER}"-pldotnet/usr/share/doc/postgresql-"$${VER}"-pldotnet/wiki" ; \
 	done
 
 %:

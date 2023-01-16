@@ -24,7 +24,7 @@ PG_10_OR_12PLUS = $(shell if [ ${PG_VER}  -lt "12" ]; then echo '10';  else echo
 
 MODULE_big = pldotnet
 EXTENSION = pldotnet
-DATA = pldotnet--0.0.1.sql
+DATA = pldotnet--0.9.sql
 
 OBJS = src/pldotnet_hostfxr.o src/pldotnet.o src/pldotnet_conversions.o src/pldotnet_main.o
 
@@ -53,11 +53,12 @@ pldotnet-uninstall: uninstall
 	rm -rf $(PLDOTNET_ENGINE_ROOT)/PlDotNET
 
 pldotnet-install-dpkg:
+	make documentation
 	rm -f debian/packages/postgresql-*-pldotnet_*.deb
 	-sudo -u postgres pg_createcluster $(PG_VER) default
 	service postgresql start
 	pg_buildext updatecontrol
-	debuild -b -uc -us --lintian-opts --profile debian
+	debuild -b -uc -us --lintian-opts --suppress-tags=initial-upload-closes-no-bugs,custom-library-search-path --profile debian
 	mkdir -p debian/packages
 	cp ../postgresql-*-pldotnet_*.deb debian/packages/
 	rm -rf ../postgresql-*-pldotnet_*.deb

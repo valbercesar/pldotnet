@@ -23,9 +23,9 @@ install_dotnet_ubuntu: add_dotnet
 
 install_requirements: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential apt-utils pkg-config doxygen graphviz
+	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential apt-utils pkg-config
 
-install_pg_dev: install_requirements
+install_pg_dev: install_requirements install_misc
 	# installs postgresql dev packages
 	echo "# ENVIRONMENT SETUP: running $@"
 	apt install -y postgresql postgresql-common postgresql-server-dev-all devscripts
@@ -34,7 +34,7 @@ install_pg_dev: install_requirements
 install_misc:
 	# installs miscellaneous commands for convenience
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y sudo vim cdecl strace
+	apt install -y sudo vim cdecl strace doxygen graphviz
 
 install_cluster_requirements: install_misc
 	# cluster creation requirements; locale settings

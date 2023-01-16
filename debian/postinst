@@ -14,33 +14,6 @@ sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/TypeHandlers/*.cs
 sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/FSharp/FSharpCompiler.fs
 sed -i "s/@PLDOTNET_TEMPLATE_DIR/${PLDOTNET_TEMPLATE_DIR_MOD}/g" ${PLDOTNET_ENGINE_DIR}/CodeGenerator.cs
 dotnet build ${PLDOTNET_ENGINE_DIR} -c Release
-ldconfig -v &> /dev/null # We need -v for ldconfig otherwise it won't work
 runuser -u postgres -- psql -c "DROP EXTENSION IF EXISTS pldotnet CASCADE;"
 runuser -u postgres -- psql -c "CREATE EXTENSION pldotnet;"
 runuser -u postgres -- psql -c "DO \$\$ BEGIN CREATE ROLE root superuser createdb login createrole replication bypassrls; EXCEPTION WHEN duplicate_object THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE; END \$\$;"
-
-# FIXME: add a question to the user (debconf?  whatever the standard mechanism is) to ask them:
-# FIXME: For a prompt, it's necessary to use debconf, apt-utils and dialog (or other frontend tool that follow debian specifications)
-# runuser -u postgres -- psql -c "CREATE OR REPLACE FUNCTION pldotnet_Trust(boolean) RETURNS void AS \$\$ UPDATE pg_catalog.pg_language SET lanpltrusted = \$1 WHERE lanname='\'plcsharp\'' OR lanname='\'plfsharp\'' \$\$ LANGUAGE sql;"
-
-# message="Warning: the PostgreSQL procedural languages from pldotnet,
-# plcsharp and plfsharp, have not been audited for security.  We do
-# not recommend installing them as trusted languages into sensitive
-# environments.  However, if you are merely evaluating these languages,
-# then installing them as trusted languages is much more convenient, as
-# normal users can then use them without restriction.  We recommend only
-# installing them as trusted languages in *untrusted* database environments.
-
-# Would you like to install plcsharp and plfsharp as trusted languages?  (y/N)
-# "
-
-# echo -n "${message}"
-# read like
-# case "$like" in
-# y*|Y*)
-#    su - postgres -c 'psql -c "SELECT pldotnet_Trust(true);"'
-# ;;
-# n*|N*)
-#     echo "You will need postgres/admin user execute 'SELECT pldotnet_Trust(true|false);' to turn plcsharp/plfsharp usable (trustable in your database);'"
-# ;;
-# esac

@@ -3,19 +3,11 @@
  *             procedural languages (PL)
  *
  *
- * Copyright 2023 Brick Abode
+ * Copyright (c) 2023 Brick Abode
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This code is subject to the terms of the PostgreSQL License.
+ * The full text of the license can be found in the LICENSE file
+ * at the top level of the pldotnet repository.
  *
  * pldotnet_main.c
  *
@@ -143,7 +135,8 @@ static pldotnet_UserFunctionDeclaration *pldotnet_GetFunctionDecl(
  * @param proc
  * @param is_inline whether it is a inline function or not.
  * @param validation whether the function should be validated.
- * @param function_decl
+ * @param function_decl the struct that contains all the function information
+ * @param language the programming language (C# or F#)
  * @return true it it succeeds.
  * @return false otherwise.
  */
@@ -161,7 +154,8 @@ static bool pldotnet_BuildFunctionDecl(
  * @param procst
  * @param is_inline whether the functions is inline
  * @param validation whetter the function should be validated
- * @param user_function_decl the object that stores the function information
+ * @param user_function_decl the struct that stores the function information
+ * @param language the programming language (C# or F#)
  * @return true if the process was successful
  * @return false if the source code could not be obtained
  */

@@ -31,7 +31,7 @@ sudo apt install -y libglib2.0 make
 selecting the package that corresponds to your version of PostgreSQL.
 
 2- Install the package using the following command: `sudo dpkg -i
-postgres-*-pldotnet_0.1-1_amd64.deb`
+postgres-*-pldotnet_0.9-1_amd64.deb`
 
 # 4. Building Debian packages
 
@@ -66,7 +66,7 @@ you can use a Docker container by running the following commands:
 docker-compose run --rm pldotnet-build bash
 
 # Install pldotnet inside the container
-dpkg -i debian/packages/postgres-15-pldotnet_0.1-1_amd64.deb
+dpkg -i debian/packages/postgres-15-pldotnet_0.9-1_amd64.deb
 ```
 
 ## 4.1 Debian packages for ARM processors
@@ -90,7 +90,7 @@ clean container, you can use the following instructions:
 docker-compose run --rm pldotnet-build-arm bash
 
 # Install pldotnet inside the container
-dpkg -i debian/packages/postgresql-15-pldotnet_0.1-1_arm64.deb
+dpkg -i debian/packages/postgresql-15-pldotnet_0.9-1_arm64.deb
 ```
 
 # 5. Installing the built packages

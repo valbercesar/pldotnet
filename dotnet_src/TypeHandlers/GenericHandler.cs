@@ -4,19 +4,11 @@
 //                      procedural languages (PL)
 //
 //
-// Copyright 2023 Brick Abode
+// Copyright (c) 2023 Brick Abode
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// This code is subject to the terms of the PostgreSQL License.
+// The full text of the license can be found in the LICENSE file
+// at the top level of the pldotnet repository.
 //
 // </copyright>
 
@@ -73,8 +65,7 @@ namespace PlDotNET.Handler
     /// Base class for all classes which represent the data type handlers.
     /// </summary>
     /// <remarks>
-    /// Do not use it directly. Instead see StructTypeHandler.<T> and ObjectTypeHandler<T>,
-    /// which are defined below.
+    /// Do not use it directly. Instead see StructTypeHandler.&lt;T&gt; and ObjectTypeHandler.&lt;T&gt;.
     /// </remarks>
     public abstract class BaseTypeHandler<T>
     {
