@@ -22,6 +22,26 @@ public class TestIntegers {
     }
 
     @Function
+    public static int returnIntJava() throws SQLException {
+        return 10;
+    }
+
+    @Function
+    public static int inc2ToIntJava(int val) throws SQLException {
+        return val + 2;
+    }
+
+    @Function
+    public static int sum3IntegerJava(int aaa, int bbb, int ccc) throws SQLException {
+        return aaa + bbb + ccc;
+    }
+
+    @Function
+    public static int sum4IntegerJava(int a, int b, int c, int d) throws SQLException {
+        return a + b + c + d;
+    }
+
+    @Function
     public static int sum2IntegerJava(int a, int b) throws SQLException {
         return a + b;
     }

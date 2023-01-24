@@ -13,6 +13,27 @@ return 2147483647;
 $$ LANGUAGE plperl;
 SELECT maxIntegerPerl() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnIntPerl() RETURNS integer AS $$
+return 10;
+$$ LANGUAGE plperl;
+SELECT returnIntPerl() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToIntPerl(val integer) RETURNS integer AS $$
+return $_[0] + 2;
+$$ LANGUAGE plperl;
+SELECT inc2ToIntPerl(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3IntegerPerl(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+return $_[0] + $_[1] + $_[2];
+$$
+LANGUAGE plperl;
+SELECT sum3IntegerPerl(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4IntegerPerl(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+return $_[0] + $_[1] + $_[2] + $_[3];
+$$ LANGUAGE plperl;
+SELECT sum4IntegerPerl(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2IntegerPerl(a integer, b integer) RETURNS integer AS $$
 return $_[0] + $_[1];
 $$ LANGUAGE plperl;

@@ -186,4 +186,4 @@ benchmark-tests:
 	cd $(CURRENT_DIR)/tests/benchmark/java/test-suite && mvn install && cd $(CURRENT_DIR)/
 	echo "select sqlj.install_jar('file:$(CURRENT_DIR)/tests/benchmark/java/test-suite/target/test-suite-1.0.0.jar', 'testsuite', true);" | (sudo -u postgres psql)
 	echo "select sqlj.set_classpath('public', 'testsuite');" | (sudo -u postgres psql)
-	bash tests/benchmark/benchmark.sh
+	bash tests/benchmark/benchmark.sh $(NRUNS)

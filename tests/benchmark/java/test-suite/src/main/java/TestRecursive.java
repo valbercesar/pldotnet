@@ -8,9 +8,8 @@ import java.util.logging.Logger;
 public class TestRecursive {
     @Function
     public static int fibbbJava(int n) throws SQLException {
-        int ret = 1;
-        if (n == 1 || n == 2) {
-            return ret;
+        if (n <= 1) {
+            return n;
         }
         return fibbbJava(n - 1) + fibbbJava(n - 2);
     }
@@ -35,5 +34,5 @@ public class TestRecursive {
             return naturalJava(n - 1);
         }
     }
-    
+
 }

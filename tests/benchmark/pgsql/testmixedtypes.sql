@@ -3,13 +3,12 @@ DECLARE
     res varchar;
 BEGIN
     IF (age < 18) THEN
-        res := concat('Hey ', name, ' ', lname, '! Dude you are still a kid.');
+        RETURN concat('Hey ', name, ' ', lname, '! Dude you are still a kid.');
     ELSIF age >= 18 AND age < 40 THEN
-        res := concat('Hey ',name, ' ', lname, '! You are in the mood!');
+        RETURN concat('Hey ',name, ' ', lname, '! You are in the mood!');
     ELSE
-        res := concat('Hey ', name, ' ', lname, '! You are getting experienced!');
+        RETURN concat('Hey ', name, ' ', lname, '! You are getting experienced!');
     END IF;
-    RETURN res;
 END
 $$ LANGUAGE plpgsql;
 

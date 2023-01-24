@@ -1,12 +1,11 @@
 CREATE OR REPLACE FUNCTION ageTestPython(name varchar, age integer, lname varchar) RETURNS varchar AS $$
 res = ""
 if (age < 18):
-    res = f"Hey {name} {lname}! Dude you are still a kid."
+    return "Hey "+name+" "+lname+"! Dude you are still a kid."
 elif (age >= 18 and age < 40):
-    res = f"Hey {name} {lname}! You are in the mood!"
+    return "Hey "+name+" "+lname+"! You are in the mood!"
 else:
-    res = f"Hey {name} {lname}! You are getting experienced!"
-return res
+    return "Hey "+name+" "+lname+"! You are getting experienced!"
 $$ LANGUAGE plpython3u;
 
 SELECT ageTestPython('Billy', 10, 'The KID') = varchar 'Hey Billy The KID! Dude you are still a kid.';

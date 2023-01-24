@@ -22,6 +22,41 @@ END
 $$ LANGUAGE plpgsql;
 SELECT maxIntegerPg() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnIntPg() RETURNS integer AS $$
+DECLARE
+BEGIN
+    RETURN 10;
+END
+$$ LANGUAGE plpgsql;
+SELECT returnIntPg() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToIntPg(val integer) RETURNS integer AS $$
+DECLARE
+BEGIN
+    RETURN val + 2;
+END
+$$
+LANGUAGE plpgsql;
+SELECT inc2ToIntPg(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3IntegerPg(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+DECLARE
+BEGIN
+    RETURN aaa + bbb + ccc;
+END
+$$
+LANGUAGE plpgsql;
+SELECT sum3IntegerPg(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4IntegerPg(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+DECLARE
+BEGIN
+    RETURN a + b + c + d;
+END
+$$
+LANGUAGE plpgsql;
+SELECT sum4IntegerPg(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2IntegerPg(a integer, b integer) RETURNS integer AS $$
 DECLARE
 BEGIN

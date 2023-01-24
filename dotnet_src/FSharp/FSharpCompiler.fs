@@ -105,20 +105,10 @@ type FSharpCompiler() =
     /// <remarks>The generated array includes the paths to the required system assemblies and the F# Core library.</remarks>
     static member GetAllFlags (input : string) (output : string) (extraAssemblies : string[]) =
         let sysLib nm =
-            if System.Environment.OSVersion.Platform = System.PlatformID.Win32NT then // file references only valid on Windows
-                System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86) +
-                @"\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\" + nm + ".dll"
-            else
-                let sysDir = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()
-                let (++) a b = System.IO.Path.Combine(a,b)
-                sysDir ++ nm + ".dll"
+            let sysDir = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()
+            let (++) a b = System.IO.Path.Combine(a,b)
+            sysDir ++ nm + ".dll"
 
-        let fsCore4300() =
-            if System.Environment.OSVersion.Platform = System.PlatformID.Win32NT then // file references only valid on Windows
-                System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86) +
-                @"\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll"
-            else
-                System.AppContext.BaseDirectory + "/FSharp/FSharp.Core.dll"
         let allFlags =
             [| yield "fsc.exe";
                yield "-o"; yield output;
@@ -150,8 +140,7 @@ type FSharpCompiler() =
                    sysLib "System.Runtime.InteropServices"
                    sysLib "System.Runtime.Extensions"
                    sysLib "System.Net.NetworkInformation"
-                   sysLib "System.Net.Primitives"
-                   fsCore4300() ]
+                   sysLib "System.Net.Primitives" ]
                for r in references do
                      yield "-r:" + r
                for r in extraAssemblies do

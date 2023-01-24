@@ -13,6 +13,49 @@ import numpy as np
 import pandas as pd
 
 ########################################
+def find_slot(val):
+    # val is a number between 0.0 and 0.5
+    # returns the relative weighting of 0.5
+    return val / 0.5
+
+def rgbify(r, g, b):
+    # You can use the '{:02x}'.format(n) string formatting code.
+    vals = [ '{:02x}'.format(int(255*n)) for n in (r, g, b) ]
+    return "".join(vals)
+
+def color(slot, number):
+    # r is 0.0, g is 0.5, b is 1.0
+    # 0.00 = (1, 0, 0)
+    # 0.25 = (.5,.5,0)
+    assert(slot <= number)
+    assert(slot >= 0.0)
+    val = slot / number
+    if val == 0.5:
+        r, g, b = (0.0, 1.0, 0.0)
+    elif val < 0.5:
+        g = find_slot(val)
+        r = 1.0 - g
+        b = 0.0
+    elif val > 0.5:
+        nval = val - 0.5
+        b = find_slot(nval) 
+        g = 1.0 - b
+        r = 0.0
+    else:
+        raise Exception("Illegal slot/number: %s/%s" % (slot, number))
+    return rgbify(r, g, b)
+
+
+# if __name__ == "__main__":
+#     import sys
+#     # print("d1")
+#     (slot, number) = (int(sys.argv[1]), int(sys.argv[2]))
+#     # print("d2")
+#     rgb = color(slot, number)
+#     print("slot %s, number %s, rgb %s" % (slot, number, rgb))
+#     # print("d3")
+
+########################################
 header = "#" * 40
 
 def make_perc(val, inverted=True):
@@ -36,18 +79,18 @@ def average(vals):
 
 ########################################
 
-def make_av(data):
-    sum1 = sum(data[0][1])
-    sum2 = sum(data[1][1])
+def make_av(data, l1=0, l2=1):
+    sum1 = sum(data[l1][1])
+    sum2 = sum(data[l2][1])
     return sum1/sum2
 
 def make_fig(filename, data):
-    av = make_av(data)
+    av = make_av(data) # the average score
     names = [name for (name, datum) in data]
     title = "%s takes %s%% longer than %s" % (names[0], make_perc(av, False), names[1])
     if av < 1:
         title = "%s takes %s%% longer than %s" % (names[1], make_perc(av), names[0])
-    # title += "<br>(pl/dotnet is 1.0; less is better)" 
+    # title += "<br>(pl/dotnet is 1.0; less is better)"
     data2 = dict(data)
 
     dim = int(os.environ.get("IMGSZ", "512")) # pixel size
@@ -61,7 +104,7 @@ def make_fig(filename, data):
         x1=len(data[0][1]),
         y1=1.0/av,
         # text=("Average: %s" % (1.0/av)),
-        line={ 
+        line={
               "color": "Green",
               "dash": "dash",
               }
@@ -115,6 +158,7 @@ def make_fig(filename, data):
     fig.write_image(filename)
 
 def read_data(filename):
+    # returns dict[language][test] = execution_time
     with open(filename, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter='\t')
         first = True
@@ -131,12 +175,16 @@ def read_data(filename):
         return ret
 
 def compare(data, lang1, lang2):
+    # returns dict[test] = score
     comparison = {}
+    total_count = 0
+    reject_count = 0
     for test in sorted(data[lang1].keys()):
+        total_count = total_count + 1
         debug("Comparing test %s between languages %s and %s" % \
                 (test, lang1, lang2), False)
         if test in data[lang2]:
-            if data[lang2][test] not in ('-', ''):
+            if data[lang2][test] not in ('-', '', 'NULL', 'null'):
                 score1 = float(data[lang1][test])
                 score2 = float(data[lang2][test])
                 c = score1/score2
@@ -144,9 +192,15 @@ def compare(data, lang1, lang2):
                       (c, score1, score2), False)
                 if c < 10.0 and c > 0.1:
                     comparison[test] = c
+            else:
+                reject_count = reject_count + 1
+    debug("comparing %s to %s, got %s data points, rejected %s" % \
+            (lang1, lang2, total_count, reject_count))
     return comparison
 
 def graph_compare(data, l1, l2, inverted=True):
+    # creates a graph of the comparison
+    # l1 is always 1.0
     comparison = compare(data, l1, l2)
     av = average(comparison.values())
     debug("Average 2 is %s" % av, False)
@@ -162,9 +216,56 @@ def graph_compare(data, l1, l2, inverted=True):
             ]
     filename="pldotnet-comparison-%s.png" % l2
     av = make_av(data)
-    print("Language %08s takes on average %06s%% as long as %s." % 
+    debug("Language %08s takes on average %06s%% as long as %s." %
           (l2, "%.2f" % (100.0 / av), l1))
     make_fig(filename, data)
+
+def graph_compare_n(data, *langs, inverted=True):
+    # creates a graph of the comparison
+    # langs[0] is always 1.0
+    benchmark_lang = langs[0]
+
+    # we use the comparison to give us the sort order on the tests
+    comparison = compare(data, langs[0], langs[1])
+    test_ordered = [x for (x,y) in sorted(comparison.items(), key=lambda pair: pair[1])]
+    av = average(comparison.values())
+    debug("Average 2 is %s" % av, False)
+
+    default_exclude_categories = "Recursive"
+    exclude_categories = os.getenv("EXCLUDE_CATEGORIES", default_exclude_categories).split(",")
+
+    # make_fig needs this:
+    # xdata = [ (l1, vals1), (l2, vals2),... ]
+    xdata = [ [] for lang in langs ]
+    rejects = 0
+    for test in test_ordered:
+        valid = True
+        for lang in langs:
+            if data[lang][test] in ('-', '', 'NULL', 'null'):
+                debug("Skipping data[%s][%s] on null" % (lang, test))
+                valid = False
+                break
+            if data["Category"][test] in exclude_categories:
+                debug("Skipping data['Category'][%s]=%s" % (test, data["Category"][test]))
+                valid = False
+                break
+        if valid: # data is valid, so we add it
+            benchmark_val = float(data[benchmark_lang][test])
+            for n in range(len(langs)):
+                lang = langs[n]
+                xdata[n] += [float(data[lang][test]) / benchmark_val]
+        else:
+            rejects = rejects + 1
+
+    debug("After filtering, comparing %s to %s, got %s data points, rejected %s" % \
+            (langs[0], langs[1], len(xdata[0]), rejects))
+
+    ydata = [(langs[n], xdata[n]) for n in range(len(langs))]
+    filename="pldotnet-comparison-%s.png" % langs[1]
+    av = make_av(ydata)
+    print("Language %08s takes on average %06s%% as long as %s." %
+          (langs[1], "%.2f" % (100.0 / av), langs[0]))
+    make_fig(filename, ydata)
 
 def report(comparison):
     for(test, score) in comparison.values():
@@ -174,10 +275,15 @@ def report(comparison):
 def main(argv):
     filename = argv[1]
     data = read_data(filename)
-    # ydump(data)
-    comparison = compare(data, argv[2], argv[3])
-    # ydump(comparison)
-    graph_compare(data, argv[2], argv[3])
+    if len(argv) == 4:
+        # comparison = compare(data, argv[2], argv[3])
+        # graph_compare(data, argv[2], argv[3])
+        graph_compare_n(data, *argv[2:])
+    elif len(argv) > 4:
+        # comparison = compare(data, *argv[2:])
+        graph_compare_n(data, *argv[2:])
+    else:
+        raise Exception("Usage: %s <csv> <lang1> <lang2> (<langN...>*)" % argv[0])
 
 main(sys.argv)
 

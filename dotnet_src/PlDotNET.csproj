@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="FSharp\FSharpCompiler.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
     <PackageReference Include="Npgsql" Version="7.0.1" />
     <PackageReference Include="Stylecop.Analyzers" Version="1.1.118">
@@ -18,23 +22,5 @@
   <PropertyGroup>
     <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="FSharp\FSharpCompiler.fsproj" />
-  </ItemGroup>
-
-  <Target Name="SetupForDemo" AfterTargets="Build">
-
-    <ItemGroup>
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).dll" />
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).pdb" />
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).runtimeconfig.json" />
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).deps.json" />
-      <AllOutputs Include="$(OutputPath)*.dll" />
-    </ItemGroup>
-
-    <!-- Copy the project outputs to the demo directory -->
-    <Copy SourceFiles="@(AllOutputs)" DestinationFolder="./" />
-  </Target>
 
 </Project>

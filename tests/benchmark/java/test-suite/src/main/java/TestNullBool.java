@@ -29,8 +29,12 @@ public class TestNullBool {
         }
     }
 
-    @Function(onNullInput=Function.OnNullInput.RETURNS_NULL)
+    @Function
     public static Boolean BooleanNullXorJava(Boolean a, Boolean b) throws SQLException {
-        return (a && !b) || (!a && b);
+        try {
+            return (a && !b) || (!a && b);
+        } catch (NullPointerException ex) {
+            return null;
+        }
     }
 }

@@ -1,7 +1,7 @@
 \i tests/benchmark/includes.sql
 
 \i tests/benchmark/csharp/testmixedtypes.sql
--- \i tests/benchmark/fsharp/testfsmixedtypes.sql
+\i tests/benchmark/fsharp/testfsmixedtypes.sql
 \i tests/benchmark/v8javascript/testmixedtypes.sql
 \i tests/benchmark/python/testmixedtypes.sql
 \i tests/benchmark/pgsql/testmixedtypes.sql
@@ -11,12 +11,13 @@
 \i tests/benchmark/tcl/testmixedtypes.sql
 \i tests/benchmark/r/testmixedtypes.sql
 
-\set runs 1000
+\set runs NRUNS
 
 SELECT
-    'ageTest(Billy)',
+    'ageTest-1',
+    'Mixed',
     plbench('SELECT ageTest(''Billy'', 10, ''The KID'')', :runs) as plcsharp,
-    -- plbench('SELECT ageTestFSharp(''Billy'', 10, ''The KID'')', :runs) as plfsharp;
+    plbench('SELECT ageTestFSharp(''Billy'', 10, ''The KID'')', :runs) as plfsharp,
     plbench('SELECT ageTestV8(''Billy'', 10, ''The KID'')', :runs) as plv8,
     plbench('SELECT ageTestPython(''Billy'', 10, ''The KID'')', :runs) as plpython,
     plbench('SELECT ageTestPg(''Billy'', 10, ''The KID'')', :runs) as plpgsql,
@@ -27,9 +28,10 @@ SELECT
     plbench('SELECT ageTestR(''Billy'', 10, ''The KID'')', :runs) as plr;
 
 SELECT
-    'ageTest(John)',
+    'ageTest-2',
+    'Mixed',
     plbench('SELECT ageTest(''John'', 33, ''Smith'')', :runs) as plcsharp,
-    -- plbench('SELECT ageTestFSharp(''John'', 33, ''Smith'')', :runs) as plfsharp;
+    plbench('SELECT ageTestFSharp(''John'', 33, ''Smith'')', :runs) as plfsharp,
     plbench('SELECT ageTestV8(''John'', 33, ''Smith'')', :runs) as plv8,
     plbench('SELECT ageTestPython(''John'', 33, ''Smith'')', :runs) as plpython,
     plbench('SELECT ageTestPg(''John'', 33, ''Smith'')', :runs) as plpgsql,
@@ -40,9 +42,10 @@ SELECT
     plbench('SELECT ageTestR(''John'', 33, ''Smith'')', :runs) as plr;
 
 SELECT
-    'ageTest(Robson)',
+    'ageTest-3',
+    'Mixed',
     plbench('SELECT ageTest(''Robson'', 41, ''Cruzoe'')', :runs) as plcsharp,
-    -- plbench('SELECT ageTestFSharp(''Robson'', 41, ''Cruzoe'')', :runs) as plfsharp;
+    plbench('SELECT ageTestFSharp(''Robson'', 41, ''Cruzoe'')', :runs) as plfsharp,
     plbench('SELECT ageTestV8(''Robson'', 41, ''Cruzoe'')', :runs) as plv8,
     plbench('SELECT ageTestPython(''Robson'', 41, ''Cruzoe'')', :runs) as plpython,
     plbench('SELECT ageTestPg(''Robson'', 41, ''Cruzoe'')', :runs) as plpgsql,

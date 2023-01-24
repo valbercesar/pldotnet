@@ -10,12 +10,11 @@ public class TestMixedTypes {
     public static String ageTestJava(String name, int age, String lname) throws SQLException {
         String res = "";
         if (age < 18) {
-            res = "Hey "+name+" "+lname+"! Dude you are still a kid.";
+            return "Hey "+name+" "+lname+"! Dude you are still a kid.";
         } else if(age >= 10 && age < 40) {
-            res = "Hey "+name+" "+lname+"! You are in the mood!";
+            return "Hey "+name+" "+lname+"! You are in the mood!";
         } else {
-            res = "Hey "+name+" "+lname+"! You are getting experienced!";
+            return "Hey "+name+" "+lname+"! You are getting experienced!";
         }
-        return res;
     }
 }

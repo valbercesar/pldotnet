@@ -7,28 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="VirtualFileSystem.fs" />
-    <Compile Include="FSharpCompiler.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="FSharp.Compiler.Service" Version="41.0.5" />
   </ItemGroup>
 
-  <Target Name="SetupForDemo"
-    AfterTargets="Build">
-
-    <ItemGroup>
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).dll" />
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).pdb" />
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).runtimeconfig.json" />
-      <AllOutputs Include="$(OutputPath)$(MSBuildProjectName).deps.json" />
-      <AllOutputs Include="$(OutputPath)*.dll" />
-    </ItemGroup>
-
-    <!-- Copy the project outputs to the demo directory -->
-    <Copy SourceFiles="@(AllOutputs)"
-	    DestinationFolder="./" />
-  </Target>
+  <ItemGroup>
+    <Compile Include="VirtualFileSystem.fs" />
+    <Compile Include="FSharpCompiler.fs" />
+  </ItemGroup>
 
 </Project>

@@ -13,6 +13,29 @@ return 2147483647;
 $$ LANGUAGE plv8;
 SELECT maxIntegerV8() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnIntV8() RETURNS integer AS $$
+return 10;
+$$ LANGUAGE plv8;
+SELECT returnIntV8() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToIntV8(val integer) RETURNS integer AS $$
+return val + 2;
+$$
+LANGUAGE plv8;
+SELECT inc2ToIntV8(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3IntegerV8(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+return aaa + bbb + ccc;
+$$
+LANGUAGE plv8;
+SELECT sum3IntegerV8(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4IntegerV8(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+return a + b + c + d;
+$$
+LANGUAGE plv8;
+SELECT sum4IntegerV8(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2IntegerV8(a integer, b integer) RETURNS integer AS $$
 return a+b;
 $$ LANGUAGE plv8;

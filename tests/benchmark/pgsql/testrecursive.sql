@@ -1,10 +1,7 @@
 CREATE OR REPLACE FUNCTION fibbbPg(n integer) RETURNS integer AS $$
-DECLARE
-    ret integer;
 BEGIN
-    ret := 1;
-    if n = 1 OR n = 2 THEN
-        RETURN ret;
+    if n <= 1 THEN
+        RETURN n;
     END IF;
     RETURN fibbbPg(n-1) + fibbbPg(n-2);
 END
@@ -12,12 +9,9 @@ $$ LANGUAGE plpgsql;
 SELECT fibbbPg(30) = integer '832040';
 
 CREATE OR REPLACE FUNCTION factPg(n integer) RETURNS integer AS $$
-DECLARE
-    ret integer;
 BEGIN
-    ret := 1;
     IF n <= 1 THEN
-        RETURN ret;
+        RETURN 1;
     ELSE
     	RETURN n*factPg(n-1);
     END IF;

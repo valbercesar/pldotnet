@@ -13,6 +13,29 @@ return 2147483647;
 $$ LANGUAGE plcsharp;
 SELECT maxInteger() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnInt() RETURNS integer AS $$
+return 10;
+$$ LANGUAGE plcsharp;
+SELECT returnInt() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToInt(val integer) RETURNS integer AS $$
+return val + 2;
+$$
+LANGUAGE plcsharp;
+SELECT inc2ToInt(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3Integer(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+return aaa + bbb + ccc;
+$$
+LANGUAGE plcsharp;
+SELECT sum3Integer(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4Integer(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+return a + b + c + d;
+$$
+LANGUAGE plcsharp;
+SELECT sum4Integer(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2Integer(a integer, b integer) RETURNS integer AS $$
 return a+b;
 $$ LANGUAGE plcsharp;
@@ -38,9 +61,7 @@ return (int)a+(int)b+c;
 $$ LANGUAGE plcsharp;
 SELECT mixedInt(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100) = integer '65634';
 
--- FIX: the results are incorrect when mixing smallints with bigint 
---CREATE OR REPLACE FUNCTION mixedBigInt8(b smallint, c bigint) RETURNS smallint AS $$
---return (short)(b+c);
---$$ LANGUAGE plcsharp;
---SELECT mixedBigInt8(CAST(32 AS SMALLINT), CAST(100 AS BIGINT));
-
+CREATE OR REPLACE FUNCTION mixedBigInt8(b smallint, c bigint) RETURNS smallint AS $$
+return (short)(b+c);
+$$ LANGUAGE plcsharp;
+SELECT mixedBigInt8(CAST(32 AS SMALLINT), CAST(100 AS BIGINT)) = smallint '132';

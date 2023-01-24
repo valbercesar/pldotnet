@@ -1,28 +1,20 @@
 CREATE OR REPLACE FUNCTION retVarCharFSharp(fname varchar) RETURNS varchar AS $$
-match fname with
-| Some _fname -> Some(_fname + " Cabral")
-| None -> None
+fname + " Cabral"
 $$ LANGUAGE plfsharp;
 SELECT retVarCharFSharp('Rafael') = varchar 'Rafael Cabral';
 
 CREATE OR REPLACE FUNCTION retConcatVarCharFSharp(fname varchar, lname varchar) RETURNS varchar AS $$
-match (fname, lname) with
-| Some _fname, Some _lname -> Some (_fname + _lname)
-| _ -> None
+fname + lname
 $$ LANGUAGE plfsharp;
 SELECT retConcatVarCharFSharp('João ', 'da Silva') = varchar 'João da Silva';
 
 CREATE OR REPLACE FUNCTION retConcatTextFSharp(fname text, lname text) RETURNS text AS $$
-match (fname, lname) with
-| Some _fname, Some _lname -> Some ("Hello " + _fname + _lname + "!")
-| _ -> None
+("Hello " + fname + lname + "!")
 $$ LANGUAGE plfsharp;
 SELECT retConcatTextFSharp('João ', 'da Silva') =  varchar 'Hello João da Silva!';
 
 CREATE OR REPLACE FUNCTION retVarCharTextFSharp(fname varchar, lname varchar) RETURNS text AS $$
-match (fname, lname) with
-| Some _fname, Some _lname -> Some ("Hello " + _fname + _lname + "!")
-| _ -> None
+"Hello " + fname + lname + "!"
 $$ LANGUAGE plfsharp;
 SELECT retVarCharTextFSharp('Homer Jay ', 'Simpson') = varchar 'Hello Homer Jay Simpson!';
 
@@ -32,24 +24,17 @@ $$ LANGUAGE plfsharp;
 SELECT retCharFSharp('R') =  character 'R';
 
 CREATE OR REPLACE FUNCTION retConcatLettersFSharp(a character, b character) RETURNS varchar AS $$
-match (a, b) with
-| Some _a, Some _b -> Some (_a + _b)
-| _ -> None
+a + b
 $$ LANGUAGE plfsharp;
 SELECT retConcatLettersFSharp('R', 'C') = varchar 'RC';
 
--- Problem here it is neither padding and truncating
 CREATE OR REPLACE FUNCTION retConcatCharsFSharp(a char(5), b char(7)) RETURNS char(5) AS $$
-match (a, b) with
-| Some _a, Some _b -> Some (_a + _b)
-| _ -> None
+a + b
 $$ LANGUAGE plfsharp;
 SELECT retConcatCharsFSharp('H.', 'Simpson') = 'H.Simpson';
 
 CREATE OR REPLACE FUNCTION retConcatVarCharsFSharp(a varchar(5), b varchar(7)) RETURNS varchar(5) AS $$
-match (a, b) with
-| Some _a, Some _b -> Some (_a + _b)
-| _ -> None
+a + b
 $$ LANGUAGE plfsharp;
 SELECT retConcatVarCharsFSharp('H.', 'Simpson') = 'H.Simpson';
 SELECT retConcatVarCharsFSharp('H. あ', 'Simpson') = 'H. あSimpson';

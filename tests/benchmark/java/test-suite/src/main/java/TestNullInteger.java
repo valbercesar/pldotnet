@@ -6,34 +6,34 @@ import org.postgresql.pljava.annotation.Function;
 import java.util.logging.Logger;
 
 public class TestNullInteger {
-    @Function(onNullInput=Function.OnNullInput.RETURNS_NULL)
+    @Function
     public static Integer returnNullIntJava() throws SQLException {
         return null;
     }
 
-    @Function(onNullInput=Function.OnNullInput.RETURNS_NULL)
+    @Function
     public static Short returnNullSmallIntJava() throws SQLException {
         return null;
     }
 
-    @Function(onNullInput=Function.OnNullInput.RETURNS_NULL)
+    @Function
     public static Long returnNullBigIntJava() throws SQLException {
         return null;
     }
 
-    @Function(onNullInput=Function.OnNullInput.RETURNS_NULL)
+    @Function
     public static Integer sumNullArgIntJava(Integer a, Integer b) throws SQLException {
-        return a + b;
+        return (a == null ? 0 : a) + (b == null ? 0 : b);
     }
 
-    @Function(onNullInput=Function.OnNullInput.RETURNS_NULL)
+    @Function
     public static Short sumNullArgSmallIntJava(Short a, Short b) throws SQLException {
-        return (short)(a + b);
+        return (short)((a == null ? (short)0 : a) + (b == null ? (short)0 : b));
     }
 
-    @Function(onNullInput=Function.OnNullInput.RETURNS_NULL)
+    @Function
     public static Long sumNullArgBigIntJava(Long a, Long b) throws SQLException {
-        return a + b;
+        return (long)(a == null ? (long)0 : a) + (b == null ? (long)0 : b);
     }
 
     @Function

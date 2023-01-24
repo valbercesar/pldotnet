@@ -1,36 +1,18 @@
-CREATE OR REPLACE FUNCTION "fibbbFSharp"(n integer) RETURNS integer AS $$
-let rec loop acc1 acc2 m =
-    match m with
-    | 0 -> acc1
-    | 1 -> acc2
-    | _ ->
-        loop acc2 (acc1 + acc2) (m - 1)
-match n with
-| Some _n -> Some (loop 0 1 _n)
-| None -> None
+CREATE OR REPLACE FUNCTION fibbbFSharp(m integer) RETURNS integer AS $$
+let rec fib (n: int) (a: int) (b: int) =
+    if n = 0 then a else fib (n-1) b (a+b)
+match m.HasValue with
+| true -> Nullable(fib m.Value 0 1)
+| _ -> System.Nullable()
 $$ LANGUAGE plfsharp;
-SELECT "fibbbFSharp"(30) = integer '832040';
+SELECT fibbbFSharp(30) = integer '832040';
 
-CREATE OR REPLACE FUNCTION "factFSharp"(n integer) RETURNS integer AS $$
-let rec factorial m =
-    match m with
-    | 0 | 1 -> 1
-    | _ -> m * factorial(m - 1)
-match n with
-| Some _n -> Some (factorial _n)
-| _ -> None
-$$ LANGUAGE plfsharp;
-SELECT "factFSharp"(5) = integer '120';
+CREATE OR REPLACE FUNCTION factFSharp(m integer) RETURNS integer AS $$
+let rec factorial acc n =
+    if n = 0 then acc else factorial (acc * n) (n-1)
 
-CREATE OR REPLACE FUNCTION "naturalFSharp"(n numeric) RETURNS numeric AS $$
-let rec natural (_n : decimal) =
-    match _n with
-    | 1m -> 1m
-    | _m when _m <= 0m -> 0m
-    | _ -> natural(_n - 1m)
-match n with
-| Some _n -> Some (natural _n)
-| _ -> None
+match m.HasValue with
+| true -> Nullable(factorial 1 m.Value)
+| _ -> System.Nullable()
 $$ LANGUAGE plfsharp;
-SELECT "naturalFSharp"(10) =  numeric '1';
-SELECT "naturalFSharp"(10.5) = numeric '0';
+SELECT factFSharp(5) = integer '120';

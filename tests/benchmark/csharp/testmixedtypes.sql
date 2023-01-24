@@ -1,12 +1,11 @@
 CREATE OR REPLACE FUNCTION ageTest(name varchar, age integer, lname varchar) RETURNS varchar AS $$
 FormattableString res;
 if (age < 18)
-    res = $"Hey {name} {lname}! Dude you are still a kid.";
+    return "Hey "+name+" "+lname+"! Dude you are still a kid.";
 else if (age >= 18 && age < 40)
-    res = $"Hey {name} {lname}! You are in the mood!";
+    return "Hey "+name+" "+lname+"! You are in the mood!";
 else
-    res = $"Hey {name} {lname}! You are getting experienced!";
-return res.ToString();
+    return "Hey "+name+" "+lname+"! You are getting experienced!";
 $$ LANGUAGE plcsharp;
 
 SELECT ageTest('Billy', 10, 'The KID') = varchar 'Hey Billy The KID! Dude you are still a kid.';

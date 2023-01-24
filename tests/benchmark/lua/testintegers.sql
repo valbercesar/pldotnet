@@ -13,6 +13,27 @@ return 2147483647
 $$ LANGUAGE pllua;
 SELECT maxIntegerLua() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnIntLua() RETURNS integer AS $$
+return 10
+$$ LANGUAGE pllua;
+SELECT returnIntLua() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToIntLua(val integer) RETURNS integer AS $$
+return val + 2
+$$ LANGUAGE pllua;
+SELECT inc2ToIntLua(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3IntegerLua(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+return aaa + bbb + ccc
+$$
+LANGUAGE pllua;
+SELECT sum3IntegerLua(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4IntegerLua(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+return a + b + c + d
+$$ LANGUAGE pllua;
+SELECT sum4IntegerLua(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2IntegerLua(a integer, b integer) RETURNS integer AS $$
 return a + b
 $$ LANGUAGE pllua;

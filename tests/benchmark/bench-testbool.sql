@@ -1,7 +1,7 @@
 \i tests/benchmark/includes.sql
 
 \i tests/benchmark/csharp/testbool.sql
--- \i tests/benchmark/fsharp/testfsbool.sql
+\i tests/benchmark/fsharp/testfsbool.sql
 \i tests/benchmark/v8javascript/testbool.sql
 \i tests/benchmark/python/testbool.sql
 \i tests/benchmark/pgsql/testbool.sql
@@ -11,12 +11,13 @@
 \i tests/benchmark/tcl/testbool.sql
 \i tests/benchmark/r/testbool.sql
 
-\set runs 1000
+\set runs NRUNS
 
 SELECT
     'returnBool',
+    'Bool',
     plbench('SELECT returnBool()', :runs) as plcsharp,
-    -- plbench('SELECT returnBoolFSharp()', :runs) as plfsharp;
+    plbench('SELECT returnBoolFSharp()', :runs) as plfsharp,
     plbench('SELECT returnBoolV8()', :runs) as plv8,
     plbench('SELECT returnBoolPython()', :runs) as plpython,
     plbench('SELECT returnBoolPg()', :runs) as plpgsql,
@@ -27,9 +28,10 @@ SELECT
     plbench('SELECT returnBoolR()', :runs) as plr;
 
 SELECT
-    'BooleanAnd',
+    'booleanAnd',
+    'Bool',
     plbench('SELECT BooleanAnd(true, true)', :runs) as plcsharp,
-    -- plbench('SELECT BooleanAndFSharp(true, true)', :runs) as plfsharp;
+    plbench('SELECT BooleanAndFSharp(true, true)', :runs) as plfsharp,
     plbench('SELECT BooleanAndV8(true, true)', :runs) as plv8,
     plbench('SELECT BooleanAndPython(true, true)', :runs) as plpython,
     plbench('SELECT BooleanAndPg(true, true)', :runs) as plpgsql,
@@ -40,9 +42,10 @@ SELECT
     plbench('SELECT BooleanAndR(true, true)', :runs) as plr;
 
 SELECT
-    'BooleanOr',
+    'booleanOr',
+    'Bool',
     plbench('SELECT BooleanOr(false, false)', :runs) as plcsharp,
-    -- plbench('SELECT BooleanOrFSharp(false, false)', :runs) as plfsharp;
+    plbench('SELECT BooleanOrFSharp(false, false)', :runs) as plfsharp,
     plbench('SELECT BooleanOrV8(false, false)', :runs) as plv8,
     plbench('SELECT BooleanOrPython(false, false)', :runs) as plpython,
     plbench('SELECT BooleanOrPg(false, false)', :runs) as plpgsql,
@@ -53,9 +56,10 @@ SELECT
     plbench('SELECT BooleanOrR(false, false)', :runs) as plr;
 
 SELECT
-    'BooleanXor',
+    'booleanXor',
+    'Bool',
     plbench('SELECT BooleanXor(false, false)', :runs) as plcsharp,
-    -- plbench('SELECT BooleanXorFSharp(false, false)', :runs) as plfsharp;
+    plbench('SELECT BooleanXorFSharp(false, false)', :runs) as plfsharp,
     plbench('SELECT BooleanXorV8(false, false)', :runs) as plv8,
     plbench('SELECT BooleanXorPython(false, false)', :runs) as plpython,
     plbench('SELECT BooleanXorPg(false, false)', :runs) as plpgsql,

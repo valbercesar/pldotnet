@@ -13,6 +13,27 @@ return 2147483647
 $$ LANGUAGE plpython3u;
 SELECT maxIntegerPython() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnIntPython() RETURNS integer AS $$
+return 10
+$$ LANGUAGE plpython3u;
+SELECT returnIntPython() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToIntPython(val integer) RETURNS integer AS $$
+return val + 2
+$$ LANGUAGE plpython3u;
+SELECT inc2ToIntPython(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3IntegerPython(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+return aaa + bbb + ccc
+$$
+LANGUAGE plpython3u;
+SELECT sum3IntegerPython(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4IntegerPython(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+return a + b + c + d
+$$ LANGUAGE plpython3u;
+SELECT sum4IntegerPython(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2IntegerPython(a integer, b integer) RETURNS integer AS $$
 return a + b
 $$ LANGUAGE plpython3u;

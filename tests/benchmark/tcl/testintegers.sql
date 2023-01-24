@@ -13,6 +13,29 @@ return 2147483647;
 $$ LANGUAGE pltcl;
 SELECT maxIntegerTcl() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnIntTcl() RETURNS integer AS $$
+return 10;
+$$ LANGUAGE pltcl;
+SELECT returnIntTcl() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToIntTcl(val integer) RETURNS integer AS $$
+return [expr $1 + 2];
+$$
+LANGUAGE pltcl;
+SELECT inc2ToIntTcl(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3IntegerTcl(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+return [expr $1 + $2 + $3];
+$$
+LANGUAGE pltcl;
+SELECT sum3IntegerTcl(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4IntegerTcl(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+return [expr $1 + $2 + $3 + $4];
+$$
+LANGUAGE pltcl;
+SELECT sum4IntegerTcl(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2IntegerTcl(a integer, b integer) RETURNS integer AS $$
 return [expr $1 + $2];
 $$ LANGUAGE pltcl;

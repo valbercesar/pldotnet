@@ -1,7 +1,7 @@
 \i tests/benchmark/includes.sql
 
 \i tests/benchmark/csharp/testintegers.sql
--- \i tests/benchmark/fsharp/testfsintegers.sql
+\i tests/benchmark/fsharp/testfsintegers.sql
 \i tests/benchmark/v8javascript/testintegers.sql
 \i tests/benchmark/python/testintegers.sql
 \i tests/benchmark/pgsql/testintegers.sql
@@ -11,12 +11,13 @@
 \i tests/benchmark/tcl/testintegers.sql
 \i tests/benchmark/r/testintegers.sql
 
-\set runs 1000
+\set runs NRUNS
 
 SELECT
     'maxSmallInt',
+    'Integers',
     plbench('SELECT maxSmallInt()', :runs) as plcsharp,
-    -- plbench('SELECT maxSmallIntFSharp()', :runs) as plfsharp;
+    plbench('SELECT maxSmallIntFSharp()', :runs) as plfsharp,
     plbench('SELECT maxSmallIntV8()', :runs) as plv8,
     plbench('SELECT maxSmallIntPython()', :runs) as plpython,
     plbench('SELECT maxSmallIntPg()', :runs) as plpgsql,
@@ -28,8 +29,9 @@ SELECT
 
 SELECT
     'sum2SmallInt',
+    'Integers',
     plbench('SELECT sum2SmallInt(CAST(100 AS smallint), CAST(101 AS smallint))', :runs) as plcsharp,
-    -- plbench('SELECT sum2SmallIntFSharp(CAST(100 AS smallint), CAST(101 AS smallint))', :runs) as plfsharp;
+    plbench('SELECT sum2SmallIntFSharp(CAST(100 AS smallint), CAST(101 AS smallint))', :runs) as plfsharp,
     plbench('SELECT sum2SmallIntV8(CAST(100 AS smallint), CAST(101 AS smallint))', :runs) as plv8,
     plbench('SELECT sum2SmallIntPython(CAST(100 AS smallint), CAST(101 AS smallint))', :runs) as plpython,
     plbench('SELECT sum2SmallIntPg(CAST(100 AS smallint), CAST(101 AS smallint))', :runs) as plpgsql,
@@ -41,8 +43,9 @@ SELECT
 
 SELECT
     'maxInteger',
+    'Integers',
     plbench('SELECT maxInteger()', :runs) as plcsharp,
-    -- plbench('SELECT maxIntegerFSharp()', :runs) as plfsharp;
+    plbench('SELECT maxIntegerFSharp()', :runs) as plfsharp,
     plbench('SELECT maxIntegerV8()', :runs) as plv8,
     plbench('SELECT maxIntegerPython()', :runs) as plpython,
     plbench('SELECT maxIntegerPg()', :runs) as plpgsql,
@@ -53,9 +56,38 @@ SELECT
     plbench('SELECT maxIntegerR()', :runs) as plr;
 
 SELECT
+    'returnInt',
+    'Integers',
+    plbench('SELECT returnInt()', :runs) as plcsharp,
+    plbench('SELECT returnIntFSharp()', :runs) as plfsharp,
+    plbench('SELECT returnIntV8()', :runs) as plv8,
+    plbench('SELECT returnIntPython()', :runs) as plpython,
+    plbench('SELECT returnIntPg()', :runs) as plpgsql,
+    plbench('SELECT returnIntJava()', :runs) as pljava,
+    plbench('SELECT returnIntPerl()', :runs) as plperl,
+    plbench('SELECT returnIntLua()', :runs) as pllua,
+    plbench('SELECT returnIntTcl()', :runs) as pltcl,
+    plbench('SELECT returnIntR()', :runs) as plr;
+
+SELECT
+    'inc2ToIntToInt',
+    'Integers',
+    plbench('SELECT inc2ToInt(8)', :runs) as plcsharp,
+    plbench('SELECT inc2ToIntFSharp(8)', :runs) as plfsharp,
+    plbench('SELECT inc2ToIntV8(8)', :runs) as plv8,
+    plbench('SELECT inc2ToIntPython(8)', :runs) as plpython,
+    plbench('SELECT inc2ToIntPg(8)', :runs) as plpgsql,
+    plbench('SELECT inc2ToIntJava(8)', :runs) as pljava,
+    plbench('SELECT inc2ToIntPerl(8)', :runs) as plperl,
+    plbench('SELECT inc2ToIntLua(8)', :runs) as pllua,
+    plbench('SELECT inc2ToIntTcl(8)', :runs) as pltcl,
+    plbench('SELECT inc2ToIntR(8)', :runs) as plr;
+
+SELECT
     'sum2Integer',
+    'Integers',
     plbench('SELECT sum2Integer(32770, 100)', :runs) as plcsharp,
-    -- plbench('SELECT sum2IntegerFSharp(32770, 100)', :runs) as plfsharp;
+    plbench('SELECT sum2IntegerFSharp(32770, 100)', :runs) as plfsharp,
     plbench('SELECT sum2IntegerV8(32770, 100)', :runs) as plv8,
     plbench('SELECT sum2IntegerPython(32770, 100)', :runs) as plpython,
     plbench('SELECT sum2IntegerPg(32770, 100)', :runs) as plpgsql,
@@ -66,9 +98,38 @@ SELECT
     plbench('SELECT sum2IntegerR(32770, 100)', :runs) as plr;
 
 SELECT
+    'sum3IntegerInteger',
+    'Integers',
+    plbench('SELECT sum3Integer(3,2,1)', :runs) as plcsharp,
+    plbench('SELECT sum3IntegerFSharp(3,2,1)', :runs) as plfsharp,
+    plbench('SELECT sum3IntegerV8(3,2,1)', :runs) as plv8,
+    plbench('SELECT sum3IntegerPython(3,2,1)', :runs) as plpython,
+    plbench('SELECT sum3IntegerPg(3,2,1)', :runs) as plpgsql,
+    plbench('SELECT sum3IntegerJava(3,2,1)', :runs) as pljava,
+    plbench('SELECT sum3IntegerPerl(3,2,1)', :runs) as plperl,
+    plbench('SELECT sum3IntegerLua(3,2,1)', :runs) as pllua,
+    plbench('SELECT sum3IntegerTcl(3,2,1)', :runs) as pltcl,
+    plbench('SELECT sum3IntegerR(3,2,1)', :runs) as plr;
+
+SELECT
+    'sum4IntegerInteger',
+    'Integers',
+    plbench('SELECT sum4Integer(4,3,2,1)', :runs) as plcsharp,
+    plbench('SELECT sum4IntegerFSharp(4,3,2,1)', :runs) as plfsharp,
+    plbench('SELECT sum4IntegerV8(4,3,2,1)', :runs) as plv8,
+    plbench('SELECT sum4IntegerPython(4,3,2,1)', :runs) as plpython,
+    plbench('SELECT sum4IntegerPg(4,3,2,1)', :runs) as plpgsql,
+    plbench('SELECT sum4IntegerJava(4,3,2,1)', :runs) as pljava,
+    plbench('SELECT sum4IntegerPerl(4,3,2,1)', :runs) as plperl,
+    plbench('SELECT sum4IntegerLua(4,3,2,1)', :runs) as pllua,
+    plbench('SELECT sum4IntegerTcl(4,3,2,1)', :runs) as pltcl,
+    plbench('SELECT sum4IntegerR(4,3,2,1)', :runs) as plr;
+
+SELECT
     'maxBigInt',
+    'Integers',
     plbench('SELECT maxBigInt()', :runs) as plcsharp,
-    -- plbench('SELECT maxBigIntFSharp()', :runs) as plfsharp;
+    plbench('SELECT maxBigIntFSharp()', :runs) as plfsharp,
     plbench('SELECT maxBigIntV8()', :runs) as plv8,
     plbench('SELECT maxBigIntPython()', :runs) as plpython,
     plbench('SELECT maxBigIntPg()', :runs) as plpgsql,
@@ -79,37 +140,12 @@ SELECT
     plbench('SELECT maxBigIntR()', :runs) as plr;
 
 SELECT
-    'sum2BigInt',
-    plbench('SELECT sum2BigInt(9223372036854775707, 100)', :runs) as plcsharp,
-    -- plbench('SELECT sum2BigIntFSharp(9223372036854775707, 100)', :runs) as plfsharp;
-    plbench('SELECT sum2BigIntV8(9223372036854775707, 100)', :runs) as plv8,
-    plbench('SELECT sum2BigIntPython(9223372036854775707, 100)', :runs) as plpython,
-    plbench('SELECT sum2BigIntPg(9223372036854775707, 100)', :runs) as plpgsql,
-    plbench('SELECT sum2BigIntJava(9223372036854775707, 100)', :runs) as pljava,
-    plbench('SELECT sum2BigIntPerl(9223372036854775707, 100)', :runs) as plperl,
-    plbench('SELECT sum2BigIntLua(9223372036854775707, 100)', :runs) as pllua,
-    plbench('SELECT sum2BigIntTcl(9223372036854775707, 100)', :runs) as pltcl,
-    'NULL' as plr;
-
-SELECT
-    'mixedBigInt',
-    plbench('SELECT mixedBigInt(32767,  2147483647, 100)', :runs) as plcsharp,
-    -- plbench('SELECT mixedBigIntFSharp(32767,  2147483647, 100)', :runs) as plfsharp;
-    plbench('SELECT mixedBigIntV8(32767,  CAST(2147483647 as bigint), CAST(100 as bigint))', :runs) as plv8,
-    plbench('SELECT mixedBigIntPython(32767,  2147483647, 100)', :runs) as plpython,
-    plbench('SELECT mixedBigIntPg(32767,  CAST(2147483647 as bigint), CAST(100 as bigint))', :runs) as plpgsql,
-    plbench('SELECT mixedBigIntJava(32767,  2147483647, 100)', :runs) as pljava,
-    plbench('SELECT mixedBigIntPerl(32767,  2147483647, 100)', :runs) as plperl,
-    plbench('SELECT mixedBigIntLua(32767,  2147483647, 100)', :runs) as pllua,
-    plbench('SELECT mixedBigIntTcl(32767,  2147483647, 100)', :runs) as pltcl,
-    'NULL' as plr;
-
-SELECT
     'mixedInt',
+    'Integers',
     plbench('SELECT mixedInt(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as plcsharp,
-    -- plbench('SELECT mixedIntFSharp(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as plfsharp;
+    plbench('SELECT mixedIntFSharp(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as plfsharp,
     plbench('SELECT mixedIntV8(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as plv8,
-    plbench('SELECT mixedIntPython(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as ppython,
+    plbench('SELECT mixedIntPython(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as plpython,
     plbench('SELECT mixedIntPg(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as plpgsql,
     plbench('SELECT mixedIntJava(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as pljava,
     plbench('SELECT mixedIntPerl(CAST(32767 AS smallint),  CAST(32767 AS smallint), 100)', :runs) as plperl,

@@ -98,6 +98,7 @@ debian/postgresql-*-pldotnet/
 debian/.debhelper
 
 tests/benchmark/java/test-suite/
+!tests/benchmark/java/test-suite/*.java
 automated_test_results/*
 expected/*
 docs/html/*
@@ -109,3 +110,9 @@ tests/csharp/DotNetTestProject/obj
 
 tests/fsharp/DotNetTestProject/bin
 tests/fsharp/DotNetTestProject/obj
+
+docs/img/*.png
+docs/_minted*
+docs/pldotnet-whitepaper-dec22.*
+!docs/pldotnet-whitepaper-dec22.tex
+.venv.created

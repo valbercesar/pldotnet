@@ -4,6 +4,14 @@ SELECT sum2SmallIntJava(CAST(100 AS smallint), CAST(101 AS smallint)) = smallint
 
 SELECT maxIntegerJava() = integer '2147483647';
 
+SELECT returnIntJava() = integer '10';
+
+SELECT inc2ToIntJava(8) = integer '10';
+
+SELECT sum3IntegerJava(3,2,1) = integer '6';
+
+SELECT sum4IntegerJava(4,3,2,1) = integer '10';
+
 SELECT sum2IntegerJava(32770, 100) = bigint '32870';
 
 SELECT maxBigIntJava() = bigint '9223372036854775807';

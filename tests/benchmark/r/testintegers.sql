@@ -13,6 +13,29 @@ return(2147483647)
 $$ LANGUAGE plr;
 SELECT maxIntegerR() = integer '2147483647';
 
+CREATE OR REPLACE FUNCTION returnIntR() RETURNS integer AS $$
+return(10)
+$$ LANGUAGE plr;
+SELECT returnIntR() = integer '10';
+
+CREATE OR REPLACE FUNCTION inc2ToIntR(val integer) RETURNS integer AS $$
+return(val + 2)
+$$
+LANGUAGE plr;
+SELECT inc2ToIntR(8) = integer '10';
+
+CREATE OR REPLACE FUNCTION sum3IntegerR(aaa integer, bbb integer, ccc integer) RETURNS integer AS $$
+return(aaa + bbb + ccc)
+$$
+LANGUAGE plr;
+SELECT sum3IntegerR(3,2,1) = integer '6';
+
+CREATE OR REPLACE FUNCTION sum4IntegerR(a integer, b integer, c integer, d integer) RETURNS integer AS $$
+return(a + b + c + d)
+$$
+LANGUAGE plr;
+SELECT sum4IntegerR(4,3,2,1) = integer '10';
+
 CREATE OR REPLACE FUNCTION sum2IntegerR(a integer, b integer) RETURNS integer AS $$
 return(a+b)
 $$ LANGUAGE plr;

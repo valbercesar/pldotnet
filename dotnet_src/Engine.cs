@@ -543,6 +543,7 @@ namespace PlDotNET
                 {
                     typeof(NpgsqlPoint).Assembly.Location,
                     typeof(Engine).Assembly.Location,
+                    typeof(NpgsqlPoint).Assembly.Location.Replace("Npgsql", "FSharp.Core"),
                 };
 
                 return FSharpCompiler.CompileFSharpSourceCode(functionId, Engine.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
