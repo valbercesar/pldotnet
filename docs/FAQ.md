@@ -3,8 +3,8 @@
 **Table of Contents**
 
 - [pl/dotnet: Frequently Asked Questions](#pldotnet-frequently-asked-questions)
-  - [Q: Which version of pl/dotnet does this FAQ cover?](#q-which-version-of-pldotnet-does-this-faq-cover)
   - [Q: What is pl/dotnet?](#q-what-is-pldotnet)
+  - [Q: Which version of pl/dotnet does this FAQ cover?](#q-which-version-of-pldotnet-does-this-faq-cover)
   - [Q: What languages are supported?](#q-what-languages-are-supported)
   - [Q: Can I see an example?](#q-can-i-see-an-example)
   - [Q: How do I use pl/dotnet?](#q-how-do-i-use-pldotnet)
@@ -35,14 +35,16 @@
   - [Q: How safe is pl/dotnet?](#q-how-safe-is-pldotnet)
   - [Q: How isolated are functions in pl/dotnet?](#q-how-isolated-are-functions-in-pldotnet)
   - [Q: Who is responsible for pl/dotnet?](#q-who-is-responsible-for-pldotnet)
-
-## Q: Which version of pl/dotnet does this FAQ cover?
-
-This FAQ is for the version 1.0 release of pl/dotnet, released in January 2023.
+  - [Q: How do I write efficient and secure C# stored procedures in pl/dotnet?](#q-how-do-i-write-efficient-and-secure-c-stored-procedures-in-pldotnet)
+  - [Q: Can I use any C#/F# library in pl/dotnet?](#q-can-i-use-any-cf-library-in-pldotnet)
 
 ## Q: What is pl/dotnet?
 
 The pl/dotnet project extends PostgreSQL to support functions, stored procedures and `DO` blocks for the dotnet platform, including both C# and F#.
+
+## Q: Which version of pl/dotnet does this FAQ cover?
+
+This FAQ is for the version 1.0 release of pl/dotnet, released in January 2023.
 
 ## Q: What languages are supported?
 
@@ -64,11 +66,11 @@ After you install it, you can use the normal Postgresql `CREATE FUNCTION` or `CR
 
 ## Q: Is pl/dotnet fast?
 
-In our benchmarks we are the fastest external procedural language in PostgreSQL. We are nearly as fast as pl/pgsql.
+In our benchmarks, pl/csharp is the fastest external procedural language in PostgreSQL.  We are nearly as fast as pl/pgsql.  (The performance of pl/fsharp is practically identical to pl/csharp, with a few exceptions.)
 
 These benchmarks are somewhat arbitrary, merely having been designed for our own needs, but the were not cherry picked or tuned; we built the tests first and only benchmarked them afterwards. It is possible that some of our implementation choices in other languages were sub-optimal, and we welcome corrections, but the consistency of the results across multiple languages makes us reasonably confident in the data. The tests are available in our repository for inspection, and we hope to share them in more polished form for use by other PL teams.
 
-Our benchmark results were aided by .NET's excellent handling of recursive functions; we generally beat other languages by a considerable margin on these benchmarks.  Our benchmark results were harmed by our handling of arrays, which is currently compatible with Npgsql's convention and is unnecessarily slow. (We intend to improve this soon, though these improvements will be optional since they are not Npgsql-compatible.)
+Our benchmark results were aided by .NET's excellent handling of recursive functions; we generally beat other languages by a considerable margin on these benchmarks.  Our benchmark results were harmed by our handling of arrays, which is currently compatible with Npgsql's convention and is therefore unnecessarily slow. (We intend to improve this soon, though these improvements will be optional since they are not Npgsql-compatible.)
 
 ## Q: Does pl/dotnet support a lot of types?
 
@@ -78,32 +80,28 @@ The full list can be found in our white paper or in the technical documentation.
 
 ## Q: How does pl/dotnet make use of Npgsql?
 
-Npgsql is an open source ADO.NET Data Provider for PostgreSQL. You can find out more at their website, https://www.npgsql.org/.
+Npgsql is an open source ADO.NET Data Provider for PostgreSQL. You can find out more at their website, [https://www.npgsql.org/](https://www.npgsql.org/).
 
 pl/dotnet uses Npgsql to map PostgreSQL data types to .NET data types. This provides us a very high quality of data type mapping, since Npgsql has long been in widespread use, and it maximizes code mobility for developers seeking to move their client code into the database as stored procedures.
 
+pl/dotnet also uses Npgsql in our implementation of SPI, which is currently under development.
+
+We believe that maximal compatibility with Npgsql will allow transparent migration of C# and F# code from the client to the server, which is a strategic goal for our project.
+
 ## Q: How compatible is my Npgsql client code with pl/dotnet?
 
-At the moment, we are 100% compatible with all supported Npgsql types. There are several deviations from the Npgsql type mapping which we are contemplating in the future, but we believe that Npgsql compatibility will remain our default, with developers being able to opt into the alternative APIs for higher performance (or other reasons.)
+At the moment, we are 100% compatible with all supported Npgsql types. There are several deviations from the Npgsql type mapping which we are contemplating in the future, but we believe that Npgsql compatibility will remain our default, with developers being able to opt into the alternative APIs at their discretion.
 
 ## Q: How complete is your F# support compared to C#?
 
-Thanks to the magic of .NET, everything that works in C# *should* work in F#. We have complete unit testing for C#, so we think that it should all work in F#. We have substantial unit testing for F#, covering all major categories of data types, and we hope to complete it soon.
+Thanks to the magic of .NET, everything that works in C# *should* work in F#. We have complete unit testing for all data types in both C# and F#.
 
 ## Q: How good is the code quality is pl/dotnet?
 
-- We have complete unit testing in C# for all supported data types,
-    their arrays, and nulls for that type.
-- We have partial but substantial unit testing for F# across
-    a representative subset of the supported data types, their
-    arrays, and nulls.
-- Cpplint is a static code checker for C and C++.
-    pl/dotnet is clean under its checks.
-- StyleCop is a static code analysis tool for C#.
-    pl/dotnet is clean under its checks.
-- SonarLint is a code quality and security static analysis
-    tool with almost 5000 rules.
-    pl/dotnet is clean under its checks.
+- We have complete unit testing in C# and F# for all supported data types, their arrays, and nulls for that type.
+- Cpplint is a static code checker for C and C++.  pl/dotnet is clean under its checks.
+- StyleCop is a static code analysis tool for C#.  pl/dotnet is clean under its checks.
+- SonarLint is a code quality and security static analysis tool with almost 5000 rules.  pl/dotnet is clean under its checks.
 
 ## Q: Is the code well commented?
 
@@ -223,3 +221,22 @@ We hope to allow different functions loaded from the same DLL to share the same 
 ## Q: Who is responsible for pl/dotnet?
 
 pl/dotnet was built by the fine people at Brick Abode. We love ASP.NET development and PostgreSQL, and we build pl/dotnet to be the stored procedure environment that we wanted to have for working on our clients' projects. Feel free to talk to us about your ASP.NET development needs. Find out more at https://www.brickabode.com.
+
+## Q: How do I write efficient and secure C# stored procedures in pl/dotnet?
+
+- Use parameterized queries: Use parameterized queries to prevent SQL injection attacks.
+- Use prepared statements: Use prepared statements to avoid parsing the same SQL statement multiple times.
+- Use transactions: Use transactions to ensure that your stored procedures are atomic, consistent, isolated, and durable (ACID).
+- Use the appropriate data types: Use the appropriate data types when passing data between C# and SQL Server to avoid unnecessary data conversions.
+- Avoid using global variables: Global variables can be modified by any part of the code and can cause surprising behavior, so avoid using them where possible.
+- Use proper error handling: Use proper error handling to catch errors and prevent your stored procedures from crashing.
+- Use the `using` statement when working with database connections: The using statement will automatically handle the closing of the connection.
+- Avoid using dynamic SQL if possible: Dynamic SQL can be vulnerable to SQL injection attacks and is harder to debug and maintain.
+- Be mindful of memory usage: Be mindful of memory usage when working with large datasets and try to release memory as soon as it is no longer needed.
+- Keep your stored procedures simple and focused: Avoid adding unnecessary complexity to your stored procedures, keep them simple, focused, and easy to understand.
+
+It is also important to keep PostgreSQL updated with the latest security patches and use appropriate authentication and authorization methods for accessing your stored procedures.
+
+## Q: Can I use any C#/F# library in pl/dotnet?
+
+Users cannot currently load libraries into their pl/dotnet programs, but we hope to add this support soon. In the meantime, if you wish to use other libraries, you can create your own Assembly and load it as demonstrated in the question [Q: Can I load my code from a DLL?](#q-can-i-load-my-code-from-a-dll).
