@@ -174,7 +174,10 @@ def main(argv):
             filtered_df = filter_data_by_category(df, category)
             create_heatmap(filtered_df, category)
     else:
+        # print("# DEBUG: pre-filtering, df[%s] is:\n%s" % (len(df), df))
         df = df.loc[exclude_test]
+        # print("# DEBUG: post-filtering, df[%s] is:\n%s" % (len(df), df))
+        # print("# DEBUG: tests are %s" % sorted(df["Test Case"]))
         create_heatmap(pngfile, df)
 
 

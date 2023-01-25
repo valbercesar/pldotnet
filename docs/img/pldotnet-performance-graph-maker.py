@@ -38,7 +38,7 @@ def color(slot, number):
         b = 0.0
     elif val > 0.5:
         nval = val - 0.5
-        b = find_slot(nval) 
+        b = find_slot(nval)
         g = 1.0 - b
         r = 0.0
     else:
@@ -91,6 +91,7 @@ def make_fig(filename, data):
     if av < 1:
         title = "%s takes %s%% longer than %s" % (names[1], make_perc(av), names[0])
     # title += "<br>(pl/dotnet is 1.0; less is better)"
+    print("# DEBUG: title is '%s'" % title)
     data2 = dict(data)
 
     dim = int(os.environ.get("IMGSZ", "512")) # pixel size
@@ -179,11 +180,17 @@ def compare(data, lang1, lang2):
     comparison = {}
     total_count = 0
     reject_count = 0
-    for test in sorted(data[lang1].keys()):
+    missing_count = 0
+    outlier_count = 0
+    tests = sorted(data[lang1].keys())
+    debug("Starting comparison with %s tests" % len(tests), False)
+    for test in tests:
         total_count = total_count + 1
         debug("Comparing test %s between languages %s and %s" % \
                 (test, lang1, lang2), False)
         if test in data[lang2]:
+            if test in comparison:
+                raise Exception("Duplicate test: %s" % test)
             if data[lang2][test] not in ('-', '', 'NULL', 'null'):
                 score1 = float(data[lang1][test])
                 score2 = float(data[lang2][test])
@@ -192,10 +199,17 @@ def compare(data, lang1, lang2):
                       (c, score1, score2), False)
                 if c < 10.0 and c > 0.1:
                     comparison[test] = c
+                else:
+                    debug("Skipping outlier test %s: %s" % (test, c))
+                    outlier_count = outlier_count + 1
             else:
+                debug("Rejecting null test: %s=%s" % (test, data[lang2][test]))
                 reject_count = reject_count + 1
-    debug("comparing %s to %s, got %s data points, rejected %s" % \
-            (lang1, lang2, total_count, reject_count))
+        else:
+            debug("Test %s is missing for language %s" % (test, lang2))
+            missing_count = missing_count + 1
+    debug("comparing %s to %s, got %s data points, rejected %s, missing %s, outlier %s, returning %s" % \
+            (lang1, lang2, total_count, reject_count, missing_count, outlier_count, len(comparison)), False)
     return comparison
 
 def graph_compare(data, l1, l2, inverted=True):
@@ -228,6 +242,7 @@ def graph_compare_n(data, *langs, inverted=True):
     # we use the comparison to give us the sort order on the tests
     comparison = compare(data, langs[0], langs[1])
     test_ordered = [x for (x,y) in sorted(comparison.items(), key=lambda pair: pair[1])]
+    debug("Before filtering, have %s tests" % len(test_ordered), False)
     av = average(comparison.values())
     debug("Average 2 is %s" % av, False)
 
@@ -239,17 +254,24 @@ def graph_compare_n(data, *langs, inverted=True):
     xdata = [ [] for lang in langs ]
     rejects = 0
     for test in test_ordered:
+
         valid = True
-        for lang in langs:
-            if data[lang][test] in ('-', '', 'NULL', 'null'):
-                debug("Skipping data[%s][%s] on null" % (lang, test))
-                valid = False
-                break
-            if data["Category"][test] in exclude_categories:
-                debug("Skipping data['Category'][%s]=%s" % (test, data["Category"][test]))
-                valid = False
-                break
-        if valid: # data is valid, so we add it
+
+        # we skip excluded categories
+        if data["Category"][test] in exclude_categories:
+            debug("Skipping data['Category'][%s]=%s" % (test, data["Category"][test]))
+            valid = False
+        else:
+            # debug("Including data['Category'][%s]=%s" % (test, data["Category"][test]))
+            # we skip invalid values
+            for lang in langs:
+                if data[lang][test] in ('-', '', 'NULL', 'null'):
+                    debug("Skipping data[%s][%s] on null" % (lang, test))
+                    valid = False
+                    break
+
+        # if data is valid, then we add it
+        if valid: 
             benchmark_val = float(data[benchmark_lang][test])
             for n in range(len(langs)):
                 lang = langs[n]
@@ -259,6 +281,7 @@ def graph_compare_n(data, *langs, inverted=True):
 
     debug("After filtering, comparing %s to %s, got %s data points, rejected %s" % \
             (langs[0], langs[1], len(xdata[0]), rejects))
+    debug("Using tests %s" % sorted( data[langs[0]].keys() ), False)
 
     ydata = [(langs[n], xdata[n]) for n in range(len(langs))]
     filename="pldotnet-comparison-%s.png" % langs[1]
