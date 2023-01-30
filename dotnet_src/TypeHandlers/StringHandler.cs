@@ -110,7 +110,13 @@ namespace PlDotNET.Handler
             }
 
             ReadOnlySpan<byte> nativeSpan = new (str_p, strlen);
-            return Utf8.GetString(nativeSpan.ToArray(), 0, strlen);
+
+            // Copies the contents of the read-only span into a new array, which is a copy of the array allocated
+            // inside the memory context of the query. This ensures that the string value is built using a copied
+            // array, avoiding issues after the query is finished.
+            byte[] bytes = nativeSpan.ToArray();
+
+            return Utf8.GetString(bytes, 0, strlen);
         }
 
         /// <inheritdoc />

@@ -59,11 +59,11 @@ install_pls:
 	echo "# Installing pljava..."
 	apt install -y default-jre-headless openjdk-11-jre-headless default-jdk maven
 	wget -q \
-		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-pljava-common_1.6.4-1.pgdg20.04+1_all.deb \
+		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-pljava-common_1.6.4-2.pgdg20.04+1_all.deb \
 		-O package-pljava-common.deb
 	dpkg -i package-pljava-common.deb
 	wget -q \
-		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-14-pljava_1.6.4-1.pgdg20.04+1_amd64.deb \
+		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-14-pljava_1.6.4-2.pgdg20.04+1_amd64.deb \
 		-O package-pljava-14.deb
 	dpkg -i package-pljava-14.deb
 	mvn install:install-file \
