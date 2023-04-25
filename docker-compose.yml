@@ -27,10 +27,6 @@ x-ports: &ports
   ports:
     - "5432:5432"
 
-networks:
-  db_network:
-    name: pldotnet_network
-
 services:
   pldotnet-ubuntu22: &pldotnet-current-container
     container_name: pldotnet-ubuntu22
@@ -42,8 +38,6 @@ services:
       <<: *build-args
     <<: *environment
     <<: *ports
-    networks:
-      db_network:
     volumes:
       - ./:/app/pldotnet/
       - ./postgres-data/ubuntu22:/var/lib/postgresql/data
