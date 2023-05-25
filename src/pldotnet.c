@@ -32,9 +32,10 @@ PG_FUNCTION_INFO_V1(_PG_init);
  * @brief On startup, pldotnet initializes the function cache.
  */
 Datum _PG_init(PG_FUNCTION_ARGS) {
-    elog(LOG, "[plldotnet]: _PG_init");
+    elog(LOG, "[pldotnet]: _PG_init");
 
     root_path = strdup(dnldir);
+    elog(LOG, "root_path: %s", root_path);
     if (root_path[strlen(root_path) - 1] == DIR_SEPARATOR)
         root_path[strlen(root_path) - 1] = 0;
 

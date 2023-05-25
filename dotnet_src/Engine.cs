@@ -771,7 +771,7 @@ namespace PlDotNET
                 if (!CheckDirectoryMode(Engine.PathToSaveSourceCode))
                 {
                     // Throw an exception if the directory doesn't have the correct mode
-                    throw new SystemException("Please specify a directory where the source codes can be saved and the directory must have a mode of 0700.");
+                    throw new SystemException($"Please specify a directory where the source codes can be saved and the directory must have a mode of 0700; current directory, '{Engine.PathToSaveSourceCode}', is no good.");
                 }
             }
 
@@ -785,7 +785,7 @@ namespace PlDotNET
             if (!CheckDirectoryMode(Engine.PathToTemporaryFiles))
             {
                 // Throw an exception if the directory doesn't have the correct mode
-                throw new SystemException("Please specify a directory where the temporary files can be saved and the directory must have a mode of 0700.");
+                throw new SystemException($"Please specify a directory where the temporary files can be saved and the directory must have a mode of 0700; current directory, '{Engine.PathToTemporaryFiles}', is no good.");
             }
         }
 
@@ -817,7 +817,13 @@ namespace PlDotNET
                 mode = m.Groups[1].Value;
             }
 
-            return mode == "0700";
+            if (mode == "0700")
+            {
+                return true;
+            }
+
+            // Linux mode didn't work, so let's do Mac mode
+            return output.Contains("drwx------");
         }
     }
 }
