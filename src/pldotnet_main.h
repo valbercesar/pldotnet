@@ -82,12 +82,22 @@ typedef struct pldotnet_UserFunctionDeclaration {
     const char *language;
     const char *func_name;
     Oid func_ret_type;
-    const char *func_param_names;
-    const Oid *func_param_types;
+    char *func_param_names;
+    Oid *func_param_types;
+    char *func_param_modes;
+    int num_args;
+    int num_input_args;
+    int num_output_values; // 0 for a normal function (1 return), <n> for a record (INOUT/OUT)
     const char *func_body;
     Oid func_oid;
     bool support_null_input;
 } pldotnet_UserFunctionDeclaration;
+
+/**
+ * An experiment to try to work around memory corruption, as C# might be
+ * stepping on a data structure.
+ */
+void pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value, bool is_null);
 
 /**
  * @brief The call_handler will be called to execute the procedural

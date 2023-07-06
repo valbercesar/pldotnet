@@ -56,7 +56,8 @@ NpgsqlLine my_line = new NpgsqlLine(a,b,c);
 return my_line;
 $$ LANGUAGE plcsharp;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-line', 'modifyCoefficients1', modifyCoefficients(LINE '{-1.5,2.75,-3.25}') = LINE '{1.50,-2.75,3.25}';INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-line', 'modifyCoefficients1', modifyCoefficients(LINE '{-1.5,2.75,-3.25}') = LINE '{1.50,-2.75,3.25}';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-line-null', 'modifyCoefficients2', modifyCoefficients(NULL::LINE) = LINE '{2.4, 8.2, -32.43}';
 
 CREATE OR REPLACE FUNCTION getMinimumDistance(orig_line LINE, orig_point POINT) RETURNS double precision AS $$

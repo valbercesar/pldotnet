@@ -2,6 +2,7 @@
 
 SED=sed
 UNAME = $(shell uname)
+DBUSER=postgres
 
 # General
 # Get installed dotnet host host
@@ -24,6 +25,7 @@ endif
 # OSX support
 ifeq ($(UNAME), Darwin)
 	SED=gsed
+	DBUSER=$(USER)
 	DOTNET_HOSTDIR ?= $(shell find /usr/local/share/dotnet -name hostfxr.h | head -1 | xargs dirname)
 	DOTNET_LIBDIR  ?= $(shell find /usr/local/share/dotnet -name hostfxr.h | head -1 | xargs dirname)
 	DOTNET_HOSTLIB ?= -L$(DOTNET_LIBDIR) -Wl,-rpath,$(DOTNET_LIBDIR) -lglib-2.0 -lnethost
@@ -87,7 +89,7 @@ pldotnet-uninstall: uninstall
 pldotnet-install-dpkg:
 	$(MAKE) documentation
 	rm -f debian/packages/postgresql-*-pldotnet_*.deb
-	-sudo -u postgres pg_createcluster $(PG_VER) default
+	-sudo -u $(DBUSER) pg_createcluster $(PG_VER) default
 	service postgresql start
 	pg_buildext updatecontrol
 	debuild -b -uc -us --lintian-opts --suppress-tags=initial-upload-closes-no-bugs,custom-library-search-path --profile debian
@@ -114,7 +116,7 @@ pldotnet-ubuntu:
 
 pldotnet-postgres:
 	make clean && make && make pldotnet-install
-	sudo -u postgres psql
+	sudo -u $(DBUSER) psql
 
 build-package:
 	docker-compose up pldotnet-build | tee package-build-log.txt
@@ -135,54 +137,56 @@ pre-tests-script:
 	dotnet build $(CURRENT_DIR)/tests/fsharp/DotNetTestProject -c Release
 	rm -rf automated_test_results
 	mkdir -p automated_test_results
-	echo 'DROP TABLE IF EXISTS automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres  psql)
+	echo 'DROP TABLE IF EXISTS automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER)  psql)
 
 post-tests-script:
 	cd $(CURRENT_DIR)/tests/csharp/DotNetTestProject/ && rm -rf bin obj
 	cd $(CURRENT_DIR)/tests/fsharp/DotNetTestProject/ && rm -rf bin obj
 	cd $(CURRENT_DIR)/
-	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u postgres  psql 2>&1) | tee automated_test_results/automated_test_results.out
-	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (sudo -u postgres  psql)
+	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/automated_test_results.out
+	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (sudo -u $(DBUSER)  psql)
 
 csharp-tests-cats:
-	cat tests/csharp/testbit.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbit.out
-	cat tests/csharp/testbool.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbool.out
-	cat tests/csharp/testbytea.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testbytea.out
-	cat tests/csharp/testdatetime.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdatetime.out
-	cat tests/csharp/testdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdll.out
-	cat tests/csharp/testfloats.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfloats.out
-	cat tests/csharp/testgeometric.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testgeometric.out
-	cat tests/csharp/testintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testintegers.out
-	cat tests/csharp/testjson.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testjson.out
-	cat tests/csharp/testmoney.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testmoney.out
-	cat tests/csharp/testnetwork.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testnetwork.out
-	cat tests/csharp/testrange.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testrange.out
-	cat tests/csharp/teststring.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/teststring.out
-	cat tests/csharp/testuuid.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testuuid.out
-	cat tests/csharp/testdo.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testdo.out
-	cat tests/csharp/testprocedure.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testprocedure.out
-	cat tests/csharp/testcreate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcreate.out
-	cat tests/csharp/testcall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testcall.out
+	cat tests/csharp/testbit.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testbit.out
+	cat tests/csharp/testbool.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testbool.out
+	cat tests/csharp/testbytea.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testbytea.out
+	cat tests/csharp/testdatetime.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testdatetime.out
+	cat tests/csharp/testdll.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testdll.out
+	cat tests/csharp/testfloats.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfloats.out
+	cat tests/csharp/testgeometric.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testgeometric.out
+	cat tests/csharp/testintegers.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testintegers.out
+	cat tests/csharp/testjson.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testjson.out
+	cat tests/csharp/testmoney.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testmoney.out
+	cat tests/csharp/testnetwork.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testnetwork.out
+	cat tests/csharp/testrange.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testrange.out
+	cat tests/csharp/teststring.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/teststring.out
+	cat tests/csharp/testuuid.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testuuid.out
+	cat tests/csharp/testdo.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testdo.out
+	cat tests/csharp/testprocedure.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testprocedure.out
+	cat tests/csharp/testcreate.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testcreate.out
+	cat tests/csharp/testcall.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testcall.out
+	cat tests/csharp/testinout.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testinout.out
 
 fsharp-tests-cats:
-	cat tests/fsharp/testfsbit.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsbit.out
-	cat tests/fsharp/testfsbool.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsbool.out
-	cat tests/fsharp/testfsbytea.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsbytea.out
-	cat tests/fsharp/testfsdate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdate.out
-	cat tests/fsharp/testfsdatetime.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdatetime.out
-	cat tests/fsharp/testfsdo.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdo.out
-	cat tests/fsharp/testfsprocedure.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsprocedure.out
-	cat tests/fsharp/testfsdll.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsdll.out
-	cat tests/fsharp/testfsfloats.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsfloats.out
-	cat tests/fsharp/testfsgeometric.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsgeometric.out
-	cat tests/fsharp/testfsintegers.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsintegers.out
-	cat tests/fsharp/testfsjson.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsjson.out
-	cat tests/fsharp/testfsnetwork.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsnetwork.out
-	cat tests/fsharp/testfsrange.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsrange.out
-	cat tests/fsharp/testfsstring.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsstring.out
-	cat tests/fsharp/testfsuuid.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsuuid.out
-	cat tests/fsharp/testfscreate.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfscreate.out
-	cat tests/fsharp/testfscall.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfscall.out
+	cat tests/fsharp/testfsbit.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsbit.out
+	cat tests/fsharp/testfsbool.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsbool.out
+	cat tests/fsharp/testfsbytea.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsbytea.out
+	cat tests/fsharp/testfsdate.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdate.out
+	cat tests/fsharp/testfsdatetime.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdatetime.out
+	cat tests/fsharp/testfsdo.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdo.out
+	cat tests/fsharp/testfsprocedure.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsprocedure.out
+	cat tests/fsharp/testfsdll.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdll.out
+	cat tests/fsharp/testfsfloats.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsfloats.out
+	cat tests/fsharp/testfsgeometric.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsgeometric.out
+	cat tests/fsharp/testfsintegers.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsintegers.out
+	cat tests/fsharp/testfsjson.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsjson.out
+	cat tests/fsharp/testfsnetwork.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsnetwork.out
+	cat tests/fsharp/testfsrange.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsrange.out
+	cat tests/fsharp/testfsstring.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsstring.out
+	cat tests/fsharp/testfsuuid.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsuuid.out
+	cat tests/fsharp/testfscreate.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfscreate.out
+	cat tests/fsharp/testfscall.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfscall.out
+	cat tests/fsharp/testfsinout.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsinout.out
 
 pldotnet-tests:
 	make pre-tests-script
@@ -203,19 +207,19 @@ fsharp-tests:
 stress-test:
 	rm -rf automated_test_results
 	mkdir -p automated_test_results
-	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u postgres psql)
+	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER) psql)
 	sudo bash tests/stress_test/stress_test.sh
 
 benchmark-tests:
 	mkdir -p automated_test_results
-	cat tests/benchmark/python/init-extension.sql | (sudo -u postgres psql)
-	cat tests/benchmark/java/init-extension.sql | (sudo -u postgres psql)
-	cat tests/benchmark/perl/init-extension.sql | (sudo -u postgres psql)
-	cat tests/benchmark/lua/init-extension.sql | (sudo -u postgres psql)
-	cat tests/benchmark/tcl/init-extension.sql | (sudo -u postgres psql)
-	cat tests/benchmark/r/init-extension.sql | (sudo -u postgres psql)
-	cat tests/benchmark/v8javascript/init-extension.sql | (sudo -u postgres psql)
+	cat tests/benchmark/python/init-extension.sql | (sudo -u $(DBUSER) psql)
+	cat tests/benchmark/java/init-extension.sql | (sudo -u $(DBUSER) psql)
+	cat tests/benchmark/perl/init-extension.sql | (sudo -u $(DBUSER) psql)
+	cat tests/benchmark/lua/init-extension.sql | (sudo -u $(DBUSER) psql)
+	cat tests/benchmark/tcl/init-extension.sql | (sudo -u $(DBUSER) psql)
+	cat tests/benchmark/r/init-extension.sql | (sudo -u $(DBUSER) psql)
+	cat tests/benchmark/v8javascript/init-extension.sql | (sudo -u $(DBUSER) psql)
 	cd $(CURRENT_DIR)/tests/benchmark/java/test-suite && mvn install && cd $(CURRENT_DIR)/
-	echo "select sqlj.install_jar('file:$(CURRENT_DIR)/tests/benchmark/java/test-suite/target/test-suite-1.0.0.jar', 'testsuite', true);" | (sudo -u postgres psql)
-	echo "select sqlj.set_classpath('public', 'testsuite');" | (sudo -u postgres psql)
+	echo "select sqlj.install_jar('file:$(CURRENT_DIR)/tests/benchmark/java/test-suite/target/test-suite-1.0.0.jar', 'testsuite', true);" | (sudo -u $(DBUSER) psql)
+	echo "select sqlj.set_classpath('public', 'testsuite');" | (sudo -u $(DBUSER) psql)
 	bash tests/benchmark/benchmark.sh $(NRUNS)

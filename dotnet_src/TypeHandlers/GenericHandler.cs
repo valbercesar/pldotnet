@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.FSharp.Core;
 
 namespace PlDotNET.Handler
 {
@@ -102,6 +103,20 @@ namespace PlDotNET.Handler
 #nullable disable
 
         /// <summary>
+        /// Checks if the PostreSQL array is null. If the datum is null, it returns
+        /// None. Otherwise, it calls the InputArray method and returns it as Some.
+        /// </summary>
+        /// <returns>
+        /// An Array Object if the Datum is not null. Otherwise returns None.
+        /// </returns>
+#nullable enable
+        public FSharpOption<Array> InputOptionArray(IntPtr datum, bool isnull)
+        {
+            return isnull ? FSharpOption<Array>.None : FSharpOption<Array>.Some(this.InputArray(datum));
+        }
+#nullable disable
+
+        /// <summary>
         /// Checks if Array object is null. If so, it returns a Datum Int32, otherwise
         /// it calls the OutputArray method.
         /// </summary>
@@ -111,7 +126,23 @@ namespace PlDotNET.Handler
 #nullable enable
         public IntPtr OutputNullableArray(Array? value)
         {
-            return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputArray((Array)value);
+            return (value == null) ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputArray((Array)value);
+        }
+#nullable disable
+
+        /// <summary>
+        /// Checks if Array object is null. If so, it returns a Datum Int32, otherwise
+        /// it calls the OutputArray method.
+        /// </summary>
+        /// <returns>
+        /// An Array Datum if the value is not null. Otherwise returns an Integer Datum.
+        /// </returns>
+#nullable enable
+        public IntPtr OutputOptionArray(FSharpOption<Array> value)
+        {
+            return FSharpOption<Array>.get_IsNone(value)
+                ? IntHandler.pldotnet_CreateDatumInt32(0)
+                : this.OutputArray(value.Value);
         }
 #nullable disable
 
@@ -195,7 +226,8 @@ namespace PlDotNET.Handler
             IntPtr[] datums = new IntPtr[nelems]; // datums will be passed to C!
             for (int i = 0; i < nelems; i++)
             {
-                datums[i] = this.OutputValue((T)flatArray.GetValue(i));
+                T val = (T)flatArray.GetValue(i);
+                datums[i] = this.OutputValue(val);
             }
 
             return ArrayHandler.pldotnet_CreateDatumArray((int)this.ElementOID, dimNumber, dimLengths, datums);
@@ -278,6 +310,18 @@ namespace PlDotNET.Handler
         }
 
         /// <summary>
+        /// Check if the PostgreSQL datum is null. If the Datum is null, it returns None.
+        /// Otherwise, call the abstract method InputValue.
+        /// </summary>
+        /// <returns>
+        /// A .NET type if the Datum is not null. Otherwise returns null.
+        /// </returns>
+        public FSharpOption<T> InputOptionValue(IntPtr datum, bool isnull)
+        {
+            return isnull ? FSharpOption<T>.None : FSharpOption<T>.Some(this.InputValue(datum));
+        }
+
+        /// <summary>
         /// Check if the .NET value is null. If the value is null, it returns a Datum(0).
         /// Otherwise, call the abstract method OutputValue.
         /// </summary>
@@ -288,6 +332,19 @@ namespace PlDotNET.Handler
         {
             return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue((T)value);
         }
+
+        /// <summary>
+        /// Check if the .NET value is null. If the value is null, it returns a Datum(0).
+        /// Otherwise, call the abstract method OutputValue.
+        /// </summary>
+        /// <returns>
+        /// The suitable Datum if the .NET value is not null. Oherwise returns an Integer Datum.
+        /// </returns>
+        public IntPtr OutputOptionValue(FSharpOption<T> value)
+        {
+            return (value == FSharpOption<T>.None) ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue(value.Value);
+        }
+
 #nullable disable
     }
 
@@ -296,6 +353,13 @@ namespace PlDotNET.Handler
     /// </summary>
     /// <remarks>
     /// Use it for string, PhysicalAddress, BitArray, and other classes.
+    ///
+    /// It might appear as if this code is identical between
+    /// StructTypeHandler and ObjectTypeHandler, but the meaning of
+    /// T? is subtly different, so we did it this way on purpose.
+    /// If you can successfully unify them, then we'd love to
+    /// see a merge request, but tread carefully.  Also, it's
+    /// harmless, so not super important.
     /// </remarks>
     public abstract class ObjectTypeHandler<T> : BaseTypeHandler<T>
         where T : class
@@ -314,6 +378,18 @@ namespace PlDotNET.Handler
         }
 
         /// <summary>
+        /// Check if the PostgreSQL datum is null. If the Datum is null, it returns None.
+        /// Otherwise, call the abstract method InputValue.
+        /// </summary>
+        /// <returns>
+        /// A .NET type if the Datum is not null. Otherwise returns null.
+        /// </returns>
+        public FSharpOption<T> InputOptionValue(IntPtr datum, bool isnull)
+        {
+            return isnull ? FSharpOption<T>.None : FSharpOption<T>.Some(this.InputValue(datum));
+        }
+
+        /// <summary>
         /// Check if the .NET value is null. If the value is null, it returns a Datum(0).
         /// Otherwise, call the abstract method OutputValue.
         /// </summary>
@@ -322,8 +398,24 @@ namespace PlDotNET.Handler
         /// </returns>
         public IntPtr OutputNullableValue(T? value)
         {
-            return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue((T)value);
+            return value == null ? IntHandler.pldotnet_CreateDatumInt32(0) : this.OutputValue(value!);
         }
+
+        /// <summary>
+        /// Check if the .NET value is null. If the value is null, it returns a Datum(0).
+        /// Otherwise, call the abstract method OutputValue.
+        /// </summary>
+        /// <returns>
+        /// The suitable Datum if the .NET value is not null. Oherwise returns an Integer Datum.
+        /// </returns>
+        public IntPtr OutputOptionValue(FSharpOption<T> value)
+        {
+            return
+                (value == FSharpOption<T>.None)
+                ? IntHandler.pldotnet_CreateDatumInt32(0)
+                : this.OutputValue(value.Value);
+        }
+
 #nullable disable
     }
 
@@ -426,35 +518,22 @@ namespace PlDotNET.Handler
     public class OutputResult
     {
         /// <summary>
+        /// C function declared in pldotnet_conversions.h.
+        /// See ::pldotnet_SetResult().
+        /// </summary>
+        [DllImport("@PKG_LIBDIR/pldotnet.so")]
+        public static extern unsafe void pldotnet_SetResult(IntPtr output, int offset, IntPtr value, bool isnull);
+
+        /// <summary>
         /// Sets the result datum of a user function to an output object.
         /// </summary>
         /// <param name="resultDatum">A pointer to the result datum to be set.</param>
         /// <param name="isNull">A value indicating whether the result datum is null. Set to `true` if
         /// the result datum is null, and `false` otherwise.</param>
         /// <param name="output">A pointer to the output object where the result datum will be set.</param>
-        public static unsafe void SetDatumResult(IntPtr resultDatum, bool isNull, IntPtr output)
+        public static unsafe void SetDatumResult(IntPtr resultDatum, bool isNull, IntPtr output, int offset)
         {
-            Result* pOutput = (Result*)output.ToPointer();
-            pOutput->Value = resultDatum;
-            pOutput->IsNull = isNull;
-        }
-
-        /// <summary>
-        /// Represents a result object containing a value and a nullability flag.
-        /// </summary>
-        private struct Result
-        {
-            /// <summary>
-            /// A pointer to the value of the result datum.
-            /// </summary>
-            public IntPtr Value;
-
-            /// <summary>
-            /// A value indicating whether the result is null. Set to `true` if the result is null,
-            /// and `false` otherwise.
-            /// </summary>
-            [MarshalAs(UnmanagedType.I1)]
-            public bool IsNull;
+            pldotnet_SetResult(output, offset, resultDatum, isNull);
         }
     }
 }

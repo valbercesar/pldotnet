@@ -15,6 +15,10 @@
 
 #include "pldotnet_main.h"
 
+#define ASSERT(x) if(!x){ elog(ERROR, "%s:%d: FAILED ASSERTION! " #x, __FILE__, __LINE__); }
+// #define DUFD(declaration) elog(INFO, "Dumping user function definition at %s:%d", __FILE__, __LINE__); dumpUserFunctionDeclaration(declaration);
+#define DUFD(declaration)
+
 /*
  * Exported functions
  */
@@ -43,6 +47,7 @@ dotnet_loader assembly_loader = nullptr;
 
 compile_user_fn compile_user_function = nullptr;
 build_datum_list_fn build_datum_list = nullptr;
+// Obsolete
 add_datum_to_list_fn add_datum_to_list = nullptr;
 free_generic_gchandle_fn free_generic_gchandle = nullptr;
 unload_assemblies_fn unload_assemblies = nullptr;
@@ -54,9 +59,13 @@ pldotnet_PathConfig path_config;
  * END: declaring variables
  */
 
+#if 0 // disabled, used for debugging
 /*
  * START: declaring static functions
  */
+
+static void dumpUserFunctionDeclaration(const pldotnet_UserFunctionDeclaration *declaration);
+#endif
 
 /**
  * @brief The main handler function, which receives an additional bool argument
@@ -212,24 +221,13 @@ static const char *pldotnet_GetFunctionBody(HeapTuple proc,
                                             Form_pg_proc procst);
 
 /**
- * @brief Returns the SQL parameter names as a char*.
+ * @brief Returns the SQL parameter names as a space-separated, nul-terminated const char*.
  *
  * @param proc the HeapTuple object.
  * @param procst the Form_pg_proc object.
- * @return const char* the SQL parameters.
+ * @return space-separated, nul-terminated `const char*` of the SQL parameters.
  */
-static const char *pldotnet_GetSqlParamsName(HeapTuple proc,
-                                             Form_pg_proc procst);
-
-/**
- * @brief Returns the OIDs of the SQL function as an int*.
- *
- * @param proc the HeapTuple object.
- * @param procst the Form_pg_proc object.
- * @return const Oid* with the OID of the arguments.
- */
-static const Oid *pldotnet_GetSqlParamsType(HeapTuple proc,
-                                            Form_pg_proc procst);
+static char *pldotnet_GetSqlParamsName(char** names, int input_names);
 
 /**
  * @brief Creates a list of IntPtr using C# methods and then adds the user
@@ -240,7 +238,7 @@ static const Oid *pldotnet_GetSqlParamsType(HeapTuple proc,
  * @return void* the List<IntPtr> that contains the Datums.
  */
 static void *pldotnet_BuildArgumentList(FunctionCallInfo fcinfo,
-                                        Form_pg_proc procst);
+                                        Form_pg_proc procst, int input_arguments, char* modes);
 
 /**
  * @brief Return the Datum of an specific argument.
@@ -267,7 +265,8 @@ static bool *pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
  * @return true if the referent argument is null.
  * @return false if the referent argument is non-null.
  */
-static bool pldotnet_CheckNullArgument(FunctionCallInfo fcinfo, size_t index);
+static bool pldotnet_CheckNullArgument(FunctionCallInfo fcinfo, int index);
+
 
 /**
  * @brief Retuns the Postgres Heap.
@@ -283,6 +282,22 @@ static HeapTuple pldotnet_GetPostgresHeapTuple(Oid oid);
  * @param proc the HeapTuple object
  */
 static void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc);
+
+
+/**
+ * @brief Allocates <len> bytes in the TopMemoryContext
+ *
+ * @param len the number of bytes to be allocated
+ */
+static void *pldotnet_TopAlloc(size_t len);
+
+/**
+ * @brief Allocates <len> bytes in the TopMemoryContext returns a copy of the data in it
+ *
+ * @param data original data to be copied
+ * @param len the number of bytes to be allocated
+ */
+static void* pldotnet_TopAllocCopy(void* data, size_t len);
 
 /**
  * @brief Allocate to the memory a pldotnet_UserFunctionDeclaration
@@ -302,14 +317,6 @@ static pldotnet_UserFunctionDeclaration *pldotnet_FindFunctionDecl(
     int function_id);
 
 /**
- * @brief Reset the pldotnet function.
- *
- * @param function_decl the function that will be reset
- */
-static void pldotnet_ResetFunctionDecl(
-    pldotnet_UserFunctionDeclaration *function_decl);
-
-/**
  * @brief Creates a new memory context.
  *
  * @param config
@@ -326,6 +333,13 @@ static void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
 /*
  * START: implementing functions
  */
+
+void pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value, bool is_null)
+{
+    // Experiment to see if C# is the source of this data corruption
+    output[offset].value  = value;
+    output[offset].is_null = is_null;
+}
 
 Datum plcsharp_call_handler(PG_FUNCTION_ARGS) {
     return pldotnet_generic_handler(fcinfo, false, csharp);
@@ -469,6 +483,29 @@ static Datum pldotnet_validator(FunctionCallInfo fcinfo,
     PG_RETURN_VOID();
 }
 
+#if 0 // Disabled; used for debugging
+static void dumpUserFunctionDeclaration(const pldotnet_UserFunctionDeclaration *declaration) {
+    // debugging function
+    elog(INFO, "UFD_DUMP language: '%s' (%p)", declaration->language, (void*)declaration->language);
+    elog(INFO, "UFD_DUMP func_name: '%s' (%p)", declaration->func_name, (void*)declaration->func_name);
+    elog(INFO, "UFD_DUMP func_ret_type: %u", declaration->func_ret_type);
+    elog(INFO, "UFD_DUMP func_param_names: '%s' (%p)", declaration->func_param_names, (void*)declaration->func_param_names);
+
+    elog(INFO, "UFD_DUMP func_param_types (at %p):", (void*)declaration->func_param_types);
+    for (int i = 0; i < declaration->num_args; i++) {
+        elog(INFO, "UFD_DUMP   - %u", declaration->func_param_types[i]);
+    }
+
+    elog(INFO, "UFD_DUMP num_args: %d", declaration->num_args);
+    elog(INFO, "UFD_DUMP func_param_modes: %.*s", declaration->num_args, declaration->func_param_modes);
+    elog(INFO, "UFD_DUMP num_input_args: %d", declaration->num_input_args);
+    elog(INFO, "UFD_DUMP num_output_values: %d", declaration->num_output_values);
+    elog(INFO, "UFD_DUMP func_body: %s", declaration->func_body);
+    elog(INFO, "UFD_DUMP func_oid: %u", declaration->func_oid);
+    elog(INFO, "UFD_DUMP support_null_input: %s", declaration->support_null_input ? "true" : "false");
+}
+#endif
+
 static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
                                                 bool is_inline,
                                                 pldotnet_Language language) {
@@ -477,42 +514,116 @@ static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
     pldotnet_UserFunctionDeclaration *function_decl = nullptr;
     void *arglist = nullptr;
     bool *nullmap = nullptr;
-    pldotnet_Result output;
-    int res;
-    output.value = (Datum)0;
-    output.is_null = false;
+    pldotnet_Result *output = nullptr;
+    int num_output_values = -1;
+    int i, res;
+    size_t output_sz;
 
     proc = pldotnet_GetPostgresHeapTuple(fcinfo->flinfo->fn_oid);
 
     function_decl = pldotnet_GetFunctionDecl(fcinfo->flinfo->fn_oid, fcinfo,
                                              proc, is_inline, false, language);
+    DUFD(function_decl);
+
+    // reminder: (num_output_values==0) means it's a normal return,
+    // so we need 1 entry.
+    num_output_values = function_decl->num_output_values;
+    if(num_output_values < 0) {
+        elog(ERROR, "[pldotnet]: Got negative num_output_values");
+        return (Datum)0;
+    } else if(num_output_values == 0) {
+        num_output_values = 1;
+    }
 
     procst = (Form_pg_proc)GETSTRUCT(proc);
 
     pldotnet_ReleasePostgresHeapTuple(proc);
 
-    if (nullptr == function_decl || nullptr == run_user_function)
+    if (nullptr == function_decl || nullptr == run_user_function){
         elog(ERROR, "[pldotnet]: Could not load function_decl");
+        return (Datum)0;
+    }
 
-    arglist = pldotnet_BuildArgumentList(fcinfo, procst);
+    arglist = pldotnet_BuildArgumentList(fcinfo, procst, function_decl->num_input_args, function_decl->func_param_modes);
     nullmap = function_decl->support_null_input
                   ? pldotnet_BuildNullArgumentList(fcinfo, procst)
                   : nullptr;
 
-    res = run_user_function(function_decl->func_oid, arglist, &nullmap[0],
-                            (void *)&output);
+    output_sz = sizeof(pldotnet_Result) * num_output_values;
+    output = palloc(output_sz);
+    for(i=0; i<num_output_values; i++){
+        output[i].value   = 0;
+        output[i].is_null = false;
+    }
 
-    if (res != 0)
+    DUFD(function_decl);
+
+    // the user function knows from compile time how many entries are
+    // in `output`, so we don't need to pass it here.
+    res = run_user_function(function_decl->func_oid, arglist, function_decl->num_input_args, &nullmap[0],
+                            (void *)output);
+
+    DUFD(function_decl);
+
+    if (res != 0){
         elog(ERROR, "PL.NET function \"%s\".", function_decl->func_name);
+        return (Datum)0;
+    }
 
-    if (output.is_null)
-        fcinfo->isnull = true;
-
-    free_generic_gchandle(arglist);
+    // pfree(arglist);
     if (nullmap)
         pfree(nullmap);
 
-    return output.value;
+
+    if ( (function_decl->num_output_values == 0) || (function_decl->num_output_values == 1) ) {
+        // 0: This is a normal return value
+        // 1: This is a single output-argument value
+        if (output[0].is_null)
+            fcinfo->isnull = true;
+        DUFD(function_decl);
+        return output[0].value;
+    } else if (function_decl->num_output_values > 1) {
+        // This is a RECORD return value from OUT/INOUT parameters
+        TupleDesc  desc;
+        Datum      *values;
+        bool       *nulls;
+        HeapTuple  tuple;
+        Datum      result;
+        int        i, result_type;
+
+        values = palloc(sizeof(Datum) * function_decl->num_output_values);
+        nulls  = palloc(sizeof(bool)  * function_decl->num_output_values);
+
+        // The return values are already nicely laid out in `output`;
+        // we dealt with the parameter renumbering at compile time in
+        // C#, so we don't have to worry about that here.
+        for(i=0;i<function_decl->num_output_values;i++){
+            values[i] = output[i].value;
+            nulls[i]  = output[i].is_null;
+        }
+
+        result_type = get_call_result_type(fcinfo, NULL, &desc);
+        if ( result_type != TYPEFUNC_COMPOSITE ) {
+            elog(ERROR, "Expected COMPOSITE result type for multiple INOUT/OUT arguments, but got %d", result_type);
+            return (Datum)0;
+        }
+
+        tuple = heap_form_tuple(desc, values, nulls);
+        result = heap_copy_tuple_as_datum(tuple, desc);
+
+        heap_freetuple(tuple);
+        pfree(values);
+        pfree(nulls);
+
+        DUFD(function_decl);
+
+        return result;
+    }
+
+    // error
+    elog(ERROR, "Have unrecognized output values: %d", function_decl->num_output_values);
+    return 0;
+
 }
 
 static pldotnet_UserFunctionDeclaration *pldotnet_GetFunctionDecl(
@@ -521,13 +632,17 @@ static pldotnet_UserFunctionDeclaration *pldotnet_GetFunctionDecl(
     pldotnet_UserFunctionDeclaration *decl = pldotnet_FindFunctionDecl(oid);
     bool found = nullptr != decl;
 
+
     if (found && !validation)
         return decl;
 
+
     decl = pldotnet_CreateFunctionDecl();
 
-    pldotnet_BuildFunctionDecl(oid, fcinfo, proc, is_inline, validation, decl,
-                               language);
+    if (!pldotnet_BuildFunctionDecl(oid, fcinfo, proc, is_inline, validation, decl,
+                               language)){
+        return nullptr;
+    }
 
     if (!is_inline)
         pldotnet_SaveFunction(decl, !found);
@@ -550,11 +665,15 @@ static bool pldotnet_BuildFunctionDecl(
     function_decl->func_ret_type = procst->prorettype;
 
     if (!pldotnet_GetSourceCode(fcinfo, proc, procst, is_inline, validation,
-                                function_decl, language))
+                                function_decl, language)){
         elog(ERROR, "[pldotnet]: Could not obtain the source code");
+        return false;
+    }
 
-    if (!pldotnet_CompileUserFunction(function_decl))
+    if (!pldotnet_CompileUserFunction(function_decl)){
         elog(ERROR, "PL.NET function \"%s\".", function_decl->func_name);
+        return false;
+    }
 
     return true;
 }
@@ -564,26 +683,78 @@ static bool pldotnet_GetSourceCode(
     bool is_inline, bool validation,
     pldotnet_UserFunctionDeclaration *user_function_decl,
     pldotnet_Language language) {
-    if (nullptr == user_function_decl)
-        elog(ERROR, "[pldotnet]: Invalid argument: user_function_decl is null");
+    // Populates the pldotnet_UserFunctionDeclaration
+    int i, args_total, args_in=0, args_out=0;
+    Oid *types, *orig_types;
+    char **names;
+    char *modes, *orig_modes;
+    char *input_names;
 
+    args_total = get_func_arg_info(proc, &orig_types, &names, &orig_modes);
+    types = pldotnet_TopAllocCopy(orig_types, sizeof(orig_types[0]) * args_total);
+
+    if (!args_total){
+        modes = (char*)nullptr;
+        input_names = (char*)nullptr;
+    } else {
+        // `modes` is already set
+        input_names = pldotnet_GetSqlParamsName(names, args_total);
+    }
+
+    if(orig_modes == nullptr){
+        // It's annoying to deal with an empty `modes` array, so we make one filled with `IN`
+        size_t modes_size;
+
+        modes_size = args_total*sizeof(modes[0]);
+        modes = (char*)pldotnet_TopAlloc(modes_size);
+        for(i=0;i<args_total;i++){ modes[i] = PROARGMODE_IN; }
+        args_in = args_total;
+        args_out = 0;
+    } else {
+        modes = pldotnet_TopAllocCopy(orig_modes, sizeof(orig_modes[0]) * args_total);
+        for(i=0; i < args_total; i++){
+            // First, we check for illegal modes
+            if ( (modes[i] != PROARGMODE_IN) && (modes[i] != PROARGMODE_INOUT)
+                        && (modes[i] != PROARGMODE_OUT) ) {
+                elog(ERROR, "Illegal argument number %d, '%s', found: type %c", i, names[i], modes[i]);
+                return -2;
+            }
+
+            // Second, we count the input and output arguments
+            if ( (modes[i] == PROARGMODE_IN) || (modes[i] == PROARGMODE_INOUT) ) {
+                args_in += 1;
+            }
+            if ( (modes[i] == PROARGMODE_OUT) || (modes[i] == PROARGMODE_INOUT) ) {
+                args_out += 1;
+            }
+        }
+    }
+
+    if (user_function_decl == nullptr){
+        elog(ERROR, "[pldotnet]: Invalid argument: user_function_decl is null");
+        return false;
+    }
+
+    user_function_decl->language = language == csharp ? "csharp" : "fsharp";
     if (is_inline) {
-        user_function_decl->language = language == csharp ? "csharp" : "fsharp";
         user_function_decl->func_name = "plcsharp_inline_block";
         user_function_decl->func_ret_type = VOIDOID;
         user_function_decl->func_body =
             ((InlineCodeBlock *)DatumGetPointer(PG_GETARG_DATUM(0)))
                 ->source_text;
     } else {
-        user_function_decl->language = language == csharp ? "csharp" : "fsharp";
         user_function_decl->func_name = NameStr(procst->proname);
         user_function_decl->func_ret_type = procst->prorettype;
+        user_function_decl->func_param_names = input_names;
+        user_function_decl->func_param_types = types;
+        user_function_decl->func_param_modes = modes;
+        // This will be 0 for a normal function; we handle that in pldotnet_CompileUserFunction
+        user_function_decl->num_args = args_total;
+        user_function_decl->num_input_args = args_in;
+        user_function_decl->num_output_values = args_out;
         user_function_decl->func_body = pldotnet_GetFunctionBody(proc, procst);
-        user_function_decl->func_param_names =
-            pldotnet_GetSqlParamsName(proc, procst);
-        user_function_decl->func_param_types =
-            pldotnet_GetSqlParamsType(proc, procst);
     }
+
     return true;
 }
 
@@ -621,22 +792,31 @@ static inline void pldotnet_ReleasePostgresHeapTuple(HeapTuple proc) {
     ReleaseSysCache(proc);
 }
 
-static pldotnet_UserFunctionDeclaration *pldotnet_CreateFunctionDecl(void) {
-    pldotnet_UserFunctionDeclaration *decl;
+static void *pldotnet_TopAlloc(size_t len) {
+    void* retval;
     MemoryContext mem = CurrentMemoryContext;
 
     /* change to top mem context */
     MemoryContextSwitchTo(TopMemoryContext);
 
-    decl = (pldotnet_UserFunctionDeclaration *)palloc(
-        sizeof(pldotnet_UserFunctionDeclaration));
-
-    pldotnet_ResetFunctionDecl(decl);
+    retval = palloc(len);
+    if(retval == NULL) elog(ERROR, "Could not allocate %lu bytes.", len);
+    memset(retval, 0, len);
 
     /* revert to previous mem context */
     MemoryContextSwitchTo(mem);
 
-    return decl;
+    return retval;
+}
+
+static void* pldotnet_TopAllocCopy(void* data, size_t len){
+    void* retval = pldotnet_TopAlloc(len);
+    memcpy(retval, data, len);
+    return retval;
+}
+
+static pldotnet_UserFunctionDeclaration *pldotnet_CreateFunctionDecl(void) {
+    return pldotnet_TopAlloc(sizeof(pldotnet_UserFunctionDeclaration));
 }
 
 pldotnet_UserFunctionDeclaration *pldotnet_FindFunctionDecl(int function_id) {
@@ -647,21 +827,6 @@ pldotnet_UserFunctionDeclaration *pldotnet_FindFunctionDecl(int function_id) {
         return (pldotnet_UserFunctionDeclaration *)value;
 
     return nullptr;
-}
-
-static void pldotnet_ResetFunctionDecl(
-    pldotnet_UserFunctionDeclaration *function_decl) {
-    if (nullptr == function_decl)
-        return;
-
-    function_decl->language = nullptr;
-    function_decl->func_name = nullptr;
-    function_decl->func_ret_type = 0;
-    function_decl->func_param_names = nullptr;
-    function_decl->func_param_types = nullptr;
-    function_decl->func_body = nullptr;
-    function_decl->func_oid = 0;
-    function_decl->support_null_input = true;
 }
 
 static void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config) {
@@ -686,14 +851,24 @@ static void pldotnet_ResetMemoryContext(MemoryContextWrapper *config) {
         MemoryContextDelete(config->curr);
 }
 
-static bool pldotnet_CompileUserFunction(
-    pldotnet_UserFunctionDeclaration *declaration) {
-    int test = compile_user_function(
-        (Oid)declaration->func_oid, (void *)declaration->func_name,
-        (Oid)declaration->func_ret_type, (void *)declaration->func_param_names,
-        (Oid *)declaration->func_param_types, (void *)declaration->func_body,
-        declaration->support_null_input, (void *)declaration->language);
-    return 0 == test;
+static bool pldotnet_CompileUserFunction(pldotnet_UserFunctionDeclaration *declaration) {
+    // Our C# code understands "num_output_values == 0"
+    int num_output_values = (int)declaration->num_output_values;
+    int should_be_zero;
+
+
+    should_be_zero = compile_user_function(
+        (Oid)declaration->func_oid,
+        (void *)declaration->func_name,
+        (Oid)declaration->func_ret_type,
+        (void *)declaration->func_param_names,
+        (Oid *)declaration->func_param_types,
+        (char *)declaration->func_param_modes,
+        num_output_values,
+        (void *)declaration->func_body,
+        declaration->support_null_input,
+        (void *)declaration->language);
+    return 0 == should_be_zero;
 }
 
 static void pldotnet_SaveFunction(pldotnet_UserFunctionDeclaration *function,
@@ -715,106 +890,64 @@ static const char *pldotnet_GetFunctionBody(HeapTuple proc,
     return TextDatumGetCString(prosrc);
 }
 
-static const char *pldotnet_GetSqlParamsName(HeapTuple proc,
-                                             Form_pg_proc procst) {
-    int nargs = 0;
+// Makes a pldotnet-style array of IN/INOUT parameter names
+static char *pldotnet_GetSqlParamsName(char** names, int input_names) {
     char *sql_params = nullptr;
     const char *space = " ";
     size_t buffer_size = 0;
-    Oid *types;
-    char **names, *modes;
-    int total;
 
-    if (!procst->pronargs)
-        return nullptr;
+    if(!names) return "";
+    if(*names == 0) return "";
 
-    /* number of argument that are not OUT or TABLE */
-    total = get_func_arg_info(proc, &types, &names, &modes);
+    // elog(INFO, "pldotnet_GetSqlParamsName, got names %p, num %d", names, input_names);
 
-    for (int i = 0; i < total; i++) {
-        if (modes &&
-            (modes[i] == PROARGMODE_OUT || modes[i] == PROARGMODE_TABLE))
-            continue; /* skip OUT arguments */
-
-        nargs++;
+    for (int i = 0; i < input_names; i++) {
         buffer_size += strlen(names[i]);
     }
 
-    sql_params = (char *)palloc0(buffer_size + strlen(space) * nargs);
+    buffer_size += ( (strlen(space) * input_names) + 1);
+    sql_params = (char *)pldotnet_TopAlloc(buffer_size);
 
-    for (int i = 0, pos = 0; i < total; i++) {
-        if (modes &&
-            (modes[i] == PROARGMODE_OUT || modes[i] == PROARGMODE_TABLE))
-            continue; /* skip OUT arguments */
-
+    for (int i = 0, pos = 0; i < input_names; i++) {
         /* copy the arg name */
         strcat(sql_params, names[i]);
-        if (pos < nargs - 1)
+        if (pos < input_names - 1)
             strcat(sql_params, space);
         pos++;
     }
+    sql_params[buffer_size] = 0; // NUL-terminate the string as a courtesy
 
     return sql_params;
 }
 
-static const Oid *pldotnet_GetSqlParamsType(HeapTuple proc,
-                                            Form_pg_proc procst) {
-    int nargs = 0;
-    Oid *sql_types = nullptr;
-    Oid *types;
-    char **names, *modes;
-    int total;
-
-    if (!procst->pronargs)
-        return nullptr;
-
-    /* number of argument that are not OUT or TABLE */
-    total = get_func_arg_info(proc, &types, &names, &modes);
-
-    if (modes == nullptr) {
-        nargs = total;
-    } else {
-        for (int i = 0; i < total; i++) {
-            if (modes[i] != PROARGMODE_OUT && modes[i] != PROARGMODE_TABLE) {
-                nargs++;
-            }
-        }
-    }
-
-    sql_types = (Oid *)palloc0(sizeof(Oid) * nargs);
-
-    for (int i = 0, pos = 0; i < total; i++) {
-        if (modes &&
-            (modes[i] == PROARGMODE_OUT || modes[i] == PROARGMODE_TABLE))
-            continue; /* skip OUT arguments */
-
-        sql_types[pos++] = types[i];
-    }
-
-    return sql_types;
-}
-
 static void *pldotnet_BuildArgumentList(FunctionCallInfo fcinfo,
-                                        Form_pg_proc procst) {
-    void *list = build_datum_list();
-    for (int16_t i = 0; i < procst->pronargs; ++i) {
-        Datum argdatum = pldotnet_GetArgDatum(fcinfo, i);
-        add_datum_to_list(list, (void *)argdatum);
-    }
-    return list;
+                                        Form_pg_proc procst, int num_input_args, char* modes) {
+    // Returns an array of Datum, with the values of the input arguments
+    // We could just pass `fcinfo->args` to pldotnet, but then it'd have to handle
+    // the `PG_VERSION_NUM >= 120000` change
+    Datum* arglist;
+    int i;
+
+    arglist = palloc(sizeof(Datum) * num_input_args);
+    for (i = 0; i < num_input_args; ++i)
+        arglist[i] = pldotnet_GetArgDatum(fcinfo, i);
+
+    return (void*)arglist;
 }
 
 static inline Datum pldotnet_GetArgDatum(FunctionCallInfo fcinfo,
                                          size_t index) {
 #if PG_VERSION_NUM >= 120000
-    return fcinfo->args[index].value;
+    Datum retval = fcinfo->args[index].value;
 #else
-    return fcinfo->arg[index];
+    Datum retval = fcinfo->arg[index];
 #endif
+    return retval;
 }
 
 static bool *pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
                                             Form_pg_proc procst) {
+    // procst->pronargs actually seems right here, per plpythong
     int nargums = procst->pronargs;
     bool *isnull = (bool *)palloc(sizeof(bool) * nargums);
 
@@ -825,7 +958,7 @@ static bool *pldotnet_BuildNullArgumentList(FunctionCallInfo fcinfo,
 }
 
 static inline bool pldotnet_CheckNullArgument(FunctionCallInfo fcinfo,
-                                              size_t index) {
+                                              int index) {
 #if PG_VERSION_NUM >= 120000
     return fcinfo->args[index].isnull;
 #else

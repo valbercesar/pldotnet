@@ -56,9 +56,9 @@ namespace PlDotNET
     {
         public static bool AlwaysNullable = false;
 
-        public static bool PrintSourceCode = false;
+        public static bool PrintSourceCode = true;
 
-        public static bool SaveSourceCode = false;
+        public static bool SaveSourceCode = true;
 
         public static string PathToSaveSourceCode = "/tmp/PlDotNET/GeneratedCodes";
 
@@ -156,6 +156,7 @@ namespace PlDotNET
             { OID.TSTZRANGEOID, "NpgsqlRange<DateTime>" },
             { OID.DATERANGEOID, "NpgsqlRange<DateOnly>" },
             { OID.VOIDOID, "void" },
+            { OID.RECORDOID, "void" },
         };
 
         public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
@@ -164,9 +165,19 @@ namespace PlDotNET
 
         public static CSharpCodeGenerator CSharpGenerator = new ();
 
-        public unsafe delegate int DelCompileUserFunction(uint functionId, IntPtr name, uint returnType, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr dotnetLanguage);
+        public unsafe delegate int DelCompileUserFunction(
+                uint functionId,
+                IntPtr name,
+                uint returnType,
+                IntPtr paramNames,
+                uint* paramTypes,
+                byte* paramModes,
+                int num_output_values,
+                IntPtr body,
+                [MarshalAs(UnmanagedType.I1)] bool supportNullInput,
+                IntPtr dotnetLanguage);
 
-        public unsafe delegate int DelRunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output);
+        public unsafe delegate int DelRunUserFunction(uint functionId, void* arguments, int num_arguments, byte* nullmap, IntPtr output);
 
         public delegate void DelFreeGenericGCHandle(IntPtr p);
 
@@ -262,6 +273,8 @@ namespace PlDotNET
                     return "TimestampTzRangeHandler";
                 case (uint)OID.DATERANGEOID:
                     return "DateRangeHandler";
+                case (uint)OID.RECORDOID: // This is a hack, but I think it's ok for now
+                    return "IntHandler";
                 default:
                     if (HandleArray.ContainsKey((OID)id))
                     {
@@ -364,7 +377,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns 0 when the proccess succeeded, otherwise returns 1.
         /// </returns>
-        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, IntPtr paramNames, uint* paramTypes, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
+        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, IntPtr paramNames, uint* paramTypes, byte* paramModes, int num_output_values, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
         {
             // User function Data
             string funcName = Marshal.PtrToStringAuto(name);
@@ -372,6 +385,9 @@ namespace PlDotNET
             string[] paramNameArray = auxParameters == null ? Array.Empty<string>() : auxParameters.Split(" ");
             uint[] paramTypeArray = auxParameters == null ? Array.Empty<uint>() : new ReadOnlySpan<uint>(paramTypes, paramNameArray.Length).ToArray();
             string funcBody = Marshal.PtrToStringAuto(body);
+            byte[] paramModeArray = Array.Empty<byte>();
+
+            paramModeArray = (paramModes != null) ? new ReadOnlySpan<byte>(paramModes, paramNameArray.Length).ToArray() : paramModeArray;
 
             // Check if PL.NET supports all the PostgreSQL types of the user function
             if (!CheckSupportedTypes(returnTypeId, paramTypeArray))
@@ -386,7 +402,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                Elog.Info($"{e.GetType().Name}: {e.Message}");
                 return 1;
             }
 
@@ -423,10 +439,10 @@ namespace PlDotNET
                 // If the user provides his own assembly, this variable receives the assembly information.
                 // If the user function uses F#, this variable receives an empty string, since PL.NET creates the UserFunction
                 // together with the UserHandler.
-                userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput || Engine.AlwaysNullable);
+                userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
 
                 // Generate the UserHandler code
-                userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, funcBody, supportNullInput || Engine.AlwaysNullable);
+                userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
             }
             catch (Exception e)
             {
@@ -442,11 +458,9 @@ namespace PlDotNET
                 {
                     return 0;
                 }
-                else
-                {
-                    FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
-                    FuncBuiltCodeDict.Remove(functionId);
-                }
+
+                FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
+                FuncBuiltCodeDict.Remove(functionId);
             }
 
             // The DotNETLanguage of the dynamic codes
@@ -463,7 +477,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                Elog.Info($"{e.GetType().Name}: {e.Message}");
                 return 1;
             }
 
@@ -517,6 +531,11 @@ namespace PlDotNET
                         throw new SystemException("PL.NET could not compile the generated C# code.");
                     }
                 }
+
+                /// Currently, we are not compiling a F# code for UserFunction because it being is generated alongside the 
+                /// UserHandler code. To enhance this implementation, we plan to create a separate F# code for the 
+                /// UserFunction, as we have for C#, so the UserFunction code will be imported into a generic UserHandler.
+                /// This approach will allow any changes to the UserHandler code to be made in a single location.
             }
             else
             {
@@ -548,18 +567,16 @@ namespace PlDotNET
 
                 return FSharpCompiler.CompileFSharpSourceCode(functionId, Engine.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
             }
-            else
-            {
-                var compileResultUserHandler = Engine.CompileSourceCode(userHandlerCode, memUserHandler, $"UserHandler_{functionId}", assemblyToInclude);
 
-                // Verify that the C# code for UserHandler compiled correctly
-                if (!compileResultUserHandler.Success)
-                {
-                    throw new SystemException("PL.NET could not compile the generated C# code.");
-                }
+            var compileResultUserHandler = Engine.CompileSourceCode(userHandlerCode, memUserHandler, $"UserHandler_{functionId}", assemblyToInclude);
+
+            // Verify that the C# code for UserHandler compiled correctly
+            if (compileResultUserHandler.Success)
+            {
+                return memUserHandler;
             }
 
-            return memUserHandler;
+            throw new SystemException("PL.NET could not compile the generated C# code.");
         }
 
         /// <summary>
@@ -579,12 +596,10 @@ namespace PlDotNET
                 return null;
             }
 
-            MethodInfo procMethod = procClassType.GetMethod("CallUserFunction");
-
             return (Action<List<IntPtr>, IntPtr, bool[]>)Delegate.CreateDelegate(
                 typeof(Action<List<IntPtr>, IntPtr, bool[]>),
                 null,
-                procMethod);
+                procClassType.GetMethod("CallUserFunction"));
         }
 
         /// <summary>
@@ -596,34 +611,41 @@ namespace PlDotNET
         /// <returns>
         /// Returns 0 when the proccess succeeded, otherwise returns 1.
         /// </returns>
-        public static unsafe int RunUserFunction(uint functionId, IntPtr arguments, byte* nullmap, IntPtr output)
+        public static unsafe int RunUserFunction(uint functionId, void* arguments, int num_arguments, byte* nullmap, IntPtr output)
         {
+            string argaddr = ((IntPtr)arguments).ToString("X");
+
+            IntPtr[] argumentArray = new ReadOnlySpan<IntPtr>(arguments, num_arguments).ToArray();
+            List<IntPtr> argumentList = new List<IntPtr>(argumentArray);
+
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
                 try
                 {
-                    GCHandle gchList = GCHandle.FromIntPtr(arguments);
-                    var argumentList = (List<IntPtr>)gchList.Target;
-                    bool[] isnull = new bool[argumentList.Count];
+                    bool[] isnull = new bool[argumentList.Count]; // default false
                     if (cached.SupportNullInput || Engine.AlwaysNullable)
                     {
+                        // isnull = nullmap.Select(x => x != 0).ToArray();
                         for (int i = 0, nargs = isnull.Length; i < nargs; i++)
                         {
                             isnull[i] = nullmap[i] != 0;
                         }
                     }
 
+                    // Elog.Info($"Running cached user procedure");
                     cached.UserProcedure(argumentList, output, isnull);
+
+                    // Elog.Info($"Done running cached user procedure");
                     return 0;
                 }
                 catch (Exception e)
                 {
-                    Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                    Elog.Info($"{e.GetType().Name}: {e.Message}");
                     return 1;
                 }
             }
 
-            Elog.Warning($"PL.NET could not find the user function (ID: {functionId})");
+            Elog.Info($"PL.NET could not find the user function (ID: {functionId})");
             return 1;
         }
 
@@ -632,8 +654,7 @@ namespace PlDotNET
         /// </summary>
         public static unsafe void FreeGenericGCHandle(IntPtr p)
         {
-            GCHandle gch = GCHandle.FromIntPtr(p);
-            gch.Free();
+            GCHandle.FromIntPtr(p).Free();
         }
 
         /// <summary>
@@ -645,8 +666,7 @@ namespace PlDotNET
         /// </returns>
         public static unsafe System.IntPtr BuildDatumList()
         {
-            var l = new List<IntPtr>();
-            GCHandle handle = GCHandle.Alloc(l, GCHandleType.Normal);
+            GCHandle handle = GCHandle.Alloc(new List<IntPtr>(), GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
 
@@ -666,15 +686,14 @@ namespace PlDotNET
         /// </summary>
         public static void UnloadAssemblies(uint functionId)
         {
-            if (FuncBuiltCodeDict.ContainsKey(functionId))
+            if (!FuncBuiltCodeDict.ContainsKey(functionId))
             {
-                FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
-                FuncBuiltCodeDict.Remove(functionId);
+                Elog.Info($"PL.NET could not find the generated function to unload its assemblies (ID: {functionId})");
+                return;
             }
-            else
-            {
-                Elog.Warning($"PL.NET could not find the generated function to unload its assemblies (ID: {functionId})");
-            }
+
+            FuncBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
+            FuncBuiltCodeDict.Remove(functionId);
         }
 
         /// <summary>
@@ -692,11 +711,11 @@ namespace PlDotNET
                 unsupportedTypes.Add($"{(OID)returnTypeId}");
             }
 
-            for (int i = 0, length = paramTypes.Length; i < length; i++)
+            foreach (var paramType in paramTypes)
             {
-                if (!(HandleArray.ContainsKey((OID)paramTypes[i]) || OidTypes.ContainsKey((OID)paramTypes[i])))
+                if (!(HandleArray.ContainsKey((OID)paramType) || OidTypes.ContainsKey((OID)paramType)))
                 {
-                    unsupportedTypes.Add($"{(OID)paramTypes[i]}");
+                    unsupportedTypes.Add($"{(OID)paramType}");
                 }
             }
 
@@ -705,6 +724,7 @@ namespace PlDotNET
                 return true;
             }
 
+            // Give a helpful error message
             unsupportedTypes = unsupportedTypes.Distinct().ToList();
 
             var sb = new System.Text.StringBuilder();
@@ -714,8 +734,8 @@ namespace PlDotNET
                 sb.AppendLine($"PL.NET does not support the PostgreSQL {unsupportedTypes[i]} type.");
             }
 
-            sb.AppendLine("Please contact Brick Abode. <tlewis@brickabode.com>");
-            Elog.Warning("\n" + sb.ToString());
+            sb.AppendLine("Please contact Brick Abode to inquire about adding support. <winning@brickabode.com>");
+            Elog.Info("\n" + sb.ToString());
 
             return false;
         }
@@ -740,16 +760,16 @@ namespace PlDotNET
         public static bool GetInformationFromUserAssembly(string code, ref string assemblyPath, ref string namespaceAndClass, ref string methodName)
         {
             Regex regex = new ("^([-/.a-zA-Z0-9]+.dll):([a-zA-Z0-9.]+)!([a-zA-Z0-9]+)$");
-            if (regex.IsMatch(code))
+            if (!regex.IsMatch(code))
             {
-                string[] matches = regex.Split(code);
-                assemblyPath = matches[1];
-                namespaceAndClass = matches[2];
-                methodName = matches[3];
-                return true;
+                return false;
             }
 
-            return false;
+            string[] matches = regex.Split(code);
+            assemblyPath = matches[1];
+            namespaceAndClass = matches[2];
+            methodName = matches[3];
+            return true;
         }
 
         /// <summary>
@@ -812,18 +832,10 @@ namespace PlDotNET
 
             // Use a regular expression to parse the output and extract the mode
             Match m = Regex.Match(output, @"Access:\s+\(([0-9]+)/");
-            if (m.Success)
-            {
-                mode = m.Groups[1].Value;
-            }
+            mode = m.Success ? mode = m.Groups[1].Value : mode;
 
-            if (mode == "0700")
-            {
-                return true;
-            }
-
-            // Linux mode didn't work, so let's do Mac mode
-            return output.Contains("drwx------");
+            // If Linux mode didn't work, then we do Mac mode
+            return (mode == "0700") ? true : output.Contains("drwx------");
         }
     }
 }
