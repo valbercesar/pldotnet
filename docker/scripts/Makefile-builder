@@ -28,7 +28,10 @@ install_requirements: apt_update
 install_pg_dev: install_requirements install_misc
 	# installs postgresql dev packages
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y postgresql postgresql-common postgresql-server-dev-all devscripts
+	apt install -y postgresql
+	apt install -y postgresql-common
+	apt install -y postgresql-server-dev-all
+	apt install -y devscripts
 	mkdir -p /var/log/postgresql/data1
 
 install_misc:
