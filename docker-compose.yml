@@ -31,26 +31,23 @@ services:
   pldotnet-ubuntu22: &pldotnet-current-container
     container_name: pldotnet-ubuntu22
     image: pldotnet:ubuntu22
-    <<: *interactive
-    <<: *command
+    <<: [*interactive, *command, *environment, *ports]
     build:
       dockerfile: docker/Dockerfile_ubuntu22
       <<: *build-args
-    <<: *environment
-    <<: *ports
     volumes:
       - ./:/app/pldotnet/
       - ./postgres-data/ubuntu22:/var/lib/postgresql/data
 
+
   pldotnet-build:
     container_name: pldotnet-build
     image: pldotnet:build
-    <<: *interactive
+    <<: [*interactive, *environment]
     command: sh -c "bash /app/pldotnet/docker/scripts/build_packages.sh"
     build:
       dockerfile: docker/Dockerfile_deb-build
       <<: *build-args
-    <<: *environment
     volumes:
       - ./dotnet_src/:/app/pldotnet/dotnet_src/
       - ./src/:/app/pldotnet/src/
@@ -72,12 +69,11 @@ services:
   pldotnet-build-arm:
     container_name: pldotnet-build-arm
     image: pldotnet:build
-    <<: *interactive
+    <<: [*interactive, *environment]
     command: sh -c "bash /app/pldotnet/docker/scripts/build_packages.sh"
     build:
       dockerfile: docker/Dockerfile_ubuntu-build-arm
       <<: *build-args
-    <<: *environment
     volumes:
       - ./src/:/app/pldotnet/src/
       - ./Makefile:/app/pldotnet/Makefile
