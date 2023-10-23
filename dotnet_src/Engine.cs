@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
@@ -41,13 +42,37 @@ namespace PlDotNET
         VisualBasic,
     }
 
+    public enum CallMode : int
+    {
+        [Description("CALL_NORMAL")] // Normal, non-SRF function
+        Normal = 1,
+        [Description("CALL_SRF_FIRST")] // First call to an SRF; create and cache
+        SrfFirst = 2,
+        [Description("CALL_SRF_NEXT")] // Next call to an SRF
+        SrfNext = 3,
+        [Description("CALL_SRF_CLEANUP")] // SRF is done; you may remove it from the cache
+        SrfCleanup = 4,
+    }
+
+    public enum ReturnMode : int
+    {
+        [Description("RETURN_ERROR")] // We encountered an error
+        Error = 0,
+        [Description("RETURN_NORMAL")] // Normal return to CALL_NORMAL
+        Normal = 1,
+        [Description("RETURN_SRF_NEXT")] // SRF return to CALL_SRF_NEXT
+        SrfNext = 2,
+        [Description("RETURN_SRF_DONE")] // We have no more values
+        SrfDone = 3,
+    }
+
     public struct CachedFunction
     {
         public string UserHandlerSourceCode;
         public string UserFunctionSourceCode;
         public string FunctionName;
         public bool SupportNullInput;
-        public Action<List<IntPtr>, IntPtr, bool[]> UserProcedure;
+        public Func<List<IntPtr>, IntPtr, ulong, int, bool[], int> UserProcedure;
         public AssemblyLoadContext UserAssemblyLoadContext;
         public DotNETLanguage Language;
     }
@@ -56,7 +81,7 @@ namespace PlDotNET
     {
         public static bool AlwaysNullable = false;
 
-        public static bool PrintSourceCode = true;
+        public static bool PrintSourceCode = false;
 
         public static bool SaveSourceCode = true;
 
@@ -169,6 +194,7 @@ namespace PlDotNET
                 uint functionId,
                 IntPtr name,
                 uint returnType,
+                [MarshalAs(UnmanagedType.I1)] bool retset,
                 IntPtr paramNames,
                 uint* paramTypes,
                 byte* paramModes,
@@ -177,7 +203,7 @@ namespace PlDotNET
                 [MarshalAs(UnmanagedType.I1)] bool supportNullInput,
                 IntPtr dotnetLanguage);
 
-        public unsafe delegate int DelRunUserFunction(uint functionId, void* arguments, int num_arguments, byte* nullmap, IntPtr output);
+        public unsafe delegate int DelRunUserFunction(uint functionId, ulong call_id, int call_mode, void* arguments, int num_arguments, byte* nullmap, IntPtr output);
 
         public delegate void DelFreeGenericGCHandle(IntPtr p);
 
@@ -377,7 +403,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns 0 when the proccess succeeded, otherwise returns 1.
         /// </returns>
-        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, IntPtr paramNames, uint* paramTypes, byte* paramModes, int num_output_values, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
+        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, [MarshalAs(UnmanagedType.I1)] bool retset, IntPtr paramNames, uint* paramTypes, byte* paramModes, int num_output_values, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
         {
             // User function Data
             string funcName = Marshal.PtrToStringAuto(name);
@@ -389,9 +415,12 @@ namespace PlDotNET
 
             paramModeArray = (paramModes != null) ? new ReadOnlySpan<byte>(paramModes, paramNameArray.Length).ToArray() : paramModeArray;
 
+            Elog.Info($"START CompileUserFunction, retset is {retset} <foo>");
+
             // Check if PL.NET supports all the PostgreSQL types of the user function
             if (!CheckSupportedTypes(returnTypeId, paramTypeArray))
             {
+                Elog.Warning($"Unsupported return type: {returnTypeId}");
                 return 1;
             }
 
@@ -435,14 +464,16 @@ namespace PlDotNET
                 // The CodeGenerator object that creates the dynamic codes according to the language (C# or F#)
                 CodeGenerator dynamicCodeGenerator = (plLanguage == "csharp" || useUserAssembly) ? CSharpGenerator : FSharpGenerator;
 
+                Elog.Info("BUILDING source code");
+
                 // Generate the UserFunction code
                 // If the user provides his own assembly, this variable receives the assembly information.
                 // If the user function uses F#, this variable receives an empty string, since PL.NET creates the UserFunction
                 // together with the UserHandler.
-                userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
+                userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, retset, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
 
                 // Generate the UserHandler code
-                userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
+                userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, retset, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
             }
             catch (Exception e)
             {
@@ -531,11 +562,10 @@ namespace PlDotNET
                         throw new SystemException("PL.NET could not compile the generated C# code.");
                     }
                 }
-
-                /// Currently, we are not compiling a F# code for UserFunction because it being is generated alongside the 
-                /// UserHandler code. To enhance this implementation, we plan to create a separate F# code for the 
-                /// UserFunction, as we have for C#, so the UserFunction code will be imported into a generic UserHandler.
-                /// This approach will allow any changes to the UserHandler code to be made in a single location.
+                else
+                {
+                    throw new SystemException("Cannot handle MemoryStream for F#");
+                }
             }
             else
             {
@@ -584,9 +614,9 @@ namespace PlDotNET
         /// which was compiled by Roslyn.
         /// </summary>
         /// <returns>
-        /// Returns the Action object of the delegated CallUserFunction or Null for a failed proccess.
+        /// Returns the Function object of the delegated CallUserFunction or Null for a failed proccess.
         /// </returns>
-        public static Action<List<IntPtr>, IntPtr, bool[]> GetDirectDelegate(Assembly compiledAssembly)
+        public static Func<List<IntPtr>, IntPtr, ulong, int, bool[], int> GetDirectDelegate(Assembly compiledAssembly)
         {
             Type procClassType = compiledAssembly.GetType("PlDotNET.UserSpace.UserHandler");
 
@@ -596,8 +626,8 @@ namespace PlDotNET
                 return null;
             }
 
-            return (Action<List<IntPtr>, IntPtr, bool[]>)Delegate.CreateDelegate(
-                typeof(Action<List<IntPtr>, IntPtr, bool[]>),
+            return (Func<List<IntPtr>, IntPtr, ulong, int, bool[], int>)Delegate.CreateDelegate(
+                typeof(Func<List<IntPtr>, IntPtr, ulong, int, bool[], int>),
                 null,
                 procClassType.GetMethod("CallUserFunction"));
         }
@@ -609,9 +639,9 @@ namespace PlDotNET
         /// function compiled by Roslyn.
         /// </summary>
         /// <returns>
-        /// Returns 0 when the proccess succeeded, otherwise returns 1.
+        /// Returns ReturnMode
         /// </returns>
-        public static unsafe int RunUserFunction(uint functionId, void* arguments, int num_arguments, byte* nullmap, IntPtr output)
+        public static unsafe int RunUserFunction(uint functionId, ulong call_id, int call_mode, void* arguments, int num_arguments, byte* nullmap, IntPtr output)
         {
             string argaddr = ((IntPtr)arguments).ToString("X");
 
@@ -622,31 +652,27 @@ namespace PlDotNET
             {
                 try
                 {
-                    bool[] isnull = new bool[argumentList.Count]; // default false
+                    bool[] isnull = new bool[argumentList.Count];
                     if (cached.SupportNullInput || Engine.AlwaysNullable)
                     {
-                        // isnull = nullmap.Select(x => x != 0).ToArray();
                         for (int i = 0, nargs = isnull.Length; i < nargs; i++)
                         {
                             isnull[i] = nullmap[i] != 0;
                         }
                     }
 
-                    // Elog.Info($"Running cached user procedure");
-                    cached.UserProcedure(argumentList, output, isnull);
-
-                    // Elog.Info($"Done running cached user procedure");
-                    return 0;
+                    var retval = cached.UserProcedure(argumentList, output, call_id, call_mode, isnull);
+                    return retval;
                 }
                 catch (Exception e)
                 {
-                    Elog.Info($"{e.GetType().Name}: {e.Message}");
-                    return 1;
+                    Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                    return (int)ReturnMode.Error;
                 }
             }
 
-            Elog.Info($"PL.NET could not find the user function (ID: {functionId})");
-            return 1;
+            Elog.Warning($"PL.NET could not find the user function (ID: {functionId})");
+            return (int)ReturnMode.Error;
         }
 
         /// <summary>
@@ -688,7 +714,7 @@ namespace PlDotNET
         {
             if (!FuncBuiltCodeDict.ContainsKey(functionId))
             {
-                Elog.Info($"PL.NET could not find the generated function to unload its assemblies (ID: {functionId})");
+                Elog.Warning($"PL.NET could not find the generated function to unload its assemblies (ID: {functionId})");
                 return;
             }
 
@@ -735,7 +761,7 @@ namespace PlDotNET
             }
 
             sb.AppendLine("Please contact Brick Abode to inquire about adding support. <winning@brickabode.com>");
-            Elog.Info("\n" + sb.ToString());
+            Elog.Warning("\n" + sb.ToString());
 
             return false;
         }

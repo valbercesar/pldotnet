@@ -23,6 +23,24 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using PlDotNET.Handler;
 
+// # BuildUserFunctionSourceCode
+//    - add parameter: bool retset
+//    - UserFunction needs its type changed to be IEnumerable<ret_type> UserFunction(args)
+//
+// # BuildUserHandlerSourceCode
+//    - add parameter: bool retset
+//    - SRF UserHandler needs to handle SRF:
+//        + CALL_SRF_FIRST:
+//            + call UserFunction to get IEnumerator<ret_type>
+//            + put in cache
+//            + has_more = .EnumerableNext()
+//        + CALL_SRF_NEXT:
+//            + if (has_more == false) return {value = 0, ReturnMode = SrfDone}
+//            + get IEnumerator<ret_type> from cache, return {value = .GetEnumerator(), ReturnMode = SrfNext}
+//            + has_more = .EnumerableNext()
+//    - Normal (non-SRF) UserHandler needs to require CALL_NORMAL
+//    - Argument handling and return values are handled the same for both cases
+//        + For SRF, argument handling is only for CALL_SRF_FIRST case
 namespace PlDotNET
 {
     public abstract class CodeGenerator
@@ -124,7 +142,16 @@ namespace PlDotNET
         /// <returns>
         /// Returns the generated UserHandler source code.
         /// </returns>
-        public string BuildUserHandlerSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, byte[] paramModes, int num_output_values, string funcBody, bool supportNullInput)
+        public string BuildUserHandlerSourceCode(
+                string funcName,
+                uint returnTypeId,
+                bool retset,
+                string[] paramNames,
+                uint[] paramTypes,
+                byte[] paramModes,
+                int num_output_values,
+                string funcBody,
+                bool supportNullInput)
         {
             // Check if the file exists
             if (!File.Exists(this.UserHandlerTemplatePath))
@@ -135,19 +162,24 @@ namespace PlDotNET
             string userFunctionPrefix = "PlDotNET.UserSpace.UserFunction";
             string assemblyPath = string.Empty;
             _ = Engine.GetInformationFromUserAssembly(funcBody, ref assemblyPath, ref userFunctionPrefix, ref funcName);
+            string simpleReturnType = this.GetReturnType(returnTypeId, false, paramModes, supportNullInput); // retset=False, so without `IEnumerable<>`
 
             string[] dotnetTypes = this.GetDotNetTypes(paramTypes, paramModes);
 
             string sourceCode = File.ReadAllText(this.UserHandlerTemplatePath);
+            sourceCode = sourceCode.Replace("// $srf_cache$", this.BuildSRFCache(retset, simpleReturnType));
             sourceCode = sourceCode.Replace("// $handler_objects$", this.BuildHandlerObjects(paramTypes, returnTypeId));
-            sourceCode = sourceCode.Replace("// $create_arguments", this.BuildCreateArguments(funcName, paramTypes, paramModes, supportNullInput));
+            sourceCode = sourceCode.Replace("// $srf_begin$", this.BuildSRFBegin(retset));
+            sourceCode = sourceCode.Replace("// $create_arguments$", this.BuildCreateArguments(funcName, paramTypes, paramModes, supportNullInput));
             sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall(funcName, returnTypeId, dotnetTypes, paramModes, supportNullInput, userFunctionPrefix));
+            sourceCode = sourceCode.Replace("// $srf_middle$", this.BuildSRFMiddle(retset));
             sourceCode = sourceCode.Replace("// $call_set_result$", this.BuildCallSetResult(returnTypeId, paramNames, paramTypes, paramModes, num_output_values));
+            sourceCode = sourceCode.Replace("// $srf_end$", this.BuildSRFEnd(retset));
 
             if (this.Language == DotNETLanguage.FSharp)
             {
                 // Creates the UserFunction type with the SQL user function
-                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, paramModes, dotnetTypes, supportNullInput));
+                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, retset, paramNames, paramModes, dotnetTypes, supportNullInput));
             }
 
             sourceCode = this.FormatGeneratedCode(sourceCode);
@@ -156,6 +188,117 @@ namespace PlDotNET
             this.SaveSourceCode(sourceCode, $"UserHandler_{funcName}");
 
             return sourceCode;
+        }
+
+        /// <summary>
+        /// Creates the SRF cache, or else a small comment if not SRF
+        /// </summary>
+        /// <remarks>
+        /// We need the cache so that the IEnumerator is not garbage
+        /// collected.  We store it here and then free it (delete from
+        /// the cache) when we get CALL_SRF_CLEANUP.
+        /// </remarks>
+        /// <returns>
+        /// Returns the generated source code.
+        /// </returns>
+        public string BuildSRFCache(bool retset, string returnType)
+        {
+            return retset ?
+                $"public static Dictionary<ulong, IEnumerator<{returnType}>> EnumeratorCache = new Dictionary<ulong, IEnumerator<{returnType}>>();\n" :
+                    "// skipping SRF cache; not a set-returning function";
+        }
+
+        /// <summary>
+        /// Creates the opening for SRF handling, or else a small comment if not SRF
+        /// </summary>
+        /// <remarks>
+        /// Generated SRF-handling code:
+        ///     1. If CALL_SRF_FIRST, then
+        /// that is the end, because the outer code cascades into input
+        /// value setup and calling the function.
+        /// </remarks>
+        /// <returns>
+        /// Returns the generated source code.
+        /// </returns>
+        public string BuildSRFBegin(bool retset)
+        {
+            if (retset)
+            {
+                return @"if(call_mode == (int)CallMode.SrfFirst){
+                            // Elog.Info($""Got SRF_FIRST on call_id {call_id}"");
+                            ";
+            }
+
+            return "// skipping SRF setup; not a set-returning function";
+        }
+
+        /// <summary>
+        /// Creates the middle of the SRF handling, or else a small comment if not SRF
+        /// </summary>
+        /// <remarks>
+        /// 1. we end the SRF_FIRST handling
+        /// 2. we open the SRF_NEXT handling
+        /// </remarks>
+        /// <returns>
+        /// Returns the generated source code.
+        /// </returns>
+        public string BuildSRFMiddle(bool retset)
+        {
+            if (retset)
+            {
+                return @"
+                        // Elog.Info($""Got SRF result ({result.GetType().Name}) {result}"");
+                        var enumerator = result.GetEnumerator();
+                        // Elog.Info($""Got SRF enumerator ({enumerator.GetType().Name}) {enumerator}; adding to cache under [{call_id}]"");
+                        EnumeratorCache.Add(call_id, enumerator);
+                        // Elog.Info($""Returning SRF_NEXT"");
+                        return (int)ReturnMode.SrfNext;
+                    } else if(call_mode == (int)CallMode.SrfNext){
+                        // Elog.Info($""Getting SRF enumerator (call_id {call_id})"");
+                        var enumerator = EnumeratorCache[call_id];
+                        // Elog.Info($""Got SRF enumerator ({enumerator.GetType().Name}) {enumerator}"");
+                        if (enumerator.MoveNext() == false) {
+                            // Elog.Info($""Enumerator is done; returning SRF_DONE"");
+                            return (int)ReturnMode.SrfDone;
+                        }
+                        // Elog.Info($""Getting SRF current value"");
+                        var result = enumerator.Current;
+                        // Elog.Info($""Got next result {result}"");
+                        // we now cascade to returning the value";
+            }
+
+            return "// skipping SRF middle; not a set-returning function";
+        }
+
+        /// <summary>
+        /// Creates the end of the SRF handling, or else a small comment if not SRF
+        /// </summary>
+        /// <remarks>
+        /// 1. we return mode SrfNext
+        /// 2. we close the SRF_NEXT handling
+        /// 3. we handle CALL_SRF_CLEANUP
+        /// 4. we error on all other cases
+        /// </remarks>
+        /// <returns>
+        /// Returns the generated source code.
+        /// </returns>
+        public string BuildSRFEnd(bool retset)
+        {
+            if (retset)
+            {
+                    return @"
+                                    return (int)ReturnMode.SrfNext;
+                                } else if(call_mode == (int)CallMode.SrfCleanup){
+                                    Elog.Info($""Removing call_id {call_id} from cache"");
+                                    EnumeratorCache.Remove(call_id);
+                                    return (int)ReturnMode.SrfDone;
+                                }
+                                    Elog.Warning($""Unrecognized call mode: {call_mode}"");
+                                return (int)ReturnMode.Error;
+                                ";
+            }
+
+            return "return (int)ReturnMode.Normal;";
         }
 
         /// <summary>
@@ -169,7 +312,16 @@ namespace PlDotNET
         /// <returns>
         /// Returns the generated UserFunction source code.
         /// </returns>
-        public string BuildUserFunctionSourceCode(string funcName, uint returnTypeId, string[] paramNames, uint[] paramTypes, byte[] paramModes, int num_output_values, string funcBody, bool supportNullInput)
+        public string BuildUserFunctionSourceCode(
+                string funcName,
+                uint returnTypeId,
+                bool retset,
+                string[] paramNames,
+                uint[] paramTypes,
+                byte[] paramModes,
+                int num_output_values,
+                string funcBody,
+                bool supportNullInput)
         {
             if (Engine.ValidateUserAssembly(funcBody))
             {
@@ -178,8 +330,7 @@ namespace PlDotNET
 
             if (this.Language == DotNETLanguage.FSharp)
             {
-                /// Returns an empty string because the UserFunction code is being created along with the UserHandler code
-                return string.Empty;
+                throw new SystemException("Internal error: F# requested from C# engine");
             }
 
             if (!File.Exists(this.UserFunctionTemplatePath))
@@ -190,7 +341,7 @@ namespace PlDotNET
 
             string[] dotnetTypes = this.GetDotNetTypes(paramTypes, paramModes);
             string sourceCode = File.ReadAllText(this.UserFunctionTemplatePath);
-            sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, paramNames, paramModes, dotnetTypes, supportNullInput));
+            sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, retset, paramNames, paramModes, dotnetTypes, supportNullInput));
 
             sourceCode = this.FormatGeneratedCode(sourceCode);
 
@@ -198,6 +349,20 @@ namespace PlDotNET
             this.SaveSourceCode(sourceCode, $"UserFunction_{funcName}");
 
             return sourceCode;
+        }
+
+        public string GetReturnType(uint returnTypeId, bool retset, byte[] paramModes, bool supportNullInput)
+        {
+            string returnType = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
+            bool has_output_var = paramModes.Intersect(this.OutputModes).Any();
+            if (has_output_var)
+            {
+                returnType = "void";
+            }
+
+            string nullAbleOutput = (returnType == "void") ? string.Empty : "?";
+            returnType = retset ? $"IEnumerable<{returnType}{nullAbleOutput}>" : $"{returnType}{nullAbleOutput}";
+            return returnType;
         }
 
         /// <summary>
@@ -242,7 +407,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns user function as string.
         /// </returns>
-        public abstract string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput);
+        public abstract string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, bool retset, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput);
 
         /// <summary>
         /// Get the .NET types of the SQL user function according to the language.
@@ -386,7 +551,7 @@ namespace PlDotNET
                 sb.AppendLine($"// Handling normal function return (no INOUT/OUT arguments)");
                 string output_handler = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
                 sb.AppendLine($"IntPtr resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.{output_handler}(result);");
-                sb.AppendLine("OutputResult.SetDatumResult(resultDatum, result == null, output, 0);");
+                sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, result == null, output, 0, {returnTypeId});");
             }
             else if (num_output_values == 1)
             {
@@ -402,7 +567,7 @@ namespace PlDotNET
 
                 sb.AppendLine($"// Handling single OUT return value `{outResultName}`, in slot {output_parameter_offset}");
                 sb.AppendLine($"IntPtr resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.{oututHandler}({outResultName});");
-                sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, {outResultName} == null, output, 0);");
+                sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, {outResultName} == null, output, 0, {returnTypeId});");
             }
             else if (num_output_values > 1)
             {
@@ -423,7 +588,7 @@ namespace PlDotNET
                     var outputHandler = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
                     sb.AppendLine($"// Adding output-mode ({((char)paramModes[i]).ToString()}) argument {i} for oid {returnTypeId}");
                     sb.AppendLine($"IntPtr resultDatum_{i} = {handler}Obj.{outputHandler}({outResultName});");
-                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{i}, argument_{i} == null, output, {i - skips});");
+                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{i}, argument_{i} == null, output, {i - skips}, {(int)paramTypes[i]});");
                 }
             }
             else
@@ -435,20 +600,16 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput)
+        public override string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, bool retset, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput)
         {
             var sb = new System.Text.StringBuilder();
-            string returnType = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
-            bool has_output_var = paramModes.Intersect(this.OutputModes).Any();
-            if (has_output_var)
-            {
-                returnType = "void";
-            }
-
-            string nullAbleOutput = (returnType == "void") ? string.Empty : "?";
+            string returnType = this.GetReturnType(returnTypeId, retset, paramModes, supportNullInput);
             string aux = supportNullInput ? "?" : string.Empty;
 
-            sb.Append($"public static {returnType}{nullAbleOutput} {funcName}(");
+            // for Set-Returning Functions, we create a C# generator
+            Elog.Info($"BuildUserFunction: retset is {retset}, returnType is {returnType}");
+
+            sb.Append($"public static {returnType} {funcName}(");
 
             for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
             {
@@ -671,7 +832,7 @@ namespace PlDotNET
 
                 string makeDatum = $"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.{outputHandler}(result)";
                 sb.AppendLine(makeDatum);
-                string setDatum = $"OutputResult.SetDatumResult(resultDatum, {isnull}, output, 0)";
+                string setDatum = $"OutputResult.SetDatumResult(resultDatum, {isnull}, output, 0, {returnTypeId})";
                 sb.AppendLine(setDatum);
                 return "// Create PostgreSQL datum\n" + IndentCode(sb.ToString(), 8);
             }
@@ -688,7 +849,7 @@ namespace PlDotNET
                     string isnull = ClassTypes.Contains(returnType) ? $"Object.ReferenceEquals(output_{i}, null)" : $"not output_{i}.HasValue";
 
                     sb.AppendLine($"let resultDatum_{output_num} = {outputTypeHandler}Obj.{outputHandlerMethod}(output_{i})");
-                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{output_num}, {isnull}, output, {output_num})");
+                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{output_num}, {isnull}, output, {output_num}, {(int)paramTypes[i]})");
 
                     output_num++;
                 }
@@ -698,7 +859,7 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput)
+        public override string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, bool retset, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput)
         {
             var sb = new System.Text.StringBuilder();
             string return_type = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];

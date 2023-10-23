@@ -15,9 +15,8 @@
 
 #include "pldotnet_main.h"
 
-#define ASSERT(x) if(!x){ elog(ERROR, "%s:%d: FAILED ASSERTION! " #x, __FILE__, __LINE__); }
-// #define DUFD(declaration) elog(INFO, "Dumping user function definition at %s:%d", __FILE__, __LINE__); dumpUserFunctionDeclaration(declaration);
-#define DUFD(declaration)
+#define ASSERT(x) if(!(x)){ elog(ERROR, "%s:%d: FAILED ASSERTION! " #x, __FILE__, __LINE__); }
+#define ERETURN(...) elog(ERROR, __VA_ARGS__); return (Datum)0;
 
 /*
  * Exported functions
@@ -54,6 +53,9 @@ unload_assemblies_fn unload_assemblies = nullptr;
 run_user_fn run_user_function = nullptr;
 
 pldotnet_PathConfig path_config;
+
+// Give each SRF instance a distinct id
+static unsigned long global_srf_id = 0;
 
 /*
  * END: declaring variables
@@ -334,11 +336,46 @@ static void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
  * START: implementing functions
  */
 
-void pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value, bool is_null)
+void pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value, bool is_null, Oid oid)
 {
-    // Experiment to see if C# is the source of this data corruption
-    output[offset].value  = value;
-    output[offset].is_null = is_null;
+    // elog(INFO, "Called into void pldotnet_SetResult(pldotnet_Result *output=%p, int offset=%d, Datum value=%p, bool is_null=%d, Oid oid=%d)",
+        // output, offset, value, is_null, oid);
+    // elog(INFO, "Result: length is %d, values is %p, nulls is %p, oids is %p", output->length, output->values, output->nulls, output->oids);
+    assert(offset < output->length);
+    output->values[offset] = value;
+    output->nulls[offset]  = is_null;
+    output->oids[offset]   = oid;
+    // elog(INFO, "Done with void pldotnet_SetResult()");
+}
+
+/* resize_result allocates new arrays for values and nulls,
+ * discarding the old arrays.
+ */
+void
+resize_result(struct pldotnet_Result* r, size_t length)
+{
+    // elog(INFO, "Before Result resize: length is %d, values is %p, nulls is %p, oids is %p", r->length, r->values, r->nulls, r->oids);
+    if(r->values) pfree(r->values);
+    if(r->nulls)  pfree(r->nulls);
+
+    r->length = length;
+    r->values = palloc ((sizeof (Datum) * length));
+    r->nulls  = palloc ((sizeof (bool) * length));
+    r->oids = palloc ((sizeof (Oid) * length));
+
+    memset(r->values, 0, (sizeof (Datum) * length));;
+    memset(r->nulls,  0, (sizeof (bool)  * length));;
+    memset(r->oids,  0, (sizeof (Oid)  * length));;
+    // elog(INFO, "After Result resize: length is %d, values is %p, nulls is %p, oids is %p", r->length, r->values, r->nulls, r->oids);
+}
+
+struct pldotnet_Result* create_result(size_t length)
+{
+    pldotnet_Result* output = palloc(sizeof(pldotnet_Result));
+    memset(output, 0, sizeof(*output)); // safety requirement; `values` and `nulls` must be NULL before resizing
+    resize_result(output, length);
+    // elog(INFO, "New Result: length is %d, values is %p, nulls is %p, oids is %p", output->length, output->values, output->nulls, output->oids);
+    return output;
 }
 
 Datum plcsharp_call_handler(PG_FUNCTION_ARGS) {
@@ -506,124 +543,210 @@ static void dumpUserFunctionDeclaration(const pldotnet_UserFunctionDeclaration *
 }
 #endif
 
+static void
+srf_MemoryContextCallback(void* cbdp) {
+    // tells dotnet to free the IEnumerator for the SRF from its cache
+    cb_data* cbd = (cb_data*) cbdp;
+    elog(INFO, "Now freeing call %lu on function %u", cbd->call_id, cbd->functionId);
+    int res = run_user_function(cbd->functionId, cbd->call_id, CALL_SRF_CLEANUP, NULL, 0, NULL, NULL);
+    if(res != RETURN_SRF_DONE){
+        elog(WARNING, "BAD: Got result (%d) from freeing call %lu on function %u", res, cbd->functionId, cbd->call_id);
+    }
+}
+
+static Datum result_to_record(TupleDesc desc, pldotnet_Result* result)
+{
+        HeapTuple  tuple;
+        Datum      output_datum;
+
+        elog(INFO, "Returning COMPOSITE with %d members", desc->natts);
+
+	// confirm that we produced the correct kind of objects
+        for (int i = 0; i < desc->natts; i++) {
+            Form_pg_attribute attr = TupleDescAttr(desc, i);
+            if (result->oids[i] != attr->atttypid) {
+                elog(ERROR, "BAD: Pldotnet slot %d: psql OID != %d, pldotnet OID = %d", i, result->oids[i], attr->atttypid);
+                return (Datum)0;
+            } else {
+                elog(INFO, "GOOD: Pldotnet slot %d: psql OID == %d, pldotnet OID = %d", i, result->oids[i], attr->atttypid);
+            }
+        }
+
+	// create and return the Datum
+        tuple = heap_form_tuple(desc, result->values, result->nulls);
+        output_datum = heap_copy_tuple_as_datum(tuple, desc);
+        heap_freetuple(tuple);
+        return output_datum;
+}
+
+static Datum set_null_and_return_datum(const FunctionCallInfo fcinfo, pldotnet_Result* result, int offset)
+{
+        if (result->nulls[offset]) fcinfo->isnull = true;
+        return result->values[offset];
+}
+
 static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
                                                 bool is_inline,
                                                 pldotnet_Language language) {
     HeapTuple proc;
+    TupleDesc  desc;
     Form_pg_proc procst;
     pldotnet_UserFunctionDeclaration *function_decl = nullptr;
     void *arglist = nullptr;
     bool *nullmap = nullptr;
-    pldotnet_Result *output = nullptr;
-    int num_output_values = -1;
-    int i, res;
+    pldotnet_Result *output = create_result(0);
+    int num_output_values = -1, retval;
     size_t output_sz;
+    bool retset, is_trigger;
+    bool is_null = false;
+    Datum result_datum = (Datum)0;
+    int result_type = get_call_result_type(fcinfo, NULL, &desc);
 
+    // set up initial data
     proc = pldotnet_GetPostgresHeapTuple(fcinfo->flinfo->fn_oid);
+    procst = (Form_pg_proc)GETSTRUCT(proc);
+    pldotnet_ReleasePostgresHeapTuple(proc);
+
+    retset = procst->proretset;
+    is_trigger = (procst->prorettype == TRIGGEROID);
 
     function_decl = pldotnet_GetFunctionDecl(fcinfo->flinfo->fn_oid, fcinfo,
                                              proc, is_inline, false, language);
-    DUFD(function_decl);
 
-    // reminder: (num_output_values==0) means it's a normal return,
-    // so we need 1 entry.
+    // Juggle normal versus OUT/INOUT versus RECORD argument counts.
+    // Reminder: (num_output_values==0) means it's a normal return;
+    // we still need one entry in the pldotnet_Result in that case.
     num_output_values = function_decl->num_output_values;
     if(num_output_values < 0) {
-        elog(ERROR, "[pldotnet]: Got negative num_output_values");
-        return (Datum)0;
-    } else if(num_output_values == 0) {
+        ERETURN("[pldotnet]: Got negative num_output_values");
+    } else if(num_output_values == 0) { // special encoding for normal return type
         num_output_values = 1;
     }
 
-    procst = (Form_pg_proc)GETSTRUCT(proc);
+    // size pldotnet_Result properly
+    elog(INFO, "Resizing output to %d", num_output_values);
+    resize_result(output, num_output_values);
 
-    pldotnet_ReleasePostgresHeapTuple(proc);
+    // Sanity checks
+    if(retset && (function_decl->num_output_values > 0))
+        { ERETURN("SRF cannot be combined with OUT/INOUT"); }
+    if(retset && is_trigger)
+        { ERETURN("Function cannot be a trigger and return a set."); }
+    if (is_trigger)
+        { ERETURN("Triggers are not supported."); }
+    if (nullptr == function_decl || nullptr == run_user_function)
+        { ERETURN("[pldotnet]: Could not load function_decl"); }
 
-    if (nullptr == function_decl || nullptr == run_user_function){
-        elog(ERROR, "[pldotnet]: Could not load function_decl");
-        return (Datum)0;
-    }
-
+    // Build prerequisites for calling function: arglist, nullmap, output
     arglist = pldotnet_BuildArgumentList(fcinfo, procst, function_decl->num_input_args, function_decl->func_param_modes);
-    nullmap = function_decl->support_null_input
-                  ? pldotnet_BuildNullArgumentList(fcinfo, procst)
-                  : nullptr;
+    nullmap = function_decl->support_null_input ? pldotnet_BuildNullArgumentList(fcinfo, procst) : nullptr;
 
-    output_sz = sizeof(pldotnet_Result) * num_output_values;
-    output = palloc(output_sz);
-    for(i=0; i<num_output_values; i++){
-        output[i].value   = 0;
-        output[i].is_null = false;
+    // Handle Set Returning Function
+    if(retset)
+    {
+        // This function returns a set, so give it special handling here.
+        FuncCallContext* funcctx;
+
+        // only simple functions are allowed to be SRF
+        ASSERT(function_decl->num_output_values == 0);
+
+        // The first time we're called, we need to perform setup here and in dotnet
+        if (SRF_IS_FIRSTCALL())
+        {
+            cb_data* cbd;
+
+            funcctx = SRF_FIRSTCALL_INIT();
+            funcctx->user_fctx = (void*) ++global_srf_id; // This tells the UserHandler where to find the enumerator in the cache
+
+            // create and register the callback for garbage collection
+            cbd = (MemoryContextCallback*)
+                    funcctx->multi_call_memory_ctx->methods->\
+                    alloc(funcctx->multi_call_memory_ctx,
+                    sizeof(cb_data));
+
+            cbd->cb_record.arg  = cbd;
+            cbd->cb_record.func = srf_MemoryContextCallback;
+            cbd->cb_record.next = funcctx->multi_call_memory_ctx->reset_cbs;
+            cbd->functionId     = function_decl->func_oid;
+            cbd->call_id        = funcctx->user_fctx;
+
+            funcctx->multi_call_memory_ctx->reset_cbs = &(cbd->cb_record);
+
+            // call the user function with CALL_SRF_FIRST, which performs setup
+            retval = run_user_function(function_decl->func_oid,
+                            (unsigned long) funcctx->user_fctx,
+                            CALL_SRF_FIRST,
+                            arglist,
+                            function_decl->num_input_args,
+                            &nullmap[0],
+                            (void *)output);
+            if (nullmap) pfree(nullmap); // no longer needed
+            if (arglist) pfree(arglist); // no longer needed
+
+            if (retval == RETURN_SRF_DONE){ // that was fast
+                elog(WARNING, "SRF finished before it started");
+                SRF_RETURN_DONE(funcctx);
+            }
+        }
+
+        funcctx = SRF_PERCALL_SETUP();
+
+        // call the user function with CALL_SRF_NEXT to get the next value
+        retval = run_user_function(function_decl->func_oid,
+                        (unsigned long) funcctx->user_fctx,
+                        CALL_SRF_NEXT,
+                        NULL, // only needed on first call
+                        0,    // only needed on first call
+                        NULL, // only needed on first call
+                        (void *)output);
+
+        // handle RECORD versus normal
+        if (result_type == TYPEFUNC_COMPOSITE ) { // RECORD
+                is_null = false;
+                result_datum = result_to_record(desc, output);
+        } else {
+                is_null = output->nulls[0];
+                result_datum  = output->values[0];
+        }
+
+        // Do the correct kind of SRF return
+        if (retval == RETURN_SRF_NEXT){
+            if (is_null) SRF_RETURN_NEXT_NULL(funcctx);
+            SRF_RETURN_NEXT(funcctx, result_datum);
+        } else if (retval == RETURN_SRF_DONE){
+            SRF_RETURN_DONE(funcctx);
+        }
+
+        // error handler
+        elog(WARNING, "Unrecognized return value from user function: %d", retval);
+        SRF_RETURN_DONE(funcctx);
     }
 
-    DUFD(function_decl);
-
+    // Not a `retset`, so do a normal call/return
+    //
     // the user function knows from compile time how many entries are
     // in `output`, so we don't need to pass it here.
-    res = run_user_function(function_decl->func_oid, arglist, function_decl->num_input_args, &nullmap[0],
+    retval = run_user_function(function_decl->func_oid, 0, CALL_NORMAL, arglist, function_decl->num_input_args, &nullmap[0],
                             (void *)output);
+    if (nullmap) pfree(nullmap); // no longer needed
+    if (arglist) pfree(arglist); // no longer needed
 
-    DUFD(function_decl);
-
-    if (res != 0){
-        elog(ERROR, "PL.NET function \"%s\".", function_decl->func_name);
-        return (Datum)0;
+    if (retval != RETURN_NORMAL){
+        ERETURN("Unknown error(return=%d): PL.NET function \"%s\".", retval, function_decl->func_name);
     }
 
-    // pfree(arglist);
-    if (nullmap)
-        pfree(nullmap);
-
-
-    if ( (function_decl->num_output_values == 0) || (function_decl->num_output_values == 1) ) {
-        // 0: This is a normal return value
-        // 1: This is a single output-argument value
-        if (output[0].is_null)
-            fcinfo->isnull = true;
-        DUFD(function_decl);
-        return output[0].value;
-    } else if (function_decl->num_output_values > 1) {
-        // This is a RECORD return value from OUT/INOUT parameters
-        TupleDesc  desc;
-        Datum      *values;
-        bool       *nulls;
-        HeapTuple  tuple;
-        Datum      result;
-        int        i, result_type;
-
-        values = palloc(sizeof(Datum) * function_decl->num_output_values);
-        nulls  = palloc(sizeof(bool)  * function_decl->num_output_values);
-
-        // The return values are already nicely laid out in `output`;
-        // we dealt with the parameter renumbering at compile time in
-        // C#, so we don't have to worry about that here.
-        for(i=0;i<function_decl->num_output_values;i++){
-            values[i] = output[i].value;
-            nulls[i]  = output[i].is_null;
-        }
-
-        result_type = get_call_result_type(fcinfo, NULL, &desc);
-        if ( result_type != TYPEFUNC_COMPOSITE ) {
-            elog(ERROR, "Expected COMPOSITE result type for multiple INOUT/OUT arguments, but got %d", result_type);
-            return (Datum)0;
-        }
-
-        tuple = heap_form_tuple(desc, values, nulls);
-        result = heap_copy_tuple_as_datum(tuple, desc);
-
-        heap_freetuple(tuple);
-        pfree(values);
-        pfree(nulls);
-
-        DUFD(function_decl);
-
-        return result;
+    // handle RECORD versus normal
+    if ( result_type == TYPEFUNC_COMPOSITE ) { // RECORD, or (INOUT/OUT)>1
+        // this cannot be null, so no need to check
+        // (the error case does `longjmp` via `elog(ERROR, ...)`)
+        return result_to_record(desc, output);
+    } else if ( (function_decl->num_output_values == 0) || (function_decl->num_output_values == 1) ) {
+        // 0: normal return value; 1: single output-argument value
+        return set_null_and_return_datum(fcinfo, output, 0);
     }
 
-    // error
-    elog(ERROR, "Have unrecognized output values: %d", function_decl->num_output_values);
-    return 0;
-
+    // error handler
+    ERETURN("Unrecognized return value type from PL.NET function \"%s\".", function_decl->func_name);
 }
 
 static pldotnet_UserFunctionDeclaration *pldotnet_GetFunctionDecl(
@@ -632,21 +755,19 @@ static pldotnet_UserFunctionDeclaration *pldotnet_GetFunctionDecl(
     pldotnet_UserFunctionDeclaration *decl = pldotnet_FindFunctionDecl(oid);
     bool found = nullptr != decl;
 
-
     if (found && !validation)
         return decl;
-
-
     decl = pldotnet_CreateFunctionDecl();
-
-    if (!pldotnet_BuildFunctionDecl(oid, fcinfo, proc, is_inline, validation, decl,
-                               language)){
-        return nullptr;
+    if (!pldotnet_BuildFunctionDecl(oid,
+                            fcinfo,
+                            proc,
+                            is_inline,
+                            validation,
+                            decl,
+                            language)){ 
+            return nullptr; 
     }
-
-    if (!is_inline)
-        pldotnet_SaveFunction(decl, !found);
-
+    if (!is_inline) pldotnet_SaveFunction(decl, !found);
     return decl;
 }
 
@@ -753,6 +874,7 @@ static bool pldotnet_GetSourceCode(
         user_function_decl->num_input_args = args_in;
         user_function_decl->num_output_values = args_out;
         user_function_decl->func_body = pldotnet_GetFunctionBody(proc, procst);
+        user_function_decl->retset = procst->proretset;
     }
 
     return true;
@@ -861,6 +983,7 @@ static bool pldotnet_CompileUserFunction(pldotnet_UserFunctionDeclaration *decla
         (Oid)declaration->func_oid,
         (void *)declaration->func_name,
         (Oid)declaration->func_ret_type,
+        declaration->retset,
         (void *)declaration->func_param_names,
         (Oid *)declaration->func_param_types,
         (char *)declaration->func_param_modes,

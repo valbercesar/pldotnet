@@ -15,15 +15,26 @@ add_dotnet: apt_update
 
 install_dotnet_deb: add_dotnet
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y dotnet-sdk-6.0 dotnet-runtime-6.0 dotnet-hostfxr-6.0 debhelper
+	apt install -y dotnet-sdk-6.0
+	apt install -y dotnet-runtime-6.0
+	apt install -y dotnet-hostfxr-6.0
+	apt install -y debhelper
 
 install_dotnet_ubuntu: add_dotnet
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y dotnet-hostfxr-6.0=6.0.8-1 dotnet-runtime-6.0=6.0.8-1 dotnet-sdk-6.0=6.0.400-1
+	apt install -y dotnet-hostfxr-6.0=6.0.8-1
+	apt install -y dotnet-runtime-6.0=6.0.8-1
+	apt install -y dotnet-sdk-6.0=6.0.400-1
 
 install_requirements: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y wget libglib2.0-dev apt-transport-https lsb-release build-essential apt-utils pkg-config
+	apt install -y wget
+	apt install -y libglib2.0-dev
+	apt install -y apt-transport-https
+	apt install -y lsb-release
+	apt install -y build-essential
+	apt install -y apt-utils
+	apt install -y pkg-config
 
 install_pg_dev: install_requirements install_misc
 	# installs postgresql dev packages
@@ -37,12 +48,18 @@ install_pg_dev: install_requirements install_misc
 install_misc:
 	# installs miscellaneous commands for convenience
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y sudo vim cdecl strace doxygen graphviz
+	apt install -y sudo
+	apt install -y vim
+	apt install -y cdecl
+	apt install -y strace
+	apt install -y doxygen
+	apt install -y graphviz
 
 install_cluster_requirements: install_misc
 	# cluster creation requirements; locale settings
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y locales rsync
+	apt install -y locales 
+	apt install -y rsync
 	sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen
 	locale-gen
 
@@ -60,7 +77,11 @@ install_pls:
 	apt install -y postgresql-plpython3-14
 
 	echo "# Installing pljava..."
-	apt install -y default-jre-headless openjdk-11-jre-headless default-jdk maven
+	apt install -y default-jre-headless
+	apt install -y openjdk-11-jre-headless
+	apt install -y default-jdk
+	apt install -y maven
+
 	wget -q \
 		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-pljava-common_1.6.4-2.pgdg20.04+1_all.deb \
 		-O package-pljava-common.deb
@@ -78,7 +99,8 @@ install_pls:
    		-DgeneratePom=true
 
 	echo "# Installing pllua..."
-	apt install -y liblua5.3-0 postgresql-14-pllua
+	apt install -y liblua5.3-0 
+	apt install -y postgresql-14-pllua
 
 	echo "# Installing plperl..."
 	apt install -y postgresql-plperl-14
@@ -90,7 +112,12 @@ install_pls:
 	apt install -y postgresql-pltcl-14
 
 	echo "# Installing plv8"
-	apt install -y g++ python2 libc++-dev libc++abi-dev libtinfo5 ninja-build
+	apt install -y g++
+	apt install -y python2
+	apt install -y libc++-dev
+	apt install -y libc++abi-dev
+	apt install -y libtinfo5
+	apt install -y ninja-build
 	sudo ln -s -f /usr/bin/python2 /usr/bin/python
 	cd .. && wget https://github.com/plv8/plv8/archive/v3.0.0.tar.gz && tar -xvzf v3.0.0.tar.gz && cd plv8-3.0.0 && make && make install
 

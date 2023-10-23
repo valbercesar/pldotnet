@@ -13,14 +13,22 @@ namespace PlDotNET.UserSpace
     {
         // $handler_objects$
 
-        public static unsafe void CallUserFunction(List<IntPtr> arguments, IntPtr output, bool[] isnull)
+        // $srf_cache$
+
+        public static unsafe int CallUserFunction(List<IntPtr> arguments, IntPtr output, ulong call_id, int call_mode, bool[] isnull)
         {
             #line 1
-            // $create_arguments
+            // $srf_begin$
+
+            // $create_arguments$
 
             // $user_function_call$
 
+            // $srf_middle$
+
             // $call_set_result$
+
+            // $srf_end$
         }
     }
 }

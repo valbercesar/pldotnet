@@ -1,8 +1,8 @@
 # Makefile for PL/.NET
 
-SED=sed
 UNAME = $(shell uname)
-DBUSER=postgres
+SED ?= sed
+DBUSER ?= postgres
 
 # General
 # Get installed dotnet host host

@@ -26,6 +26,7 @@
 #include <utils/fmgrprotos.h>
 #include <utils/syscache.h>
 #include <utils/memutils.h>
+#include <assert.h>
 
 #include "pldotnet_hostfxr.h"
 
@@ -62,6 +63,20 @@ extern char *dnldir;
 
 typedef enum pldotnet_Language { csharp, fsharp } pldotnet_Language;
 
+typedef enum {
+  CALL_NORMAL = 1,      // Normal, non-SRF function
+  CALL_SRF_FIRST = 2,   // First call to an SRF; create and cache
+  CALL_SRF_NEXT = 3,    // Next call to an SRF
+  CALL_SRF_CLEANUP = 4  // SRF is done; you may remove it from the cache
+} CallType;
+
+typedef enum {
+  RETURN_ERROR = 0,     // We encountered an error
+  RETURN_NORMAL = 1,    // Normal return to CALL_NORMAL
+  RETURN_SRF_NEXT = 2,  // SRF return to CALL_SRF_NEXT
+  RETURN_SRF_DONE = 3   // We have no more values
+} ReturnMode;
+
 typedef struct MemoryContextWrapper {
     MemoryContext prev;
     MemoryContext curr;
@@ -74,8 +89,10 @@ typedef struct pldotnet_PathConfig {
 } pldotnet_PathConfig;
 
 typedef struct pldotnet_Result {
-    Datum value;
-    bool is_null;
+    size_t length;
+    Datum  *values;
+    bool   *nulls;
+    Oid    *oids;
 } pldotnet_Result;
 
 typedef struct pldotnet_UserFunctionDeclaration {
@@ -91,13 +108,20 @@ typedef struct pldotnet_UserFunctionDeclaration {
     const char *func_body;
     Oid func_oid;
     bool support_null_input;
+    bool retset;
 } pldotnet_UserFunctionDeclaration;
+
+typedef struct cb_data { // old-school C inheritance here
+        MemoryContextCallback cb_record;
+        uint32_t functionId;
+        uint64_t call_id;
+} cb_data;
 
 /**
  * An experiment to try to work around memory corruption, as C# might be
  * stepping on a data structure.
  */
-void pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value, bool is_null);
+void pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value, bool is_null, Oid oid);
 
 /**
  * @brief The call_handler will be called to execute the procedural
