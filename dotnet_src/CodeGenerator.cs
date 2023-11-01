@@ -330,7 +330,8 @@ namespace PlDotNET
 
             if (this.Language == DotNETLanguage.FSharp)
             {
-                throw new SystemException("Internal error: F# requested from C# engine");
+                /// Returns an empty string because the UserFunction code is being created along with the UserHandler code
+                return string.Empty;
             }
 
             if (!File.Exists(this.UserFunctionTemplatePath))
@@ -832,7 +833,7 @@ namespace PlDotNET
 
                 string makeDatum = $"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.{outputHandler}(result)";
                 sb.AppendLine(makeDatum);
-                string setDatum = $"OutputResult.SetDatumResult(resultDatum, {isnull}, output, 0, {returnTypeId})";
+                string setDatum = $"OutputResult.SetDatumResult(resultDatum, {isnull}, output, 0, uint32 {returnTypeId})";
                 sb.AppendLine(setDatum);
                 return "// Create PostgreSQL datum\n" + IndentCode(sb.ToString(), 8);
             }
@@ -849,7 +850,7 @@ namespace PlDotNET
                     string isnull = ClassTypes.Contains(returnType) ? $"Object.ReferenceEquals(output_{i}, null)" : $"not output_{i}.HasValue";
 
                     sb.AppendLine($"let resultDatum_{output_num} = {outputTypeHandler}Obj.{outputHandlerMethod}(output_{i})");
-                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{output_num}, {isnull}, output, {output_num}, {(int)paramTypes[i]})");
+                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{output_num}, {isnull}, output, {output_num}, uint32 {(int)paramTypes[i]})");
 
                     output_num++;
                 }

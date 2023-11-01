@@ -58,7 +58,7 @@ install_misc:
 install_cluster_requirements: install_misc
 	# cluster creation requirements; locale settings
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y locales 
+	apt install -y locales
 	apt install -y rsync
 	sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen
 	locale-gen
@@ -76,30 +76,30 @@ install_pls:
 	echo "# Installing plpython..."
 	apt install -y postgresql-plpython3-14
 
-	echo "# Installing pljava..."
-	apt install -y default-jre-headless
-	apt install -y openjdk-11-jre-headless
-	apt install -y default-jdk
-	apt install -y maven
+	# echo "# Installing pljava..."
+	# apt install -y default-jre-headless
+	# apt install -y openjdk-11-jre-headless
+	# apt install -y default-jdk
+	# apt install -y maven
 
-	wget -q \
-		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-pljava-common_1.6.4-2.pgdg20.04+1_all.deb \
-		-O package-pljava-common.deb
-	dpkg -i package-pljava-common.deb
-	wget -q \
-		http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-14-pljava_1.6.4-2.pgdg20.04+1_amd64.deb \
-		-O package-pljava-14.deb
-	dpkg -i package-pljava-14.deb
-	mvn install:install-file \
-   		-Dfile=/usr/share/postgresql/14/pljava/pljava-api-1.6.4.jar \
-   		-DgroupId=org.postgresql \
-   		-DartifactId=pljava-api \
-   		-Dversion=1.6.4 \
-   		-Dpackaging=jar \
-   		-DgeneratePom=true
+	# wget -q \
+	# 	http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-pljava-common_1.6.4-2.pgdg20.04+1_all.deb \
+	# 	-O package-pljava-common.deb
+	# dpkg -i package-pljava-common.deb
+	# wget -q \
+	# 	http://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-pljava/postgresql-14-pljava_1.6.4-2.pgdg20.04+1_amd64.deb \
+	# 	-O package-pljava-14.deb
+	# dpkg -i package-pljava-14.deb
+	# mvn install:install-file \
+   	# 	-Dfile=/usr/share/postgresql/14/pljava/pljava-api-1.6.4.jar \
+   	# 	-DgroupId=org.postgresql \
+   	# 	-DartifactId=pljava-api \
+   	# 	-Dversion=1.6.4 \
+   	# 	-Dpackaging=jar \
+   	# 	-DgeneratePom=true
 
 	echo "# Installing pllua..."
-	apt install -y liblua5.3-0 
+	apt install -y liblua5.3-0
 	apt install -y postgresql-14-pllua
 
 	echo "# Installing plperl..."

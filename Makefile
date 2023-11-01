@@ -137,7 +137,7 @@ pre-tests-script:
 	dotnet build $(CURRENT_DIR)/tests/fsharp/DotNetTestProject -c Release
 	rm -rf automated_test_results
 	mkdir -p automated_test_results
-	echo 'DROP TABLE IF EXISTS automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER)  psql)
+	echo 'DROP TABLE IF EXISTS automated_test_results;CREATE TABLE automated_test_results(ID SERIAL PRIMARY KEY, FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER)  psql)
 
 post-tests-script:
 	cd $(CURRENT_DIR)/tests/csharp/DotNetTestProject/ && rm -rf bin obj
@@ -146,68 +146,29 @@ post-tests-script:
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/automated_test_results.out
 	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (sudo -u $(DBUSER)  psql)
 
-csharp-tests-cats:
-	cat tests/csharp/testbit.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testbit.out
-	cat tests/csharp/testbool.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testbool.out
-	cat tests/csharp/testbytea.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testbytea.out
-	cat tests/csharp/testdatetime.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testdatetime.out
-	cat tests/csharp/testdll.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testdll.out
-	cat tests/csharp/testfloats.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfloats.out
-	cat tests/csharp/testgeometric.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testgeometric.out
-	cat tests/csharp/testintegers.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testintegers.out
-	cat tests/csharp/testjson.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testjson.out
-	cat tests/csharp/testmoney.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testmoney.out
-	cat tests/csharp/testnetwork.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testnetwork.out
-	cat tests/csharp/testrange.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testrange.out
-	cat tests/csharp/teststring.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/teststring.out
-	cat tests/csharp/testuuid.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testuuid.out
-	cat tests/csharp/testdo.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testdo.out
-	cat tests/csharp/testprocedure.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testprocedure.out
-	cat tests/csharp/testcreate.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testcreate.out
-	cat tests/csharp/testcall.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testcall.out
-	cat tests/csharp/testinout.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testinout.out
 
-fsharp-tests-cats:
-	cat tests/fsharp/testfsbit.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsbit.out
-	cat tests/fsharp/testfsbool.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsbool.out
-	cat tests/fsharp/testfsbytea.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsbytea.out
-	cat tests/fsharp/testfsdate.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdate.out
-	cat tests/fsharp/testfsdatetime.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdatetime.out
-	cat tests/fsharp/testfsdo.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdo.out
-	cat tests/fsharp/testfsprocedure.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsprocedure.out
-	cat tests/fsharp/testfsdll.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsdll.out
-	cat tests/fsharp/testfsfloats.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsfloats.out
-	cat tests/fsharp/testfsgeometric.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsgeometric.out
-	cat tests/fsharp/testfsintegers.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsintegers.out
-	cat tests/fsharp/testfsjson.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsjson.out
-	cat tests/fsharp/testfsnetwork.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsnetwork.out
-	cat tests/fsharp/testfsrange.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsrange.out
-	cat tests/fsharp/testfsstring.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsstring.out
-	cat tests/fsharp/testfsuuid.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsuuid.out
-	cat tests/fsharp/testfscreate.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfscreate.out
-	cat tests/fsharp/testfscall.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfscall.out
-	cat tests/fsharp/testfsinout.sql | (sudo -u $(DBUSER)  psql 2>&1) | tee automated_test_results/testfsinout.out
+# xUnit test directory
+XUNIT_TEST_DIR := $(CURRENT_DIR)/tests/xUnit
+# Command to run xUnit tests
+RUN_XUNIT_TESTS = cd $(XUNIT_TEST_DIR) && dotnet test
 
 pldotnet-tests:
 	make pre-tests-script
-	make fsharp-tests-cats
-	make csharp-tests-cats
-	make post-tests-script
+	$(RUN_XUNIT_TESTS)
 
 csharp-tests:
 	make pre-tests-script
-	make csharp-tests-cats
-	make post-tests-script
+	$(RUN_XUNIT_TESTS) --filter Language=CSharp
 
 fsharp-tests:
 	make pre-tests-script
-	make fsharp-tests-cats
-	make post-tests-script
+	$(RUN_XUNIT_TESTS) --filter Language=FSharp
+
 
 stress-test:
 	rm -rf automated_test_results
 	mkdir -p automated_test_results
-	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER) psql)
+	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(ID SERIAL PRIMARY KEY, FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER) psql)
 	sudo bash tests/stress_test/stress_test.sh
 
 benchmark-tests:

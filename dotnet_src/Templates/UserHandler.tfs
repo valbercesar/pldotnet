@@ -18,8 +18,10 @@ open PlDotNET
 type UserFunction() =
     // $user_function_declaration$
 type UserHandler() =
-    static member CallUserFunction (arguments: List<IntPtr>, output: IntPtr, isnull: bool[]) =
+    static member CallUserFunction(arguments: List<IntPtr>, output: IntPtr, call_id: uint64, call_mode: int, isnull: bool[]) : int =
         // $handler_objects$
-        // $create_arguments
+        // $create_arguments$
         // $user_function_call$
         // $call_set_result$
+        // Currently, F# doesn't support SRF, so always return ReturnMode.Normal
+        1

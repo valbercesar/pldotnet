@@ -562,10 +562,6 @@ namespace PlDotNET
                         throw new SystemException("PL.NET could not compile the generated C# code.");
                     }
                 }
-                else
-                {
-                    throw new SystemException("Cannot handle MemoryStream for F#");
-                }
             }
             else
             {
