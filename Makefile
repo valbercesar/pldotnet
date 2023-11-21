@@ -50,7 +50,7 @@ MODULE_big = pldotnet
 EXTENSION = pldotnet
 DATA = pldotnet--0.9.sql
 
-OBJS = src/pldotnet_hostfxr.o src/pldotnet.o src/pldotnet_conversions.o src/pldotnet_main.o
+OBJS = src/pldotnet_hostfxr.o src/pldotnet.o src/pldotnet_conversions.o src/pldotnet_main.o src/pldotnet_spi.o
 
 PG_CPPFLAGS = -I$(DOTNET_HOSTDIR) -I$(PG_INCDIR) $(GLIB_INC) \
 			  -Iinc -DLINUX $(DEFINE_DOTNET_BUILD) $(PLDOTNET_ENGINE_DIR) \
@@ -77,9 +77,10 @@ endif
 
 pldotnet-install: pldotnet-uninstall install
 	$(CP_CHOWN)
-	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/Engine.cs
+	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/*.cs
+	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/Common/*.cs
 	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/TypeHandlers/*.cs
-	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/FSharp/FSharpCompiler.fs
+	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/npgsql/src/Npgsql/PlDotNET/*.cs
 	$(SED) -i 's/@PLDOTNET_TEMPLATE_DIR/$(shell echo $(PLDOTNET_TEMPLATE_DIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/CodeGenerator.cs
 	$(BUILD_PLDOTNET_PROJECT)
 
@@ -98,6 +99,7 @@ pldotnet-install-dpkg:
 	rm -rf ../postgresql-*-pldotnet_*.deb
 
 cpplint:
+	apt install cpplint
 	cpplint --filter=-readability/casting,-build/include_subdir,-runtime/int,-runtime/printf,-build/header_guard src/*.c src/*.h
 
 documentation:
@@ -164,6 +166,33 @@ fsharp-tests:
 	make pre-tests-script
 	$(RUN_XUNIT_TESTS) --filter Language=FSharp
 
+csharp-tests-cats:
+	for sqlfile in tests/csharp/*.sql; do \
+		echo "Running $$sqlfile"; \
+		cat $$sqlfile | (sudo -u postgres psql 2>&1) | tee automated_test_results/`basename $$sqlfile .sql`.out; \
+	done
+
+fsharp-tests-cats:
+	for sqlfile in tests/fsharp/*.sql; do \
+		echo "Running $$sqlfile"; \
+		cat $$sqlfile | (sudo -u postgres psql 2>&1) | tee automated_test_results/`basename $$sqlfile .sql`.out; \
+	done
+
+pldotnet-tests-sql:
+	make pre-tests-script
+	make csharp-tests-cats
+	make fsharp-tests-cats
+	make post-tests-script
+
+csharp-tests-sql:
+	make pre-tests-script
+	make csharp-tests-cats
+	make post-tests-script
+
+fsharp-tests:
+	make pre-tests-script
+	make fsharp-tests-cats
+	make post-tests-script
 
 stress-test:
 	rm -rf automated_test_results
@@ -183,4 +212,17 @@ benchmark-tests:
 	cd $(CURRENT_DIR)/tests/benchmark/java/test-suite && mvn install && cd $(CURRENT_DIR)/
 	echo "select sqlj.install_jar('file:$(CURRENT_DIR)/tests/benchmark/java/test-suite/target/test-suite-1.0.0.jar', 'testsuite', true);" | (sudo -u $(DBUSER) psql)
 	echo "select sqlj.set_classpath('public', 'testsuite');" | (sudo -u $(DBUSER) psql)
-	bash tests/benchmark/benchmark.sh $(NRUNS)
+	bash tests/benchmark/benchmark.sh
+
+spi-tests:
+	make pre-tests-script
+	cat tests/csharp/testspi.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testspi.out
+	make post-tests-script
+
+npgsql-tests:
+	bash tests/npgsql/run_tests.sh
+	python3 tests/npgsql/process_npgsql_results.py
+
+npgsql-working-tests:
+	bash tests/npgsql/run_working_tests.sh
+	python3 tests/npgsql/process_npgsql_results.py

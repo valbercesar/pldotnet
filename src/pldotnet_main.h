@@ -29,10 +29,10 @@
 #include <assert.h>
 
 #include "pldotnet_hostfxr.h"
+#include "pldotnet_spi.h"
 
 #define QUOTE(name) #name
 #define STR(macro) QUOTE(macro)
-#define nullptr ((void *)0)
 
 extern PGDLLIMPORT bool check_function_bodies;
 
@@ -229,5 +229,26 @@ bool pldotnet_SetDotNetMethods(void);
  * @param message The message that will be reported.
  */
 extern void pldotnet_Elog(int level, char *message);
+
+/**
+ * @brief Returns the PostgreSQL version.
+ *
+ * @return char* the PostgreSQL version like "14.7"
+ */
+extern char *pldotnet_GetPostgreSqlVersion(void);
+
+/**
+ * @brief Creates a new memory context.
+ *
+ * @param config
+ */
+void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config);
+
+/**
+ * @brief Reverts the created memory context.
+ *
+ * @param config
+ */
+void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
 
 #endif  // PLDOTNET_MAIN_H_

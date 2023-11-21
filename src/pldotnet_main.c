@@ -318,20 +318,6 @@ static pldotnet_UserFunctionDeclaration *pldotnet_CreateFunctionDecl(void);
 static pldotnet_UserFunctionDeclaration *pldotnet_FindFunctionDecl(
     int function_id);
 
-/**
- * @brief Creates a new memory context.
- *
- * @param config
- */
-static void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config);
-
-/**
- * @brief Reverts the created memory context.
- *
- * @param config
- */
-static void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
-
 /*
  * START: implementing functions
  */
@@ -471,6 +457,15 @@ static Datum pldotnet_generic_handler(FunctionCallInfo fcinfo, bool is_inline,
     MemoryContextWrapper memory_context;
     Datum retval = 0;
 
+    bool nonatomic = fcinfo->context &&
+                     IsA(fcinfo->context, CallContext) &&
+                     !castNode(CallContext, fcinfo->context)->atomic;
+
+    /// Transactions don't work when using SPI_connect()
+    /// So we replicated plpython implementation
+    if (SPI_connect_ext(nonatomic ? SPI_OPT_NONATOMIC : 0) != SPI_OK_CONNECT)
+        elog(ERROR, "SPI_connect failed");
+
     PG_TRY();
     {
         /* START NEW MEM CONTEXT */
@@ -486,6 +481,9 @@ static Datum pldotnet_generic_handler(FunctionCallInfo fcinfo, bool is_inline,
     { PG_RE_THROW(); }
 
     PG_END_TRY();
+
+    if (SPI_finish() != SPI_OK_FINISH)
+        elog(ERROR, "SPI_finish failed");
 
     return retval;
 }
@@ -764,8 +762,8 @@ static pldotnet_UserFunctionDeclaration *pldotnet_GetFunctionDecl(
                             is_inline,
                             validation,
                             decl,
-                            language)){ 
-            return nullptr; 
+                            language)){
+            return nullptr;
     }
     if (!is_inline) pldotnet_SaveFunction(decl, !found);
     return decl;
@@ -951,7 +949,7 @@ pldotnet_UserFunctionDeclaration *pldotnet_FindFunctionDecl(int function_id) {
     return nullptr;
 }
 
-static void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config) {
+void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config) {
     config->prev = CurrentMemoryContext;
     config->curr = AllocSetContextCreate(
         TopMemoryContext, "PL/NET func_exec_ctx", ALLOCSET_SMALL_SIZES);
@@ -962,7 +960,7 @@ static void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config) {
     MemoryContextSwitchTo(config->curr);
 }
 
-static void pldotnet_ResetMemoryContext(MemoryContextWrapper *config) {
+void pldotnet_ResetMemoryContext(MemoryContextWrapper *config) {
     if (nullptr == config)
         return;
 
@@ -1087,6 +1085,10 @@ static inline bool pldotnet_CheckNullArgument(FunctionCallInfo fcinfo,
 #else
     return fcinfo->argnull[index];
 #endif
+}
+
+char *pldotnet_GetPostgreSqlVersion() {
+    return PACKAGE_VERSION;
 }
 
 /*

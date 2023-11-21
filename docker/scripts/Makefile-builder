@@ -121,6 +121,10 @@ install_pls:
 	sudo ln -s -f /usr/bin/python2 /usr/bin/python
 	cd .. && wget https://github.com/plv8/plv8/archive/v3.0.0.tar.gz && tar -xvzf v3.0.0.tar.gz && cd plv8-3.0.0 && make && make install
 
+install_python_packages:
+	apt install -y python3-pip
+	pip3 install pandas psycopg2 tabulate
+
 # these targets correspond to the original Dockerfiles which this Makefile replaces
 deb_build: install_pg_dev install_dotnet_deb
-ubuntu22_install: install_pg_dev install_dotnet_ubuntu install_pls
+ubuntu22_install: install_pg_dev install_dotnet_ubuntu install_pls install_python_packages

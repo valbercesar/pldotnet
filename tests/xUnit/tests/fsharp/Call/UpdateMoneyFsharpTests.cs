@@ -11,7 +11,7 @@ public class UpdateMoneyFSharpTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
     let flatten_floats = Array.CreateInstance(typeof<decimal>, values_array.Length)
-    ArrayHandler.FlatArray(values_array, ref flatten_floats) |> ignore
+    ArrayManipulation.FlatArray(values_array, ref flatten_floats) |> ignore
     flatten_floats.SetValue(desired, index)
     flatten_floats
     ";

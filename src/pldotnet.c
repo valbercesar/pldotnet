@@ -15,6 +15,7 @@
 
 #include "pldotnet_conversions.h"
 #include "pldotnet_main.h"
+#include "pldotnet_spi.h"
 
 #define DIR_SEPARATOR '/'
 

@@ -12,8 +12,8 @@ open System.Runtime.InteropServices
 open System.Text
 open System.Text.Unicode
 open NpgsqlTypes
+open PlDotNET.Common
 open PlDotNET.Handler
-open PlDotNET
 
 type UserFunction() =
     // $user_function_declaration$

@@ -26,22 +26,15 @@ open System.Reflection
 open System.Runtime.InteropServices
 open System.Runtime.Loader
 open System.Text
-
 open FSharp.Compiler.CodeAnalysis
 open FSharp.Compiler.Text
 open FSharp.Compiler.IO
+open PlDotNET.Common
 
 /// <summary>
 /// The FSharpCompiler type provides methods for compiling F# source code.
 /// </summary>
 type FSharpCompiler() =
-
-    /// <summary>
-    /// C function declared in pldotnet_main.h.
-    /// See ::pldotnet_Elog().
-    /// </summary>
-    [<DllImport("@PKG_LIBDIR/pldotnet.so", CallingConvention=CallingConvention.Cdecl)>]
-    static extern void pldotnet_Elog(int level, string nessage)
 
     /// <summary>
     /// The F# checker used for compiling F# source code.
@@ -91,7 +84,7 @@ type FSharpCompiler() =
             sb.AppendLine($"Here are the compilation results:") |> ignore
             for e in errors do
                 sb.AppendLine(e.ToString()) |> ignore
-            pldotnet_Elog(19, sb.ToString())
+            Elog.Warning(sb.ToString())
             failwith "PL.NET could not compile the generated F# code."
             null
 

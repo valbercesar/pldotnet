@@ -11,15 +11,15 @@ public class IncreaseInT4RangesTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-ArrayHandler.FlatArray(values_array, ref flatten_values);
+ArrayManipulation.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
-{   
+{
     if (flatten_values.GetValue(i) == null)
         continue;
 
     NpgsqlRange<int> orig_value = (NpgsqlRange<int>)flatten_values.GetValue(i);
     NpgsqlRange<int> new_value = new NpgsqlRange<int>(orig_value.LowerBound + 1, orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound + 1, orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
-    
+
     flatten_values.SetValue((NpgsqlRange<int>)new_value, i);
 }
 return flatten_values;
@@ -33,7 +33,7 @@ return flatten_values;
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INT4RANGE[]") },
             ReturnType = "INT4RANGE[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

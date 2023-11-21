@@ -11,15 +11,15 @@ public class IncreaseTimeStampsTzTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-ArrayHandler.FlatArray(values_array, ref flatten_values);
+ArrayManipulation.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
-{   
+{
     if (flatten_values.GetValue(i) == null)
         continue;
 
     DateTime orig_value = (DateTime)flatten_values.GetValue(i);
     DateTime new_value = orig_value.AddDays((double)days_to_add);
-    
+
     flatten_values.SetValue((DateTime)new_value, i);
 }
 return flatten_values;
@@ -33,7 +33,7 @@ return flatten_values;
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array TIMESTAMP WITH TIME", "ZONE[]"), new FunctionArgument("days_to_add", "INT") },
             ReturnType = "TIMESTAMP WITH TIME ZONE[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

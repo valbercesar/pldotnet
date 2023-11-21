@@ -71,8 +71,12 @@ dkms.conf
 # ouput from dotnet engine
 dotnet_src/obj/
 dotnet_src/bin/
+dotnet_src/Common/obj/*
+dotnet_src/Common/bin/*
 dotnet_src/FSharp/obj/
 dotnet_src/FSharp/bin/
+dotnet_src/TypeHandlers/obj/
+dotnet_src/TypeHandlers/bin/
 
 # cache extensions
 *.cache
@@ -116,3 +120,7 @@ docs/_minted*
 docs/pldotnet-whitepaper-dec22.*
 !docs/pldotnet-whitepaper-dec22.tex
 .venv.created
+
+tests/npgsql/bin/
+tests/npgsql/obj/
+tests/npgsql/sql/

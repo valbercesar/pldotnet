@@ -11,10 +11,10 @@ public class SumIntegerArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_integers = Array.CreateInstance(typeof(object), integers.Length);
-ArrayHandler.FlatArray(integers, ref flatten_integers);
+ArrayManipulation.FlatArray(integers, ref flatten_integers);
 int integers_sum = 0;
 for(int i = 0; i < flatten_integers.Length; i++)
-{   
+{
     if (flatten_integers.GetValue(i) == null)
         continue;
     integers_sum = integers_sum + (int)flatten_integers.GetValue(i);
@@ -30,7 +30,7 @@ return integers_sum;
             Arguments = new List<FunctionArgument> { new FunctionArgument("integers", "integer[]") },
             ReturnType = "integer",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

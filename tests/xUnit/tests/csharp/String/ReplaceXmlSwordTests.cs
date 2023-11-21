@@ -11,7 +11,7 @@ public class ReplaceXmlSwordTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-ArrayHandler.FlatArray(values_array, ref flatten_values);
+ArrayManipulation.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {
     if (flatten_values.GetValue(i) == null)
@@ -33,7 +33,7 @@ return flatten_values;
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "XML[]") },
             ReturnType = "XML[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }
@@ -42,12 +42,12 @@ return flatten_values;
     {
         return new object[][]
         {
-            new object[] 
-            { 
-                "c#-xml-null-1array", 
-                "ReplaceXMLsWord1", 
-                "ARRAY['Hello Mikael'::XML, 'Hello Rosicley'::XML, null::XML, 'Hello Todd'::XML]", 
-                "= ARRAY['Goodbye Mikael'::XML, 'Goodbye Rosicley'::XML, null::XML, 'Goodbye Todd'::XML]::TEXT" 
+            new object[]
+            {
+                "c#-xml-null-1array",
+                "ReplaceXMLsWord1",
+                "ARRAY['Hello Mikael'::XML, 'Hello Rosicley'::XML, null::XML, 'Hello Todd'::XML]",
+                "= ARRAY['Goodbye Mikael'::XML, 'Goodbye Rosicley'::XML, null::XML, 'Goodbye Todd'::XML]::TEXT"
             }
         };
     }

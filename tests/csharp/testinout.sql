@@ -166,7 +166,7 @@ SELECT 'c#-inout-multiarg-4', 'inout_multiarg_4', inout_multiarg_4(0, 1, 2, 5, 6
 
 CREATE OR REPLACE FUNCTION inout_array_10(INOUT values_array MACADDR[], OUT nulls INT) AS $$
     Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-    ArrayHandler.FlatArray(values_array, ref flatten_values);
+    ArrayManipulation.FlatArray(values_array, ref flatten_values);
     nulls = 0;
     for(int i = 0; i < flatten_values.Length; i++)
     {
@@ -211,7 +211,7 @@ CREATE OR REPLACE FUNCTION inout_array_11(OUT values_array MACADDR[], IN address
     values_array = output;
 $$ LANGUAGE plcsharp STRICT;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-inout-array-11', 'inout_array_11', inout_array_11(MACADDR '08-00-2b-01-02-03', 3) = 
+SELECT 'c#-inout-array-11', 'inout_array_11', inout_array_11(MACADDR '08-00-2b-01-02-03', 3) =
         ARRAY[
             MACADDR '08-00-2b-01-02-03',
             MACADDR '08-00-2b-01-02-03',

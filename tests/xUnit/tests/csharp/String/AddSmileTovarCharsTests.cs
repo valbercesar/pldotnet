@@ -11,7 +11,7 @@ public class AddSmileTovarCharsTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-ArrayHandler.FlatArray(values_array, ref flatten_values);
+ArrayManipulation.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
 {
     if (flatten_values.GetValue(i) == null)
@@ -33,7 +33,7 @@ return flatten_values;
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "VARCHAR[]") },
             ReturnType = "VARCHAR[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

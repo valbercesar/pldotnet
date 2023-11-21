@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using PlDotNET.Common;
 using PlDotNET.Handler;
 
 // # BuildUserFunctionSourceCode
@@ -83,12 +84,12 @@ namespace PlDotNET
 
             if ((OID)outputType != OID.VOIDOID)
             {
-                allHandlers.Add(Engine.GetTypeHandler(outputType));
+                allHandlers.Add(DatumConversion.GetTypeHandlerName(outputType));
             }
 
             for (int i = 0; i < inputTypes.Length; i++)
             {
-                allHandlers.Add(Engine.GetTypeHandler(inputTypes[i]));
+                allHandlers.Add(DatumConversion.GetTypeHandlerName(inputTypes[i]));
             }
 
             return allHandlers.Distinct().ToList();
@@ -209,7 +210,7 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Creates the opening for SRF handling, or else a small comment if not SRF
+        /// Creates the opening for SRF handling, or else a small comment if not SRF.
         /// </summary>
         /// <remarks>
         /// Generated SRF-handling code:
@@ -233,11 +234,11 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Creates the middle of the SRF handling, or else a small comment if not SRF
+        /// Creates the middle of the SRF handling, or else a small comment if not SRF.
         /// </summary>
         /// <remarks>
         /// 1. we end the SRF_FIRST handling
-        /// 2. we open the SRF_NEXT handling
+        /// 2. we open the SRF_NEXT handling.
         /// </remarks>
         /// <returns>
         /// Returns the generated source code.
@@ -271,13 +272,13 @@ namespace PlDotNET
         }
 
         /// <summary>
-        /// Creates the end of the SRF handling, or else a small comment if not SRF
+        /// Creates the end of the SRF handling, or else a small comment if not SRF.
         /// </summary>
         /// <remarks>
         /// 1. we return mode SrfNext
         /// 2. we close the SRF_NEXT handling
         /// 3. we handle CALL_SRF_CLEANUP
-        /// 4. we error on all other cases
+        /// 4. we error on all other cases.
         /// </remarks>
         /// <returns>
         /// Returns the generated source code.
@@ -286,7 +287,7 @@ namespace PlDotNET
         {
             if (retset)
             {
-                    return @"
+                return @"
                                     return (int)ReturnMode.SrfNext;
                                 } else if(call_mode == (int)CallMode.SrfCleanup){
                                     Elog.Info($""Removing call_id {call_id} from cache"");
@@ -330,7 +331,7 @@ namespace PlDotNET
 
             if (this.Language == DotNETLanguage.FSharp)
             {
-                /// Returns an empty string because the UserFunction code is being created along with the UserHandler code
+                // Returns an empty string because the UserFunction code is being created along with the UserHandler code
                 return string.Empty;
             }
 
@@ -354,7 +355,7 @@ namespace PlDotNET
 
         public string GetReturnType(uint returnTypeId, bool retset, byte[] paramModes, bool supportNullInput)
         {
-            string returnType = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
+            string returnType = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
             bool has_output_var = paramModes.Intersect(this.OutputModes).Any();
             if (has_output_var)
             {
@@ -470,10 +471,10 @@ namespace PlDotNET
 
                 if (this.InputModes.Contains(paramModes[i]))
                 {
-                    string handler = Engine.GetTypeHandler(paramTypes[i]);
+                    string handler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
                     string null_input = supportNullInput ? $", isnull[{i - skips}]" : string.Empty;
 
-                    string inputMethod = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ?
+                    string inputMethod = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ?
                         (supportNullInput ? "InputNullableArray" : "InputArray") :
                         (supportNullInput ? "InputNullableValue" : "InputValue");
                     sb.AppendLine($"{argType} argument_{i} = {handler}Obj.{inputMethod}(arguments[{i - skips}]{null_input});");
@@ -550,8 +551,8 @@ namespace PlDotNET
             if (num_output_values == 0)
             {
                 sb.AppendLine($"// Handling normal function return (no INOUT/OUT arguments)");
-                string output_handler = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
-                sb.AppendLine($"IntPtr resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.{output_handler}(result);");
+                string output_handler = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
+                sb.AppendLine($"IntPtr resultDatum = {DatumConversion.GetTypeHandlerName(returnTypeId)}Obj.{output_handler}(result);");
                 sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, result == null, output, 0, {returnTypeId});");
             }
             else if (num_output_values == 1)
@@ -559,7 +560,7 @@ namespace PlDotNET
                 // find the 1 output value and return it
                 int output_parameter_offset = Enumerable.Range(0, paramModes.Length).FirstOrDefault(i => this.OutputModes.Contains(paramModes[i]), -1);
                 var outResultName = $"argument_{output_parameter_offset}";
-                string oututHandler = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
+                string oututHandler = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
 
                 if (output_parameter_offset == -1)
                 {
@@ -567,7 +568,7 @@ namespace PlDotNET
                 }
 
                 sb.AppendLine($"// Handling single OUT return value `{outResultName}`, in slot {output_parameter_offset}");
-                sb.AppendLine($"IntPtr resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.{oututHandler}({outResultName});");
+                sb.AppendLine($"IntPtr resultDatum = {DatumConversion.GetTypeHandlerName(returnTypeId)}Obj.{oututHandler}({outResultName});");
                 sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, {outResultName} == null, output, 0, {returnTypeId});");
             }
             else if (num_output_values > 1)
@@ -584,9 +585,9 @@ namespace PlDotNET
                         continue;
                     }
 
-                    string handler = Engine.GetTypeHandler(paramTypes[i]);
+                    string handler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
                     var outResultName = $"argument_{i}";
-                    var outputHandler = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
+                    var outputHandler = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
                     sb.AppendLine($"// Adding output-mode ({((char)paramModes[i]).ToString()}) argument {i} for oid {returnTypeId}");
                     sb.AppendLine($"IntPtr resultDatum_{i} = {handler}Obj.{outputHandler}({outResultName});");
                     sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{i}, argument_{i} == null, output, {i - skips}, {(int)paramTypes[i]});");
@@ -641,7 +642,7 @@ namespace PlDotNET
         /// <inheritdoc />
         public override string[] GetDotNetTypes(uint[] paramTypes, byte[] paramModes)
         {
-            return paramTypes.Select(t => Engine.HandleArray.ContainsKey((OID)t) ? "Array" : Engine.OidTypes[(OID)t]).ToArray();
+            return paramTypes.Select(t => DatumConversion.ArrayTypes.ContainsKey((OID)t) ? "Array" : DatumConversion.SupportedTypesStr[(OID)t]).ToArray();
         }
 
         /// <inheritdoc />
@@ -732,14 +733,14 @@ namespace PlDotNET
                 // Because F# is a functional language, it does not support INOUT or OUT arguments like C# does.
                 // Instead, IN and INOUT are treated as normal arguments, and INOUT and OUT get `output_{i}` variables
                 // to receive their return values.
-                string handler = Engine.GetTypeHandler(paramTypes[i]);
+                string handler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
                 string argType = (this.OutputModes.Contains(paramModes[i]) || supportNullInput) ? $"{dotNetTypes[i]}?" : dotNetTypes[i];
 
                 if (this.InputModes.Contains(paramModes[i]))
                 {
-                    string handlerName = Engine.GetTypeHandler(paramTypes[i]);
+                    string handlerName = DatumConversion.GetTypeHandlerName(paramTypes[i]);
                     string null_input = supportNullInput ? $", isnull[{i - skips}]" : string.Empty;
-                    string inputMethod = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ?
+                    string inputMethod = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ?
                         (supportNullInput ? "InputNullableArray" : "InputArray") :
                         (supportNullInput ? "InputNullableValue" : "InputValue");
                     sb.AppendLine($"let argument_{i} = {handler}Obj.{inputMethod}(arguments[{i - skips}]{null_input});");
@@ -825,13 +826,13 @@ namespace PlDotNET
             if (num_output_values == 0)
             {
                 // use "result"
-                string type = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
+                string type = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
                 string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
-                string outputHandler = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
+                string outputHandler = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
                 string isnull = ClassTypes.Contains(returnType) ? "Object.ReferenceEquals(result, null)" : "not result.HasValue";
                 sb.AppendLine($"// Handling normal function return (no INOUT/OUT arguments)");
 
-                string makeDatum = $"let resultDatum = {Engine.GetTypeHandler(returnTypeId)}Obj.{outputHandler}(result)";
+                string makeDatum = $"let resultDatum = {DatumConversion.GetTypeHandlerName(returnTypeId)}Obj.{outputHandler}(result)";
                 sb.AppendLine(makeDatum);
                 string setDatum = $"OutputResult.SetDatumResult(resultDatum, {isnull}, output, 0, uint32 {returnTypeId})";
                 sb.AppendLine(setDatum);
@@ -843,10 +844,10 @@ namespace PlDotNET
             {
                 if (this.OutputModes.Contains(paramModes[i]))
                 {
-                    string outputTypeHandler = Engine.GetTypeHandler(paramTypes[i]);
-                    string type = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ? "Array" : Engine.OidTypes[(OID)paramTypes[i]];
+                    string outputTypeHandler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
+                    string type = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)paramTypes[i]];
                     string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
-                    string outputHandlerMethod = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
+                    string outputHandlerMethod = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
                     string isnull = ClassTypes.Contains(returnType) ? $"Object.ReferenceEquals(output_{i}, null)" : $"not output_{i}.HasValue";
 
                     sb.AppendLine($"let resultDatum_{output_num} = {outputTypeHandler}Obj.{outputHandlerMethod}(output_{i})");
@@ -863,7 +864,7 @@ namespace PlDotNET
         public override string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, bool retset, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput)
         {
             var sb = new System.Text.StringBuilder();
-            string return_type = Engine.HandleArray.ContainsKey((OID)returnTypeId) ? "Array" : Engine.OidTypes[(OID)returnTypeId];
+            string return_type = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
             return_type = FSharpTypes.ContainsKey(return_type) ? FSharpTypes[return_type] : return_type;
             List<string> outputTypes = new ();
 
@@ -923,7 +924,7 @@ namespace PlDotNET
             string[] dotnetTypes = new string[paramTypes.Length];
             for (int i = 0, length = paramTypes.Length; i < length; i++)
             {
-                string type = Engine.HandleArray.ContainsKey((OID)paramTypes[i]) ? "Array" : Engine.OidTypes[(OID)paramTypes[i]];
+                string type = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)paramTypes[i]];
                 dotnetTypes[i] = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
             }
 

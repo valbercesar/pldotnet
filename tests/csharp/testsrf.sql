@@ -7,7 +7,6 @@ $$
 	else { for(int i=0;i<count;i++) { yield return i; } }
 $$
 LANGUAGE plcsharp;
-select numbers() LIMIT 10;
 
 CREATE OR REPLACE FUNCTION numbers(count int8)
 RETURNS SETOF int8 AS
@@ -78,8 +77,8 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION string_to_integer_array_orig(args text[])
 RETURNS SETOF integer AS
 $$
-        foreach (string arg in args) { 
-            yield return ( (arg == null) ? 0 : int.Parse(arg) ); 
+        foreach (string arg in args) {
+            yield return ( (arg == null) ? 0 : int.Parse(arg) );
         }
 $$
 LANGUAGE plcsharp;
@@ -100,7 +99,6 @@ WITH data1 AS (
         string_to_integer_array_plsql(input) AS col2
     FROM data2
 )
-
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-srf-comparison', 'comparison-1', bool_and(COALESCE(col1 = col2, false)) AS all_equal
 FROM data1;
@@ -108,6 +106,7 @@ FROM data1;
 ----------------------------------------
 -- Fourth, string input/output tests
 -- (string is an object type, not a struct type)
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE OR REPLACE FUNCTION ten_items(arg text)
 RETURNS SETOF text AS
@@ -125,8 +124,6 @@ WITH aggregated AS (
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT
     'c#-srf-strings',
-    'string-checksum-1', 
+    'string-checksum-1',
     encode(digest(concatenated_items, 'sha256'), 'hex') = '94091910bae126a50dfb041cd9e9a44efd716c77185628b3bce7a5965a207555'
 FROM aggregated;
-
-

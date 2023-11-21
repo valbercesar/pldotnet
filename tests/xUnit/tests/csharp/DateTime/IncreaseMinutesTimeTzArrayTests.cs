@@ -11,15 +11,15 @@ public class IncreaseMinutesTimeTzArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-ArrayHandler.FlatArray(values_array, ref flatten_values);
+ArrayManipulation.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
-{   
+{
     if (flatten_values.GetValue(i) == null)
         continue;
 
     DateTimeOffset orig_value = (DateTimeOffset)flatten_values.GetValue(i);
     DateTimeOffset new_value = orig_value.AddMinutes((double) min_to_add);
-    
+
     flatten_values.SetValue((DateTimeOffset)new_value, i);
 }
 return flatten_values;
@@ -33,7 +33,7 @@ return flatten_values;
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "TIMETZ[]"), new FunctionArgument("min_to_add", "INT") },
             ReturnType = "TIMETZ[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

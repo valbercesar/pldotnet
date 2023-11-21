@@ -11,15 +11,15 @@ public class IncreaseIntervalsTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-ArrayHandler.FlatArray(values_array, ref flatten_values);
+ArrayManipulation.FlatArray(values_array, ref flatten_values);
 for(int i = 0; i < flatten_values.Length; i++)
-{   
+{
     if (flatten_values.GetValue(i) == null)
         continue;
 
     NpgsqlInterval orig_value = (NpgsqlInterval)flatten_values.GetValue(i);
     NpgsqlInterval new_value = new NpgsqlInterval(orig_value.Months + months_to_add, orig_value.Days + days_to_add, orig_value.Time);
-    
+
     flatten_values.SetValue((NpgsqlInterval)new_value, i);
 }
 return flatten_values;
@@ -33,7 +33,7 @@ return flatten_values;
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INTERVAL[]"), new FunctionArgument("months_to_add", "INT"), new FunctionArgument("days_to_add", "INT") },
             ReturnType = "INTERVAL[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

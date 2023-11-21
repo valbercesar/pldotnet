@@ -11,7 +11,7 @@ public class JoinTextArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_texts = Array.CreateInstance(typeof(object), texts.Length);
-ArrayHandler.FlatArray(texts, ref flatten_texts);
+ArrayManipulation.FlatArray(texts, ref flatten_texts);
 string result = """";
 for(int i = 0; i < flatten_texts.Length; i++)
 {
@@ -30,7 +30,7 @@ return result;
             Arguments = new List<FunctionArgument> { new FunctionArgument("texts", "text[]") },
             ReturnType = "text",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

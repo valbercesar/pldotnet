@@ -11,7 +11,7 @@ public class IncreaseLSegsFsharpTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 let flatten_values = Array.CreateInstance(typeof<NpgsqlLSeg>, values_array.Length)
-ArrayHandler.FlatArray(values_array, ref flatten_values) |> ignore
+ArrayManipulation.FlatArray(values_array, ref flatten_values) |> ignore
 for i in 0 .. flatten_values.Length - 1 do
     if System.Object.ReferenceEquals(flatten_values.GetValue(i), null) then
         ()
@@ -30,7 +30,7 @@ flatten_values
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "LSEG[]") },
             ReturnType = "LSEG[]",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = true,
             CastFunctionAs = "TEXT"
         };

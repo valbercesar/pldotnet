@@ -22,7 +22,7 @@ return values_array;
             Arguments = new List<FunctionArgument> {
                 new FunctionArgument("values_array","MONEY[]"),
                 new FunctionArgument("desired","MONEY"),
-                new FunctionArgument("index","MONEY[]"),
+                new FunctionArgument("index","integer[]"),
             },
             ReturnType = "MONEY[]",
             Body = FunctionBody,

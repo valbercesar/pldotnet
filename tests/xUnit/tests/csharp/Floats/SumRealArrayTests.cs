@@ -11,10 +11,10 @@ public class SumRealArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_floats = Array.CreateInstance(typeof(object), floats.Length);
-ArrayHandler.FlatArray(floats, ref flatten_floats);
+ArrayManipulation.FlatArray(floats, ref flatten_floats);
 float float_sum = 0;
 for(int i = 0; i < flatten_floats.Length; i++)
-{   
+{
     if (flatten_floats.GetValue(i) == null)
         continue;
     float_sum = float_sum + (float)flatten_floats.GetValue(i);
@@ -30,7 +30,7 @@ return float_sum;
             Arguments = new List<FunctionArgument> { new FunctionArgument("floats", "real[]") },
             ReturnType = "real",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

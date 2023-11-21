@@ -11,7 +11,7 @@ public class CountBooLFsharpTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 let flatten_booleans = Array.CreateInstance(typeof<Object>, booleans.Length)
-ArrayHandler.FlatArray(booleans, ref flatten_booleans) |> ignore
+ArrayManipulation.FlatArray(booleans, ref flatten_booleans) |> ignore
 let mutable count = 0
 for i = 0 to flatten_booleans.Length - 1 do
     if System.Object.ReferenceEquals(flatten_booleans.GetValue(i), null) then
@@ -29,7 +29,7 @@ count
             Arguments = new List<FunctionArgument> { new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean") },
             ReturnType = "Integer",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = false,
         };
     }

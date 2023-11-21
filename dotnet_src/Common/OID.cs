@@ -12,7 +12,7 @@
 //
 // </copyright>
 
-namespace PlDotNET.Handler
+namespace PlDotNET.Common
 {
     public enum OID : uint
     {

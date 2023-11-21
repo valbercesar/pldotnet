@@ -1,0 +1,3 @@
+[submodule "dotnet_src/npgsql"]
+	path = dotnet_src/npgsql
+	url = git@git.brickabode.com:DotNetInPostgreSQL/npgsql.git

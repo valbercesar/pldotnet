@@ -11,7 +11,7 @@ public class InOutArray10Tests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-    ArrayHandler.FlatArray(values_array, ref flatten_values);
+    ArrayManipulation.FlatArray(values_array, ref flatten_values);
     nulls = 0;
     for(int i = 0; i < flatten_values.Length; i++)
     {
@@ -38,7 +38,7 @@ Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length)
             Arguments = new List<FunctionArgument> { new FunctionArgument("INOUT values_array", "MACADDR[]"), new FunctionArgument("OUT nulls", "INT") },
             ReturnType = "",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

@@ -11,7 +11,7 @@ public class IncreaseLinesFsharpTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
     let flatten_values = Array.CreateInstance(typeof<NpgsqlLine>, values_array.Length)
-    ArrayHandler.FlatArray(values_array, ref flatten_values) |> ignore
+    ArrayManipulation.FlatArray(values_array, ref flatten_values) |> ignore
     for i in 0 .. flatten_values.Length - 1 do
         if System.Object.ReferenceEquals(flatten_values.GetValue(i), null) then
             ()
@@ -32,7 +32,7 @@ public class IncreaseLinesFsharpTests : PlDotNetTest
             },
             ReturnType = "LINE[]",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = true,
             CastFunctionAs = "TEXT"
         };

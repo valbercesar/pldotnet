@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using NpgsqlTypes;
+using Npgsql;
+using PlDotNET.Common;
 using PlDotNET.Handler;
 
 namespace PlDotNET.UserSpace

@@ -53,10 +53,10 @@ SELECT 'c#-float4-null-3array-arraynull', 'returnRealArray3', returnRealArray(AR
 
 CREATE OR REPLACE FUNCTION sumRealArray(floats real[]) RETURNS real AS $$
 Array flatten_floats = Array.CreateInstance(typeof(object), floats.Length);
-ArrayHandler.FlatArray(floats, ref flatten_floats);
+ArrayManipulation.FlatArray(floats, ref flatten_floats);
 float float_sum = 0;
 for(int i = 0; i < flatten_floats.Length; i++)
-{   
+{
     if (flatten_floats.GetValue(i) == null)
         continue;
     float_sum = float_sum + (float)flatten_floats.GetValue(i);
@@ -98,10 +98,10 @@ SELECT 'c#-float8-null-2array-arraynull', 'returnDoubleArray2', returnDoubleArra
 
 CREATE OR REPLACE FUNCTION sumDoubleArray(doubles double precision[]) RETURNS double precision AS $$
 Array flatten_doubles = Array.CreateInstance(typeof(object), doubles.Length);
-ArrayHandler.FlatArray(doubles, ref flatten_doubles);
+ArrayManipulation.FlatArray(doubles, ref flatten_doubles);
 double double_sum = 0;
 for(int i = 0; i < flatten_doubles.Length; i++)
-{   
+{
     if (flatten_doubles.GetValue(i) == null)
         continue;
     double_sum = double_sum + (double)flatten_doubles.GetValue(i);

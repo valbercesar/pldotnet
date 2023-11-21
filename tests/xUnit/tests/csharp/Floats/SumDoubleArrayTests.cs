@@ -11,10 +11,10 @@ public class SumDoubleArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_doubles = Array.CreateInstance(typeof(object), doubles.Length);
-ArrayHandler.FlatArray(doubles, ref flatten_doubles);
+ArrayManipulation.FlatArray(doubles, ref flatten_doubles);
 double double_sum = 0;
 for(int i = 0; i < flatten_doubles.Length; i++)
-{   
+{
     if (flatten_doubles.GetValue(i) == null)
         continue;
     double_sum = double_sum + (double)flatten_doubles.GetValue(i);
@@ -30,7 +30,7 @@ return double_sum;
             Arguments = new List<FunctionArgument> { new FunctionArgument("doubles double", "precision[]") },
             ReturnType = "double precision",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

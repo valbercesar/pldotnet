@@ -11,10 +11,10 @@ public class SumBigIntegerArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_big_integers = Array.CreateInstance(typeof(object), big_integers.Length);
-ArrayHandler.FlatArray(big_integers, ref flatten_big_integers);
+ArrayManipulation.FlatArray(big_integers, ref flatten_big_integers);
 long big_integers_sum = 0;
 for(int i = 0; i < flatten_big_integers.Length; i++)
-{   
+{
     if (flatten_big_integers.GetValue(i) == null)
         continue;
     big_integers_sum = (long)(big_integers_sum + (long)flatten_big_integers.GetValue(i));
@@ -30,7 +30,7 @@ return big_integers_sum;
             Arguments = new List<FunctionArgument> { new FunctionArgument("big_integers", "bigint[]") },
             ReturnType = "bigint",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

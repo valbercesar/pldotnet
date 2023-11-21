@@ -11,9 +11,9 @@ public class IncreaseMonthDateArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_dates = Array.CreateInstance(typeof(object), dates.Length);
-ArrayHandler.FlatArray(dates, ref flatten_dates);
+ArrayManipulation.FlatArray(dates, ref flatten_dates);
 for(int i = 0; i < flatten_dates.Length; i++)
-{   
+{
     if (flatten_dates.GetValue(i) == null)
         continue;
 
@@ -22,7 +22,7 @@ for(int i = 0; i < flatten_dates.Length; i++)
     int month = orig_date.Month;
     int year = orig_date.Year;
     DateOnly new_date = new DateOnly(year,month+1,day);
-    
+
     flatten_dates.SetValue((DateOnly)new_date, i);
 }
 return flatten_dates;
@@ -36,7 +36,7 @@ return flatten_dates;
             Arguments = new List<FunctionArgument> { new FunctionArgument("dates", "DATE[]") },
             ReturnType = "DATE[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

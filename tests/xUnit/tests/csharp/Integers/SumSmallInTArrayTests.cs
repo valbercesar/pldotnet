@@ -11,10 +11,10 @@ public class SumSmallInTArrayTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_small_integers = Array.CreateInstance(typeof(object), small_integers.Length);
-ArrayHandler.FlatArray(small_integers, ref flatten_small_integers);
+ArrayManipulation.FlatArray(small_integers, ref flatten_small_integers);
 short small_integers_sum = (short)0;
 for(int i = 0; i < flatten_small_integers.Length; i++)
-{   
+{
     if (flatten_small_integers.GetValue(i) == null)
         continue;
     small_integers_sum = (short)(small_integers_sum + (short)flatten_small_integers.GetValue(i));
@@ -30,7 +30,7 @@ return small_integers_sum;
             Arguments = new List<FunctionArgument> { new FunctionArgument("small_integers", "smallint[]") },
             ReturnType = "smallint",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

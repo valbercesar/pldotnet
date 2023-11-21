@@ -11,10 +11,10 @@ public class CountBoolTests : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
 Array flatten_booleans = Array.CreateInstance(typeof(object), booleans.Length);
-ArrayHandler.FlatArray(booleans, ref flatten_booleans);
+ArrayManipulation.FlatArray(booleans, ref flatten_booleans);
 int count = 0;
 for(int i = 0; i < flatten_booleans.Length; i++)
-{   
+{
     if (flatten_booleans.GetValue(i) == null)
         continue;
     if((bool)flatten_booleans.GetValue(i) == desired)

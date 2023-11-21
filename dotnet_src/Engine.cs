@@ -26,46 +26,21 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging.Abstractions;
+using Npgsql;
+using Npgsql.Tests;
 using NpgsqlTypes;
+using NUnit.Framework;
+using PlDotNET.Common;
 using PlDotNET.FSharp;
 using PlDotNET.Handler;
 
 namespace PlDotNET
 {
-    public enum DotNETLanguage : ushort
-    {
-        CSharp,
-        FSharp,
-        VisualBasic,
-    }
-
-    public enum CallMode : int
-    {
-        [Description("CALL_NORMAL")] // Normal, non-SRF function
-        Normal = 1,
-        [Description("CALL_SRF_FIRST")] // First call to an SRF; create and cache
-        SrfFirst = 2,
-        [Description("CALL_SRF_NEXT")] // Next call to an SRF
-        SrfNext = 3,
-        [Description("CALL_SRF_CLEANUP")] // SRF is done; you may remove it from the cache
-        SrfCleanup = 4,
-    }
-
-    public enum ReturnMode : int
-    {
-        [Description("RETURN_ERROR")] // We encountered an error
-        Error = 0,
-        [Description("RETURN_NORMAL")] // Normal return to CALL_NORMAL
-        Normal = 1,
-        [Description("RETURN_SRF_NEXT")] // SRF return to CALL_SRF_NEXT
-        SrfNext = 2,
-        [Description("RETURN_SRF_DONE")] // We have no more values
-        SrfDone = 3,
-    }
-
     public struct CachedFunction
     {
         public string UserHandlerSourceCode;
@@ -88,101 +63,6 @@ namespace PlDotNET
         public static string PathToSaveSourceCode = "/tmp/PlDotNET/GeneratedCodes";
 
         public static string PathToTemporaryFiles = "/tmp/PlDotNET/";
-
-        public static Dictionary<OID, OID> HandleArray =
-                       new ()
-        {
-            { OID.BOOLARRAYOID, OID.BOOLOID },
-            { OID.INT2ARRAYOID, OID.INT2OID },
-            { OID.INT4ARRAYOID, OID.INT4OID },
-            { OID.INT8ARRAYOID, OID.INT8OID },
-            { OID.FLOAT4ARRAYOID, OID.FLOAT4OID },
-            { OID.FLOAT8ARRAYOID, OID.FLOAT8OID },
-            { OID.POINTARRAYOID, OID.POINTOID },
-            { OID.LINEARRAYOID, OID.LINEOID },
-            { OID.LSEGARRAYOID, OID.LSEGOID },
-            { OID.BOXARRAYOID, OID.BOXOID },
-            { OID.POLYGONARRAYOID, OID.POLYGONOID },
-            { OID.TEXTARRAYOID, OID.TEXTOID },
-            { OID.PATHARRAYOID, OID.PATHOID },
-            { OID.CIRCLEARRAYOID, OID.CIRCLEOID },
-            { OID.DATEARRAYOID, OID.DATEOID },
-            { OID.TIMEARRAYOID, OID.TIMEOID },
-            { OID.TIMETZARRAYOID, OID.TIMETZOID },
-            { OID.TIMESTAMPARRAYOID, OID.TIMESTAMPOID },
-            { OID.TIMESTAMPTZARRAYOID, OID.TIMESTAMPTZOID },
-            { OID.INTERVALARRAYOID, OID.INTERVALOID },
-            { OID.MACADDRARRAYOID, OID.MACADDROID },
-            { OID.MACADDR8ARRAYOID, OID.MACADDR8OID },
-            { OID.INETARRAYOID, OID.INETOID },
-            { OID.CIDRARRAYOID, OID.CIDROID },
-            { OID.MONEYARRAYOID, OID.MONEYOID },
-            { OID.VARBITARRAYOID, OID.VARBITOID },
-            { OID.BITARRAYOID, OID.BITOID },
-            { OID.BYTEAARRAYOID, OID.BYTEAOID },
-            { OID.BPCHARARRAYOID, OID.BPCHAROID },
-            { OID.VARCHARARRAYOID, OID.VARCHAROID },
-            { OID.XMLARRAYOID, OID.XMLOID },
-            { OID.JSONARRAYOID, OID.JSONOID },
-            { OID.UUIDARRAYOID, OID.UUIDOID },
-            { OID.INT4RANGEARRAYOID, OID.INT4RANGEOID },
-            { OID.NUMRANGEARRAYOID, OID.NUMRANGEOID },
-            { OID.TSRANGEARRAYOID, OID.TSRANGEOID },
-            { OID.TSTZRANGEARRAYOID, OID.TSTZRANGEOID },
-            { OID.DATERANGEARRAYOID, OID.DATERANGEOID },
-            { OID.INT8RANGEARRAYOID, OID.INT8RANGEOID },
-            { OID.INT4MULTIRANGEARRAYOID, OID.INT4MULTIRANGEOID },
-            { OID.NUMMULTIRANGEARRAYOID, OID.NUMMULTIRANGEOID },
-            { OID.TSMULTIRANGEARRAYOID, OID.TSMULTIRANGEOID },
-            { OID.TSTZMULTIRANGEARRAYOID, OID.TSTZMULTIRANGEOID },
-            { OID.DATEMULTIRANGEARRAYOID, OID.DATEMULTIRANGEOID },
-            { OID.INT8MULTIRANGEARRAYOID, OID.INT8MULTIRANGEOID },
-        };
-
-        public static Dictionary<OID, string> OidTypes =
-                       new ()
-        {
-            { OID.BOOLOID, "bool" },
-            { OID.INT2OID, "short" },
-            { OID.INT4OID, "int" },
-            { OID.INT8OID, "long" },
-            { OID.FLOAT4OID, "float" },
-            { OID.FLOAT8OID, "double" },
-            { OID.POINTOID, "NpgsqlPoint" },
-            { OID.LINEOID, "NpgsqlLine" },
-            { OID.LSEGOID, "NpgsqlLSeg" },
-            { OID.BOXOID, "NpgsqlBox" },
-            { OID.POLYGONOID, "NpgsqlPolygon" },
-            { OID.TEXTOID, "string" },
-            { OID.PATHOID, "NpgsqlPath" },
-            { OID.CIRCLEOID, "NpgsqlCircle" },
-            { OID.DATEOID, "DateOnly" },
-            { OID.TIMEOID, "TimeOnly" },
-            { OID.TIMETZOID, "DateTimeOffset" },
-            { OID.TIMESTAMPOID, "DateTime" },
-            { OID.TIMESTAMPTZOID, "DateTime" },
-            { OID.INTERVALOID, "NpgsqlInterval" },
-            { OID.MACADDROID, "PhysicalAddress" },
-            { OID.MACADDR8OID, "PhysicalAddress" },
-            { OID.INETOID, "(IPAddress Address, int Netmask)" },
-            { OID.CIDROID, "(IPAddress Address, int Netmask)" },
-            { OID.MONEYOID, "decimal" },
-            { OID.VARBITOID, "BitArray" },
-            { OID.BITOID, "BitArray" },
-            { OID.BYTEAOID, "byte[]" },
-            { OID.BPCHAROID, "string" },
-            { OID.VARCHAROID, "string" },
-            { OID.XMLOID, "string" },
-            { OID.JSONOID, "string" },
-            { OID.UUIDOID, "Guid" },
-            { OID.INT4RANGEOID, "NpgsqlRange<int>" },
-            { OID.INT8RANGEOID, "NpgsqlRange<long>" },
-            { OID.TSRANGEOID, "NpgsqlRange<DateTime>" },
-            { OID.TSTZRANGEOID, "NpgsqlRange<DateTime>" },
-            { OID.DATERANGEOID, "NpgsqlRange<DateOnly>" },
-            { OID.VOIDOID, "void" },
-            { OID.RECORDOID, "void" },
-        };
 
         public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
 
@@ -214,104 +94,6 @@ namespace PlDotNET
         public delegate void DelUnloadAssemblies(uint functionId);
 
         /// <summary>
-        /// Returns the handler object NAME for the specified OID.
-        /// </summary>
-        /// <returns>
-        /// Returns The TypeHandler name.
-        /// </returns>
-        public static string GetTypeHandler(uint id)
-        {
-            switch (id)
-            {
-                case (uint)OID.BOOLOID:
-                    return "BoolHandler";
-                case (uint)OID.INT2OID:
-                    return "ShortHandler";
-                case (uint)OID.INT4OID:
-                    return "IntHandler";
-                case (uint)OID.INT8OID:
-                    return "LongHandler";
-                case (uint)OID.FLOAT4OID:
-                    return "FloatHandler";
-                case (uint)OID.FLOAT8OID:
-                    return "DoubleHandler";
-                case (uint)OID.POINTOID:
-                    return "PointHandler";
-                case (uint)OID.LINEOID:
-                    return "LineHandler";
-                case (uint)OID.LSEGOID:
-                    return "LineSegmentHandler";
-                case (uint)OID.BOXOID:
-                    return "BoxHandler";
-                case (uint)OID.PATHOID:
-                    return "PathHandler";
-                case (uint)OID.POLYGONOID:
-                    return "PolygonHandler";
-                case (uint)OID.CIRCLEOID:
-                    return "CircleHandler";
-                case (uint)OID.DATEOID:
-                    return "DateHandler";
-                case (uint)OID.TIMEOID:
-                    return "TimeHandler";
-                case (uint)OID.TIMETZOID:
-                    return "TimeTzHandler";
-                case (uint)OID.TIMESTAMPOID:
-                    return "TimestampHandler";
-                case (uint)OID.TIMESTAMPTZOID:
-                    return "TimestampTzHandler";
-                case (uint)OID.INTERVALOID:
-                    return "IntervalHandler";
-                case (uint)OID.MACADDROID:
-                    return "MacaddrHandler";
-                case (uint)OID.MACADDR8OID:
-                    return "Macaddr8Handler";
-                case (uint)OID.INETOID:
-                    return "InetHandler";
-                case (uint)OID.CIDROID:
-                    return "CidrHandler";
-                case (uint)OID.TEXTOID:
-                    return "TextHandler";
-                case (uint)OID.MONEYOID:
-                    return "MoneyHandler";
-                case (uint)OID.VARBITOID:
-                    return "VarBitStringHandler";
-                case (uint)OID.BITOID:
-                    return "BitStringHandler";
-                case (uint)OID.BYTEAOID:
-                    return "ByteaHandler";
-                case (uint)OID.BPCHAROID:
-                    return "CharHandler";
-                case (uint)OID.VARCHAROID:
-                    return "CharVaryingHandler";
-                case (uint)OID.XMLOID:
-                    return "XmlHandler";
-                case (uint)OID.JSONOID:
-                    return "JsonHandler";
-                case (uint)OID.UUIDOID:
-                    return "UuidHandler";
-                case (uint)OID.INT4RANGEOID:
-                    return "IntRangeHandler";
-                case (uint)OID.INT8RANGEOID:
-                    return "LongRangeHandler";
-                case (uint)OID.TSRANGEOID:
-                    return "TimestampRangeHandler";
-                case (uint)OID.TSTZRANGEOID:
-                    return "TimestampTzRangeHandler";
-                case (uint)OID.DATERANGEOID:
-                    return "DateRangeHandler";
-                case (uint)OID.RECORDOID: // This is a hack, but I think it's ok for now
-                    return "IntHandler";
-                default:
-                    if (HandleArray.ContainsKey((OID)id))
-                    {
-                        return GetTypeHandler((uint)HandleArray[(OID)id]);
-                    }
-
-                    throw new NotImplementedException($"Datum to {(OID)id} is not supported! Check GetTypeHandler");
-            }
-        }
-
-        /// <summary>
         /// This function compiles the dynamic code using Roslyn.
         /// </summary>
         /// <returns>
@@ -325,13 +107,18 @@ namespace PlDotNET
             List<string> trustedAssembliesPaths = new ();
             trustedAssembliesPaths.AddRange(trustedAssembliesPathsArray);
             trustedAssembliesPaths.Add(typeof(NpgsqlPoint).Assembly.Location);
-            trustedAssembliesPaths.Add(typeof(Engine).Assembly.Location);
+            trustedAssembliesPaths.Add(typeof(Elog).Assembly.Location);
+            trustedAssembliesPaths.Add(typeof(NullLoggerFactory).Assembly.Location);
+            trustedAssembliesPaths.Add(typeof(NpgsqlCommand).Assembly.Location);
+            trustedAssembliesPaths.Add(typeof(CommandTests).Assembly.Location);
 
             var neededAssemblies = new[]
             {
                 "System.Buffers",
                 "System.Collections",
                 "System.Collections.Generic",
+                "System.ComponentModel.Primitives",
+                "System.ComponentModel.TypeConverter",
                 "System.Console",
                 "System.Core",
                 "System.Data",
@@ -348,8 +135,11 @@ namespace PlDotNET
                 "System.Runtime",
                 "System.Text",
                 "System.Text.Unicode",
+                "Microsoft.Extensions.Logging.Abstractions",
                 "Npgsql",
-                "PlDotNET",
+                "Npgsql.Tests",
+                "NpgsqlTypes",
+                "PlDotNET.Common",
             };
 
             List<PortableExecutableReference> references = trustedAssembliesPaths
@@ -359,6 +149,7 @@ namespace PlDotNET
 
             if (memStreamUserFunction != null)
             {
+                references.Add(MetadataReference.CreateFromFile(typeof(OutputResult).Assembly.Location));
                 references.Add(MetadataReference.CreateFromStream(new MemoryStream(memStreamUserFunction.GetBuffer())));
             }
 
@@ -514,10 +305,17 @@ namespace PlDotNET
 
             // Load the assemblies into AssemblyLoadContext
             AssemblyLoadContext userAlc = new ($"UserFunction_{functionId}", true);
-            _ = userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location); // Npgsql Assembly
-            _ = userAlc.LoadFromAssemblyPath(typeof(Engine).Assembly.Location); // PlDotNET Assembly
-            _ = dotnetLanguage == DotNETLanguage.FSharp ? userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location.Replace("Npgsql", "FSharp.Core")) : null; // FSharp.Core
+            _ = userAlc.LoadFromAssemblyPath(typeof(NpgsqlCommand).Assembly.Location); // Npgsql Assembly
+            _ = userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location); // NpgsqlTypes Assembly
+            _ = userAlc.LoadFromAssemblyPath(typeof(NullLoggerFactory).Assembly.Location); // Logging Abstractions Assembly
+            _ = userAlc.LoadFromAssemblyPath(typeof(Elog).Assembly.Location); // PlDotNET.Common Assembly
+            _ = userAlc.LoadFromAssemblyPath(typeof(OutputResult).Assembly.Location); // PlDotNET.Handlers Assembly
+            _ = userAlc.LoadFromAssemblyPath(typeof(CommandTests).Assembly.Location); // Npgsql.Tests Assembly
+            _ = userAlc.LoadFromAssemblyPath(typeof(NUnitAttribute).Assembly.Location); // MonoTouch.NUnitLite Assembly
+            string fsharpCoreDLL = typeof(NpgsqlPoint).Assembly.Location.Replace("NpgsqlTypes", "FSharp.Core").Replace("PlDotNET/bin", "PlDotNET/FSharp/bin");
+            _ = dotnetLanguage == DotNETLanguage.FSharp ? userAlc.LoadFromAssemblyPath(fsharpCoreDLL) : null; // FSharp.Core
             _ = dotnetLanguage != DotNETLanguage.FSharp ? userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer())) : null; // UserFunction Assembly
+
             Assembly userHandlerAssembly = userAlc.LoadFromStream(new MemoryStream(memUserHandler.GetBuffer())); // UserHandler Assembly
 
             // Create the CachedFunction to keep the function information
@@ -587,8 +385,10 @@ namespace PlDotNET
                 List<string> extraAssemblies = new ()
                 {
                     typeof(NpgsqlPoint).Assembly.Location,
-                    typeof(Engine).Assembly.Location,
-                    typeof(NpgsqlPoint).Assembly.Location.Replace("Npgsql", "FSharp.Core"),
+                    typeof(Elog).Assembly.Location,
+                    typeof(OutputResult).Assembly.Location,
+                    typeof(NpgsqlCommand).Assembly.Location,
+                    typeof(FSharpCompiler).Assembly.Location,
                 };
 
                 return FSharpCompiler.CompileFSharpSourceCode(functionId, Engine.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
@@ -635,14 +435,14 @@ namespace PlDotNET
         /// function compiled by Roslyn.
         /// </summary>
         /// <returns>
-        /// Returns ReturnMode
+        /// Returns ReturnMode.
         /// </returns>
         public static unsafe int RunUserFunction(uint functionId, ulong call_id, int call_mode, void* arguments, int num_arguments, byte* nullmap, IntPtr output)
         {
             string argaddr = ((IntPtr)arguments).ToString("X");
 
             IntPtr[] argumentArray = new ReadOnlySpan<IntPtr>(arguments, num_arguments).ToArray();
-            List<IntPtr> argumentList = new List<IntPtr>(argumentArray);
+            List<IntPtr> argumentList = new (argumentArray);
 
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
@@ -728,14 +528,14 @@ namespace PlDotNET
         {
             List<string> unsupportedTypes = new ();
 
-            if (!(HandleArray.ContainsKey((OID)returnTypeId) || OidTypes.ContainsKey((OID)returnTypeId)))
+            if (!(DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) || DatumConversion.SupportedTypesStr.ContainsKey((OID)returnTypeId)))
             {
                 unsupportedTypes.Add($"{(OID)returnTypeId}");
             }
 
             foreach (var paramType in paramTypes)
             {
-                if (!(HandleArray.ContainsKey((OID)paramType) || OidTypes.ContainsKey((OID)paramType)))
+                if (!(DatumConversion.ArrayTypes.ContainsKey((OID)paramType) || DatumConversion.SupportedTypesStr.ContainsKey((OID)paramType)))
                 {
                     unsupportedTypes.Add($"{(OID)paramType}");
                 }
@@ -857,7 +657,7 @@ namespace PlDotNET
             mode = m.Success ? mode = m.Groups[1].Value : mode;
 
             // If Linux mode didn't work, then we do Mac mode
-            return (mode == "0700") ? true : output.Contains("drwx------");
+            return (mode == "0700") || output.Contains("drwx------");
         }
     }
 }
