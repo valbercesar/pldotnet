@@ -143,7 +143,7 @@ def make_fig(filename, data):
 
     fig.update_layout(
         title=title,
-        xaxis_title="Test",
+        xaxis_title="",
         yaxis_title="Relative execution time",
         legend_title="Language",
         title_x=0.5,

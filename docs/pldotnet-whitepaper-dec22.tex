@@ -18,9 +18,14 @@
 \usepackage{multicol}
 \usepackage[newfloat]{minted}
 \usepackage{subcaption}
+\usepackage{tcolorbox}
 \usepackage{url}
 
 \newcommand{\dotnet}{.NET}
+
+\newcommand{\psqltypecount}{46}
+
+\newcommand{\pldotnettypecount}{38}
 
 \geometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
 \pagestyle{fancy}
@@ -67,7 +72,7 @@ pl/dotnet is a free software  project that extends PostgreSQL to
 support stored procedures and functions for the \dotnet\ platform,
 including both C\# and F\#.  In our tests it is the fastest procedural
 language in PostgreSQL, and it has the widest range of unit testing.
-It natively supports 38 out of 46 standard user types, the widest
+It natively supports \pldotnettypecount\ out of \psqltypecount\ standard user types, the widest
 range of any external procedural language in PostgreSQL.  We hope
 to make it the best procedural language in PostgreSQL and the best
 implementation of \dotnet\ stored procedures in any database;
@@ -103,7 +108,7 @@ These can be implemented in a number of languages, including SQL, C, TCL, Perl, 
 The pl/dotnet project extends PostgreSQL to support user functions,
 procedures, and \texttt{DO} blocks.  for the \dotnet platform,
 including both C\# and F\#.  We have achieved native representation
-for 38 of out of 46 PostgreSQL user types, plus their arrays, the
+for \pldotnettypecount\ of out of \psqltypecount\ PostgreSQL user types, plus their arrays, the
 widest range of any external procedural language in PostgreSQL. In
 our benchmarks we are the fastest external procedural language in
 PostgreSQL.
@@ -198,12 +203,13 @@ explained in more detail later in the paper.
     \item Current support:
         \begin{itemize}
             \item Languages: C\# and F\# both fully supported
-            \item Datatypes: 38 out of 46 PostgreSQL user (non-system) data types, plus their arrays
+            \item Datatypes: \pldotnettypecount\ out of \psqltypecount\ PostgreSQL user (non-system) data types, plus their arrays
             \item All data types are nullable
             \item Code can be entered directly via \texttt{CREATE FUNCTION} or, alternatively, loaded from a pre-compiled assembly
             \item Performance is very good in our benchmarks, surpassing all other external PL implementations
             \item Testing: we have 820 unit tests; all types, plus their arrays and nulls, are fully unit-tested in both C\# and F\#
             \item Security: Code for each function is isolated in a \dotnet Assembly Load Context, providing some security protection
+            \item Output parameter support
         \end{itemize}
     \item Future support:
         \begin{itemize}
@@ -211,13 +217,12 @@ explained in more detail later in the paper.
             \item SPI: basic SPI is privately working, but we want to make it 100\% Npgsql-compatible
             \item Triggers: we have triggers prototyped and will implement them fully
             \item Set-Returning Functions: will be mapped to \texttt{IEnumerable<T>} for both C\# and F\#
-            \item Output parameter support
     \end{itemize}
 \end{itemize}
 
 \subsection{Data type support}
 
-PostgreSQL has a rich type system, with 46 user types in the main
+PostgreSQL has a rich type system, with \psqltypecount\ user types in the main
 distribution. Any mapping of these types into a programming language
 is going to face choices and numerous challenges about how to map
 them, especially for intricate types such as datetimes.
@@ -234,14 +239,21 @@ run as an external client or as an internal stored procedure.
 This helps us with our strategic goal of making code mobility as
 effortless for the programmer as possible.
 
-While we expect our code size to increase as we add more features,
-you can clearly see the advantage this approach gives us in Table
-\ref{table:LOC}, which compares our code size to that of other
-Procedural Language implementations in PostgreSQL\footnote{We here
-count code in C/C++ as well as the native language, with the exception
-of pl\/pgsql; we do not count their PL-specific SQL code, which is
-unusually difficult to differentiate.  Lines of code were counted
-using version 1.94 of the \texttt{CLOC} tool.}.
+While we expect our code size to increase as we add more features, you
+can see the advantage this approach gives us in Table \ref{table:LOC},
+which compares our code size to that of other Procedural Language
+implementations in PostgreSQL\footnote{We here count code in C/C++
+as well as the native language, with the exception of pl\/pgsql; we
+do not count their PL-specific SQL code, which is unusually difficult
+to differentiate.  Lines of code were counted using version 1.94 of the
+\texttt{CLOC} tool.}\footnote{We also made 1916 lines of changes to our
+fork of the the NPGSQL package.  Most of these changes are boilerplate
+stemming from renaming and overriding the datatype classes.  They are
+strictly external to pl/dotnet, so we did not count them.  The reader
+may choose to count either way.}.  This approach was more complicated in
+several ways, but for us to have the widest range of native type support
+and good performance while having such a small codebase is something we
+are proud of.
 
 \begin{table}[!htbp]
     \caption{Lines of code for various PostgreSQL PL implementations}
@@ -260,11 +272,13 @@ using version 1.94 of the \texttt{CLOC} tool.}.
         \end{tabular}
 \end{table}
 
-Table \ref{table:pldotnet_support_types} lists the PostgreSQL data
-types support by pl/dotnet, which use exactly the same type mapping
-as Npgsql. (The type names are sometimes different in F\#.)
+Table \ref{table:pldotnet_support_types}, which \LaTeX has yeeted somewhere
+in this document, lists the PostgreSQL data types support by pl/dotnet,
+which use exactly the same type mapping as Npgsql. (The type names are
+sometimes different in F\#.)
 
-\begin{table}[!htbp]
+% \begin{table}[!htbp]
+\begin{table}[p]
         \caption{pl/dotnet support types.}
         \label{table:pldotnet_support_types}
         \begin{tabular}{l | l}
@@ -333,9 +347,36 @@ to the hard limit (\textquote{\texttt{MAXDIM}}) of \href{https://github.com/post
 regardless of which dimension they were declared with. You can see
 this reflected in the PostgreSQL manual:
 
-\captionsetup[figure]{labelformat=empty}
+% \captionsetup[figure]{labelformat=empty}
 
-\begin{figure}[h]
+% \begin{figure}[H]
+% \begin{quote}
+% The syntax for CREATE TABLE allows the exact size of arrays to be
+% specified, for example:
+% 
+% \begin{minted}[frame=single,style=borland]{sql}
+% CREATE TABLE tictactoe (
+%     squares integer[3][3]
+% );
+% \end{minted}
+% 
+% However, the current implementation ignores any supplied array size
+% limits, i.e., the behavior is the same as for arrays of unspecified
+% length.
+% 
+% The current implementation does not enforce the declared number of
+% dimensions either. Arrays of a particular element type are all
+% considered to be of the same type, regardless of size or number of
+% dimensions. So, declaring the array size or number of dimensions
+% in CREATE TABLE is simply documentation; it does not affect run-time
+% behavior.
+% \end{quote}
+% \caption{\href{https://www.postgresql.org/docs/15/arrays.html}{Postgresql Manual, Ch. 8.15, Arrays}}
+% \end{figure}
+
+\begin{figure}[H]
+\captionsetup{labelformat=empty}
+\begin{tcolorbox}[width=.5\textwidth,colframe=blue]
 \begin{quote}
 The syntax for CREATE TABLE allows the exact size of arrays to be
 specified, for example:
@@ -358,6 +399,7 @@ in CREATE TABLE is simply documentation; it does not affect run-time
 behavior.
 \end{quote}
 \caption{\href{https://www.postgresql.org/docs/15/arrays.html}{Postgresql Manual, Ch. 8.15, Arrays}}
+\end{tcolorbox}
 \end{figure}
 
 Because Npgsql cannot know the dimensionality of the arrays it will
@@ -398,14 +440,20 @@ the developer in the future.
 
 \subsection{Parameter Modes}
 
-pl/dotnet currently supports only parameter input, not parameter
-output. Thus, we consume both \texttt{IN} and \texttt{INOUT} parameters,
-but it is not currently possible to output an \texttt{INOUT} parameter.
-We silently skip \texttt{OUT} parameters. This handling matches
-the current handling in pl/python.
+pl/dotnet supports all three SQL parameter modes: \texttt{IN},
+\texttt{INOUT}, and \texttt{OUT}.
 
-\dotnet\ supports output parameters, and we anticipate fully
-supporting value output for both \texttt{INOUT} and \texttt{OUT} parameters.
+For C\#, we handle \texttt{IN} arguments normally.  \texttt{INOUT}
+parameters are typed as \texttt{ref} arguments, which maps
+\texttt{INOUT} behavior cleanly to C\#.  \texttt{OUT} parameters
+are simply mapped to C\#'s \texttt{out}.
+
+Such handling of parameters, though idiomatic in C\#, are very out of
+place in functional programming languages, so in F\# we pass \texttt{IN}
+and \texttt{INOUT} values as input arguments, and all \texttt{INOUT}
+and \texttt{OUT} values are separately returned in a tuple.  Ironically,
+this is how the variables are actually processed in PostgreSQL's internal
+handling.
 
 \subsection{Function, Procedure, DO, Trigger}
 
@@ -438,17 +486,13 @@ entering the code in both C\# and F\#:
 
 \begin{listing}[H]
 \begin{minted}[breaklines, breakafter=d, frame=single, fontsize=\footnotesize]{sql}
-CREATE OR REPLACE FUNCTION IntegerTest(a INTEGER, b SMALLINT)
-RETURNS INTEGER AS $$
+CREATE OR REPLACE FUNCTION IntegerTestCS(a INT4, b SMALLINT)
+RETURNS INT4 AS $$
   return a+b;
 $$ LANGUAGE plcsharp STRICT;
-\end{minted}
-\end{listing}
 
-\begin{listing}[H]
-\begin{minted}[breaklines, breakafter=d, frame=single, fontsize=\footnotesize]{sql}
-CREATE OR REPLACE FUNCTION IntegerTest(a INTEGER, b SMALLINT)
-RETURNS INTEGER AS $$
+CREATE OR REPLACE FUNCTION IntegerTestFS(a INT4, b SMALLINT)
+RETURNS INT4 AS $$
   a+b;
 $$ LANGUAGE plfsharp STRICT;
 \end{minted}
@@ -459,8 +503,8 @@ shoud work for any \dotnet\ language.
 
 \begin{listing}[H]
 \begin{minted}[breaklines, breakafter=d, frame=single, fontsize=\footnotesize]{sql}
-CREATE OR REPLACE FUNCTION IntegerTest(a INTEGER)
-RETURNS INTEGER AS 'Sample.dll:Namespace.Class!IntegerTest'
+CREATE OR REPLACE FUNCTION IntegerTest(a INT4)
+RETURNS INT4 AS 'Sample.dll:Namespace.Class!IntegerTest'
 LANGUAGE plcsharp STRICT;
 \end{minted}
 \end{listing}
@@ -481,7 +525,8 @@ change upstream to PostgreSQL.
 
 pl/dotnet is developed on Linux and has been fully tested on both
 x86 and ARM CPUs, suggesting the absence of any obvious endianness
-bugs.
+bugs.  We also have built and tested pl/dotnet on MacOS (OSX) on
+ARM, though it is of secondary priority to us.
 
 Our build environment is container-based, allowing us a stable and
 repeatable build environment. We build on Bullseye\footnote{Ride
@@ -489,18 +534,14 @@ like the wind, Bullseye!}, version 11 of the Debian Linux distribution.
 We use the system dpkg versions of both \dotnet and PostgreSQL.\@We
 build, install, and test a standard debian package (\textquote{dpkg}).
 
-Both PostgreSQL and \dotnet\ work on both Windows and macOS, and we
-would like for pl/dotnet to do the same; given that we have few
-system dependencies in the code, and those are very standard, we
-do not anticipate any significant problems in adding support for
-those operating systems. However, given that most PostgreSQL usage
-is on Linux, we decided that prioritizing Linux support and leaving
-the other platforms until later made sense; our focus for now is
-on growing the system's functionality, not expanding its range of
-support.
+There should be no problems getting pl/dotnet running on Windows; there
+are few system dependencies in the code, and those are very standard.
+However, given that most PostgreSQL usage is on Linux, we decided that
+prioritizing Linux support.  Our focus for now is on growing the system's
+functionality, not expanding its range of support.
 
-We welcome code contributions to support pl/dotnet on other
-Linux distributions and on other operating systems.
+We welcome code contributions to add support on other Linux distributions
+and on other operating systems for pl/dotnet.
 
 \subsubsection{Postgresql versions}
 
@@ -604,10 +645,8 @@ For most current applications, we think that it can be.
 %Testing, Static Analysis, and Documentation
 %TODO Update title
 
-In order to improve our codebase quality, we have built unit tests for all supported datatypes, their arrays, and null handling in C\#.
-We currently test a limited but representative
-range of datatypes in F\# and anticipate extending that test support
-to full coverage in the future.
+In order to improve our codebase quality, we have built unit tests for all
+supported datatypes, their arrays, and null handling in both C\# and F\#.
 
 We use three static analysis tools:
 \begin{enumerate}[itemsep=0pt]
@@ -676,26 +715,28 @@ programming tools, so our decision was to keep the C code to a
 minimum and use C\# wherever possible handle the transfer of data
 into and out of user functions.
 
-This stands in contrast to some other PL implementations, and
-pl/python is an interesting example.  pl/python is implemented
-entirely in C, and we have learned much from it.  The Python C API
-is very good, but it is still C.  Having been built in C, pl/python
-must pay careful attention to manual memory management, and building
-objects is tedious.  Despite our having a much wider range of native
-data type support than pl/python, we only have 25\% as many lines
-of C code, 1123 versus 4533.  (Adding SPI support, our only major
-missing feature, should add only a few hundred lines of code.) Since
-C\# is still compiled via the \dotnet\ JIT, and the CLR must be
-used anyway we do not sacrifice much performance this way.  Further,
-with our code generation strategy, we actually have a superior
-execution path to C engines such as pl/python's, and our performance
-is superior, despite building most of our logic in C\#.  For these
-reasons, we think keeping most handling in C\# is a good design
-decision for us.
+This stands in contrast to some other PL implementations, and pl/python
+is an interesting example.  pl/python is implemented entirely in C,
+and we have learned much from it.  The Python C API is very good,
+but it is still C.  Having been built in C, pl/python must pay careful
+attention to manual memory management, and building objects is tedious.
+Despite our having a much wider range of native data type support than
+pl/python, we only have 25\% as many lines of C code, 1123 versus 4533.
+Since C\# is still compiled via the \dotnet\ JIT, and the CLR must be
+used anyway, we do not sacrifice much performance this way.  Further,
+with our code generation strategy, we actually have a superior execution
+path to C engines such as pl/python's; whereas they are structured more
+like an interpreter, with run time determination of the execution path,
+we are able to lift such decision making to compile time and build
+minimal execution paths.  Finally, our optimal execution path is then
+compiled, yielding roughly equivalent and sometimes superior performance
+to natively-compiled code.  For these reason, our performance is superior,
+despite building most of our logic in a high-level language.  Keeping most
+handling in C\# was thus a good design decision for us.
 
 Every piece of data in PostgreSQL is expressed in a datum, and each
 datum has an Object IDentifier (\textquote{\texttt{OID}}) for its
-type. (This OID is not in the datum at runtime; it is in the type
+type. (This OID is not in the datum at run time; it is in the type
 definition for the function at compile time.) For each data type,
 pl/dotnet has a pair of small C function whose purpose is to get
 the values out of the datum to \dotnet\ (called \texttt{InputValue()})
@@ -706,22 +747,14 @@ minimum; they are strictly limited to getting data into and back
 out of \dotnet.
 
 When a function is created, pl/dotnet creates two assemblies: the
-UserHandler, and the UserFunction.  The UserFunction is a minimal
-wrapper around the user's code, or in cases where the user has
-loaded the function from a pre-compiled assembly, then it is just
-that assembly.  The UserHandler is responsible for marshalling
-values out of the database, calling the UserFunction, and then
-returning the result values back into the database.
+UserHandler, and the UserFunction.  The UserFunction is a minimal wrapper
+around the user's code, or in cases where the user has loaded the function
+from a pre-compiled assembly, then it is a wrapper around that assembly.
+The UserHandler is responsible for marshalling values out of the database,
+calling the UserFunction, and then returning the result values back into
+the database.
 
-Among PostgreSQL PL implementations, we are unique in generating
-and compiling custom code for each user function.  This gives us
-two advantages.  First, we specialize the possible universe of type
-conversions to the specific ones we need at the time of function
-creation, not at runtime.  Second, this minimal codepath is then
-compiled.  Both of these factors contribute to our unusually fast
-execution time.
-
-Another nice feature of this architecture is that, because the
+A nice feature of this architecture is that, because the
 UserHandler is so cleanly separated from the UserFunction, support
 for pre-compiled DLLs was straightforward. Further, it makes F\#
 support easy, because we can reuse the C\# implementation of the
@@ -730,20 +763,14 @@ is then easily callable from C\#.\footnote{The details of this
 handling are still evolving for F\#, because of the differences
 between F\# Compiler Services and Roslyn.}
 
-Adding other \dotnet languages would be similarly easy, and if someone
-would like to pay us a sufficient quantity of money, then we would
-be willing to add Visual Basic support, but otherwise such support
-is not currently planned.
-
 When a function is called from PostgreSQL, C builds an array of
 datums\footnote{We here refer to the plural of a PostgreSQL type
-\textquote{Datum} as \textquote{Datums} in order to differentiate
-them technically from the more generic \textquote{Data}.} with the
-function arguments and passes them to C\#. C\# knows the type of
-each argument from when the function was created, and it calls the
-corresponding handlers for each type to convert it from a PostgreSQL
-datum to a \dotnet value.  The C\# handler handles NULLs and arrays,
-and this code is nicely generic.
+\textquote{Datum} as \textquote{Datums} in order to differentiate them
+from the more generic \textquote{Data}.} with the function arguments
+and passes them to C\#. C\# knows the type of each argument from when
+the function was created, and it calls the corresponding handlers for
+each type to convert it from a PostgreSQL datum to a \dotnet value.
+The C\# handler handles NULLs and arrays with code that is nicely generic.
 
 After those values have been passed to the user function, the return
 value follows the reverse path through the type handler to create
@@ -800,25 +827,11 @@ that they be copied.\footnote{\url{https://learn.microsoft.com/en-us/dotnet/stan
 Strings in pl/dotnet are handled via a \texttt{ReadOnlySpan}, which is
 inexpensive and generally a nice interface.
 
-Given its history as a Windows platform, \dotnet\ has a long history
-of using utf16 as its default string encoding.  Mono, the
-\dotnet\-compatible framework which was long the default on Linux,
-mostly used utf8, and modern \dotnet\ on Linux does as well.  The
-details of string encoding on different platforms and in different
-circumstances in \dotnet\ are complicated and evolving, and we are
-not confident that we understand \dotnet\'s internal behavior fully;
-it remains an active topic of investigation for us.
-
-We did implement careful utf8/utf16 conversion for all strings,
-only to discover that it was unnecessary on Linux.  We have left
-it in place for now, in anticipation of adding Windows support in
-the future, where it will be needed.
-
 \subsection{Applying PL/DOTNET with C\#}
 
 We present a sample function to show the different parts of
-the system working together.  We use Int16 and Int32 as the simplest
-examples possible, letting us concentrate on the control flow
+the system working together.  We use Int16 and Int32 as simple
+examples, letting us concentrate on the control flow
 rather than the complexity of the type conversion.  Some of the
 minor details have been simplified for presentation.
 
@@ -835,16 +848,17 @@ $$ LANGUAGE plcsharp STRICT;
 \caption{How to define a function}
 \end{listing}
 
-Here is a UML sequence diagram explaining the relative calls
-between PostgreSQL, the C portion of pl/dotnet, the C\# portion
+Figure \ref{fig:sequencediag} is a UML sequence diagram explaining the relative
+calls between PostgreSQL, the C portion of pl/dotnet, the C\# portion
 of pl/dotnet, and the user-supplied function.
 
 \begin{figure*}
         \includegraphics[width=0.9\textwidth]{img/pldotnet-sequence-diagram.png}
         \caption{Figure \thefigure: pl/csharp Sequence Diagram}
+	\label{fig:sequencediag}
 \end{figure*}
 
-Here is the generated C\# code.  Datum, which is handled as a
+Program Code \ref{lst:generatedcode} is the generated C\# code.  Datum, which is handled as a
 \texttt{void*} in C, is handled as an \texttt{IntPtr} in C\#.
 
 \begin{listing}[H]
@@ -870,18 +884,11 @@ namespace PlDotNET.UserSpace {
 }
 \end{minted}
 \caption{Generated C\# code}
+\label{lst:generatedcode}
 \end{listing}
 
-%// As the SQL function named integertest is `STRICT` or `RETURNS NULL ON NULL INPUT`,
-%// `PL.NET` doesn't check whether any argument datum is null.
-%// You can also set true for the `Engine.AlwaysNullable` variable
-%// to always check whether the datum is null.
-%// BEGIN create arguments for integertest
-%arg_0 and arg_1
-%// END create arguments for integertest
-
-Here is the generic conversion code, which handles NULLs and wraps the
-type-specific conversion code:
+Program Code \ref{lst:conversioncode} is the generic conversion code, which
+handles NULLs and wraps the type-specific conversion code.
 
 \begin{listing}[H]
 \begin{minted}[breaklines, breakafter=d, frame=single,fontsize=\footnotesize]{csharp}
@@ -895,11 +902,10 @@ public abstract class StructTypeHandler<T> : BaseTypeHandler<T> where T : struct
 }
 \end{minted}
 \caption{Generic conversion code}
+\label{lst:conversioncode}
 \end{listing}
-%// dotnet_src/TypeHandlers/GenericHandler.cs
-%// In case of `null`, we set `isnull=True` and return a `0`, the PostgreSQL convention./
 
-Here is the relevant integer-specific conversion code.
+Program Code \ref{lst:integercode} is the relevant integer-specific conversion code.
 
 \begin{listing}[H]
 \begin{minted}[breaklines, breakafter=d, frame=single,fontsize=\footnotesize]{csharp}
@@ -918,10 +924,10 @@ public class IntHandler : StructTypeHandler<int> {
 }
 \end{minted}
 \caption{Main integer-specific conversion code}
+\label{lst:integercode}
 \end{listing}
-%// dotnet_src/TypeHandlers/IntegerHandler.cs
 
-Here is the C code, which uses the relevant PostgreSQL macros (etc)
+Program Code \ref{lst:datumcode} is the C code, which uses the relevant PostgreSQL macros (etc)
 for Datum conversion.  These would have been tedious and error-prone
 to implement as unsafe C\# code, in addition to being fragile to
 upstream changes in PostgreSQL, so instead we built C wrappers for
@@ -937,6 +943,7 @@ Datum pldotnet_CreateDatumInt32(int32_t value) {
 }
 \end{minted}
 \caption{C code with PostgreSQL macros}
+\label{lst:datumcode}
 \end{listing}
 %// src/pldotnet_conversions.c
 
@@ -961,7 +968,7 @@ We have built automated testing for over a hundred features across
 a range of other PostgreSQL procedural languages:
 
 \begin{table}[!htbp]
-       \caption{Comparison between PSQL Procedural Languages.}
+       \caption{Tests we wrote for other PSQL Procedural Languages.}
        \begin{tabular}{l | c }
                \toprule
                \rowcolor{gray!25} \textbf{language} & \textbf{\# tests} \\ \midrule
@@ -976,7 +983,7 @@ a range of other PostgreSQL procedural languages:
        \end{tabular}
 \end{table}
 
-We hope to assemble these tests into a unified suite which can be
+We intend to assemble these tests into a unified suite which can be
 used by the entire PostgreSQL PL community. We hope that this can
 help us all improve performance, improve cooperation across the PL
 space, and help us work together to drive improvement in PostgreSQL
@@ -1000,18 +1007,15 @@ comparison, ran them, and benchmarked pl/dotnet's performance against
 them.
 
 Under these tests, pl/dotnet's performance compared to the other
-procedural languages was good. We think it was especially good
-considering that we have barely started optimizing; significant
-improvements remain.
+procedural languages was good.  Given that we have not started optimizing
+our code, we are optimistic for our continued good performance.
 
 To compute total performance, we equally weighted each test and
 compared pl/dotnet against the other PL in question. First, a
 summary:
 
-% TODO: C# and F#?
-
 \begin{table}[!htbp]
-       \caption{Comparison of the execution time in relation to pl/dotnet.}
+       \caption{Comparison of the execution time in relation to pl/csharp.}
        \begin{tabular}{l | c }
                \toprule
                \rowcolor{gray!25} \textbf{Programming Language} & \textbf{Execution time} \\ \midrule
@@ -1036,7 +1040,7 @@ showing relative performance for each test in a heatmap.
         \boxed{
                 \includegraphics[scale=0.25]{img/pldotnet-performance-comparison.png}
         }
-        \caption{\centering Figure \thefigure: Performance graphs for pl/csharp compared to other PostgreSQL Procedural Languages}
+        \caption{\centering Performance graphs for pl/csharp compared to other PostgreSQL Procedural Languages}
         \label{fig:comparison}
 \end{figure*}
 
@@ -1045,26 +1049,32 @@ showing relative performance for each test in a heatmap.
         \boxed{
             \includegraphics[width=6in]{img/heatmap.png}
         }
-        \caption{\centering Figure \thefigure: Performance heatmap for all PostgreSQL Procedural Languages plus pl/csharp and pl/fsharp}
+        \caption{\centering Performance heatmap for all PostgreSQL Procedural Languages plus pl/csharp and pl/fsharp}
         \label{fig:heatmap}
 \end{figure*}
 
-As you can see, pl/dotnet is faster than every other PL, with the
-exception of pl/pgsql. pl/pgsql has always been the fastest language
-in PostgreSQL, because its native datatype representation is the
-PostgreSQL representation, so it does not need to perform any data
+As you can see, in our benchmarks, pl/dotnet is faster than every other
+PL, with the exception of pl/pgsql. pl/pgsql has always been the fastest
+language in PostgreSQL, because its native datatype representation is
+the PostgreSQL representation, so it does not need to perform any data
 conversions.
 
-Our results had been advantaged by a small number of tests with
-recursive functions, which \dotnet\ handles well and which pl/pgsql
-apparently does not.  We think recursive functions are important,
-especially for functional programming.  However, given that they
-heavily skewed the results, we have excluded them from this dataset
-and from the resulting performance figures.
+It is worth noting that, in actual usage, we expect pl/dotnet to be
+generally faster than pl/pgsql because of the superiority of the
+dotnet runtime to the pl/pgsql runtime; these benchmarks mostly
+measure the conversion of data into and out of the PL, which is
+our area of emphasis, not overall performance.
+
+Our results had been advantaged by a small number of tests with recursive
+functions, which \dotnet\ handles very well and which pl/pgsql apparently
+does not.  We think recursive functions are important, especially for
+functional programming.  However, given that they heavily skewed the
+results, we have excluded them from this dataset and from the resulting
+performance figures in the interest of fairness.
 
 We are pleased that our performance against pl/pgsql is so relatively
 strong, even with our having excluded the recursive tests.  We will
-be trying to reach parity or surpass it.
+be trying to reach parity and surpass it.
 
 Across all language comparisons, there are a small number of tests
 where pl/dotnet performance is relatively bad, and these are the
@@ -1073,10 +1083,8 @@ variably-dimensioned arrays.
 
 The fact that PostgreSQL enforces neither the specified array size
 nor the specified array dimension is unfortunate for languages
-like C\# which feature very fast array support but which, in the
-absence of fixed dimensionality, must fall back on cubersome object
-representations even for the common case of a single-dimensional
-array.
+like C\#; our compiler is deprived of important knowledge which
+it could use for optimization.
 
 As mentioned previously, we have thoughts for how we can improve
 array performance in pl/dotnet, perhaps significantly. Further,
@@ -1093,9 +1101,9 @@ be optional, with the default behavior remaining Npgsql-compatibile.
 
 \subsection{Type support}
 
-We consider 46 PostgreSQL types to be non-system types, intended
-for users.  Of these, we support 38 for them, and we have a
-clear roadmap to support all 45.
+We consider \psqltypecount\ PostgreSQL types to be non-system types, intended
+for users.  Of these, we support \pldotnettypecount\ for them, and we have a
+clear roadmap to support all \psqltypecount\ .
 
 Numerous of the PL implementations for scripting languages, such
 as pl/python and pl/tcl, achieve type support by passing the
