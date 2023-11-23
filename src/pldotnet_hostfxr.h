@@ -76,17 +76,18 @@ typedef load_assembly_and_get_function_pointer_fn dotnet_loader;
  *
  */
 typedef int(CORECLR_DELEGATE_CALLTYPE *compile_user_fn)(
-    uint32_t functionId, char *func_name, uint32_t func_ret_type,
-    bool retset, char *func_param_names, uint32_t *func_param_types,
-    char *param_modes, int num_output_values, char *func_body,
-    bool support_null_input, char *dotnet_language);
+    uint32_t functionId, char *func_name, uint32_t func_ret_type, bool retset,
+    char *func_param_names, uint32_t *func_param_types, char *param_modes,
+    int num_output_values, char *func_body, bool support_null_input,
+    char *dotnet_language);
 
 /**
  * @brief A function pointer that references Engine.RunUserFunction().
  *
  */
 typedef int(CORECLR_DELEGATE_CALLTYPE *run_user_fn)(
-    uint32_t functionId, uint64_t call_id, int call_mode, void *arguments, int num_arguments, bool *nullmap, void *output);
+    uint32_t functionId, uint64_t call_id, int call_mode, void *arguments,
+    int num_arguments, bool *nullmap, void *output);
 
 /**
  * @brief A function pointer that references Engine.BuildDatumList().
@@ -99,7 +100,7 @@ typedef void *(CORECLR_DELEGATE_CALLTYPE *build_datum_list_fn)(void);
  *
  */
 typedef void(CORECLR_DELEGATE_CALLTYPE *add_datum_to_list_fn)(void *list,
-                                                             void *datum);
+                                                              void *datum);
 
 /**
  * @brief A function pointer that references Engine.FreeGenericGCHandle().

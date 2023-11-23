@@ -654,7 +654,10 @@ Datum pldotnet_CreateDatumRange(Oid rtOid, Datum lowerDatum,
 
     typcache = lookup_type_cache(rtOid, TYPECACHE_RANGE_INFO);
 
-#if PG_VERSION_NUM >= 110000
+#if PG_VERSION_NUM >= 160000
+    PG_RETURN_RANGE_P(
+        range_serialize(typcache, &lower, &upper, false, nullptr));
+#elif PG_VERSION_NUM >= 110000
     PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
 #else
     PG_RETURN_RANGE(range_serialize(typcache, &lower, &upper, false));

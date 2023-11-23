@@ -189,7 +189,7 @@ csharp-tests-sql:
 	make csharp-tests-cats
 	make post-tests-script
 
-fsharp-tests:
+fsharp-tests-sql:
 	make pre-tests-script
 	make fsharp-tests-cats
 	make post-tests-script

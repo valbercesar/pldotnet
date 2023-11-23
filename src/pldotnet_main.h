@@ -64,17 +64,17 @@ extern char *dnldir;
 typedef enum pldotnet_Language { csharp, fsharp } pldotnet_Language;
 
 typedef enum {
-  CALL_NORMAL = 1,      // Normal, non-SRF function
-  CALL_SRF_FIRST = 2,   // First call to an SRF; create and cache
-  CALL_SRF_NEXT = 3,    // Next call to an SRF
-  CALL_SRF_CLEANUP = 4  // SRF is done; you may remove it from the cache
+    CALL_NORMAL = 1,      // Normal, non-SRF function
+    CALL_SRF_FIRST = 2,   // First call to an SRF; create and cache
+    CALL_SRF_NEXT = 3,    // Next call to an SRF
+    CALL_SRF_CLEANUP = 4  // SRF is done; you may remove it from the cache
 } CallType;
 
 typedef enum {
-  RETURN_ERROR = 0,     // We encountered an error
-  RETURN_NORMAL = 1,    // Normal return to CALL_NORMAL
-  RETURN_SRF_NEXT = 2,  // SRF return to CALL_SRF_NEXT
-  RETURN_SRF_DONE = 3   // We have no more values
+    RETURN_ERROR = 0,     // We encountered an error
+    RETURN_NORMAL = 1,    // Normal return to CALL_NORMAL
+    RETURN_SRF_NEXT = 2,  // SRF return to CALL_SRF_NEXT
+    RETURN_SRF_DONE = 3   // We have no more values
 } ReturnMode;
 
 typedef struct MemoryContextWrapper {
@@ -90,9 +90,9 @@ typedef struct pldotnet_PathConfig {
 
 typedef struct pldotnet_Result {
     size_t length;
-    Datum  *values;
-    bool   *nulls;
-    Oid    *oids;
+    Datum *values;
+    bool *nulls;
+    Oid *oids;
 } pldotnet_Result;
 
 typedef struct pldotnet_UserFunctionDeclaration {
@@ -104,24 +104,26 @@ typedef struct pldotnet_UserFunctionDeclaration {
     char *func_param_modes;
     int num_args;
     int num_input_args;
-    int num_output_values; // 0 for a normal function (1 return), <n> for a record (INOUT/OUT)
+    int num_output_values;  // 0 for a normal function (1 return), <n> for a
+                            // record (INOUT/OUT)
     const char *func_body;
     Oid func_oid;
     bool support_null_input;
     bool retset;
 } pldotnet_UserFunctionDeclaration;
 
-typedef struct cb_data { // old-school C inheritance here
-        MemoryContextCallback cb_record;
-        uint32_t functionId;
-        uint64_t call_id;
+typedef struct cb_data {  // old-school C inheritance here
+    MemoryContextCallback cb_record;
+    uint32_t functionId;
+    uint64_t call_id;
 } cb_data;
 
 /**
  * An experiment to try to work around memory corruption, as C# might be
  * stepping on a data structure.
  */
-void pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value, bool is_null, Oid oid);
+extern PGDLLEXPORT void pldotnet_SetResult(pldotnet_Result *output, int offset,
+                                           Datum value, bool is_null, Oid oid);
 
 /**
  * @brief The call_handler will be called to execute the procedural
@@ -228,14 +230,14 @@ bool pldotnet_SetDotNetMethods(void);
  * @param level The message level. For example, INFO, ERROR, WARNING, etc...
  * @param message The message that will be reported.
  */
-extern void pldotnet_Elog(int level, char *message);
+extern PGDLLEXPORT void pldotnet_Elog(int level, char *message);
 
 /**
  * @brief Returns the PostgreSQL version.
  *
  * @return char* the PostgreSQL version like "14.7"
  */
-extern char *pldotnet_GetPostgreSqlVersion(void);
+extern PGDLLEXPORT char *pldotnet_GetPostgreSqlVersion(void);
 
 /**
  * @brief Creates a new memory context.

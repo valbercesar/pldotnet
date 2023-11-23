@@ -9,9 +9,10 @@ PLDOTNET_TEMPLATE_DIR=${PLDOTNET_ENGINE_DIR}/Templates
 PLDOTNET_TEMPLATE_DIR_MOD=$(echo ${PLDOTNET_TEMPLATE_DIR} | sed 's/\//\\\//g')
 PKG_LIBDIR=$(pg_config --pkglibdir | sed 's/\//\\\//g')
 echo "${DOTNET_LIBDIR}" > /etc/ld.so.conf.d/nethost_pldotnet.conf
-sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/Engine.cs
+sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/*.cs
+sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/Common/*.cs
 sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/TypeHandlers/*.cs
-sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/FSharp/FSharpCompiler.fs
+sed -i "s/@PKG_LIBDIR/${PKG_LIBDIR}/g" ${PLDOTNET_ENGINE_DIR}/npgsql/src/Npgsql/PlDotNET/*.cs
 sed -i "s/@PLDOTNET_TEMPLATE_DIR/${PLDOTNET_TEMPLATE_DIR_MOD}/g" ${PLDOTNET_ENGINE_DIR}/CodeGenerator.cs
 dotnet build ${PLDOTNET_ENGINE_DIR} -c Release
 runuser -u postgres -- psql -c "DROP EXTENSION IF EXISTS pldotnet CASCADE;"

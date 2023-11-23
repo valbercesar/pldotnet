@@ -103,7 +103,7 @@ namespace TestDLLFunctions
 
         public static byte[]? byteaconversions(byte[]? a, byte[]? b)
         {
-            UTF8Encoding utf8_e = new();
+            UTF8Encoding utf8_e = new ();
             if (a == null && b == null)
             {
                 return null;
@@ -140,7 +140,7 @@ namespace TestDLLFunctions
             int new_day = ((DateOnly)new_date).Day;
             int new_month = ((DateOnly)new_date).Month;
             int new_year = ((DateOnly)new_date).Year;
-            DateTime new_timestamp = new(new_year, new_month, new_day, ((DateTime)orig_timestamp).Hour, ((DateTime)orig_timestamp).Minute, ((DateTime)orig_timestamp).Second);
+            DateTime new_timestamp = new (new_year, new_month, new_day, ((DateTime)orig_timestamp).Hour, ((DateTime)orig_timestamp).Minute, ((DateTime)orig_timestamp).Second);
             return new_timestamp;
         }
 
@@ -237,7 +237,7 @@ namespace TestDLLFunctions
                 PhysicalAddress orig_value = (PhysicalAddress)flatten_values.GetValue(i);
                 byte[] bytes = orig_value.GetAddressBytes();
                 bytes[0] += 1;
-                PhysicalAddress new_value = new(bytes);
+                PhysicalAddress new_value = new (bytes);
                 flatten_values.SetValue((PhysicalAddress)new_value, i);
             }
 
@@ -277,7 +277,7 @@ namespace TestDLLFunctions
                 }
 
                 NpgsqlRange<long> orig_value = (NpgsqlRange<long>)flatten_values.GetValue(i);
-                NpgsqlRange<long> new_value = new(orig_value.LowerBound + 1, orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound + 1, orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
+                NpgsqlRange<long> new_value = new (orig_value.LowerBound + 1, orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound + 1, orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
                 flatten_values.SetValue((NpgsqlRange<long>)new_value, i);
             }
 
@@ -297,7 +297,7 @@ namespace TestDLLFunctions
 
                 NpgsqlRange<DateOnly> orig_value = (NpgsqlRange<DateOnly>)flatten_values.GetValue(i);
 
-                NpgsqlRange<DateOnly> new_value = new(orig_value.LowerBound.AddDays(1), orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound.AddDays(1), orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
+                NpgsqlRange<DateOnly> new_value = new (orig_value.LowerBound.AddDays(1), orig_value.LowerBoundIsInclusive, orig_value.LowerBoundInfinite, orig_value.UpperBound.AddDays(1), orig_value.UpperBoundIsInclusive, orig_value.UpperBoundInfinite);
                 flatten_values.SetValue((NpgsqlRange<DateOnly>)new_value, i);
             }
 
@@ -369,7 +369,6 @@ namespace TestDLLFunctions.OtherTests
 
     public class InoutTests
     {
-
         public static void inoutBasic0(ref int? argument_0)
         {
             if (argument_0 != 0)
@@ -600,7 +599,7 @@ namespace TestDLLFunctions.OtherTests
         public static void inoutArray10(ref Array? values_array, out int? nulls)
         {
             Array flatten_values = Array.CreateInstance(typeof(object), values_array.Length);
-             TestDLLFunctions.TestClass.FlatArray(values_array, ref flatten_values);
+            TestDLLFunctions.TestClass.FlatArray(values_array, ref flatten_values);
             nulls = 0;
             for (int i = 0; i < flatten_values.Length; i++)
             {
@@ -613,7 +612,7 @@ namespace TestDLLFunctions.OtherTests
                 PhysicalAddress orig_value = (PhysicalAddress)flatten_values.GetValue(i);
                 byte[] bytes = orig_value.GetAddressBytes();
                 bytes[0] += 1;
-                PhysicalAddress new_value = new PhysicalAddress(bytes);
+                PhysicalAddress new_value = new (bytes);
                 flatten_values.SetValue((PhysicalAddress)new_value, i);
             }
 
@@ -634,8 +633,10 @@ namespace TestDLLFunctions.OtherTests
         public static void inoutSimple10(out int? checksum, (IPAddress Address, int Netmask) address)
         {
             int i;
+
             // get bytes
             byte[] bytes = address.Address.GetAddressBytes();
+
             // compute checksum
             checksum = 0;
             for (i = 0; i < bytes.Length; i++)
@@ -646,22 +647,23 @@ namespace TestDLLFunctions.OtherTests
 
         public static void inoutSimple20(ref (IPAddress Address, int Netmask)? address, int pos, int delta)
         {
-            int i;
             // compute new address
-            (IPAddress Address, int Netmask) address2 = address ?? (IPAddress.Parse("1.1.1.1"), 8);
-            byte[] bytes = address2.Address.GetAddressBytes();
+            (IPAddress address1, int netmask) = address ?? (IPAddress.Parse("1.1.1.1"), 8);
+            byte[] bytes = address1.GetAddressBytes();
             bytes[pos] += (byte)delta;
-            address = (new IPAddress(bytes), address2.Netmask);
+            address = (new IPAddress(bytes), netmask);
         }
 
         public static void inoutSimple30(out int? checksum, ref (IPAddress Address, int Netmask)? address, int pos, int delta)
         {
             int i;
+
             // compute new address
-            (IPAddress Address, int Netmask) address2 = address ?? (IPAddress.Parse("1.1.1.1"), 8);
-            byte[] bytes = address2.Address.GetAddressBytes();
+            (IPAddress address1, int netmask) = address ?? (IPAddress.Parse("1.1.1.1"), 8);
+            byte[] bytes = address1.GetAddressBytes();
             bytes[pos] += (byte)delta;
-            address = (new IPAddress(bytes), address2.Netmask);
+            address = (new IPAddress(bytes), netmask);
+
             // compute checksum
             checksum = 0;
             for (i = 0; i < bytes.Length; i++)
@@ -672,22 +674,16 @@ namespace TestDLLFunctions.OtherTests
 
         public static void inoutObject10(string? a, ref string? b)
         {
-            if (a == null)
-                a = "";
-            if (b == null)
-                b = "";
+            a ??= string.Empty;
+            b ??= string.Empty;
             b = a + " " + b;
         }
 
         public static void inoutObject20(string? a, string? b, out string? c)
         {
-            if (a == null)
-                a = "";
-            if (b == null)
-                b = "";
+            a ??= string.Empty;
+            b ??= string.Empty;
             c = a + " " + b;
         }
-
-
     }
 }

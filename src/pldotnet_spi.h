@@ -45,7 +45,7 @@ extern bool is_spi_open;
  *
  * @return the SPITupleTable of the performed query.
  */
-SPITupleTable *pldotnet_SPIExecute(char *cmd,
+extern PGDLLEXPORT SPITupleTable *pldotnet_SPIExecute(char *cmd,
                                    bool read_only,
                                    long limit,
                                    ErrorData **errorData);
@@ -68,7 +68,7 @@ SPITupleTable *pldotnet_SPIExecute(char *cmd,
  *
  * @return the SPITupleTable of the performed query.
  */
-SPITupleTable *pldotnet_SPIExecutePlan(SPIPlanPtr plan,
+extern PGDLLEXPORT SPITupleTable *pldotnet_SPIExecutePlan(SPIPlanPtr plan,
                                        Datum *paramValues,
                                        const char *nullmap,
                                        bool read_only,
@@ -81,7 +81,7 @@ SPITupleTable *pldotnet_SPIExecutePlan(SPIPlanPtr plan,
  * @param errorData The ErrorData struct with the error that occurred
  *
  */
-void pldotnet_SPICommit(ErrorData **errorData);
+extern PGDLLEXPORT void pldotnet_SPICommit(ErrorData **errorData);
 
 /**
  * @brief Rolls back the current transaction using SPI_rollback().
@@ -89,7 +89,7 @@ void pldotnet_SPICommit(ErrorData **errorData);
  * @param errorData The ErrorData struct with the error that occurred
  *
  */
-void pldotnet_SPIRollback(ErrorData **errorData);
+extern PGDLLEXPORT void pldotnet_SPIRollback(ErrorData **errorData);
 
 /**
  * @brief Gets the number of columns if the provided SPITupleTable
@@ -101,7 +101,7 @@ void pldotnet_SPIRollback(ErrorData **errorData);
  * @return the number of columns in the table stored in the provided
  * SPITupleTable.
  */
-int pldotnet_GetTableColumnNumber(SPITupleTable *tupleTable);
+extern PGDLLEXPORT int pldotnet_GetTableColumnNumber(SPITupleTable *tupleTable);
 
 /**
  * @brief Get the properties of the columns in the current query result set.
@@ -115,7 +115,7 @@ int pldotnet_GetTableColumnNumber(SPITupleTable *tupleTable);
  * @param tupleTable A pointer to a SPITupleTable struct. It'll be a null
  * pointer if it is not related to a returned table.
  */
-void pldotnet_GetColProps(int *columnTypes,
+extern PGDLLEXPORT void pldotnet_GetColProps(int *columnTypes,
                           char **columnNames,
                           SPITupleTable *tupleTable);
 
@@ -132,10 +132,10 @@ void pldotnet_GetColProps(int *columnTypes,
  * @param tupleTable A pointer to a SPITupleTable struct. It'll be a null
  * pointer if it is not related to a returned table.
  */
-void pldotnet_GetRow(int row,
-                     Datum *datums,
-                     bool *isNull,
-                     SPITupleTable *tupleTable);
+extern PGDLLEXPORT void pldotnet_GetRow(int row,
+                                        Datum *datums,
+                                        bool *isNull,
+                                        SPITupleTable *tupleTable);
 
 /**
  * @brief Prepares a statement for execution by the SPI manager.
@@ -147,11 +147,11 @@ void pldotnet_GetRow(int row,
  * @param argTypes An array of argument type OIDs.
  * @param errorData The ErrorData struct with the error that occurred
  */
-void pldotnet_SPIPrepare(SPIPlanPtr *cmdPointer,
-                         char *command,
-                         int nargs,
-                         Oid *argTypes,
-                         ErrorData **errorData);
+extern PGDLLEXPORT void pldotnet_SPIPrepare(SPIPlanPtr *cmdPointer,
+                                            char *command,
+                                            int nargs,
+                                            Oid *argTypes,
+                                            ErrorData **errorData);
 
 /**
  * @brief Get the string representing elevel
@@ -160,16 +160,16 @@ void pldotnet_SPIPrepare(SPIPlanPtr *cmdPointer,
  * compatible with pre-15 psql
  * @return the error type as a char pointer.
  */
-const char *pldotnet_ErrorSeverity(int elevel);
+extern PGDLLEXPORT const char *pldotnet_ErrorSeverity(int elevel);
 
 /**
  * @brief Free the errorData Pointer after using it on C#
  * @param errorData The ErrorData struct with the error to be freed
  */
-void pldotnet_FreeErrorData(ErrorData *errorData);
+extern PGDLLEXPORT void pldotnet_FreeErrorData(ErrorData *errorData);
 
 /**
  * @brief Return the value of the global variable SPI_processed.
  * @return the number of processed rows at the last query executed.
  */
-uint64 pldotnet_GetProcessedRowsNumber(void);
+extern PGDLLEXPORT uint64 pldotnet_GetProcessedRowsNumber(void);

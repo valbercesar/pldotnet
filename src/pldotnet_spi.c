@@ -47,7 +47,9 @@ const char *pldotnet_ErrorSeverity(int elevel) {
         prefix = gettext_noop("NOTICE");
         break;
     case WARNING:
+    #if PG_VERSION_NUM >= 140000
     case WARNING_CLIENT_ONLY:
+    #endif
         prefix = gettext_noop("WARNING");
         break;
     case ERROR:
