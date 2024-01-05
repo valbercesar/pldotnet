@@ -345,10 +345,10 @@ WHERE id = {functionInfo.TestId.Value};";
         bool testInsertionResult = InsertTestResult(FunctionInfo);
 
         bool? testResult = FetchTestResult(FunctionInfo);
-        Assert.True(FunctionInfo.FunctionCreatedSuccessfully, "Failed at the DefineFunction step.");
-        Assert.True(testInsertionResult, "Failed at the InsertTestResult step.");
-        Assert.True(testResult.HasValue, "Failed at the FetchTestResult step.");
+        Assert.True(FunctionInfo.FunctionCreatedSuccessfully, "Failed to create function in .NET");
+        Assert.True(testInsertionResult, "Failed to execute the function.");
+        Assert.True(testResult.HasValue, "Failed to get the test result value.");
         if (!testResult.HasValue) return;
-        Assert.True(testResult.Value, "The test result was not true.");
+        Assert.True(testResult.Value, "Test did not return the expected value.");
     }
 }

@@ -210,13 +210,14 @@ explained in more detail later in the paper.
             \item Testing: we have 820 unit tests; all types, plus their arrays and nulls, are fully unit-tested in both C\# and F\#
             \item Security: Code for each function is isolated in a \dotnet Assembly Load Context, providing some security protection
             \item Output parameter support
+            \item Set-Returning Functions: mapped to \texttt{IEnumerable<T>} for both C\#
         \end{itemize}
     \item Future support:
         \begin{itemize}
-            \item Datatypes: four types need to be added: multirange (of which there are five), enumerated, numeric, and composite
+            \item Datatypes: multirange (of which there are five) and numeric
+            \item composite and enumerated types need to be mapped
             \item SPI: basic SPI is privately working, but we want to make it 100\% Npgsql-compatible
             \item Triggers: we have triggers prototyped and will implement them fully
-            \item Set-Returning Functions: will be mapped to \texttt{IEnumerable<T>} for both C\# and F\#
     \end{itemize}
 \end{itemize}
 
@@ -353,17 +354,17 @@ this reflected in the PostgreSQL manual:
 % \begin{quote}
 % The syntax for CREATE TABLE allows the exact size of arrays to be
 % specified, for example:
-% 
+%
 % \begin{minted}[frame=single,style=borland]{sql}
 % CREATE TABLE tictactoe (
 %     squares integer[3][3]
 % );
 % \end{minted}
-% 
+%
 % However, the current implementation ignores any supplied array size
 % limits, i.e., the behavior is the same as for arrays of unspecified
 % length.
-% 
+%
 % The current implementation does not enforce the declared number of
 % dimensions either. Arrays of a particular element type are all
 % considered to be of the same type, regardless of size or number of

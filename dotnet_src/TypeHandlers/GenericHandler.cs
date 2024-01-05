@@ -445,7 +445,7 @@ namespace PlDotNET.Handler
         /// See ::pldotnet_SetResult().
         /// </summary>
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_SetResult(IntPtr output, int offset, IntPtr value, bool isnull, uint oid);
+        public static extern unsafe int pldotnet_SetResult(IntPtr output, int offset, IntPtr value, bool isnull, uint oid);
 
         /// <summary>
         /// Sets the result datum of a user function to an output object.
@@ -456,8 +456,10 @@ namespace PlDotNET.Handler
         /// <param name="output">A pointer to the output object where the result datum will be set.</param>
         public static unsafe void SetDatumResult(IntPtr resultDatum, bool isNull, IntPtr output, int offset, uint oid)
         {
-            // Elog.Info("Calling pldotnet_SetResult(output, offset, resultDatum, isNull, oid);");
-            pldotnet_SetResult(output, offset, resultDatum, isNull, oid);
+            if (pldotnet_SetResult(output, offset, resultDatum, isNull, oid) != 0)
+            {
+                throw new SystemException("Error received trying to set output datum");
+            }
         }
     }
 }

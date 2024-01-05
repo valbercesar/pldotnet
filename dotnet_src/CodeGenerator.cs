@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -46,14 +47,35 @@ namespace PlDotNET
 {
     public abstract class CodeGenerator
     {
-        public string UserHandlerTemplatePath;
+        public string FuncName;
+        public uint ReturnTypeId;
+        public bool Retset;
+        public bool IsTrigger;
+        public string[] ParamNames;
+        public uint[] ParamTypes;
+        public byte[] ParamModes;
+        public int NumOutputValues;
+        public string FuncBody;
+        public bool SupportNullInput;
+        public string ComplexReturnType;
+        public string SimpleReturnType;
+        public string[] DotnetTypes;
+        public int BcsrOutputValues;
+        public string TableReturnType;
 
+        public string UserFunctionPrefix = "PlDotNET.UserSpace.UserFunction";
+
+        public string UserHandlerTemplatePath;
+        public string UserTHandlerTemplatePath;
         public string UserFunctionTemplatePath;
 
         public DotNETLanguage Language;
 
         public byte[] InputModes = new byte[] { (byte)ProArgMode.In, (byte)ProArgMode.InOut };
         public byte[] OutputModes = new byte[] { (byte)ProArgMode.Out, (byte)ProArgMode.InOut };
+
+        // This is "output modes plus table"; it has nothing to do with trigger
+        public byte[] TOutputModes = new byte[] { (byte)ProArgMode.Out, (byte)ProArgMode.InOut, (byte)ProArgMode.Table };
 
         // taken from catalog/pg_proc.h
         public enum ProArgMode : byte
@@ -70,26 +92,140 @@ namespace PlDotNET
             Table = (byte)'t',
         }
 
+        public string DebugInfoOrig()
+        {
+            return $@"Debug info for {this.GetType().Name}:
+                FuncName: {this.FuncName}
+                ReturnTypeId: {this.ReturnTypeId}
+                Retset: {this.Retset}
+                IsTrigger: {this.IsTrigger}
+                ParamNames: {string.Join(", ", this.ParamNames)}
+                paramTypes: {string.Join(", ", this.ParamTypes)}
+                paramModes: {string.Join(", ", this.ParamModes)}
+                num_output_values: {this.NumOutputValues}
+                funcBody: {this.FuncBody.Replace(Environment.NewLine, "\\n")}
+                supportNullInput: {this.SupportNullInput}
+                complexReturnType: {this.ComplexReturnType}
+                simpleReturnType: {this.SimpleReturnType}
+                dotnetTypes: {string.Join(", ", this.DotnetTypes)}
+                bcsr_output_values: {this.BcsrOutputValues}
+                tableReturnType: {this.TableReturnType}";
+        }
+
+        public string DebugInfo()
+        {
+            var sb = new StringBuilder();
+            string newline = Environment.NewLine;
+
+            try
+            {
+                sb.AppendLine($"Debug info for {this.GetType().Name}:");
+                sb.AppendLine($"FuncName: {this.FuncName ?? "null"}");
+                sb.AppendLine($"ReturnTypeId: {this.ReturnTypeId}");
+                sb.AppendLine($"Retset: {this.Retset}");
+                sb.AppendLine($"IsTrigger: {this.IsTrigger}");
+                sb.AppendLine($"ParamNames: {(this.ParamNames != null ? string.Join(", ", this.ParamNames) : "null")}");
+                sb.AppendLine($"paramTypes: {(this.ParamTypes != null ? string.Join(", ", this.ParamTypes) : "null")}");
+                sb.AppendLine($"paramModes: {(this.ParamModes != null ? string.Join(", ", this.ParamModes) : "null")}");
+                sb.AppendLine($"num_output_values: {this.NumOutputValues}");
+                sb.AppendLine($"funcBody: {(this.FuncBody != null ? this.FuncBody.Replace(Environment.NewLine, "\\n") : "null")}");
+                sb.AppendLine($"supportNullInput: {this.SupportNullInput}");
+                sb.AppendLine($"complexReturnType: {this.ComplexReturnType ?? "null"}");
+                sb.AppendLine($"simpleReturnType: {this.SimpleReturnType ?? "null"}");
+                sb.AppendLine($"dotnetTypes: {(this.DotnetTypes != null ? string.Join(", ", this.DotnetTypes.Select(d => d ?? "null")) : "null")}");
+                sb.AppendLine($"bcsr_output_values: {this.BcsrOutputValues}");
+                sb.AppendLine($"tableReturnType: {this.TableReturnType ?? "null"}");
+
+                return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                Elog.Error($"Exception encountered while generating debug info. " +
+                    $"Current state:\n{sb.ToString()}\nException:\n{ex}");
+                throw;
+            }
+        }
+
+        public void baseInitializer(
+            string funcName,
+            uint returnTypeId,
+            bool retset,
+            bool is_trigger,
+            string[] paramNames,
+            uint[] paramTypes,
+            byte[] paramModes,
+            int num_output_values,
+            string funcBody,
+            bool supportNullInput)
+        {
+            // first set the simple values
+            this.FuncName = funcName;
+            this.ReturnTypeId = returnTypeId;
+            this.Retset = retset;
+            this.IsTrigger = is_trigger;
+            this.ParamNames = paramNames;
+            this.ParamTypes = paramTypes;
+            this.ParamModes = paramModes;
+            this.NumOutputValues = num_output_values;
+            this.FuncBody = funcBody;
+            this.SupportNullInput = supportNullInput;
+            this.ComplexReturnType = this.GetReturnType(returnTypeId, retset = false);
+            this.SimpleReturnType = this.GetReturnType(returnTypeId, retset = false);
+
+            if (this.IsTrigger)
+            {
+                Debug.Assert(!this.Retset, "Cannot return `SETOF` from a trigger");
+                Debug.Assert(this.ReturnTypeId == (uint)OID.TRIGGEROID, "Trigger functions must return TRIGGEROID");
+                Debug.Assert(this.ParamNames.Length == 0, "Trigger functions can take no arguments");
+                this.DotnetTypes = Array.Empty<string>();
+                this.SimpleReturnType = "int";
+                this.ComplexReturnType = "int";
+
+                // triggers otherwise ignore paramNames, returnTypeId, etc, so we don't set them here
+                return;
+            }
+
+            // This is done differently for C# vs F#
+            this.DotnetTypes = this.GetDotNetTypes();
+
+            ////////////////////////////////////////
+            // Handle table mode
+            this.BcsrOutputValues = this.ParamModes.Contains((byte)ProArgMode.Table)
+                    ? this.ParamModes.Count(mode => mode == (byte)ProArgMode.Table)
+                    : this.NumOutputValues;
+
+            // Generate the `IEnumerable<a, b, c>` for table mode
+            this.ComplexReturnType = this.GetComplexReturnType(this.Retset);
+
+            // How does retset work with records?
+            //     - Table mode is retset, but we need the simple type without the `IEnumerable<>` around it
+            //     - record with retset returns `IEnumerable<Object? []?>`
+            //     - out variables return a record, but they are just `void` (in C#)
+            this.SimpleReturnType = this.ParamModes.Contains((byte)ProArgMode.Table)
+                    ? this.GetComplexReturnType(false)
+                    : this.SimpleReturnType;
+        }
+
         /// <summary>
         /// Filter the necessary handlers that need to be created in the generated code.
         /// </summary>
         /// <returns>
         /// Returns the type handlers that need to be added in the dynamic code.
         /// </returns>
-        public static List<string> FilterHandlers(uint[] inputTypes, uint outputType)
+        public List<string> FilterHandlers()
         {
             // We need an NPGSQL object for all arguments: IN/OUT/INOUT.  Thus, we
             // do not filter here by paramMode.
             List<string> allHandlers = new ();
 
-            if ((OID)outputType != OID.VOIDOID)
+            if ((OID)this.ReturnTypeId != OID.VOIDOID)
             {
-                allHandlers.Add(DatumConversion.GetTypeHandlerName(outputType));
+                allHandlers.Add(DatumConversion.GetTypeHandlerName(this.ReturnTypeId));
             }
 
-            for (int i = 0; i < inputTypes.Length; i++)
+            for (int i = 0; i < this.ParamTypes.Length; i++)
             {
-                allHandlers.Add(DatumConversion.GetTypeHandlerName(inputTypes[i]));
+                allHandlers.Add(DatumConversion.GetTypeHandlerName(this.ParamTypes[i]));
             }
 
             return allHandlers.Distinct().ToList();
@@ -98,7 +234,7 @@ namespace PlDotNET
         /// <summary>
         /// Prints the source code if Engine.PrintSourceCode is true.
         /// </summary>
-        public static void PrintSourceCode(string sourceCode)
+        public void PrintSourceCode(string sourceCode)
         {
             if (Engine.PrintSourceCode)
             {
@@ -114,10 +250,10 @@ namespace PlDotNET
         /// <returns>
         /// Returns the Nullable message.
         /// </returns>
-        public static string GetNullableMessage(string funcName)
+        public string GetNullableMessage()
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"// As the SQL function named {funcName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
+            sb.AppendLine($"// As the SQL function named {this.FuncName} is `STRICT` or `RETURNS NULL ON NULL INPUT`,");
             sb.AppendLine("// `PL.NET` doesn't check whether any argument datum is null.");
             sb.AppendLine("// You can also set true for the `Engine.AlwaysNullable` variable");
             sb.AppendLine("// to always check whether the datum is null.");
@@ -137,56 +273,80 @@ namespace PlDotNET
             }
         }
 
+        // This can be considated back into BuildUserHandlerSourceCode be mildly abstracting it
+        public string BuildUserTHandlerSourceCode()
+        {
+            // Check if the file exists
+            if (!File.Exists(this.UserTHandlerTemplatePath))
+            {
+                throw new SystemException($"Template file '{this.UserTHandlerTemplatePath}' not found");
+            }
+
+            string sourceCode = File.ReadAllText(this.UserTHandlerTemplatePath);
+
+            string assemblyPath = string.Empty;
+            _ = Engine.GetInformationFromUserAssembly(this.FuncBody, ref assemblyPath, ref this.UserFunctionPrefix, ref this.FuncName);
+
+            sourceCode = sourceCode.Replace("// $handler_objects$", this.BuildHandlerObjects());
+
+            sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall());
+
+            if (this.Language == DotNETLanguage.FSharp)
+            {
+                // Creates the UserFunction type with the SQL user function
+                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction());
+            }
+
+            sourceCode = this.FormatGeneratedCode(sourceCode);
+
+            this.PrintSourceCode(sourceCode);
+            this.SaveSourceCode(sourceCode, $"UserTHandler_{this.FuncName}");
+
+            return sourceCode;
+        }
+
         /// <summary>
         /// Creates the source code for the UserHandler according to the programming language.
         /// </summary>
         /// <returns>
         /// Returns the generated UserHandler source code.
         /// </returns>
-        public string BuildUserHandlerSourceCode(
-                string funcName,
-                uint returnTypeId,
-                bool retset,
-                string[] paramNames,
-                uint[] paramTypes,
-                byte[] paramModes,
-                int num_output_values,
-                string funcBody,
-                bool supportNullInput)
+        public string BuildUserHandlerSourceCode()
         {
+            if (this.IsTrigger)
+            {
+                return this.BuildUserTHandlerSourceCode();
+            }
+
             // Check if the file exists
             if (!File.Exists(this.UserHandlerTemplatePath))
             {
                 throw new SystemException($"Template file '{this.UserHandlerTemplatePath}' not found");
             }
 
-            string userFunctionPrefix = "PlDotNET.UserSpace.UserFunction";
             string assemblyPath = string.Empty;
-            _ = Engine.GetInformationFromUserAssembly(funcBody, ref assemblyPath, ref userFunctionPrefix, ref funcName);
-            string simpleReturnType = this.GetReturnType(returnTypeId, false, paramModes, supportNullInput); // retset=False, so without `IEnumerable<>`
-
-            string[] dotnetTypes = this.GetDotNetTypes(paramTypes, paramModes);
+            _ = Engine.GetInformationFromUserAssembly(this.FuncBody, ref assemblyPath, ref this.UserFunctionPrefix, ref this.FuncName);
 
             string sourceCode = File.ReadAllText(this.UserHandlerTemplatePath);
-            sourceCode = sourceCode.Replace("// $srf_cache$", this.BuildSRFCache(retset, simpleReturnType));
-            sourceCode = sourceCode.Replace("// $handler_objects$", this.BuildHandlerObjects(paramTypes, returnTypeId));
-            sourceCode = sourceCode.Replace("// $srf_begin$", this.BuildSRFBegin(retset));
-            sourceCode = sourceCode.Replace("// $create_arguments$", this.BuildCreateArguments(funcName, paramTypes, paramModes, supportNullInput));
-            sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall(funcName, returnTypeId, dotnetTypes, paramModes, supportNullInput, userFunctionPrefix));
-            sourceCode = sourceCode.Replace("// $srf_middle$", this.BuildSRFMiddle(retset));
-            sourceCode = sourceCode.Replace("// $call_set_result$", this.BuildCallSetResult(returnTypeId, paramNames, paramTypes, paramModes, num_output_values));
-            sourceCode = sourceCode.Replace("// $srf_end$", this.BuildSRFEnd(retset));
+            sourceCode = sourceCode.Replace("// $srf_cache$", this.BuildSRFCache());
+            sourceCode = sourceCode.Replace("// $handler_objects$", this.BuildHandlerObjects());
+            sourceCode = sourceCode.Replace("// $srf_begin$", this.BuildSRFBegin());
+            sourceCode = sourceCode.Replace("// $create_arguments$", this.BuildCreateArguments(this.InputModes));
+            sourceCode = sourceCode.Replace("// $user_function_call$", this.BuildFunctionCall());
+            sourceCode = sourceCode.Replace("// $srf_middle$", this.BuildSRFMiddle());
+            sourceCode = sourceCode.Replace("// $call_set_result$", this.BuildCallSetResult());
+            sourceCode = sourceCode.Replace("// $srf_end$", this.BuildSRFEnd());
 
             if (this.Language == DotNETLanguage.FSharp)
             {
                 // Creates the UserFunction type with the SQL user function
-                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, retset, paramNames, paramModes, dotnetTypes, supportNullInput));
+                sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction());
             }
 
             sourceCode = this.FormatGeneratedCode(sourceCode);
 
-            PrintSourceCode(sourceCode);
-            this.SaveSourceCode(sourceCode, $"UserHandler_{funcName}");
+            this.PrintSourceCode(sourceCode);
+            this.SaveSourceCode(sourceCode, $"UserHandler_{this.FuncName}");
 
             return sourceCode;
         }
@@ -202,15 +362,15 @@ namespace PlDotNET
         /// <returns>
         /// Returns the generated source code.
         /// </returns>
-        public string BuildSRFCache(bool retset, string returnType)
+        public string BuildSRFCache()
         {
-            return retset ?
-                $"public static Dictionary<ulong, IEnumerator<{returnType}>> EnumeratorCache = new Dictionary<ulong, IEnumerator<{returnType}>>();\n" :
+            return this.Retset ?
+                $"public static Dictionary<ulong, IEnumerator<{this.SimpleReturnType}>> EnumeratorCache = new Dictionary<ulong, IEnumerator<{this.SimpleReturnType}>>();\n" :
                     "// skipping SRF cache; not a set-returning function";
         }
 
         /// <summary>
-        /// Creates the opening for SRF handling, or else a small comment if not SRF.
+        /// Creates the opening for SRF handling, or else a small comment if not SRF
         /// </summary>
         /// <remarks>
         /// Generated SRF-handling code:
@@ -221,85 +381,109 @@ namespace PlDotNET
         /// <returns>
         /// Returns the generated source code.
         /// </returns>
-        public string BuildSRFBegin(bool retset)
+        public string BuildSRFBegin()
         {
-            if (retset)
+            if (!this.Retset)
             {
-                return @"if(call_mode == (int)CallMode.SrfFirst){
-                            // Elog.Info($""Got SRF_FIRST on call_id {call_id}"");
-                            ";
+                return "// skipping SRF setup; not a set-returning function";
             }
 
-            return "// skipping SRF setup; not a set-returning function";
+            return @"if (call_mode == (int)CallMode.SrfFirst){
+                        // Elog.Info($""Got SRF_FIRST on call_id {call_id}"");
+                        ";
         }
 
         /// <summary>
-        /// Creates the middle of the SRF handling, or else a small comment if not SRF.
+        /// Creates the middle of the SRF handling, or else a small comment if not SRF
         /// </summary>
         /// <remarks>
         /// 1. we end the SRF_FIRST handling
-        /// 2. we open the SRF_NEXT handling.
+        /// 2. we open the SRF_NEXT handling
         /// </remarks>
         /// <returns>
         /// Returns the generated source code.
         /// </returns>
-        public string BuildSRFMiddle(bool retset)
+        public string BuildSRFMiddle()
         {
-            if (retset)
+            if (!this.Retset)
             {
-                return @"
-                        // Elog.Info($""Got SRF result ({result.GetType().Name}) {result}"");
-                        var enumerator = result.GetEnumerator();
-                        // Elog.Info($""Got SRF enumerator ({enumerator.GetType().Name}) {enumerator}; adding to cache under [{call_id}]"");
-                        EnumeratorCache.Add(call_id, enumerator);
-                        // Elog.Info($""Returning SRF_NEXT"");
-                        return (int)ReturnMode.SrfNext;
-                    } else if(call_mode == (int)CallMode.SrfNext){
-                        // Elog.Info($""Getting SRF enumerator (call_id {call_id})"");
-                        var enumerator = EnumeratorCache[call_id];
-                        // Elog.Info($""Got SRF enumerator ({enumerator.GetType().Name}) {enumerator}"");
-                        if (enumerator.MoveNext() == false) {
-                            // Elog.Info($""Enumerator is done; returning SRF_DONE"");
-                            return (int)ReturnMode.SrfDone;
-                        }
-                        // Elog.Info($""Getting SRF current value"");
-                        var result = enumerator.Current;
-                        // Elog.Info($""Got next result {result}"");
-                        // we now cascade to returning the value";
+                return "// skipping SRF middle; not a set-returning function";
             }
 
-            return "// skipping SRF middle; not a set-returning function";
+            var ret = @"
+                    // Elog.Info($""Got SRF result ({result.GetType().Name}) {result}"");
+                    var enumerator = result.GetEnumerator();
+                    // Elog.Info($""Got SRF enumerator ({enumerator.GetType().Name}) {enumerator}; adding to cache under [{call_id}]"");
+                    EnumeratorCache.Add(call_id, enumerator);
+                    // Elog.Info($""Returning SRF_NEXT"");
+                    return (int)ReturnMode.SrfNext;
+                } else if (call_mode == (int)CallMode.SrfNext){
+                    // Elog.Info($""Getting SRF enumerator (call_id {call_id})"");
+                    var enumerator = EnumeratorCache[call_id];
+                    // Elog.Info($""Got SRF enumerator ({enumerator.GetType().Name}) {enumerator}"");
+                    if (enumerator.MoveNext() == false) {
+                        // Elog.Info($""Enumerator is done; returning SRF_DONE"");
+                        return (int)ReturnMode.SrfDone;
+                    }
+                    // Elog.Info($""Getting SRF current value"");
+                    ";
+
+            if (this.ParamModes.Contains((byte)ProArgMode.Table))
+            {
+                List<string> table_args = new List<string>();
+                int argc = this.ParamTypes.Length;
+
+                // assign them
+                for (int i = 0; i < argc; i++)
+                {
+                    if (this.ParamModes[i] == (char)ProArgMode.Table)
+                    {
+                        table_args.Add($"argument_{i}");
+                    }
+                }
+
+                string args = string.Join(", ", table_args);
+                ret += $"\nvar ({args}) = enumerator.Current;\n";
+            }
+            else
+            {
+                ret += "var result = enumerator.Current;\n";
+            }
+
+            ret += @"
+                    // Elog.Info($""Got next result {result}"");
+                    // we now cascade to returning the value";
+            return ret;
         }
 
         /// <summary>
-        /// Creates the end of the SRF handling, or else a small comment if not SRF.
+        /// Creates the end of the SRF handling, or else a small comment if not SRF
         /// </summary>
         /// <remarks>
         /// 1. we return mode SrfNext
         /// 2. we close the SRF_NEXT handling
         /// 3. we handle CALL_SRF_CLEANUP
-        /// 4. we error on all other cases.
+        /// 4. we error on all other cases
         /// </remarks>
         /// <returns>
         /// Returns the generated source code.
         /// </returns>
-        public string BuildSRFEnd(bool retset)
+        public string BuildSRFEnd()
         {
-            if (retset)
+            if (!this.Retset)
             {
-                return @"
-                                    return (int)ReturnMode.SrfNext;
-                                } else if(call_mode == (int)CallMode.SrfCleanup){
-                                    Elog.Info($""Removing call_id {call_id} from cache"");
-                                    EnumeratorCache.Remove(call_id);
-                                    return (int)ReturnMode.SrfDone;
-                                }
-                                    Elog.Warning($""Unrecognized call mode: {call_mode}"");
-                                return (int)ReturnMode.Error;
-                                ";
+                return "return (int)ReturnMode.Normal;";
             }
 
-            return "return (int)ReturnMode.Normal;";
+            return @"
+                            return (int)ReturnMode.SrfNext;
+                        } else if (call_mode == (int)CallMode.SrfCleanup){
+                            EnumeratorCache.Remove(call_id);
+                            return (int)ReturnMode.SrfDone;
+                        }
+                        Elog.Warning($""Unrecognized call mode: {call_mode}"");
+                        return (int)ReturnMode.Error;
+                        ";
         }
 
         /// <summary>
@@ -313,25 +497,17 @@ namespace PlDotNET
         /// <returns>
         /// Returns the generated UserFunction source code.
         /// </returns>
-        public string BuildUserFunctionSourceCode(
-                string funcName,
-                uint returnTypeId,
-                bool retset,
-                string[] paramNames,
-                uint[] paramTypes,
-                byte[] paramModes,
-                int num_output_values,
-                string funcBody,
-                bool supportNullInput)
+        public string BuildUserFunctionSourceCode()
         {
-            if (Engine.ValidateUserAssembly(funcBody))
+            if (Engine.ValidateUserAssembly(this.FuncBody))
             {
-                return funcBody;
+                return this.FuncBody;
             }
 
             if (this.Language == DotNETLanguage.FSharp)
             {
-                // Returns an empty string because the UserFunction code is being created along with the UserHandler code
+                // Returns an empty string because the UserFunction code is being created
+                // along with the UserHandler code for F# functions.
                 return string.Empty;
             }
 
@@ -341,29 +517,65 @@ namespace PlDotNET
                 throw new SystemException(msg);
             }
 
-            string[] dotnetTypes = this.GetDotNetTypes(paramTypes, paramModes);
             string sourceCode = File.ReadAllText(this.UserFunctionTemplatePath);
-            sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction(funcName, funcBody, returnTypeId, retset, paramNames, paramModes, dotnetTypes, supportNullInput));
+            sourceCode = sourceCode.Replace("// $user_function_declaration$", this.BuildUserFunction());
 
             sourceCode = this.FormatGeneratedCode(sourceCode);
 
-            PrintSourceCode(sourceCode);
-            this.SaveSourceCode(sourceCode, $"UserFunction_{funcName}");
+            this.PrintSourceCode(sourceCode);
+            this.SaveSourceCode(sourceCode, $"UserFunction_{this.FuncName}");
 
             return sourceCode;
         }
 
-        public string GetReturnType(uint returnTypeId, bool retset, byte[] paramModes, bool supportNullInput)
+        public string GetComplexReturnType(bool retset)
         {
-            string returnType = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
-            bool has_output_var = paramModes.Intersect(this.OutputModes).Any();
-            if (has_output_var)
+            // ComplexReturnType is:
+            //     - `IEnumerable<int, string>` if it's retset
+            //     - `int`/`void`/etc otherwise
+            // otherwise the plain type.
+            string returnType;
+
+            if (!this.ParamModes.Any(mode => this.TOutputModes.Contains(mode)))
             {
-                returnType = "void";
+                returnType = this.SimpleReturnType;
+            }
+            else
+            {
+                // Filter by paramModes to get INOUT, OUT, and TABLE arguments
+                var filteredParams = this.ParamNames.Zip(this.ParamTypes, (name, typeId) => new { Name = name, TypeId = typeId })
+                    .Zip(this.ParamModes, (pair, mode) => new { pair.Name, pair.TypeId, Mode = mode })
+                    .Where(param => this.TOutputModes.Contains(param.Mode));
+
+                string filteredParamsStr = string.Join(", ", filteredParams.Select(p => $"Name:{p.Name}, TypeId:{p.TypeId}, Mode:{p.Mode}"));
+
+                // does not handle `void` return types, as they're meaningless
+                var args = filteredParams.Select(param =>
+                        $"{(DatumConversion.ArrayTypes.ContainsKey((OID)param.TypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)param.TypeId])}? {param.Name}")
+                    .ToList();
+                string argsStr = string.Join(", ", args);
+
+                // join the args and put parentheses around compound types
+                returnType = string.Join(", ", args);
+                returnType = (args.Count > 1) ? $"({returnType})" : returnType;
             }
 
+            // make it an IEnumerable if it's a retset
+            returnType = retset ? $"IEnumerable<{returnType}>" : $"{returnType}";
+
+            return returnType;
+        }
+
+        public string GetReturnType(uint returnTypeId, bool retset)
+        {
+            if ((OID)returnTypeId == OID.TRIGGEROID)
+            {
+                return "int";
+            }
+
+            string returnType = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
             string nullAbleOutput = (returnType == "void") ? string.Empty : "?";
-            returnType = retset ? $"IEnumerable<{returnType}{nullAbleOutput}>" : $"{returnType}{nullAbleOutput}";
+            returnType = retset ? $"IEnumerable<{returnType} {nullAbleOutput}>" : $"{returnType}{nullAbleOutput}";
             return returnType;
         }
 
@@ -373,7 +585,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns the code to create the handler objects.
         /// </returns>
-        public abstract string BuildHandlerObjects(uint[] inputTypes, uint outputType);
+        public abstract string BuildHandlerObjects();
 
         /// <summary>
         /// This function creates the code to call the handler objects, which
@@ -383,7 +595,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns the user function arguments.
         /// </returns>
-        public abstract string BuildCreateArguments(string funcName, uint[] paramTypes, byte[] paramModes, bool supportNullInput);
+        public abstract string BuildCreateArguments(byte[] paramModes);
 
         /// <summary>
         /// This function creates code to call the user function.
@@ -391,7 +603,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns the code to call the user function.
         /// </returns>
-        public abstract string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, byte[] paramModes, bool supportNullInput, string prefix);
+        public abstract string BuildFunctionCall();
 
         /// <summary>
         /// This function creates the code to create the Datum result according
@@ -401,7 +613,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns the created code as string.
         /// </returns>
-        public abstract string BuildCallSetResult(uint returnTypeId, string[] paramNames, uint[] paramTypes, byte[] paramModes, int num_output_values);
+        public abstract string BuildCallSetResult();
 
         /// <summary>
         /// This function creates user function.
@@ -409,7 +621,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns user function as string.
         /// </returns>
-        public abstract string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, bool retset, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput);
+        public abstract string BuildUserFunction();
 
         /// <summary>
         /// Get the .NET types of the SQL user function according to the language.
@@ -417,7 +629,7 @@ namespace PlDotNET
         /// <returns>
         /// Returns the types of each function argument.
         /// </returns>
-        public abstract string[] GetDotNetTypes(uint[] paramTypes, byte[] paramModes);
+        public abstract string[] GetDotNetTypes();
 
         /// <summary>
         /// This function formats the generated code.
@@ -430,18 +642,48 @@ namespace PlDotNET
 
     public class CSharpCodeGenerator : CodeGenerator
     {
-        public CSharpCodeGenerator()
+        public CSharpCodeGenerator(
+            string funcName,
+            uint returnTypeId,
+            bool retset,
+            bool is_trigger,
+            string[] paramNames,
+            uint[] paramTypes,
+            byte[] paramModes,
+            int num_output_values,
+            string funcBody,
+            bool supportNullInput)
         {
-            this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tcs";
-            this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tcs";
             this.Language = DotNETLanguage.CSharp;
+            this.baseInitializer(
+                    funcName,
+                    returnTypeId,
+                    retset,
+                    is_trigger,
+                    paramNames,
+                    paramTypes,
+                    paramModes,
+                    num_output_values,
+                    funcBody,
+                    supportNullInput);
+
+            // Handle OUT/INOUT as `void` for C#, which is different than F#
+            if (this.ParamModes.Intersect(this.OutputModes).Any())
+            {
+                this.SimpleReturnType = "void";
+                this.ComplexReturnType = "void";
+            }
+
+            this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tcs";
+            this.UserTHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserTHandler.tcs";
+            this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tcs";
         }
 
         /// <inheritdoc />
-        public override string BuildHandlerObjects(uint[] inputTypes, uint outputType)
+        public override string BuildHandlerObjects()
         {
             var sb = new System.Text.StringBuilder();
-            foreach (string handler in FilterHandlers(inputTypes, outputType))
+            foreach (string handler in this.FilterHandlers())
             {
                 sb.AppendLine($"public static {handler} {handler}Obj = new {handler}();");
             }
@@ -450,199 +692,281 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string BuildCreateArguments(string funcName, uint[] paramTypes, byte[] paramModes, bool supportNullInput)
+        public override string BuildCreateArguments(byte[] paramModes)
         {
             var sb = new System.Text.StringBuilder();
-            string[] dotNetTypes = this.GetDotNetTypes(paramTypes, paramModes);
-            int argc = paramTypes.Length;
+            int argc = this.ParamTypes.Length;
             int skips = 0;
 
-            sb.AppendLine(supportNullInput ? string.Empty : GetNullableMessage(funcName));
-            sb.AppendLine($"// BEGIN create arguments for {funcName}");
+            sb.AppendLine(this.SupportNullInput ? string.Empty : this.GetNullableMessage());
+            sb.AppendLine($"// BEGIN create arguments for {this.FuncName}");
 
             for (int i = 0; i < argc; i++)
             {
-                string argType = (this.OutputModes.Contains(paramModes[i]) || supportNullInput) ? $"{dotNetTypes[i]}?" : dotNetTypes[i];
-
-                if (this.OutputModes.Contains(paramModes[i]))
+                string argType = (this.OutputModes.Contains(this.ParamModes[i]) || this.SupportNullInput) ? $"{this.DotnetTypes[i]}?" : this.DotnetTypes[i];
+                byte paramMode = this.ParamModes[i];
+                if (!this.ParamModes.Contains(paramMode))
                 {
-                    sb.AppendLine($"// Argument argument_{i} is {argType} because it's an output ('{((char)paramModes[i]).ToString()}') variable");
+                    continue;
                 }
 
-                if (this.InputModes.Contains(paramModes[i]))
+                if (this.InputModes.Contains(paramMode))
                 {
-                    string handler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
-                    string null_input = supportNullInput ? $", isnull[{i - skips}]" : string.Empty;
+                    string handler = DatumConversion.GetTypeHandlerName(this.ParamTypes[i]);
+                    string null_input = this.SupportNullInput ? $", isnull[{i - skips}]" : string.Empty;
 
-                    string inputMethod = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ?
-                        (supportNullInput ? "InputNullableArray" : "InputArray") :
-                        (supportNullInput ? "InputNullableValue" : "InputValue");
+                    string inputMethod = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ?
+                        (this.SupportNullInput ? "InputNullableArray" : "InputArray") :
+                        (this.SupportNullInput ? "InputNullableValue" : "InputValue");
                     sb.AppendLine($"{argType} argument_{i} = {handler}Obj.{inputMethod}(arguments[{i - skips}]{null_input});");
                 }
-                else if (paramModes[i] == (byte)ProArgMode.Out)
+                else if (paramMode == (byte)ProArgMode.Out)
                 {
+                    sb.AppendLine($"// Argument argument_{i} is {argType} because it's an output ('{((char)paramMode).ToString()}') variable");
                     sb.AppendLine($"{argType} argument_{i};");
                     skips += 1;
                 }
+                else if (paramMode == (byte)ProArgMode.Table)
+                {
+                    sb.AppendLine($"// Argument argument_{i} is a table argument; skipped");
+                }
                 else
                 {
-                    throw new SystemException($"Unsupported mode {paramModes[i]} on parameter number {i} of {funcName}: all modes are {string.Join(", ", paramModes)}.  [1]");
+                    throw new SystemException($"Unsupported mode {paramMode} on parameter number {i} of {this.FuncName}: all modes are {string.Join(", ", this.ParamModes)}.  [1]");
                 }
             }
 
-            sb.Append($"// END create arguments for {funcName}");
+            sb.Append($"// END create arguments for {this.FuncName}");
             return sb.ToString();
         }
 
         /// <inheritdoc />
-        public override string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, byte[] paramModes, bool supportNullInput, string prefix)
+        public override string BuildFunctionCall()
         {
             var sb = new System.Text.StringBuilder();
-            bool has_output_var = paramModes.Intersect(this.OutputModes).Any();
-            returnTypeId = has_output_var ? (uint)OID.VOIDOID : returnTypeId;
+            bool has_output_var = this.ParamModes.Intersect(this.OutputModes).Any();
+            string aux = this.SupportNullInput ? "?" : string.Empty;
+            List<string> parameters = new List<string>();
 
             sb.AppendLine(string.Empty);
-            if ((OID)returnTypeId != OID.VOIDOID)
+
+            if (this.IsTrigger)
+            {
+                // Triggers are simple:
+                //     - they take no arguments, other than the TriggerData
+                //     - they return an integer, same as UserHandler
+                string trigger_string = $@"
+                    try
+                    {{
+                        rv = (int){this.UserFunctionPrefix}.{this.FuncName}(tg);
+
+                    }}
+                    catch (Exception ex)
+                    {{
+                        Elog.Warning(""Trigger gave an error: "" + ex.ToString());
+                        return (int)ReturnMode.Error;
+                    }}
+
+                ";
+                sb.Append(trigger_string);
+                return sb.ToString();
+            }
+
+            if (this.SimpleReturnType != "void")
             {
                 sb.AppendLine("var result = ");
             }
 
-            sb.Append($"{prefix}.{funcName}(");
+            sb.Append($"{this.UserFunctionPrefix}.{this.FuncName}(");
 
-            string aux = supportNullInput ? "?" : string.Empty;
-            for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
+            /*****************************************
+            for (int i = 0, argc = this.DotnetTypes.Length; i < argc; i++)
             {
                 switch (paramModes[i])
                 {
                     case (byte)ProArgMode.In:
-                        sb.Append($"({dotnetTypes[i]}{aux}) argument_{i}");
+                        sb.Append($"({this.DotnetTypes[i]}{aux}) argument_{i}");
+                        sb.Append((i < argc - 1) ? ", " : string.Empty);
                         break;
                     case (byte)ProArgMode.InOut:
                         sb.Append($"ref argument_{i}");
+                        sb.Append((i < argc - 1) ? ", " : string.Empty);
                         break;
                     case (byte)ProArgMode.Out:
                         sb.Append($"out argument_{i}");
+                        sb.Append((i < argc - 1) ? ", " : string.Empty);
+                        break;
+                    case (byte)ProArgMode.Table:
+                        // not actually arguments
                         break;
                     default:
-                        throw new SystemException($"Unrecognized parameter mode: {paramModes[i]}, slot {i}");
+                        throw new SystemException($"Unrecognized parameter mode: {this.ParamModes[i]}, slot {i}");
                 }
 
-                sb.Append((i < argc - 1) ? ", " : string.Empty);
             }
+            *****************************************/
+
+            for (int i = 0, argc = this.DotnetTypes.Length; i < argc; i++)
+            {
+                byte mode = this.ParamModes[i];
+
+                if (mode == (byte)ProArgMode.In)
+                {
+                    parameters.Add($"({this.DotnetTypes[i]}{aux}) argument_{i}");
+                }
+                else if (mode == (byte)ProArgMode.InOut || mode == (byte)ProArgMode.Out)
+                {
+                    string prefix = mode == (byte)ProArgMode.InOut ? "ref" : "out";
+                    parameters.Add($"{prefix} argument_{i}");
+                }
+                else if (mode == (byte)ProArgMode.Table)
+                {
+                    // Table arguments are not actually arguments
+                    // No action here
+                }
+                else
+                {
+                    throw new SystemException($"Unrecognized parameter mode: {mode}, slot {i}");
+                }
+            }
+
+            sb.Append(string.Join(", ", parameters));
 
             sb.Append(");");
             return sb.ToString();
         }
 
         /// <inheritdoc />
-        public override string BuildCallSetResult(uint returnTypeId, string[] paramNames, uint[] paramTypes, byte[] paramModes, int num_output_values)
+        public override string BuildCallSetResult()
         {
             var sb = new System.Text.StringBuilder();
+            bool is_out = this.ParamModes.Any(mode => (mode == (byte)ProArgMode.Out)
+                    || (mode == (byte)ProArgMode.InOut)
+                    || (mode == (byte)ProArgMode.Table));
 
-            if ((OID)returnTypeId == OID.VOIDOID)
+            if ((OID)this.ReturnTypeId == OID.VOIDOID)
             {
                 return string.Empty;
+            }
+
+            if ((OID)this.ReturnTypeId == OID.RECORDOID)
+            {
+                if (!is_out)
+                {
+                    sb.AppendLine("// Records are handled and set in one step");
+                    sb.AppendLine("RecordHandlerObj.OutputSetValue(result, output);");
+                    return sb.ToString();
+                }
             }
 
             // This just assigns the Datum in the case where we want the return value.
             // That is, not using INOUT or OUT arguments.
             sb.AppendLine(string.Empty);
-            sb.AppendLine($"// Handling {num_output_values} output values");
-            if (num_output_values == 0)
+            sb.AppendLine($"// Handling {this.NumOutputValues} output values");
+            if (this.NumOutputValues == 0)
             {
                 sb.AppendLine($"// Handling normal function return (no INOUT/OUT arguments)");
-                string output_handler = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
-                sb.AppendLine($"IntPtr resultDatum = {DatumConversion.GetTypeHandlerName(returnTypeId)}Obj.{output_handler}(result);");
-                sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, result == null, output, 0, {returnTypeId});");
+                string output_handler = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
+                sb.AppendLine($"IntPtr resultDatum = {DatumConversion.GetTypeHandlerName(this.ReturnTypeId)}Obj.{output_handler}(result);");
+                sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, result == null, output, 0, {this.ReturnTypeId});");
             }
-            else if (num_output_values == 1)
+            else if (this.NumOutputValues == 1)
             {
                 // find the 1 output value and return it
-                int output_parameter_offset = Enumerable.Range(0, paramModes.Length).FirstOrDefault(i => this.OutputModes.Contains(paramModes[i]), -1);
+                int output_parameter_offset = Enumerable.Range(0, this.ParamModes.Length).FirstOrDefault(i => this.OutputModes.Contains(this.ParamModes[i]), -1);
                 var outResultName = $"argument_{output_parameter_offset}";
-                string oututHandler = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
+                string outHandler = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
 
                 if (output_parameter_offset == -1)
                 {
-                    throw new SystemException($"Could not find output parameter from modes: {string.Join(", ", paramModes)}");
+                    throw new SystemException($"Could not find output parameter from modes: {string.Join(", ", this.ParamModes)}");
                 }
 
                 sb.AppendLine($"// Handling single OUT return value `{outResultName}`, in slot {output_parameter_offset}");
-                sb.AppendLine($"IntPtr resultDatum = {DatumConversion.GetTypeHandlerName(returnTypeId)}Obj.{oututHandler}({outResultName});");
-                sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, {outResultName} == null, output, 0, {returnTypeId});");
+                sb.AppendLine($"IntPtr resultDatum = {DatumConversion.GetTypeHandlerName(this.ReturnTypeId)}Obj.{outHandler}({outResultName});");
+                sb.AppendLine($"OutputResult.SetDatumResult(resultDatum, {outResultName} == null, output, 0, {this.ReturnTypeId});");
             }
-            else if (num_output_values > 1)
+            else if (this.NumOutputValues > 1)
             {
                 int i;
                 int skips = 0;
 
-                for (i = 0; i < paramNames.Length; i++)
+                for (i = 0; i < this.ParamNames.Length; i++)
                 {
-                    if (!this.OutputModes.Contains(paramModes[i]))
+                    if (!this.TOutputModes.Contains(this.ParamModes[i]))
                     {
-                        sb.AppendLine($"// Skipping non-output-mode ({((char)paramModes[i]).ToString()}) argument {i}");
+                        sb.AppendLine($"// Skipping non-output-mode ({((char)this.ParamModes[i]).ToString()}) argument {i}");
                         skips += 1;
                         continue;
                     }
 
-                    string handler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
+                    string handler = DatumConversion.GetTypeHandlerName(this.ParamTypes[i]);
                     var outResultName = $"argument_{i}";
-                    var outputHandler = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
-                    sb.AppendLine($"// Adding output-mode ({((char)paramModes[i]).ToString()}) argument {i} for oid {returnTypeId}");
+                    var outputHandler = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
+                    sb.AppendLine($"// Adding output-mode ({((char)this.ParamModes[i]).ToString()}) argument {i} for oid {this.ReturnTypeId}");
                     sb.AppendLine($"IntPtr resultDatum_{i} = {handler}Obj.{outputHandler}({outResultName});");
-                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{i}, argument_{i} == null, output, {i - skips}, {(int)paramTypes[i]});");
+                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{i}, argument_{i} == null, output, {i - skips}, {(int)this.ParamTypes[i]});");
                 }
             }
             else
             {
-                throw new SystemException($"Unsupported number of arguments: {num_output_values}");
+                throw new SystemException($"Unsupported number of arguments: {this.NumOutputValues}");
             }
 
             return sb.ToString();
         }
 
         /// <inheritdoc />
-        public override string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, bool retset, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput)
+        public override string BuildUserFunction()
         {
             var sb = new System.Text.StringBuilder();
-            string returnType = this.GetReturnType(returnTypeId, retset, paramModes, supportNullInput);
-            string aux = supportNullInput ? "?" : string.Empty;
+            string aux = this.SupportNullInput ? "?" : string.Empty;
+            List<string> parameters = new List<string>();
 
             // for Set-Returning Functions, we create a C# generator
-            Elog.Info($"BuildUserFunction: retset is {retset}, returnType is {returnType}");
-
-            sb.Append($"public static {returnType} {funcName}(");
-
-            for (int i = 0, argc = dotnetTypes.Length; i < argc; i++)
+            if (this.IsTrigger)
             {
-                switch (paramModes[i])
-                {
-                    case (byte)ProArgMode.In:
-                        sb.Append($"{dotnetTypes[i]}{aux} {paramNames[i]}");
-                        break;
-                    case (byte)ProArgMode.InOut:
-                        // output variables are always nullable
-                        sb.Append($"ref {dotnetTypes[i]}? {paramNames[i]}");
-                        break;
-                    case (byte)ProArgMode.Out:
-                        // output variables are always nullable
-                        sb.Append($"out {dotnetTypes[i]}? {paramNames[i]}");
-                        break;
-                    default:
-                        throw new SystemException($"Unsupported mode {paramModes[i]} on parameter number {i} of {funcName}: all modes are {string.Join(", ", paramModes)}.  [2]");
-                }
-
-                sb.Append((i < argc - 1) ? ", " : string.Empty);
+                sb.Append($"public static ReturnMode {this.FuncName}(TriggerData tg");
+                sb.Append($") {{\n#line 1\n{this.FuncBody}\n}}");
+                return sb.ToString();
             }
 
-            sb.Append($") {{\n#line 1\n{funcBody}\n}}");
+            sb.Append($"public static {this.ComplexReturnType} {this.FuncName}(");
+
+            for (int i = 0, argc = this.DotnetTypes.Length; i < argc; i++)
+            {
+                byte mode = this.ParamModes[i];
+
+                if (mode == (byte)ProArgMode.In)
+                {
+                    parameters.Add($"{this.DotnetTypes[i]}{aux} {this.ParamNames[i]}");
+                }
+                else if (mode == (byte)ProArgMode.InOut || mode == (byte)ProArgMode.Out)
+                {
+                    string prefix = mode == (byte)ProArgMode.InOut ? "ref" : "out";
+                    parameters.Add($"{prefix} {this.DotnetTypes[i]}? {this.ParamNames[i]}");
+                }
+                else if (mode == (byte)ProArgMode.Table)
+                {
+                    // Table arguments are actually records
+                    // No action here
+                }
+                else
+                {
+                    throw new SystemException($"Unsupported mode {mode} on parameter number {i} of {this.FuncName}: all modes are {string.Join(", ", this.ParamModes)}.  [2]");
+                }
+            }
+
+            sb.Append(string.Join(", ", parameters));
+
+            sb.Append($") {{\n#line 1\n{this.FuncBody}\n}}");
             return sb.ToString();
         }
 
         /// <inheritdoc />
-        public override string[] GetDotNetTypes(uint[] paramTypes, byte[] paramModes)
+        public override string[] GetDotNetTypes()
         {
-            return paramTypes.Select(t => DatumConversion.ArrayTypes.ContainsKey((OID)t) ? "Array" : DatumConversion.SupportedTypesStr[(OID)t]).ToArray();
+            return this.ParamTypes.Select(t => DatumConversion.ArrayTypes.ContainsKey((OID)t) ? "Array" : DatumConversion.SupportedTypesStr[(OID)t]).ToArray();
         }
 
         /// <inheritdoc />
@@ -683,10 +1007,32 @@ namespace PlDotNET
             "PhysicalAddress",
         };
 
-        public FSharpCodeGenerator()
+        public FSharpCodeGenerator(
+            string funcName,
+            uint returnTypeId,
+            bool retset,
+            bool is_trigger,
+            string[] paramNames,
+            uint[] paramTypes,
+            byte[] paramModes,
+            int num_output_values,
+            string funcBody,
+            bool supportNullInput)
         {
             this.Language = DotNETLanguage.FSharp;
+            this.baseInitializer(
+                    funcName,
+                    returnTypeId,
+                    retset,
+                    is_trigger,
+                    paramNames,
+                    paramTypes,
+                    paramModes,
+                    num_output_values,
+                    funcBody,
+                    supportNullInput);
             this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tfs";
+            this.UserTHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserTHandler.tfs";
             this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tfs";
         }
 
@@ -712,73 +1058,72 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string BuildHandlerObjects(uint[] inputTypes, uint outputType)
+        public override string BuildHandlerObjects()
         {
             var sb = new System.Text.StringBuilder();
-            FilterHandlers(inputTypes, outputType).ToList().ForEach(handler => sb.AppendLine($"let {handler}Obj = new {handler}()"));
+            this.FilterHandlers().ToList().ForEach(handler => sb.AppendLine($"let {handler}Obj = new {handler}()"));
             return "// handler objects\n" + IndentCode(sb.ToString(), 8);
         }
 
         /// <inheritdoc />
-        public override string BuildCreateArguments(string funcName, uint[] paramTypes, byte[] paramModes, bool supportNullInput)
+        public override string BuildCreateArguments(byte[] paramModes)
         {
-            int skips = 0, argc = paramTypes.Length;
-            string[] dotNetTypes = this.GetDotNetTypes(paramTypes, paramModes);
+            int skips = 0, argc = this.ParamTypes.Length;
             var sb = new System.Text.StringBuilder();
 
-            sb.AppendLine($"// BEGIN create arguments for {funcName}");
+            sb.AppendLine($"// BEGIN create arguments for {this.FuncName}");
 
             for (int i = 0; i < argc; i++)
             {
                 // Because F# is a functional language, it does not support INOUT or OUT arguments like C# does.
                 // Instead, IN and INOUT are treated as normal arguments, and INOUT and OUT get `output_{i}` variables
                 // to receive their return values.
-                string handler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
-                string argType = (this.OutputModes.Contains(paramModes[i]) || supportNullInput) ? $"{dotNetTypes[i]}?" : dotNetTypes[i];
+                string handler = DatumConversion.GetTypeHandlerName(this.ParamTypes[i]);
+                string argType = (this.OutputModes.Contains(this.ParamModes[i]) || this.SupportNullInput) ? $"{this.DotnetTypes[i]}?" : this.DotnetTypes[i];
 
-                if (this.InputModes.Contains(paramModes[i]))
+                if (this.InputModes.Contains(this.ParamModes[i]))
                 {
-                    string handlerName = DatumConversion.GetTypeHandlerName(paramTypes[i]);
-                    string null_input = supportNullInput ? $", isnull[{i - skips}]" : string.Empty;
-                    string inputMethod = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ?
-                        (supportNullInput ? "InputNullableArray" : "InputArray") :
-                        (supportNullInput ? "InputNullableValue" : "InputValue");
+                    string handlerName = DatumConversion.GetTypeHandlerName(this.ParamTypes[i]);
+                    string null_input = this.SupportNullInput ? $", isnull[{i - skips}]" : string.Empty;
+                    string inputMethod = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ?
+                        (this.SupportNullInput ? "InputNullableArray" : "InputArray") :
+                        (this.SupportNullInput ? "InputNullableValue" : "InputValue");
                     sb.AppendLine($"let argument_{i} = {handler}Obj.{inputMethod}(arguments[{i - skips}]{null_input});");
                 }
-                else if (paramModes[i] == (byte)ProArgMode.Out)
+                else if (this.ParamModes[i] == (byte)ProArgMode.Out)
                 {
+                    sb.AppendLine($"// skipping output argument {i}");
                     skips += 1;
                 }
                 else
                 {
-                    throw new SystemException($"Unsupported mode {paramModes[i]} on parameter number {i} of {funcName}: all modes are {string.Join(", ", paramModes)}.  [1]");
+                    throw new SystemException($"Unsupported mode {this.ParamModes[i]} on parameter number {i} of {this.FuncName}: all modes are {string.Join(", ", this.ParamModes)}.  [1]");
                 }
             }
 
-            sb.AppendLine($"// END create arguments for {funcName}");
+            sb.AppendLine($"// END create arguments for {this.FuncName}");
             return "\n" + IndentCode(sb.ToString(), 8);
         }
 
         /// <inheritdoc />
-        public override string BuildFunctionCall(string funcName, uint returnTypeId, string[] dotnetTypes, byte[] paramModes, bool supportNullInput, string prefix)
+        public override string BuildFunctionCall()
         {
-            // FIXME: we need the oid, not the type names, so we can check f# type conversions
             List<string> retvals = new List<string>();
             List<string> arguments = new List<string>();
             List<string> variables = new List<string>();
             string let_result;
             int i, output_num = 0;
 
-            for (i = 0; i < dotnetTypes.Length; i++)
+            for (i = 0; i < this.DotnetTypes.Length; i++)
             {
-                if (this.InputModes.Contains(paramModes[i]))
+                if (this.InputModes.Contains(this.ParamModes[i]))
                 {
                     arguments.Add($"argument_{i}");
                 }
 
-                if (this.OutputModes.Contains(paramModes[i]))
+                if (this.OutputModes.Contains(this.ParamModes[i]))
                 {
-                    variables.Add($"{dotnetTypes[i]} output_{i};");
+                    variables.Add($"{this.DotnetTypes[i]} output_{i};");
                     retvals.Add($"output_{i}");
                     output_num++;
                 }
@@ -795,7 +1140,7 @@ namespace PlDotNET
             }
             else if (retvals.Count == 0)
             {
-                let_result = ((OID)returnTypeId != OID.VOIDOID) ? "let result = " : string.Empty;
+                let_result = ((OID)this.ReturnTypeId != OID.VOIDOID) ? "let result = " : string.Empty;
             }
             else
             {
@@ -804,54 +1149,54 @@ namespace PlDotNET
 
             string argstring = string.Join(" ", arguments);
 
-            return "// Calling user function\n" + IndentCode($"{let_result}UserFunction.{funcName} {argstring}\n", 8);
+            return "// Calling user function\n" + IndentCode($"{let_result}UserFunction.{this.FuncName} {argstring}\n", 8);
         }
 
         /// <inheritdoc />
-        public override string BuildCallSetResult(uint returnTypeId, string[] paramNames, uint[] paramTypes, byte[] paramModes, int num_output_values)
+        public override string BuildCallSetResult()
         {
             int i, output_num = 0;
             var sb = new System.Text.StringBuilder();
 
-            if ((OID)returnTypeId == OID.VOIDOID)
+            if ((OID)this.ReturnTypeId == OID.VOIDOID)
             {
                 return string.Empty;
             }
 
-            if (num_output_values < 0)
+            if (this.NumOutputValues < 0)
             {
-                throw new SystemException($"Unrecognized num_output_values: {num_output_values}");
+                throw new SystemException($"Unrecognized num_output_values: {this.NumOutputValues}");
             }
 
-            if (num_output_values == 0)
+            if (this.NumOutputValues == 0)
             {
                 // use "result"
-                string type = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
+                string type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ReturnTypeId];
                 string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
-                string outputHandler = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
+                string outputHandler = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
                 string isnull = ClassTypes.Contains(returnType) ? "Object.ReferenceEquals(result, null)" : "not result.HasValue";
                 sb.AppendLine($"// Handling normal function return (no INOUT/OUT arguments)");
 
-                string makeDatum = $"let resultDatum = {DatumConversion.GetTypeHandlerName(returnTypeId)}Obj.{outputHandler}(result)";
+                string makeDatum = $"let resultDatum = {DatumConversion.GetTypeHandlerName(this.ReturnTypeId)}Obj.{outputHandler}(result)";
                 sb.AppendLine(makeDatum);
-                string setDatum = $"OutputResult.SetDatumResult(resultDatum, {isnull}, output, 0, uint32 {returnTypeId})";
+                string setDatum = $"OutputResult.SetDatumResult(resultDatum, {isnull}, output, 0, uint32 {this.ReturnTypeId})";
                 sb.AppendLine(setDatum);
                 return "// Create PostgreSQL datum\n" + IndentCode(sb.ToString(), 8);
             }
 
             // num_output_values > 1, so use "output_0", "output_1", etc
-            for (i = 0; i < paramTypes.Length; i++)
+            for (i = 0; i < this.ParamTypes.Length; i++)
             {
-                if (this.OutputModes.Contains(paramModes[i]))
+                if (this.OutputModes.Contains(this.ParamModes[i]))
                 {
-                    string outputTypeHandler = DatumConversion.GetTypeHandlerName(paramTypes[i]);
-                    string type = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)paramTypes[i]];
+                    string outputTypeHandler = DatumConversion.GetTypeHandlerName(this.ParamTypes[i]);
+                    string type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ParamTypes[i]];
                     string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
-                    string outputHandlerMethod = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
+                    string outputHandlerMethod = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
                     string isnull = ClassTypes.Contains(returnType) ? $"Object.ReferenceEquals(output_{i}, null)" : $"not output_{i}.HasValue";
 
                     sb.AppendLine($"let resultDatum_{output_num} = {outputTypeHandler}Obj.{outputHandlerMethod}(output_{i})");
-                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{output_num}, {isnull}, output, {output_num}, uint32 {(int)paramTypes[i]})");
+                    sb.AppendLine($"OutputResult.SetDatumResult(resultDatum_{output_num}, {isnull}, output, {output_num}, uint32 {(int)this.ParamTypes[i]})");
 
                     output_num++;
                 }
@@ -861,10 +1206,10 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
-        public override string BuildUserFunction(string funcName, string funcBody, uint returnTypeId, bool retset, string[] paramNames, byte[] paramModes, string[] dotnetTypes, bool supportNullInput)
+        public override string BuildUserFunction()
         {
             var sb = new System.Text.StringBuilder();
-            string return_type = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
+            string return_type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ReturnTypeId];
             return_type = FSharpTypes.ContainsKey(return_type) ? FSharpTypes[return_type] : return_type;
             List<string> outputTypes = new ();
 
@@ -874,26 +1219,26 @@ namespace PlDotNET
                 return_type = $"Nullable<{return_type}>";
             }
 
-            sb.Append($"static member {funcName}");
+            sb.Append($"static member {this.FuncName}");
 
-            for (int i = 0, length = paramNames.Length; i < length; i++)
+            for (int i = 0, length = this.ParamNames.Length; i < length; i++)
             {
-                if (this.OutputModes.Contains(paramModes[i]))
+                if (this.OutputModes.Contains(this.ParamModes[i]))
                 {
-                    string outputParamType = FSharpTypes.ContainsKey(dotnetTypes[i]) ? FSharpTypes[dotnetTypes[i]] : dotnetTypes[i];
-                    outputParamType = ClassTypes.Contains(dotnetTypes[i]) ? dotnetTypes[i] : $"Nullable<{dotnetTypes[i]}>";
+                    string outputParamType = FSharpTypes.ContainsKey(this.DotnetTypes[i]) ? FSharpTypes[this.DotnetTypes[i]] : this.DotnetTypes[i];
+                    outputParamType = ClassTypes.Contains(this.DotnetTypes[i]) ? this.DotnetTypes[i] : $"Nullable<{this.DotnetTypes[i]}>";
                     outputTypes.Add(outputParamType);
                 }
 
-                if (this.InputModes.Contains(paramModes[i]))
+                if (this.InputModes.Contains(this.ParamModes[i]))
                 {
-                    string inputParamType = dotnetTypes[i];
-                    if (supportNullInput && (!ClassTypes.Contains(inputParamType)))
+                    string inputParamType = this.DotnetTypes[i];
+                    if (this.SupportNullInput && (!ClassTypes.Contains(inputParamType)))
                     {
                        inputParamType = $"Nullable<{inputParamType}>";
                     }
 
-                    sb.Append($" ({paramNames[i]}: {inputParamType})");
+                    sb.Append($" ({this.ParamNames[i]}: {inputParamType})");
                 }
             }
 
@@ -908,23 +1253,23 @@ namespace PlDotNET
 
             if (return_type == "void")
             {
-                sb.Append($" = {IndentCode(funcBody, 8)}");
+                sb.Append($" = {IndentCode(this.FuncBody, 8)}");
             }
             else
             {
-                sb.Append($" : {return_type} = {IndentCode(funcBody, 8)}");
+                sb.Append($" : {return_type} = {IndentCode(this.FuncBody, 8)}");
             }
 
             return sb.ToString();
         }
 
         /// <inheritdoc />
-        public override string[] GetDotNetTypes(uint[] paramTypes, byte[] paramModes)
+        public override string[] GetDotNetTypes()
         {
-            string[] dotnetTypes = new string[paramTypes.Length];
-            for (int i = 0, length = paramTypes.Length; i < length; i++)
+            string[] dotnetTypes = new string[this.ParamTypes.Length];
+            for (int i = 0, length = this.ParamTypes.Length; i < length; i++)
             {
-                string type = DatumConversion.ArrayTypes.ContainsKey((OID)paramTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)paramTypes[i]];
+                string type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ParamTypes[i]];
                 dotnetTypes[i] = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
             }
 

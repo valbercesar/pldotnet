@@ -1,5 +1,9 @@
 -- BIT
 
+CREATE OR REPLACE FUNCTION nulltest() RETURNS int4 AS $$
+    return null;
+$$ LANGUAGE plcsharp;
+
 CREATE OR REPLACE FUNCTION modifybit(a BIT(10)) RETURNS BIT(10) AS $$
     if (a == null)
         return null;

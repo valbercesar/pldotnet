@@ -1,5 +1,3 @@
-// <copyright file="Engine.cs" company="Brick Abode">
-//
 // PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
 //                      procedural languages (PL)
 //
@@ -41,6 +39,13 @@ using PlDotNET.Handler;
 
 namespace PlDotNET
 {
+    public enum DotNETLanguage : ushort
+    {
+        CSharp,
+        FSharp,
+        VisualBasic,
+    }
+
     public struct CachedFunction
     {
         public string UserHandlerSourceCode;
@@ -48,6 +53,16 @@ namespace PlDotNET
         public string FunctionName;
         public bool SupportNullInput;
         public Func<List<IntPtr>, IntPtr, ulong, int, bool[], int> UserProcedure;
+        public AssemblyLoadContext UserAssemblyLoadContext;
+        public DotNETLanguage Language;
+    }
+
+    public struct CachedTrigger
+    {
+        public string UserHandlerSourceCode;
+        public string UserFunctionSourceCode;
+        public string FunctionName;
+        public Func<IntPtr, IntPtr, string, string, string, string, int, string, string, string[], int> UserProcedure;
         public AssemblyLoadContext UserAssemblyLoadContext;
         public DotNETLanguage Language;
     }
@@ -65,25 +80,45 @@ namespace PlDotNET
         public static string PathToTemporaryFiles = "/tmp/PlDotNET/";
 
         public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
-
-        public static FSharpCodeGenerator FSharpGenerator = new ();
-
-        public static CSharpCodeGenerator CSharpGenerator = new ();
+        public static IDictionary<uint, CachedTrigger> TrigBuiltCodeDict = new Dictionary<uint, CachedTrigger>();
 
         public unsafe delegate int DelCompileUserFunction(
-                uint functionId,
-                IntPtr name,
-                uint returnType,
-                [MarshalAs(UnmanagedType.I1)] bool retset,
-                IntPtr paramNames,
-                uint* paramTypes,
-                byte* paramModes,
-                int num_output_values,
-                IntPtr body,
-                [MarshalAs(UnmanagedType.I1)] bool supportNullInput,
-                IntPtr dotnetLanguage);
+            uint functionId,
+            IntPtr name,
+            uint returnType,
+            [MarshalAs(UnmanagedType.I1)] bool retset,
+            [MarshalAs(UnmanagedType.I1)] bool is_trigger,
+            IntPtr paramNames,
+            uint* paramTypes,
+            byte* paramModes,
+            int num_output_values,
+            IntPtr body,
+            [MarshalAs(UnmanagedType.I1)] bool supportNullInput,
+            IntPtr dotnetLanguage);
 
-        public unsafe delegate int DelRunUserFunction(uint functionId, ulong call_id, int call_mode, void* arguments, int num_arguments, byte* nullmap, IntPtr output);
+        public unsafe delegate int DelRunUserFunction(
+            uint functionId,
+            ulong call_id,
+            int call_mode,
+            void* arguments,
+            int num_arguments,
+            byte* nullmap,
+            IntPtr output);
+
+        public unsafe delegate int DelRunUserTFunction (
+            uint functionId,
+            int call_mode,
+            IntPtr old_row_result,
+            IntPtr new_row_result,
+            string triggerName,
+            string triggerWhen,
+            string triggerLevel,
+            string triggerEvent,
+            int relationId,
+            string tableName,
+            string tableSchema,
+            IntPtr arguments,
+            int nargs);
 
         public delegate void DelFreeGenericGCHandle(IntPtr p);
 
@@ -194,7 +229,19 @@ namespace PlDotNET
         /// <returns>
         /// Returns 0 when the proccess succeeded, otherwise returns 1.
         /// </returns>
-        public static unsafe int CompileUserFunction(uint functionId, IntPtr name, uint returnTypeId, [MarshalAs(UnmanagedType.I1)] bool retset, IntPtr paramNames, uint* paramTypes, byte* paramModes, int num_output_values, IntPtr body, [MarshalAs(UnmanagedType.I1)] bool supportNullInput, IntPtr language)
+        public static unsafe int CompileUserFunction(
+                uint functionId,
+                IntPtr name,
+                uint returnTypeId,
+                [MarshalAs(UnmanagedType.I1)] bool retset,
+                [MarshalAs(UnmanagedType.I1)] bool is_trigger,
+                IntPtr paramNames,
+                uint* paramTypes,
+                byte* paramModes,
+                int num_output_values,
+                IntPtr body,
+                [MarshalAs(UnmanagedType.I1)] bool supportNullInput,
+                IntPtr language)
         {
             // User function Data
             string funcName = Marshal.PtrToStringAuto(name);
@@ -222,7 +269,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Info($"{e.GetType().Name}: {e.Message}");
+                Elog.Warning($"Error encountered: {e.GetType().Name}: {e.Message}");
                 return 1;
             }
 
@@ -253,18 +300,44 @@ namespace PlDotNET
             try
             {
                 // The CodeGenerator object that creates the dynamic codes according to the language (C# or F#)
-                CodeGenerator dynamicCodeGenerator = (plLanguage == "csharp" || useUserAssembly) ? CSharpGenerator : FSharpGenerator;
-
-                Elog.Info("BUILDING source code");
+                CodeGenerator dcg;
+                if (plLanguage == "csharp" || useUserAssembly)
+                {
+                    dcg = new CSharpCodeGenerator(
+                            funcName,
+                            returnTypeId,
+                            retset,
+                            is_trigger,
+                            paramNameArray,
+                            paramTypeArray,
+                            paramModeArray,
+                            num_output_values,
+                            funcBody,
+                            supportNullInput || Engine.AlwaysNullable);
+                }
+                else
+                {
+                    dcg = new FSharpCodeGenerator(
+                            funcName,
+                            returnTypeId,
+                            retset,
+                            is_trigger,
+                            paramNameArray,
+                            paramTypeArray,
+                            paramModeArray,
+                            num_output_values,
+                            funcBody,
+                            supportNullInput || Engine.AlwaysNullable);
+                }
 
                 // Generate the UserFunction code
                 // If the user provides his own assembly, this variable receives the assembly information.
                 // If the user function uses F#, this variable receives an empty string, since PL.NET creates the UserFunction
                 // together with the UserHandler.
-                userFunctionCode = dynamicCodeGenerator.BuildUserFunctionSourceCode(funcName, returnTypeId, retset, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
+                userFunctionCode = dcg.BuildUserFunctionSourceCode();
 
                 // Generate the UserHandler code
-                userHandlerCode = dynamicCodeGenerator.BuildUserHandlerSourceCode(funcName, returnTypeId, retset, paramNameArray, paramTypeArray, paramModeArray, num_output_values, funcBody, supportNullInput || Engine.AlwaysNullable);
+                userHandlerCode = dcg.BuildUserHandlerSourceCode();
             }
             catch (Exception e)
             {
@@ -285,6 +358,19 @@ namespace PlDotNET
                 FuncBuiltCodeDict.Remove(functionId);
             }
 
+            // Check if the user trigger exists in .NET context
+            if (Engine.TrigBuiltCodeDict.TryGetValue(functionId, out CachedTrigger cachedT))
+            {
+                // check PL.NET needs to recompile the source codes
+                if (cachedT.UserHandlerSourceCode == userHandlerCode && cachedT.UserFunctionSourceCode == userFunctionCode && !useUserAssembly)
+                {
+                    return 0;
+                }
+
+                TrigBuiltCodeDict[functionId].UserAssemblyLoadContext.Unload();
+                TrigBuiltCodeDict.Remove(functionId);
+            }
+
             // The DotNETLanguage of the dynamic codes
             DotNETLanguage dotnetLanguage = (plLanguage == "csharp" || useUserAssembly) ? DotNETLanguage.CSharp : DotNETLanguage.FSharp;
 
@@ -299,7 +385,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Info($"{e.GetType().Name}: {e.Message}");
+                Elog.Warning($"Error encountered: {e.GetType().Name}: {e.Message}");
                 return 1;
             }
 
@@ -318,20 +404,39 @@ namespace PlDotNET
 
             Assembly userHandlerAssembly = userAlc.LoadFromStream(new MemoryStream(memUserHandler.GetBuffer())); // UserHandler Assembly
 
-            // Create the CachedFunction to keep the function information
-            CachedFunction newCachedFunction = new ()
+            if (is_trigger)
             {
-                UserFunctionSourceCode = userFunctionCode,
-                UserHandlerSourceCode = userHandlerCode,
-                FunctionName = funcName,
-                SupportNullInput = supportNullInput,
-                UserAssemblyLoadContext = userAlc,
-                UserProcedure = GetDirectDelegate(userHandlerAssembly),
-                Language = dotnetLanguage,
-            };
+                // Create the CachedTFunction to keep the function information
+                CachedTrigger newCachedTFunction = new ()
+                {
+                    UserFunctionSourceCode = userFunctionCode,
+                    UserHandlerSourceCode = userHandlerCode,
+                    FunctionName = funcName,
+                    UserAssemblyLoadContext = userAlc,
+                    UserProcedure = GetDirectTDelegate(userHandlerAssembly),
+                    Language = dotnetLanguage,
+                };
 
-            // Add the CachedFunction in the dictionary where the key is the function Id
-            Engine.FuncBuiltCodeDict.Add(functionId, newCachedFunction);
+                // Add the CachedTFunction in the dictionary where the key is the function Id
+                Engine.TrigBuiltCodeDict.Add(functionId, newCachedTFunction);
+            }
+            else
+            {
+                // Create the CachedFunction to keep the function information
+                CachedFunction newCachedFunction = new ()
+                {
+                    UserFunctionSourceCode = userFunctionCode,
+                    UserHandlerSourceCode = userHandlerCode,
+                    FunctionName = funcName,
+                    SupportNullInput = supportNullInput,
+                    UserAssemblyLoadContext = userAlc,
+                    UserProcedure = GetDirectDelegate(userHandlerAssembly),
+                    Language = dotnetLanguage,
+                };
+
+                // Add the CachedFunction in the dictionary where the key is the function Id
+                Engine.FuncBuiltCodeDict.Add(functionId, newCachedFunction);
+            }
 
             memUserFunction.Close();
             memUserHandler.Close();
@@ -429,13 +534,109 @@ namespace PlDotNET
         }
 
         /// <summary>
+        /// It creates the Delegate function for the CallUserTrigger function,
+        /// which was compiled by Roslyn.
+        /// </summary>
+        /// <returns>
+        /// Returns the Function object of the delegated CallUserTrigger or null for a failed proccess.
+        /// </returns>
+        public static Func<IntPtr, IntPtr, string, string, string, string, int, string, string, string[], int> GetDirectTDelegate(Assembly compiledAssembly)
+        {
+            if (compiledAssembly == null)
+            {
+                // Assembly is not loaded correctly
+                // Add error handling or debugging information
+                Elog.Error("Assembly not loaded correctly.");
+                return null; // unreached
+            }
+
+            Type procClassType = compiledAssembly.GetType("PlDotNET.UserSpace.UserHandler");
+
+            if (procClassType == null)
+            {
+                Elog.Error($"Failed to get type PlDotNET.UserSpace.UserHandler");
+                return null; // unreached
+            }
+
+            var del = (Func<IntPtr, IntPtr, string, string, string, string, int, string, string, string[], int>)Delegate.CreateDelegate(
+                    typeof(Func<IntPtr, IntPtr, string, string, string, string, int, string, string, string[], int>),
+                    null,
+                    procClassType.GetMethod("CallUserTrigger"));
+
+            return del;
+        }
+
+        public static unsafe int RunUserTFunction(
+            uint functionId,
+            int call_mode,
+            IntPtr old_row_result,
+            IntPtr new_row_result,
+            string triggerName,
+            string triggerWhen,
+            string triggerLevel,
+            string triggerEvent,
+            int relationId,
+            string tableName,
+            string tableSchema,
+            IntPtr arguments,
+            int nargs)
+        {
+            if (!Engine.TrigBuiltCodeDict.TryGetValue(functionId, out CachedTrigger cachedT))
+            {
+                Elog.Warning($"PL.NET could not find the user trigger (ID: {functionId})");
+                return (int)ReturnMode.Error;
+            }
+
+            try
+            {
+                string[] argumentArray = new string[nargs];
+
+                // for (int i = 0; i < nargs; i++)
+                // {
+                    // argumentArray[i] = Marshal.PtrToStringAnsi(arguments[i]);
+                // }
+                char** args = (char**)arguments.ToPointer();
+                if (args == null)
+                {
+                    throw new SystemException($"Got null trigger argument pointer from C");
+                }
+
+                for (int i = 0; i < nargs; i++)
+                {
+                    char* currentArgPtr = args[i];
+                    argumentArray[i] = Marshal.PtrToStringAnsi((IntPtr)currentArgPtr);
+                }
+
+                // Create TriggerData object using the provided parameters
+                var retval = cachedT.UserProcedure(
+                        old_row_result,
+                        new_row_result,
+                        triggerName,
+                        triggerWhen,
+                        triggerLevel,
+                        triggerEvent,
+                        relationId,
+                        tableName,
+                        tableSchema,
+                        argumentArray);
+
+                return retval;
+            }
+            catch (Exception e)
+            {
+                Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                return (int)ReturnMode.Error;
+            }
+        }
+
+        /// <summary>
         /// This function is called called from C code and tries to get the
         /// cached function by the function id. If the cached functions is not
         /// found, an error message is reported. Otherwise, it calls the
         /// function compiled by Roslyn.
         /// </summary>
         /// <returns>
-        /// Returns ReturnMode.
+        /// Returns ReturnMode
         /// </returns>
         public static unsafe int RunUserFunction(uint functionId, ulong call_id, int call_mode, void* arguments, int num_arguments, byte* nullmap, IntPtr output)
         {
@@ -527,6 +728,11 @@ namespace PlDotNET
         public static bool CheckSupportedTypes(uint returnTypeId, uint[] paramTypes)
         {
             List<string> unsupportedTypes = new ();
+
+            if ((OID)returnTypeId == OID.TRIGGEROID)
+            {
+                return true;
+            }
 
             if (!(DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) || DatumConversion.SupportedTypesStr.ContainsKey((OID)returnTypeId)))
             {
@@ -660,4 +866,7 @@ namespace PlDotNET
             return (mode == "0700") || output.Contains("drwx------");
         }
     }
+
+#nullable enable
+
 }

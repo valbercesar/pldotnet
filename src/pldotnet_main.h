@@ -20,12 +20,18 @@
 #include <access/htup_details.h>
 #include <catalog/pg_proc.h>
 #include <catalog/pg_type.h>
+#include <commands/trigger.h>
+#include <executor/spi.h>  // For SPI_getrelname and SPI_getnspname
 #include <funcapi.h>
 #include <glib.h>
+#include <utils/array.h>
 #include <utils/builtins.h>
 #include <utils/fmgrprotos.h>
 #include <utils/syscache.h>
+#include <utils/typcache.h>
 #include <utils/memutils.h>
+#include <utils/lsyscache.h>  // type_is_rowtype()
+#include <utils/rel.h>
 #include <assert.h>
 
 #include "pldotnet_hostfxr.h"
@@ -64,17 +70,20 @@ extern char *dnldir;
 typedef enum pldotnet_Language { csharp, fsharp } pldotnet_Language;
 
 typedef enum {
-    CALL_NORMAL = 1,      // Normal, non-SRF function
-    CALL_SRF_FIRST = 2,   // First call to an SRF; create and cache
-    CALL_SRF_NEXT = 3,    // Next call to an SRF
-    CALL_SRF_CLEANUP = 4  // SRF is done; you may remove it from the cache
+    CALL_NORMAL = 1,       // Normal, non-SRF function
+    CALL_SRF_FIRST = 2,    // First call to an SRF; create and cache
+    CALL_SRF_NEXT = 3,     // Next call to an SRF
+    CALL_SRF_CLEANUP = 4,  // SRF is done; you may remove it from the cache
+    CALL_TRIGGER = 5       // Called as a trigger
 } CallType;
 
 typedef enum {
-    RETURN_ERROR = 0,     // We encountered an error
-    RETURN_NORMAL = 1,    // Normal return to CALL_NORMAL
-    RETURN_SRF_NEXT = 2,  // SRF return to CALL_SRF_NEXT
-    RETURN_SRF_DONE = 3   // We have no more values
+    RETURN_ERROR = 0,           // We encountered an error
+    RETURN_NORMAL = 1,          // Normal return to CALL_NORMAL
+    RETURN_SRF_NEXT = 2,        // SRF return to CALL_SRF_NEXT
+    RETURN_SRF_DONE = 3,        // We have no more values
+    RETURN_TRIGGER_SKIP = 4,    // Abort the trigger event
+    RETURN_TRIGGER_MODIFY = 5,  // The row has been modified
 } ReturnMode;
 
 typedef struct MemoryContextWrapper {
@@ -90,9 +99,11 @@ typedef struct pldotnet_PathConfig {
 
 typedef struct pldotnet_Result {
     size_t length;
+    bool is_null;  // for top-level NULL on RECORD
     Datum *values;
     bool *nulls;
     Oid *oids;
+    bool *updated;
 } pldotnet_Result;
 
 typedef struct pldotnet_UserFunctionDeclaration {
@@ -110,6 +121,7 @@ typedef struct pldotnet_UserFunctionDeclaration {
     Oid func_oid;
     bool support_null_input;
     bool retset;
+    bool is_trigger;
 } pldotnet_UserFunctionDeclaration;
 
 typedef struct cb_data {  // old-school C inheritance here
@@ -119,11 +131,16 @@ typedef struct cb_data {  // old-school C inheritance here
 } cb_data;
 
 /**
- * An experiment to try to work around memory corruption, as C# might be
- * stepping on a data structure.
+ * Set a result in pldotnet_Result.  Returns 0 on success.
  */
-extern PGDLLEXPORT void pldotnet_SetResult(pldotnet_Result *output, int offset,
-                                           Datum value, bool is_null, Oid oid);
+extern int pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value,
+                              bool is_null, Oid oid);
+
+/**
+ * Get a result from pldotnet_Result.
+ */
+extern int pldotnet_GetResult(pldotnet_Result *output, int offset, Datum *value,
+                              bool *is_null, Oid *oid);
 
 /**
  * @brief The call_handler will be called to execute the procedural
@@ -136,7 +153,7 @@ extern PGDLLEXPORT void pldotnet_SetResult(pldotnet_Result *output, int offset,
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
-Datum plcsharp_call_handler(PG_FUNCTION_ARGS);
+extern Datum plcsharp_call_handler(PG_FUNCTION_ARGS);
 
 /**
  * @brief The inline_handler will be called to execute an anonymous code
@@ -147,7 +164,7 @@ Datum plcsharp_call_handler(PG_FUNCTION_ARGS);
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
-Datum plcsharp_inline_handler(PG_FUNCTION_ARGS);
+extern Datum plcsharp_inline_handler(PG_FUNCTION_ARGS);
 
 /**
  * @brief The validator function will inspect the function body for syntactical
@@ -161,7 +178,7 @@ Datum plcsharp_inline_handler(PG_FUNCTION_ARGS);
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
-Datum plcsharp_validator(PG_FUNCTION_ARGS);
+extern Datum plcsharp_validator(PG_FUNCTION_ARGS);
 
 /**
  * @brief The call_handler will be called to execute the procedural
@@ -174,7 +191,7 @@ Datum plcsharp_validator(PG_FUNCTION_ARGS);
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
-Datum plfsharp_call_handler(PG_FUNCTION_ARGS);
+extern Datum plfsharp_call_handler(PG_FUNCTION_ARGS);
 
 /**
  * @brief The inline_handler will be called to execute an anonymous code
@@ -185,7 +202,7 @@ Datum plfsharp_call_handler(PG_FUNCTION_ARGS);
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
-Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
+extern Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
 
 /**
  * @brief The validator function will inspect the function body for syntactical
@@ -199,13 +216,13 @@ Datum plfsharp_inline_handler(PG_FUNCTION_ARGS);
  *
  * @return The datum that can be stored in a PostgreSQL table.
  */
-Datum plfsharp_validator(PG_FUNCTION_ARGS);
+extern Datum plfsharp_validator(PG_FUNCTION_ARGS);
 
 /**
  * @brief Build the config paths related to .NET.
  *
  */
-bool pldotnet_BuildPaths(void);
+extern bool pldotnet_BuildPaths(void);
 
 /**
  * @brief Sets the assembly_loader object.
@@ -214,7 +231,7 @@ bool pldotnet_BuildPaths(void);
  * correctly.
  * @return false if the assembly_loader was not found.
  */
-bool pldotnet_SetNetLoader(void);
+extern bool pldotnet_SetNetLoader(void);
 
 /**
  * @brief Sets the .NET methods for the C function pointers.
@@ -222,7 +239,7 @@ bool pldotnet_SetNetLoader(void);
  * @return true if all the .NET functions were found.
  * @return false if no .NET functions were found.
  */
-bool pldotnet_SetDotNetMethods(void);
+extern bool pldotnet_SetDotNetMethods(void);
 
 /**
  * @brief Calls the "elog" function to report a message of PostgreSQL.
@@ -252,5 +269,38 @@ void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config);
  * @param config
  */
 void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
+
+/**
+ * \brief Allocates and initializes a test structure of type pldotnet_Result.
+ *
+ * Allocates memory for the pldotnet_Result structure and its internal arrays,
+ * then sets the default test values.
+ *
+ * \return Pointer to the initialized pldotnet_Result structure.
+ */
+extern pldotnet_Result *create_test_result_struct(void);
+
+/**
+ * \brief Checks the updated values in the provided pldotnet_Result structure.
+ *
+ * Validates the values in the pldotnet_Result structure after they have
+ * been modified to ensure they match the expected values.
+ *
+ * \param result Pointer to the pldotnet_Result structure to be checked.
+ * \return True if all values are correct, false otherwise.
+ */
+extern bool check_updated_result_struct(pldotnet_Result *result);
+
+/**
+ * \brief Returns current size of the pldotnet_Result
+ *
+ * \param result Pointer to the pldotnet_Result structure to be checked.
+ * \return Number of fields in the structure
+ */
+extern int pldotnet_GetResultLength(pldotnet_Result *result);
+
+extern void free_result(struct pldotnet_Result *r);
+extern void resize_result(struct pldotnet_Result *r, size_t length);
+extern struct pldotnet_Result *create_result(size_t length);
 
 #endif  // PLDOTNET_MAIN_H_

@@ -12,11 +12,13 @@ using System.Text;
 using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
-using NpgsqlTypes;
 using Npgsql;
+using NpgsqlTypes;
 using Npgsql.Tests;
 using Npgsql.Tests.Types;
 using PlDotNET.Common;
+
+#nullable enable
 
 namespace PlDotNET.UserSpace
 {

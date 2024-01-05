@@ -36,7 +36,6 @@ void _PG_init(void) {
     elog(LOG, "[pldotnet]: _PG_init");
 
     root_path = strdup(dnldir);
-    elog(INFO, "root_path: %s", root_path);
     if (root_path[strlen(root_path) - 1] == DIR_SEPARATOR)
         root_path[strlen(root_path) - 1] = 0;
 

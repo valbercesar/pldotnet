@@ -115,6 +115,7 @@ namespace PlDotNET.Handler
             { OID.INT8MULTIRANGEARRAYOID, OID.INT8MULTIRANGEOID },
         };
 
+#nullable enable
         public static Dictionary<OID, Type> SupportedTypes =
                        new ()
         {
@@ -157,7 +158,9 @@ namespace PlDotNET.Handler
             { OID.TSTZRANGEOID, typeof(NpgsqlRange<DateTime>) },
             { OID.DATERANGEOID, typeof(NpgsqlRange<DateOnly>) },
             { OID.VOIDOID, typeof(void) },
+            { OID.RECORDOID, typeof(object?[]) },
         };
+#nullable disable
 
         public static Dictionary<OID, string> SupportedTypesStr =
                        new ()
@@ -201,7 +204,7 @@ namespace PlDotNET.Handler
             { OID.TSTZRANGEOID, "NpgsqlRange<DateTime>" },
             { OID.DATERANGEOID, "NpgsqlRange<DateOnly>" },
             { OID.VOIDOID, "void" },
-            { OID.RECORDOID, "void" },
+            { OID.RECORDOID, "Object?[]" },
         };
 
         /// <summary>
@@ -290,8 +293,10 @@ namespace PlDotNET.Handler
                     return "TimestampTzRangeHandler";
                 case (uint)OID.DATERANGEOID:
                     return "DateRangeHandler";
-                case (uint)OID.RECORDOID: // This is a hack, but I think it's ok for now
-                    return "IntHandler";
+                case (uint)OID.RECORDOID:
+                    return "RecordHandler";
+                case (uint)OID.TRIGGEROID:
+                    return "RecordHandler";
                 default:
                     if (DatumConversion.ArrayTypes.ContainsKey((OID)id))
                     {
@@ -348,7 +353,7 @@ namespace PlDotNET.Handler
             };
         }
 
-        #nullable enable
+#nullable enable
         public static object InputNullableValue(IntPtr datum, OID type, bool isNull)
         {
             return (object)type switch
@@ -394,9 +399,9 @@ namespace PlDotNET.Handler
                 _ => throw new InvalidOperationException($"Failed on InputNullableValue. Unsupported type: {type}")
             };
         }
-        #nullable disable
+#nullable disable
 
-        #nullable enable
+#nullable enable
         public static IntPtr OutputNullableValue(OID type, object? value)
         {
             return type switch
@@ -442,7 +447,7 @@ namespace PlDotNET.Handler
                 _ => throw new InvalidOperationException($"Failed on OutputNullableValue. Unsupported type: {type}")
             };
         }
-        #nullable disable
+#nullable disable
 
         public static Type GetFieldType(OID type)
         {

@@ -65,6 +65,12 @@ namespace PlDotNET.Common
         /// </summary>
         [System.ComponentModel.Description("CALL_SRF_CLEANUP")]
         SrfCleanup = 4,
+
+        /// <summary>
+        /// Indicates that is calling a trigger.
+        /// </summary>
+        [System.ComponentModel.Description("CALL_TRIGGER")]
+        Trigger = 5,
     }
 
     /// <summary>
@@ -95,5 +101,17 @@ namespace PlDotNET.Common
         /// </summary>
         [System.ComponentModel.Description("RETURN_SRF_DONE")]
         SrfDone = 3,
+
+        /// <summary>
+        /// Indicates that the trigger event should be abort.
+        /// </summary>
+        [System.ComponentModel.Description("RETURN_TRIGGER_SKIP")]
+        TriggerSkip = 4,
+
+        /// <summary>
+        /// Indicates that the row has been modified.
+        /// </summary>
+        [System.ComponentModel.Description("RETURN_TRIGGER_MODIFY")]
+        TriggerModify = 5,
     }
 }
