@@ -10,8 +10,8 @@
   - [Q: How do I use pl/dotnet?](#q-how-do-i-use-pldotnet)
   - [Q: Is pl/dotnet fast?](#q-is-pldotnet-fast)
   - [Q: Does pl/dotnet support a lot of types?](#q-does-pldotnet-support-a-lot-of-types)
-  - [Q: How does pl/dotnet make use of Npgsql?](#q-how-does-pldotnet-make-use-of-npgsql)
-  - [Q: How compatible is my Npgsql client code with pl/dotnet?](#q-how-compatible-is-my-npgsql-client-code-with-pldotnet)
+  - [Q: How does pl/dotnet make use of NPGSQL?](#q-how-does-pldotnet-make-use-of-npgsql)
+  - [Q: How compatible is my NPGSQL client code with pl/dotnet?](#q-how-compatible-is-my-npgsql-client-code-with-pldotnet)
   - [Q: How complete is your F# support compared to C#?](#q-how-complete-is-your-f-support-compared-to-c)
   - [Q: How good is the code quality is pl/dotnet?](#q-how-good-is-the-code-quality-is-pldotnet)
   - [Q: Is the code well commented?](#q-is-the-code-well-commented)
@@ -44,11 +44,11 @@ The pl/dotnet project extends PostgreSQL to support functions, stored procedures
 
 ## Q: Which version of pl/dotnet does this FAQ cover?
 
-This FAQ is for the version 1.0 release of pl/dotnet, released in January 2023.
+This FAQ is for the version 0.9 release of pl/dotnet, released in January 2023.
 
 ## Q: What languages are supported?
 
-pl/dotnet supports the creation of stored procedures, functions, and `DO` blocks in both C# and F#, which can be used inside of PostgreSQL as the `plcsharp` and `plfsharp` languages, respectively.
+pl/dotnet supports the creation of stored procedures, functions, triggers, and `DO` blocks in both C# and F#, which can be used inside of PostgreSQL as the `plcsharp` and `plfsharp` languages, respectively.
 
 ## Q: Can I see an example?
 
@@ -62,15 +62,15 @@ $$ LANGUAGE plcsharp STRICT;
 
 ## Q: How do I use pl/dotnet?
 
-After you install it, you can use the normal Postgresql `CREATE FUNCTION` or `CREATE PROCEDURE` syntax. The language is `plcsharp` or `plfsharp` depending on your choice of C# or F#.
+After you install it, you can use the normal Postgresql `CREATE FUNCTION`, `CREATE PROCEDURE`, `CREATE TRIGGER`, or `DO` syntax. The language is `plcsharp` or `plfsharp` depending on your choice of C# or F#.
 
 ## Q: Is pl/dotnet fast?
 
-In our benchmarks, pl/csharp is the fastest external procedural language in PostgreSQL.  We are nearly as fast as pl/pgsql.  (The performance of pl/fsharp is practically identical to pl/csharp, with a few exceptions.)
+In our benchmarks, pl/csharp is the fastest external procedural language in PostgreSQL.  We are nearly as fast as pl/pgsql.  (The performance of pl/fsharp is practically identical to pl/csharp.)
 
 These benchmarks are somewhat arbitrary, merely having been designed for our own needs, but the were not cherry picked or tuned; we built the tests first and only benchmarked them afterwards. It is possible that some of our implementation choices in other languages were sub-optimal, and we welcome corrections, but the consistency of the results across multiple languages makes us reasonably confident in the data. The tests are available in our repository for inspection, and we hope to share them in more polished form for use by other PL teams.
 
-Our benchmark results were aided by .NET's excellent handling of recursive functions; we generally beat other languages by a considerable margin on these benchmarks.  Our benchmark results were harmed by our handling of arrays, which is currently compatible with Npgsql's convention and is therefore unnecessarily slow. (We intend to improve this soon, though these improvements will be optional since they are not Npgsql-compatible.)
+Our benchmark results were aided by .NET's excellent handling of recursive functions; we generally beat other languages by a considerable margin on these benchmarks.  Our benchmark results were harmed by our handling of arrays, which is currently compatible with NPGSQL's convention and is therefore unnecessarily slow. (We intend to improve this soon, though these improvements will be optional since they are not NPGSQL-compatible.)
 
 ## Q: Does pl/dotnet support a lot of types?
 
@@ -78,19 +78,19 @@ We were able to achieve native representation for 38 types, plus their arrays, t
 
 The full list can be found in our white paper or in the technical documentation.
 
-## Q: How does pl/dotnet make use of Npgsql?
+## Q: How does pl/dotnet make use of NPGSQL?
 
-Npgsql is an open source ADO.NET Data Provider for PostgreSQL. You can find out more at their website, [https://www.npgsql.org/](https://www.npgsql.org/).
+NPGSQL is an open source ADO.NET Data Provider for PostgreSQL. You can find out more at their website, [https://www.npgsql.org/](https://www.npgsql.org/).
 
-pl/dotnet uses Npgsql to map PostgreSQL data types to .NET data types. This provides us a very high quality of data type mapping, since Npgsql has long been in widespread use, and it maximizes code mobility for developers seeking to move their client code into the database as stored procedures.
+pl/dotnet uses NPGSQL to map PostgreSQL data types to .NET data types. This provides us a very high quality of data type mapping, since NPGSQL has long been in widespread use, and it maximizes code mobility for developers seeking to move their client code into the database as stored procedures.
 
-pl/dotnet also uses Npgsql in our implementation of SPI, which is currently under development.
+pl/dotnet also uses NPGSQL in our implementation of SPI, which is currently under development.
 
-We believe that maximal compatibility with Npgsql will allow transparent migration of C# and F# code from the client to the server, which is a strategic goal for our project.
+We believe that maximal compatibility with NPGSQL will allow transparent migration of C# and F# code from the client to the server, which is a strategic goal for our project.
 
-## Q: How compatible is my Npgsql client code with pl/dotnet?
+## Q: How compatible is my NPGSQL client code with pl/dotnet?
 
-At the moment, we are 100% compatible with all supported Npgsql types. There are several deviations from the Npgsql type mapping which we are contemplating in the future, but we believe that Npgsql compatibility will remain our default, with developers being able to opt into the alternative APIs at their discretion.
+At the moment, we are 100% compatible with all supported NPGSQL types. There are several deviations from the NPGSQL type mapping which we are contemplating in the future, but we believe that NPGSQL compatibility will remain our default, with developers being able to opt into the alternative APIs at their discretion.
 
 ## Q: How complete is your F# support compared to C#?
 
@@ -106,6 +106,14 @@ Thanks to the magic of .NET, everything that works in C# *should* work in F#. We
 ## Q: Is the code well commented?
 
 All C and C# code is commented using Doxygen, and we encourage you to consult the generated Doxygen documentation.
+
+## Q: Does pl/dotnet support INOUT or OUT parameters?
+
+Yes, pl/dotnet supports INOUT and OUT parameters for both plcsharp and plfsharp.
+
+For plcsharp, OUT parameters are mapped to `out`, and INOUT parameters are mapped to `ref`.
+
+For plfsharp, IN and INOUT parameters are passed as arguments, and the function returns an array for all INOUT and OUT parameters, in keeping with the functional style.
 
 ## Q: How do I see the C#/F# code generated by pl/dotnet?
 
@@ -141,7 +149,37 @@ FIXME: add download location from our website
 
 ## Q: Are triggers supported?
 
-Triggers are not currently supported. We do have an initial implementation and hope to add full support soon.
+Yes, triggers are fully supported.  Trigger functions are called with a `TriggerData` argument which has
+all of the normal PostgreSQL trigger data:
+
+```
+    public class TriggerData
+    {
+        // Row-level information for operations
+        public object?[] OldRow { get; set; }
+        public object?[] NewRow { get; set; }
+        // Trigger metadata
+        public string TriggerName { get; set; }
+        public string TriggerWhen { get; set; }
+        public string TriggerLevel { get; set; } // TODO: make this an enum
+        public string TriggerEvent { get; set; } // TODO: make this an enum
+        // Table-related details
+        public int RelationId { get; set; }
+        // [Obsolete("RelationName is deprecated and may be removed in future releases. Use TableName instead.")]
+        // public string RelationName { get; set; }
+        public string TableName { get; set; }
+        public string TableSchema { get; set; }
+        // Trigger arguments
+        public string[] Arguments { get; set; }
+    }
+```
+
+Trigger function arguments are all mapped to strings, per the PostgreSQL convention, and placed
+in the TriggerData argument.
+
+Triggers can return ReturnMode.Normal, ReturnMode.TriggerSkip, or ReturnMode.TriggerModify as appropriate, under
+the normal SQL/PostgreSQL trigger rules.  Look in `testtrigger.sql` for sample usage or `TriggerData.cs` for
+the definition of `TriggerData`.
 
 ## Q: Is SPI supported?
 
@@ -186,15 +224,15 @@ Functions declared in this way will give an error if called with NULL, so the us
 
 ## Q: How are arrays handled?
 
-Because PostgreSQL does not enforce dimensioning on its arrays, Npgsql uses a very generic, boxed version of arrays in its API. You can read more about it here: https://www.npgsql.org/efcore/mapping/array.html.
+Because PostgreSQL does not enforce dimensioning on its arrays, NPGSQL uses a very generic, boxed version of arrays in its API. You can read more about it here: https://www.npgsql.org/efcore/mapping/array.html.
 
-pl/dotnet currently supports the Npgsql mapping.
+pl/dotnet currently supports the NPGSQL mapping.
 
 ## Q: What is the performance problem with arrays?
 
-Because arrays are boxed, and because you don't know the dimensionality of an array, they are more like trees than arrays, and navigating them is tedious and slow.
+Because arrays are boxed, and because you don't know the dimensionality of an array, they behave more like trees than arrays, and navigating them is tedious and slow.
 
-We have ideas for how this can be improved in future versions, but for now we handle arrays exactly the same way that Npgsql does.
+We have ideas for how this can be improved in future versions, but for now we handle arrays exactly the same way that NPGSQL does.
 
 ## Q: Can I load my code from a DLL?
 

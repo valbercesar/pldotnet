@@ -1,5 +1,16 @@
 \documentclass[sigconf,techreport,authorversion,nonacm]{acmart}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Article metadata:
+%
+% ACM Categories
+% Category H.2: Database Management
+%
+% arXiv Category
+% cs.DB
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages
 \usepackage{amsmath}
 \usepackage{array}
 \usepackage{booktabs}
@@ -21,12 +32,16 @@
 \usepackage{tcolorbox}
 \usepackage{url}
 
-\newcommand{\dotnet}{.NET}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Commands and definitions
+\newcommand{\dotnet}{.NET }
 \newcommand{\psqltypecount}{46}
-
 \newcommand{\pldotnettypecount}{38}
 
+\definecolor{pldotnet_gray}{RGB}{230,230,230}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Page layout
 \geometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
 \pagestyle{fancy}
 \fancyhead[L]{\leftmark}
@@ -37,6 +52,8 @@
 
 \SetupFloatingEnvironment{listing}{name=Program code}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Header information
 \title{The pl/dotnet extension to PostgreSQL, v0.9}
 
 %%% Authors
@@ -49,6 +66,8 @@
 }
 \email{tlewis@brickabode.com}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Main
 \begin{document}
 
 \sloppy
@@ -58,61 +77,61 @@
 % add page numbers
 \settopmatter{printfolios=true}
 
-\definecolor{pldotnet_gray}{RGB}{230,230,230}
-
-% I cannot get this to work.
-% \newcommand{\csharp_test_n}{ \num{397} }
-% \newcommand{\fsharp_test_n}{ $ \num{423} $ }
-% \newcommand{\csharp_test_n}{ $ \inteval{397} $ }
-% \newcommand{\fsharp_test_n}{ $ \inteval{423} $ }
-% \newcommand{\total_test_n}{ $ \csharp_test_n\ + \fsharp_test_n\ $ }
-
 \begin{abstract}
-pl/dotnet is a free software  project that extends PostgreSQL to
-support stored procedures and functions for the \dotnet\ platform,
-including both C\# and F\#.  In our tests it is the fastest procedural
-language in PostgreSQL, and it has the widest range of unit testing.
-It natively supports \pldotnettypecount\ out of \psqltypecount\ standard user types, the widest
-range of any external procedural language in PostgreSQL.  We hope
-to make it the best procedural language in PostgreSQL and the best
-implementation of \dotnet\ stored procedures in any database;
-important work remains.  We here present our work for consideration
-and feedback.
+pl/dotnet extends the PostgreSQL database to support stored procedures,
+functions, triggers, and DO blocks for the \dotnet\ platform,
+including both C\# and F\#.  In our tests it is the fastest Procedural
+Language in PostgreSQL, and it has the widest range of unit testing.
+It natively supports \pldotnettypecount\ out of \psqltypecount\
+standard user types, the widest range of any external Procedural
+Language in PostgreSQL.  It is released as free software under the
+PostgreSQL (BSD-style) license.  We hope to make it the best
+Procedural Language in PostgreSQL and the best implementation of
+\dotnet\ stored procedures in any database; important work remains.
+We here present our work for consideration and feedback.
 \end{abstract}
 
-\keywords{PostgreSQL, \dotnet\, pl/dotnet, C\#, F\#, stored procedures}
+\keywords{PostgreSQL, \dotnet\, pl/dotnet, C\#, F\#, stored procedures, triggers}
 
 \maketitle
 
-% TODO the text is using "We" but there is only 1 author
-
 \section{Introduction}
 
-% ### territory (what we have, the current state)
-
-PostgreSQL is an extensible, open-sourced object-relational database management system~\cite{PostgreSQL2022}.
-\dotnet\ (also \textquote{Dotnet})~\cite{DotNet2023} is an open-sourced, cross-platform development
-framework including a JIT-compiler, a high-performance runtime, and
-support (including cross-calling) for multiple languages, including
-both C\# (an object-oriented dialect of C) and F\# (based on Ocaml,
-an object-oriented dialect of ML.)
+PostgreSQL is an extensible, open-sourced object-relational database
+management system~\cite{PostgreSQL2022}.  \dotnet\ (also
+\textquote{Dotnet})~\cite{DotNet2023} is an open-sourced, cross-platform
+development framework including a JIT-compiler, a high-performance
+runtime, and support (including cross-calling) for multiple languages,
+including both C\# (an object-oriented dialect of C) and F\# (based
+on Ocaml, an object-oriented dialect of ML.)
 
 % # Current state
 
-The PostgreSQL project includes support for user-defined functions, stored procedures, and triggers.
-These can be implemented in a number of languages, including SQL, C, TCL, Perl, and Python in the standard distribution~\cite{PostgreSQL2022}, and Java~\cite{PLJava}, Lua~\cite{PLLua}, and R~\cite{PLR} outside of the standard definition.
-
-% ### niche (motivation, the current gap)
-
+The PostgreSQL project includes support for user-defined functions,
+stored procedures, and triggers.  These can be implemented in a
+number of languages, including SQL, C, TCL, Perl, and Python in the
+standard distribution~\cite{PostgreSQL2022}, and Java~\cite{PLJava},
+Lua~\cite{PLLua}, and R~\cite{PLR} outside of the standard definition.
 %\footnote{pl/dotnet is unusual in PostgreSQL in that it is one extension which supports two languages; the PostgreSQL languages added are \textquote{plcsharp} and \textquote{plfsharp}.}
+
 The pl/dotnet project extends PostgreSQL to support user functions,
-procedures, and \texttt{DO} blocks.  for the \dotnet platform,
+procedures, triggers, and \texttt{DO} blocks for the \dotnet platform,
 including both C\# and F\#.  We have achieved native representation
-for \pldotnettypecount\ of out of \psqltypecount\ PostgreSQL user types, plus their arrays, the
-widest range of any external procedural language in PostgreSQL. In
-our benchmarks we are the fastest external procedural language in
-PostgreSQL.
-%\footnote{These benchmarks are somewhat arbitrary, merely having been designed for our own needs, but the were not cherry picked or tuned; we built the tests first and only benchmarked them afterwards. It is possible that some of our implementation choices in other languages were sub-optimal, and we welcome corrections, but the consistency of the results across multiple languages makes us reasonably confident in the data. The tests and test results are available in our repository for inspection.} Work remains, especially the complete implementation of the Server Programming Interface, but we think the initial results are promising, and we share them in this paper. pl/dotnet is a free software project, licensed under the PostgreSQL License.  Full source can be downloaded from our github repository\footnote{\url{https://github.com/Brick-Abode/pldotnet/}}.
+for \pldotnettypecount\ of out of \psqltypecount\ PostgreSQL user
+types, plus their arrays, the widest range of any external Procedural
+Language in PostgreSQL. In our benchmarks we are the fastest external
+Procedural Language in PostgreSQL; our PL overhead is highly
+competitive with PostgreSQL's native Procedural Language,
+\texttt{pl/pgsql}, and our overall performance is superior, so we
+consider ourselves faster than it as well.\footnote{We acknowledge
+that performance benchmarking is a somewhat selective exercise,
+subject to conscious, unconscious, and accidental biases, and we
+welcome differing opinions and perspectives from other community
+members and PL maintainers. We believe and hope that robust and
+spirited discussion of our relative performance is healthy for the
+overall health of the PostgreSQL project, and it is in this friendly
+and constructive spirit that we put forth our claims and the
+supporting evidence here.}
 
 %%%%% Motivation and Goals %%%%%
 
@@ -178,7 +197,7 @@ Specific goals include:
     \item leveraging PostgreSQL's rich security model
     \item comprehensive testing
     \item good configurability
-    \item an improved the PostgreSQL ecosystem for other procedural languages via shared testing and cooperation
+    \item an improved the PostgreSQL ecosystem for other Procedural Languages via shared testing and other cooperation
 \end{itemize}
 
 % ### present approach and principal findings/results
@@ -203,21 +222,24 @@ explained in more detail later in the paper.
     \item Current support:
         \begin{itemize}
             \item Languages: C\# and F\# both fully supported
-            \item Datatypes: \pldotnettypecount\ out of \psqltypecount\ PostgreSQL user (non-system) data types, plus their arrays
-            \item All data types are nullable
-            \item Code can be entered directly via \texttt{CREATE FUNCTION} or, alternatively, loaded from a pre-compiled assembly
-            \item Performance is very good in our benchmarks, surpassing all other external PL implementations
-            \item Testing: we have 820 unit tests; all types, plus their arrays and nulls, are fully unit-tested in both C\# and F\#
+            \item Datatypes: \pldotnettypecount\ out of \psqltypecount\ PostgreSQL user (non-system) data types, plus their arrays, and all types are nullable
+            \item Code can be entered directly via \texttt{CREATE FUNCTION} or, alternatively, loaded from pre-compiled assemblies
+            \item Performance is very good in our benchmarks, surpassing all other external PL implementations and matching \texttt{pl/pgsql}
+            \item Testing: we have 820 unit tests, covering all types, plus their arrays and nulls, are fully unit-tested in both C\# and F\#, and we imported all NPGSQL unit tests and have several hundred working
             \item Security: Code for each function is isolated in a \dotnet Assembly Load Context, providing some security protection
-            \item Output parameter support
-            \item Set-Returning Functions: mapped to \texttt{IEnumerable<T>} for both C\#
+            \item Full trigger support, including modifying data where allowed
+            \item Full support for output parameters (\texttt{OUT} and \texttt{INOUT}), nicely mapped to both C\# and F\#
+            \item Full support for Set-Returning Functions
+            \item Support for functions returning \texttt{RECORD}s and tables
+            \item SPI support via the NPGSQL API, allowing much client code to be ported unmodified into server code
         \end{itemize}
     \item Future support:
         \begin{itemize}
-            \item Datatypes: multirange (of which there are five) and numeric
-            \item composite and enumerated types need to be mapped
-            \item SPI: basic SPI is privately working, but we want to make it 100\% Npgsql-compatible
-            \item Triggers: we have triggers prototyped and will implement them fully
+            \item Datatypes: eight types need to be added: multirange (of which there are five), enumerated, numeric, and composite
+            \item Datatypes: several external PostgreSQL plugins add interesting datatypes, including PostGIS and hstore
+            \item Secondary SPI features, such as subtransactions and notifications, will be mapped to NPGSQL
+            \item More extensive security protections
+            \item More fine-grained control over the runtime environment
     \end{itemize}
 \end{itemize}
 
@@ -236,12 +258,11 @@ conversions quite responsibly and is already in widespread use.
 We embraced Npgsql compatibility as our goal and leveraged it to
 map the types from PostgreSQL to \dotnet. This not only accelerated
 our project, but it also ensured compatibility of \dotnet code
-run as an external client or as an internal stored procedure.
+run externally in the client or internally as a stored procedure.
 This helps us with our strategic goal of making code mobility as
 effortless for the programmer as possible.
 
-While we expect our code size to increase as we add more features, you
-can see the advantage this approach gives us in Table \ref{table:LOC},
+You can see the advantage this approach gives us in Table \ref{table:LOC},
 which compares our code size to that of other Procedural Language
 implementations in PostgreSQL\footnote{We here count code in C/C++
 as well as the native language, with the exception of pl\/pgsql; we
@@ -250,11 +271,12 @@ to differentiate.  Lines of code were counted using version 1.94 of the
 \texttt{CLOC} tool.}\footnote{We also made 1916 lines of changes to our
 fork of the the NPGSQL package.  Most of these changes are boilerplate
 stemming from renaming and overriding the datatype classes.  They are
-strictly external to pl/dotnet, so we did not count them.  The reader
-may choose to count either way.}.  This approach was more complicated in
-several ways, but for us to have the widest range of native type support
-and good performance while having such a small codebase is something we
-are proud of.
+strictly external to pl/dotnet, so we did not count them.  If you choose
+to count that way, the total is 5956 lines, bumping us up one place, past
+pl/python.}.  This approach was more complicated in several ways,
+but it let us have the widest range of native type support and good
+performance while having such a small codebase; we are proud of
+this.
 
 \begin{table}[!htbp]
     \caption{Lines of code for various PostgreSQL PL implementations}
@@ -454,33 +476,32 @@ place in functional programming languages, so in F\# we pass \texttt{IN}
 and \texttt{INOUT} values as input arguments, and all \texttt{INOUT}
 and \texttt{OUT} values are separately returned in a tuple.  Ironically,
 this is how the variables are actually processed in PostgreSQL's internal
-handling.
+handling, while our C\# mapping matches the SQL syntax.
 
 \subsection{Function, Procedure, DO, Trigger}
 
-PostgreSQL has several ways that code can be invoked from a procedural
-language:
+PostgreSQL has four modes in which code can be invoked from a Procedural
+Language:
 \begin{enumerate}[itemsep=0pt]
-    \item As a user function (\textquote{\texttt{CREATE FUNCTION}}), taking parameters and returning a value.
-    \item As a procedure (\textquote{\texttt{CREATE PROCEDURE}}), taking arguments but not returning a value.
-    \item As a \textquote{\texttt{DO}} block, creating a transient anonymous function in a procedural language.
+    \item As a user function (\textquote{\texttt{CREATE FUNCTION}}), taking parameters, returning a value, but not allowing database modifications
+    \item As a procedure (\textquote{\texttt{CREATE PROCEDURE}}), taking arguments, not returning a value, but allowing database modifications
+    \item As a \textquote{\texttt{DO}} block, creating a transient anonymous function in a Procedural Language.
     \item As a trigger (\textquote{\texttt{CREATE TRIGGER}}), which is a function called when certain database events happen.
 \end{enumerate}
 
-pl/dotnet currently supports user functions, procedures, and \texttt{DO} blocks.
-Triggers are partially supported but unreleased, and we anticipate
-fully supporting them soon.
+pl/dotnet supports all four modes.
 
 \subsection{Using Both Code and Assemblies}
 
-Traditional PostgreSQL procedural languages, such as pl/pgsql
+Traditional PostgreSQL Procedural Languages, such as pl/pgsql
 and pl/python, support creating user functions by passing the
 code as part of the declaration of the function.
 
 Alternatively, PostgreSQL's pl/java, along with the \dotnet (CLR)
 implementations in Microsoft's SQLServer and IBM's DB2, support
 loading a function from a pre-compiled assembly (\textquote{\texttt{.dll}}
-or \textquote{\texttt{jar}}) file.
+or \textquote{\texttt{.jar}}) file.  PostgreSQL also allows compiled
+(C, rust-lang, etc.) functions to be loaded from shared library files.
 
 pl/dotnet supports both modes.  First, here are examples of directly
 entering the code in both C\# and F\#:
@@ -517,17 +538,16 @@ currently does not pass the file location to the language handler,
 as this was not an anticipated use case. For newer language handlers
 like pl/dotnet and pl/java, which also support loading code from
 external libraries/archives/assemblies, this would be a nice feature
-for PostgreSQL to provide, and we are interested in submitting this
-change upstream to PostgreSQL.
+for PostgreSQL to provide, and we might add it.
 
 \subsection{Platform support}
 
 \subsubsection{Operating systems and CPU}
 
-pl/dotnet is developed on Linux and has been fully tested on both
-x86 and ARM CPUs, suggesting the absence of any obvious endianness
-bugs.  We also have built and tested pl/dotnet on MacOS (OSX) on
-ARM, though it is of secondary priority to us.
+pl/dotnet is primarily developed on Linux and has been fully tested
+on both x86 and ARM CPUs, suggesting the absence of any obvious
+endianness bugs.  We also have built and tested pl/dotnet on MacOS
+(OSX) on ARM, though it is of secondary priority to us.
 
 Our build environment is container-based, allowing us a stable and
 repeatable build environment. We build on Bullseye\footnote{Ride
@@ -535,14 +555,13 @@ like the wind, Bullseye!}, version 11 of the Debian Linux distribution.
 We use the system dpkg versions of both \dotnet and PostgreSQL.\@We
 build, install, and test a standard debian package (\textquote{dpkg}).
 
-There should be no problems getting pl/dotnet running on Windows; there
-are few system dependencies in the code, and those are very standard.
-However, given that most PostgreSQL usage is on Linux, we decided that
-prioritizing Linux support.  Our focus for now is on growing the system's
-functionality, not expanding its range of support.
+There should be no problems getting pl/dotnet running on Windows;
+there are few system dependencies in the code, and those are very
+standard.  Since most PostgreSQL usage is on Linux, we prioritized
+Linux support.
 
-We welcome code contributions to add support on other Linux distributions
-and on other operating systems for pl/dotnet.
+We welcome code contributions to add support on other Linux
+distributions and on other operating systems for pl/dotnet.
 
 \subsubsection{Postgresql versions}
 
@@ -561,7 +580,7 @@ but we currently have no need for it.
 
 \subsection{Security}
 
-Security in pl/dotnet is limited. We use separate Assembly Load Contexts\footnote{\url{https://learn.microsoft.com/en-us/dotnet/api/system.runtime.loader.assemblyloadcontext?view=net-7.0}}
+pl/dotnet has reasonable security. We use separate Assembly Load Contexts\footnote{\url{https://learn.microsoft.com/en-us/dotnet/api/system.runtime.loader.assemblyloadcontext?view=net-7.0}}
 for each stored procedure, which provides some level of isolation
 between them: they exist in separate namespaces and generally
 do not have access to each other's code or data, or that of
@@ -585,23 +604,23 @@ This problem is faced by every stored procedure language, and unless
 the language provides air-tight guarantees as to its security, then
 we think that skepticism regarding such assurances is warranted.
 Few languages in existence provide such guarantees, and we do not
-think that any of the current stored procedure languages qualify;
-only pl/tcl even makes such a claim, and while we respect their
+think that any of the current stored procedure languages qualify.
+Only pl/tcl even makes such a claim, and while we respect their
 design, we would still probably not fully trust it for security-critical
 usage.
 
-The fundamental problem is that stored procedures are executing
-inside of the PostgreSQL server's memory space, and the operating
-system and CPU provide no memory protection between the stored
-procedures and the database. This is the fundamental tradeoff to
-be made in order to get the increased performance which stored
-procedures provide.
+The fundamental problem is that stored procedures execute inside
+of the PostgreSQL server's memory space, and the operating system
+and CPU provide no memory protection between the stored procedures
+and the database. This is the fundamental tradeoff to be made in
+order to get the increased performance which stored procedures
+provide.
 
 Even with these limitations, we think there is a security argument
-to be made for this approach. In the normal use case, database
-clients cannot easily interfere with PostgreSQL's internal operation,
-but they have access, usually unrestricted, to modify or delete the
-data
+to be made for this approach over the traditional architecture. In
+the normal use case, database clients cannot easily interfere with
+PostgreSQL's internal operation, but they have access, usually
+unrestricted, to modify or delete the data as well as the schema.
 
 We here should think about why PostgreSQL's integrity is important.
 It is unusual that an attacker wishes to use one application to subvert
@@ -625,8 +644,8 @@ and more difficult to secure. Because the client no longer needs
 unrestricted write access to the database, this change will usually
 yield an improvement in overall security, often a dramatic one.
 
-For this reason, we feel good about the security implications of
-our design for many classes of users.
+For this reason, we believe our design to offer superior security
+for many classes of users.
 
 Stored procedure authors must be the final arbiters of their security
 tradeoffs. They should, as always, take care that their code not
@@ -634,20 +653,14 @@ introduce means to be subverted by malicious input. This is easier
 in a memory-safe environment like \dotnet.
 
 Security-critical applications do exist, and we are interested in
-serving them. If we do so, then it will be via a sidecar, a separated
-operating system process context with full memory protection, using
-message passing or shared memory to communicate to the database
-server on the same host operating system. Unless and until such a
-system is built, we recommend thoughtful evaluation of whether the
-security of the current system is appropriate to your application.
-For most current applications, we think that it can be.
+serving them; it is an interesting area for future work.
 
-\subsection{Codebase Quality}
-%Testing, Static Analysis, and Documentation
-%TODO Update title
+\subsection{Code Quality}
 
-In order to improve our codebase quality, we have built unit tests for all
-supported datatypes, their arrays, and null handling in both C\# and F\#.
+In order to improve our code quality, we have built unit tests for all
+supported datatypes, their arrays, and null handling in both C\# and F\#,
+as well as for all major functionality, such as triggers, Set-Returning
+Functions, table functions, etc.
 
 We use three static analysis tools:
 \begin{enumerate}[itemsep=0pt]
@@ -663,35 +676,22 @@ Source code in pl/dotnet, both C and C\#, is documented using Doxygen,
 and the generated documents are reasonably complete in explaining
 the system.
 
+Finally, we imported all of NPGSQL's unit tests to run under
+pl/dotnet, and we have several hundred of them working.  The NPGSQL
+unit tests failures are caused first by minor differences in exception
+handling, and also by our incomplete support for NPGSQL's feature
+set.  We continue to make progress in improving our NPGSQL
+compatibility, but we believe that the current feature set is very
+useful, and our using NPGSQL's own tests leaves us confident that
+our supported features are supported well.
+
 \subsection{Future Features}
-
-PostgreSQL supports stored procedures themselves making SQL calls back
-into the database via the Server Programming Interface (SPI). We
-have an initial implementation of SPI, but it is not very safe at
-the moment, so we chose not to include it in the first version.
-
-Our intention is to map SPI to a fully-conformant Npgsql connection
-object, which should again maximize compatibility between code
-run in a client context and code run in a stored procedure context.
 
 We do not currently support dynamic database types, such as enums,
 composites, domain types, and other user-defined types. Npgsql
 does support them, and we intend to add them in the future, but
 their handling is somewhat delicate, so we chose to ship the first
 version without them.  We also do not support the Numeric type.
-
-PostgreSQL supports set-returning functions (SRFs), which lazily
-return a potentially-infinite set of values. This database
-functionality maps nicely to the \texttt{IEnumerable<T>} interface
-in C\# and \texttt{seq<'T>} in F\# (the ML idiom which in F\# is
-just an alias for \texttt{IEnumerable<T>}.)
-
-We have a prototype implementation of SRFs which supports returning
-both finite and infinite sets and includes careful garbage collection
-of the iterator. (Especially for inifinite sets, the database must
-tell you when it is done consuming values, and you then must destroy
-the iterator in order not to leak memory.) We anticipate fully
-supporting SRFs soon.
 
 We plan to give developers more control over code isolation by
 placing each DLL in its own AssemblyLoadContext.  Thus, code from
@@ -700,9 +700,12 @@ from each other.  This will let users control data sharing between
 their functions by controlling which DLLs hold their functions.
 
 Our automated tests cover not only C\# and F\#, but also numerous
-other stored procedure languages.  We hope to share these in more
-polished form for use by other PL teams and to facilitate cooperation
-across the PostgreSQL PL community.
+other stored procedure languages.  We hope to share these for use
+by other PL teams and to facilitate cooperation across the PostgreSQL
+PL community.  We would like for our project to be helpful to
+other PL's in improving their implementations, and we thank them
+for the help which their examples provided us in developing this
+project.
 
 \section{\dotnet\ implementation}
 
@@ -710,7 +713,7 @@ across the PostgreSQL PL community.
 
 Any stored procedure language in PostgreSQL is going to have some
 mix of C code and language-specific code, and there are choices to
-be made in where and how you express functionality. We liked the
+be made in where and how you build functionality. We liked the
 increased safety of working in C\#, and we valued the richer set of
 programming tools, so our decision was to keep the C code to a
 minimum and use C\# wherever possible handle the transfer of data
@@ -729,7 +732,7 @@ with our code generation strategy, we actually have a superior execution
 path to C engines such as pl/python's; whereas they are structured more
 like an interpreter, with run time determination of the execution path,
 we are able to lift such decision making to compile time and build
-minimal execution paths.  Finally, our optimal execution path is then
+minimal execution paths.  Our optimized execution path is then
 compiled, yielding roughly equivalent and sometimes superior performance
 to natively-compiled code.  For these reason, our performance is superior,
 despite building most of our logic in a high-level language.  Keeping most
@@ -748,12 +751,14 @@ minimum; they are strictly limited to getting data into and back
 out of \dotnet.
 
 When a function is created, pl/dotnet creates two assemblies: the
-UserHandler, and the UserFunction.  The UserFunction is a minimal wrapper
-around the user's code, or in cases where the user has loaded the function
-from a pre-compiled assembly, then it is a wrapper around that assembly.
-The UserHandler is responsible for marshalling values out of the database,
-calling the UserFunction, and then returning the result values back into
-the database.
+UserHandler, and the UserFunction.  The UserFunction is a minimal
+wrapper around the user's code, or in cases where the user has
+loaded the function from a pre-compiled assembly, then it is a
+wrapper around that assembly.  The type mapping from PostgreSQL to
+C\# or F\# is automated; the user need not bother himself with it.
+The UserHandler is responsible for marshalling values out of the
+database, calling the UserFunction, and then returning the result
+values back into the database.
 
 A nice feature of this architecture is that, because the
 UserHandler is so cleanly separated from the UserFunction, support
@@ -766,21 +771,24 @@ between F\# Compiler Services and Roslyn.}
 
 When a function is called from PostgreSQL, C builds an array of
 datums\footnote{We here refer to the plural of a PostgreSQL type
-\textquote{Datum} as \textquote{Datums} in order to differentiate them
-from the more generic \textquote{Data}.} with the function arguments
-and passes them to C\#. C\# knows the type of each argument from when
-the function was created, and it calls the corresponding handlers for
-each type to convert it from a PostgreSQL datum to a \dotnet value.
-The C\# handler handles NULLs and arrays with code that is nicely generic.
+\textquote{Datum} as \textquote{Datums} in order to technically
+differentiate them from the more generic term \textquote{Data}.}
+with the function arguments and passes them to C\#. C\# knows the
+type of each argument at compile time, and it calls the precise
+handlers for each type to convert it from a PostgreSQL datum to a
+\dotnet value, without any run-time overhead.  The C\# handler
+handles NULLs and arrays with code that is nicely generic.
 
 After those values have been passed to the user function, the return
-value follows the reverse path through the type handler to create
-a PostgreSQL result datum, which is then returned to the database.
+value from the user function then follows the reverse path through
+the type handlers to create a PostgreSQL result datum, which is
+then returned to the database.
 
 \subsection{Compilation and caching}
 
-Both C\# and F\# make use of a template file which is then customized.
-Users can optionally inspect the generated code.
+Both C\# and F\# make use of a template source file which is then
+customized to create the source code for each user function.  Users
+can optionally inspect the generated code.
 
 pl/dotnet uses the the \dotnet\ Compiler Platform SDK, aka Roslyn\footnote{\url{https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/}}\footnote{\url{https://github.com/dotnet/roslyn}},
 which is a set of compiler tools to compile C\# to an in-memory
@@ -800,6 +808,10 @@ We use F\# Compiler Services (\textquote{FCS})\footnote{\url{https://fsharp.gith
 in a similar way to dynamically compile F\# user functions into an
 assembly. For historical reasons, the facilities offered by FCS
 are not identical to Roslyn, but they are generally comparable.
+
+These facilities give us many tools for improving the developer
+experience and have been essential to desired features such as our
+detailed error messages.
 
 The generated code is then compiled into in-memory assemblies. If
 a pre-compiled assembly/DLL has been used, then that is loaded
@@ -825,14 +837,14 @@ mostly of historical interest, making this functionality not urgent.
 \dotnet\ spans let you create an object from only a pointer and a
 length, leaving the contents where they lie rather than requiring
 that they be copied.\footnote{\url{https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/}}
-Strings in pl/dotnet are handled via a \texttt{ReadOnlySpan}, which is
-inexpensive and generally a nice interface.
+Strings in pl/dotnet are handled via a \texttt{ReadOnlySpan}, which
+is an inexpensive and nice interface.
 
 \subsection{Applying PL/DOTNET with C\#}
 
 We present a sample function to show the different parts of
 the system working together.  We use Int16 and Int32 as simple
-examples, letting us concentrate on the control flow
+example types, letting us concentrate on the control flow
 rather than the complexity of the type conversion.  Some of the
 minor details have been simplified for presentation.
 
@@ -928,11 +940,8 @@ public class IntHandler : StructTypeHandler<int> {
 \label{lst:integercode}
 \end{listing}
 
-Program Code \ref{lst:datumcode} is the C code, which uses the relevant PostgreSQL macros (etc)
-for Datum conversion.  These would have been tedious and error-prone
-to implement as unsafe C\# code, in addition to being fragile to
-upstream changes in PostgreSQL, so instead we built C wrappers for
-them.
+Program Code \ref{lst:datumcode} is the C code, which uses the
+relevant PostgreSQL macros (etc) for Datum conversion.
 
 \begin{listing}[H]
 \begin{minted}[breaklines, breakafter=d, frame=single,fontsize=\footnotesize]{csharp}
@@ -954,33 +963,25 @@ of C handlers (input and output) in
 \textquote{\texttt{src/pldotnet\_conversions.c}} and a corresponding
 pair of C\# wrappers in \textquote{\texttt{dotnet\_src/TypeHandlers/}}.
 
-
-% \section{Evaluation Description}
-% We describe our questions to be addressed with the experiments
-% How we will answer each question
-
-% A subsection explaining the indicators that we used. For instance, execution time.
-
-% a subsection explaining the test set used and where we can find them.
-
 \section{Results and Analyses}
 
-We have built automated testing for over a hundred features across
-a range of other PostgreSQL procedural languages:
+In addition to our own tests for pl/dotnet, we have built automated
+testing for over a hundred features across a range of other PostgreSQL
+Procedural Languages:
 
 \begin{table}[!htbp]
        \caption{Tests we wrote for other PSQL Procedural Languages.}
        \begin{tabular}{l | c }
                \toprule
                \rowcolor{gray!25} \textbf{language} & \textbf{\# tests} \\ \midrule
-               java                                 & 115               \\
-               lua                                  & 102               \\
-               perl                                 & 110               \\
-               pgsql                                & 109               \\
-               python                               & 118               \\
-               r                                    & 105               \\
-               tcl                                  & 108               \\
-               v8javascript                         & 109               \\ \bottomrule
+               pl/java                                 & 115               \\
+               pl/lua                                  & 102               \\
+               pl/perl                                 & 110               \\
+               pl/pgsql                                & 109               \\
+               pl/python                               & 118               \\
+               pl/r                                    & 105               \\
+               pl/tcl                                  & 108               \\
+               pl/v8(javascript)                       & 109               \\ \bottomrule
        \end{tabular}
 \end{table}
 
@@ -992,8 +993,8 @@ to support the PL implementations.
 
 \subsection{Performance}
 
-We used these tests for benchmarking pl/dotnet. We will now present
-these results.
+We used these tests for benchmarking pl/dotnet and the other
+Procedural Languages. We present these results here.
 
 It is important first to say that these benchmarks were not designed
 to fairly (or unfairly) evaluate the performance of other languages.
@@ -1007,9 +1008,14 @@ features which they use. We merely built the tests we needed for
 comparison, ran them, and benchmarked pl/dotnet's performance against
 them.
 
+Further, these tests only measure the overhead of the PL engine
+itself.  Of course, the performance of JIT-compiled platforms
+like Java and \dotnet will be significantly higher than interpreted
+languages like python and tcl; these benchmarks are not intended
+to measure such runtime differences.
+
 Under these tests, pl/dotnet's performance compared to the other
-procedural languages was good.  Given that we have not started optimizing
-our code, we are optimistic for our continued good performance.
+Procedural Languages was very good.
 
 To compute total performance, we equally weighted each test and
 compared pl/dotnet against the other PL in question. First, a
@@ -1021,6 +1027,7 @@ summary:
                \toprule
                \rowcolor{gray!25} \textbf{Programming Language} & \textbf{Execution time} \\ \midrule
                 pl/pgsql             &   93.80\%    \\
+                pl/csharp            &  100.00\%    \\
                 pl/fsharp            &  101.56\%    \\
                 pl/perl              &  109.13\%    \\
                 pl/python            &  110.95\%    \\
@@ -1033,8 +1040,8 @@ summary:
 \end{table}
 
 \autoref{fig:comparison} shows the graphs of the relative performance
-of each language.  \autoref{fig:heatmap} is the more detailed graph
-showing relative performance for each test in a heatmap.
+of each language.  \autoref{fig:heatmap} is the more detailed heatmap
+showing relative performance for each test.
 
 \begin{figure*}[!htbp]
         \centering
@@ -1060,26 +1067,24 @@ language in PostgreSQL, because its native datatype representation is
 the PostgreSQL representation, so it does not need to perform any data
 conversions.
 
+The pl/dotnet results had been advantaged by a small number of tests
+with recursive functions, which \dotnet\ handles very well and which
+pl/pgsql apparently does not.  With such results included, we thoroughly
+out-performed pl/pgsql.  We think recursive functions are
+important, especially for functional programming.  However, given
+that they heavily skewed the results, we have excluded them from
+this dataset and from the resulting performance figures in the
+interest of fairness.  This resulted in pl/pgsql slightly surpassing
+pl/dotnet in measured performance.
+
 It is worth noting that, in actual usage, we expect pl/dotnet to be
-generally faster than pl/pgsql because of the superiority of the
-dotnet runtime to the pl/pgsql runtime; these benchmarks mostly
-measure the conversion of data into and out of the PL, which is
-our area of emphasis, not overall performance.
-
-Our results had been advantaged by a small number of tests with recursive
-functions, which \dotnet\ handles very well and which pl/pgsql apparently
-does not.  We think recursive functions are important, especially for
-functional programming.  However, given that they heavily skewed the
-results, we have excluded them from this dataset and from the resulting
-performance figures in the interest of fairness.
-
-We are pleased that our performance against pl/pgsql is so relatively
-strong, even with our having excluded the recursive tests.  We will
-be trying to reach parity and surpass it.
+significantly faster than pl/pgsql because of the superiority of the
+dotnet runtime to the pl/pgsql runtime.  Again, all we are measuring
+here is the PL overhead.
 
 Across all language comparisons, there are a small number of tests
-where pl/dotnet performance is relatively bad, and these are the
-array tests. This is caused by the Npgsql object representation of
+where pl/dotnet performance is relatively bad: the array tests.
+This is caused (we think) by the Npgsql object representation of
 variably-dimensioned arrays.
 
 The fact that PostgreSQL enforces neither the specified array size
@@ -1119,7 +1124,7 @@ corresonding native type. Here, we were greatly aided by the
 existence of Npgsql, which already has extensive mapping of the
 PostgreSQL type system to the \dotnet type system. Leveraging their
 work, we are able to have the greatest range of native type support
-of any external procedural language in PostgreSQL.
+of any external Procedural Language in PostgreSQL.
 
 We still have four gaps in our type coverage: the Numeric type;
 composite types, also known as record types; enumerated types
@@ -1127,14 +1132,10 @@ composite types, also known as record types; enumerated types
 (Multirange will be a single, generic implementation.)
 
 We indend to add all of these, which would make us the first external
-procedural language with 100\% native support of all PostgreSQL
+Procedural Language with 100\% native support of all PostgreSQL
 user types.
 
-% TODO: build a type support table showing the PSQL PL's, along with DB2 and SqlServer
-
 \section{Conclusion}
-
-% TODO: do we think?
 
 We believe pl/dotnet is an interesting contribution to the PostgreSQL
 and \dotnet ecosystems. We hope that PostgreSQL users will find it
