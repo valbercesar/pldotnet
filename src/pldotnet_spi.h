@@ -104,6 +104,18 @@ extern PGDLLEXPORT void pldotnet_SPIRollback(ErrorData **errorData);
 extern PGDLLEXPORT int pldotnet_GetTableColumnNumber(SPITupleTable *tupleTable);
 
 /**
+ * @brief Gets the tuple description type OID if the provided SPITupleTable
+ * stores a returned table. Otherwise, it returns 0.
+ *
+ * @param tupleTable A pointer to a SPITupleTable struct. It'll be a null
+ * pointer if it is not related to a returned table.
+ *
+ * @return the tuple description type OID of the table stored in the provided
+ * SPITupleTable.
+ */
+extern PGDLLEXPORT int pldotnet_GetTableTypeID(SPITupleTable *tupleTable);
+
+/**
  * @brief Get the properties of the columns in the current query result set.
  *
  * This function retrieves the data types and names of the columns in the
@@ -112,11 +124,15 @@ extern PGDLLEXPORT int pldotnet_GetTableColumnNumber(SPITupleTable *tupleTable);
  *
  * @param columnTypes Output parameter for the data types of the columns.
  * @param columnNames Output parameter for the names of the columns.
+ * @param columnTypmods Output parameter for the type modifier of the columns.
+ * @param columnLens Output parameter for the len/size of the columns.
  * @param tupleTable A pointer to a SPITupleTable struct. It'll be a null
  * pointer if it is not related to a returned table.
  */
 extern PGDLLEXPORT void pldotnet_GetColProps(int *columnTypes,
                           char **columnNames,
+                          int *columnTypmods,
+                          int *columnLens,
                           SPITupleTable *tupleTable);
 
 /**

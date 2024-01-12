@@ -188,18 +188,29 @@ int pldotnet_GetTableColumnNumber(SPITupleTable *tupleTable) {
     return tupleTable != NULL ? (int)tupleTable->tupdesc->natts : 0;
 }
 
+int pldotnet_GetTableTypeID(SPITupleTable *tupleTable) {
+    return tupleTable != NULL ? (int)tupleTable->tupdesc->tdtypeid : 0;
+}
+
 void pldotnet_GetColProps(int *columnTypes,
                           char **columnNames,
+                          int* columnTypmods,
+                          int* columnLens,
                           SPITupleTable *tupleTable) {
     int ncols = (int)tupleTable->tupdesc->natts;
     Form_pg_attribute attr;
 
     elog(INFO, "Enter pldotnet_GetColProps: %p, %p", columnTypes, columnNames);
 
+    // More attributes can be identified here:
+    // https://doxygen.postgresql.org/tupdesc_8h.html
+    
     for (int i = 0; i < ncols; i++) {
         attr = TupleDescAttr(tupleTable->tupdesc, i);
         columnTypes[i] = attr->atttypid;
         columnNames[i] = NameStr(attr->attname);
+        columnTypmods[i] = (int)(attr->atttypmod);
+        columnLens[i] = (int)(attr->attlen);
     }
 }
 
