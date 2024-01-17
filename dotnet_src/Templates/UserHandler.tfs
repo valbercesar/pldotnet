@@ -11,6 +11,7 @@ open System.Net.NetworkInformation
 open System.Runtime.InteropServices
 open System.Text
 open System.Text.Unicode
+open Npgsql
 open NpgsqlTypes
 open PlDotNET.Common
 open PlDotNET.Handler

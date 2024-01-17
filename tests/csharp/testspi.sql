@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION SPISumIntegers(a integer, b integer, c integer) RETURNS integer AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT {a} as a, {b} as b, {c} as c");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
 
     int sum = 0;
     while (reader.Read())
@@ -144,7 +144,7 @@ VALUES (
 CREATE OR REPLACE FUNCTION SPIReturnBoolValue() RETURNS BOOLEAN AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     return reader.GetBoolean(reader.GetOrdinal("BOOLCOL"));
 $$ LANGUAGE plcsharp;
@@ -154,7 +154,7 @@ SELECT 'c#-bool-spi', 'SPIReturnBoolValue', SPIReturnBoolValue() is true;
 CREATE OR REPLACE FUNCTION SPIIncSmallInt(a SMALLINT) RETURNS SMALLINT AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     return (short)(reader.GetInt16(reader.GetOrdinal("I2COL")) + a);
 $$ LANGUAGE plcsharp;
@@ -164,7 +164,7 @@ SELECT 'c#-int2-spi', 'SPIIncSmallInt', SPIIncSmallInt('15'::SMALLINT) = '2038':
 CREATE OR REPLACE FUNCTION SPIIncInt(a INTEGER) RETURNS INTEGER AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     return (int)(reader.GetInt32(reader.GetOrdinal("I4COL")) + a);
 $$ LANGUAGE plcsharp;
@@ -174,7 +174,7 @@ SELECT 'c#-int4-spi', 'SPIIncInt', SPIIncInt(327670) = 655340;
 CREATE OR REPLACE FUNCTION SPIIncBigInt(a BIGINT) RETURNS BIGINT AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     return (long)(reader.GetInt64(reader.GetOrdinal("I8COL")) + a);
 $$ LANGUAGE plcsharp;
@@ -185,7 +185,7 @@ SELECT 'c#-int8-spi', 'SPIIncBigInt', SPIIncBigInt(214748364700) = 236223201170;
 CREATE OR REPLACE FUNCTION SPIIncFloat(a FLOAT4) RETURNS FLOAT4 AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     return (float)(reader.GetFloat(reader.GetOrdinal("F4COL")) + a);
 $$ LANGUAGE plcsharp;
@@ -195,7 +195,7 @@ SELECT 'c#-float4-spi', 'SPIIncFloat', SPIIncFloat('0.01252'::FLOAT4) = '10.2146
 CREATE OR REPLACE FUNCTION SPIIncDouble(a FLOAT8) RETURNS FLOAT8 AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     return (float)(reader.GetFloat(reader.GetOrdinal("F4COL")) + a);
 $$ LANGUAGE plcsharp;
@@ -205,7 +205,7 @@ SELECT 'c#-float8-spi', 'SPIIncDouble', SPIIncDouble('0.0125215699789'::FLOAT8) 
 CREATE OR REPLACE FUNCTION SPIIncPoint(a POINT) RETURNS POINT AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlPoint b = reader.GetFieldValue<NpgsqlPoint>(reader.GetOrdinal("POINTCOL"));
     b.X += ((NpgsqlPoint)a).X;
@@ -218,7 +218,7 @@ SELECT 'c#-point-spi', 'SPIIncPoint', SPIIncPoint('(2.285,5.575)'::POINT) ~= '(3
 CREATE OR REPLACE FUNCTION SPIIncLine(a LINE) RETURNS LINE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlLine b = reader.GetFieldValue<NpgsqlLine>(reader.GetOrdinal("LINECOL"));
     b.A += ((NpgsqlLine)a).A;
@@ -232,7 +232,7 @@ SELECT 'c#-line-spi', 'SPIIncLine', SPIIncLine('{3.0,2.0,1.0}'::LINE) = '{4.0,4.
 CREATE OR REPLACE FUNCTION SPIModifyLSeg(a POINT) RETURNS LSEG AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlLSeg b = reader.GetFieldValue<NpgsqlLSeg>(reader.GetOrdinal("LSEGCOL"));
     b.End = (NpgsqlPoint)a;
@@ -244,7 +244,7 @@ SELECT 'c#-lseg-spi', 'SPIModifyLSeg', SPIModifyLSeg('(3.0,3.0)'::POINT) = '((1.
 CREATE OR REPLACE FUNCTION SPIIncBox(a FLOAT8) RETURNS BOX AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlBox b = reader.GetFieldValue<NpgsqlBox>(reader.GetOrdinal("BOXCOL"));
     return new NpgsqlBox(new NpgsqlPoint(b.UpperRight.X + (double)a, b.UpperRight.Y + (double)a), new NpgsqlPoint(b.LowerLeft.X + (double)a, b.LowerLeft.Y + (double)a));
@@ -256,7 +256,7 @@ SELECT 'c#-box-spi', 'SPIIncBox', SPIIncBox('0.2575'::FLOAT8) = '((1.2575,1.2575
 CREATE OR REPLACE FUNCTION SPIIncPolygon(a POINT) RETURNS POLYGON AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlPolygon b = reader.GetFieldValue<NpgsqlPolygon>(reader.GetOrdinal("POLYGONCOL"));
     int npts = b.Count;
@@ -274,7 +274,7 @@ SELECT 'c#-polygon-spi', 'SPIIncPolygon', SPIIncPolygon('(6.5,8.8)'::POINT) ~= '
 CREATE OR REPLACE FUNCTION SPIIncPath(a POINT) RETURNS PATH AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlPath b = reader.GetFieldValue<NpgsqlPath>(reader.GetOrdinal("PATHCOL"));
     int npts = b.Count;
@@ -292,7 +292,7 @@ SELECT 'c#-path-spi', 'SPIIncPath', SPIIncPath('(3.1415,6.2830)'::POINT) = '( (1
 CREATE OR REPLACE FUNCTION SPIIncCircle(a POINT, b float8) RETURNS CIRCLE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlCircle c = reader.GetFieldValue<NpgsqlCircle>(reader.GetOrdinal("CIRCLECOL"));
     c.X += ((NpgsqlPoint)a).X;
@@ -306,7 +306,7 @@ SELECT 'c#-circle-spi', 'SPIIncCircle', SPIIncCircle('(1.5,2.5)'::POINT, '1.2535
 CREATE OR REPLACE FUNCTION SPIIncDate(d INTEGER, m INTEGER, y INTEGER) RETURNS DATE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     DateOnly date = reader.GetFieldValue<DateOnly>(reader.GetOrdinal("DATECOL"));
     date = date.AddDays((int)d);
@@ -320,7 +320,7 @@ SELECT 'c#-date-spi', 'SPIIncDate', SPIIncDate(5,2,10) = '1999-09-30'::DATE;
 CREATE OR REPLACE FUNCTION SPIIncTime(m INTEGER, h INTEGER) RETURNS TIME AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     TimeOnly time = reader.GetFieldValue<TimeOnly>(reader.GetOrdinal("TIMECOL"));
     time = time.AddMinutes((double)m);
@@ -333,7 +333,7 @@ SELECT 'c#-time-spi', 'SPIIncTime', SPIIncTime(24, 2) = '14:24:01'::TIME;
 CREATE OR REPLACE FUNCTION SPIIncTimeWithTimeZonze(hours FLOAT4) RETURNS TIME WITH TIME ZONE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     DateTimeOffset timetz = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("TIMETZCOL"));
     return timetz.AddHours((double)hours);
@@ -344,7 +344,7 @@ SELECT 'c#-timetz-spi', 'SPIIncTimeWithTimeZonze', SPIIncTimeWithTimeZonze(1.75)
 CREATE OR REPLACE FUNCTION SPIIncTimestamp(days INTEGER, hours INTEGER, minutes INTEGER) RETURNS TIMESTAMP AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     DateTime timestamp = reader.GetFieldValue<DateTime>(reader.GetOrdinal("TIMESTAMPCOL"));
     timestamp = timestamp.AddDays((double)days);
@@ -358,7 +358,7 @@ SELECT 'c#-timestamp-spi', 'SPIIncTimestamp', SPIIncTimestamp(2, 6, 25) = '1989-
 CREATE OR REPLACE FUNCTION SPIIncTimestamptz(days INTEGER, hours INTEGER, minutes INTEGER, seconds INTEGER) RETURNS TIMESTAMP WITH TIME ZONE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     DateTime timestamp = reader.GetFieldValue<DateTime>(reader.GetOrdinal("TIMESTAMPCOL"));
     timestamp = timestamp.AddDays((double)days);
@@ -373,7 +373,7 @@ SELECT 'c#-timestamptz-spi', 'SPIIncTimestamptz', SPIIncTimestamptz(2, 6, 25, 40
 CREATE OR REPLACE FUNCTION SPIIncInterval(days INTEGER, months INTEGER) RETURNS INTERVAL AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlInterval orig_interval = reader.GetFieldValue<NpgsqlInterval>(reader.GetOrdinal("INTERVALCOL"));
     NpgsqlInterval new_interval = new NpgsqlInterval(orig_interval.Months + (int)months, orig_interval.Days + (int)days, orig_interval.Time);
@@ -385,7 +385,7 @@ SELECT 'c#-interval-spi', 'SPIIncInterval', SPIIncInterval(60, 1) = '1 month 358
 CREATE OR REPLACE FUNCTION SPIIncMacAddress(inc INTEGER) RETURNS MACADDR AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     PhysicalAddress mac = reader.GetFieldValue<PhysicalAddress>(reader.GetOrdinal("MACCOL"));
     byte[] bytes = mac.GetAddressBytes();
@@ -398,7 +398,7 @@ SELECT 'c#-macaddr-spi', 'SPIIncMacAddress', SPIIncMacAddress(5) = 'f6:30:00:00:
 CREATE OR REPLACE FUNCTION SPIIncMacAddress8(inc INTEGER) RETURNS MACADDR8 AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     PhysicalAddress mac = reader.GetFieldValue<PhysicalAddress>(reader.GetOrdinal("MAC8COL"));
     byte[] bytes = mac.GetAddressBytes();
@@ -411,7 +411,7 @@ SELECT 'c#-macaddr8-spi', 'SPIIncMacAddress8', SPIIncMacAddress8(3) = 'f6:30:00:
 CREATE OR REPLACE FUNCTION SPIIncInet(mask INTEGER, incip INTEGER) RETURNS INET AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     (IPAddress Address, int Netmask) inet = reader.GetFieldValue<(IPAddress Address, int Netmask)>(reader.GetOrdinal("INETCOL"));
     inet.Netmask += (int)mask;
@@ -426,7 +426,7 @@ SELECT 'c#-inet-spi', 'SPIIncInet', SPIIncInet(3 , 20) = '207.69.188.205/27'::IN
 CREATE OR REPLACE FUNCTION SPIIncCIDR(incip INTEGER) RETURNS CIDR AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     (IPAddress Address, int Netmask) inet = reader.GetFieldValue<(IPAddress Address, int Netmask)>(reader.GetOrdinal("CIDRCOL"));
     byte[] bytes = inet.Address.GetAddressBytes();
@@ -440,7 +440,7 @@ SELECT 'c#-cidr-spi', 'SPIIncCIDR', SPIIncCIDR(45) = '207.69.188.230/32'::CIDR;
 CREATE OR REPLACE FUNCTION SPIIncMoney(a MONEY) RETURNS MONEY AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     decimal money = reader.GetFieldValue<decimal>(reader.GetOrdinal("MONEYCOL"));
     return money + (decimal)a;
@@ -451,7 +451,7 @@ SELECT 'c#-money-spi', 'SPIIncMoney', SPIIncMoney('1315.23'::MONEY) = '32731.15'
 CREATE OR REPLACE FUNCTION SPIConcatenateVarBit(b BIT VARYING) RETURNS BIT VARYING AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     BitArray a = reader.GetFieldValue<BitArray>(reader.GetOrdinal("VARBITCOL"));
     BitArray c = new BitArray(a.Length+b.Length);
@@ -467,7 +467,7 @@ SELECT 'c#-varbit-spi', 'SPIConcatenateVarBit', SPIConcatenateVarBit('1110101111
 CREATE OR REPLACE FUNCTION SPIConcatenateBit(b BIT(10)) RETURNS BIT AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     BitArray a = reader.GetFieldValue<BitArray>(reader.GetOrdinal("BITCOL"));
     BitArray c = new BitArray(a.Length+b.Length);
@@ -483,7 +483,7 @@ SELECT 'c#-bit-spi', 'SPIConcatenateBit', SPIConcatenateBit('1110101'::BIT(10)) 
 CREATE OR REPLACE FUNCTION SPIConcatenateBytea(b BYTEA) RETURNS BYTEA AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     byte[] a = reader.GetFieldValue<byte[]>(reader.GetOrdinal("BYTEACOL"));
     UTF8Encoding utf8_e = new UTF8Encoding();
@@ -499,7 +499,7 @@ SELECT 'c#-bytea-spi', 'SPIConcatenateBytea', SPIConcatenateBytea('You are welco
 CREATE OR REPLACE FUNCTION SPIUpperText() RETURNS TEXT AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     string a = reader.GetFieldValue<string>(reader.GetOrdinal("TEXTCOL"));
     return a.ToUpper();
@@ -510,7 +510,7 @@ SELECT 'c#-text-spi', 'SPIUpperText', SPIUpperText() = 'HELLO'::TEXT;
 CREATE OR REPLACE FUNCTION SPIConcatenateBpchar(b BPCHAR) RETURNS BPCHAR AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     string a = reader.GetFieldValue<string>(reader.GetOrdinal("CHARCOL"));
     return a + b;
@@ -521,7 +521,7 @@ SELECT 'c#-bpchar-spi', 'SPIConcatenateBpchar', SPIConcatenateBpchar('my friend.
 CREATE OR REPLACE FUNCTION SPIConcatenateVarchar(b VARCHAR) RETURNS VARCHAR AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     string a = reader.GetFieldValue<string>(reader.GetOrdinal("VARCHARCOL"));
     return (a + " " + b).ToUpper();
@@ -532,7 +532,7 @@ SELECT 'c#-varchar-spi', 'SPIConcatenateVarchar', SPIConcatenateVarchar('my frie
 CREATE OR REPLACE FUNCTION SPIReplaceXmlEnconding(enc TEXT) RETURNS XML AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     string xml = reader.GetFieldValue<string>(reader.GetOrdinal("XMLCOL"));
     return xml.Replace("utf-8", enc);
@@ -543,7 +543,7 @@ SELECT 'c#-xml-spi', 'SPIReplaceXmlEnconding', SPIReplaceXmlEnconding('US-ASCII'
 CREATE OR REPLACE FUNCTION SPIAddKeyToJson(b TEXT, c TEXT) RETURNS XML AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     string json = reader.GetFieldValue<string>(reader.GetOrdinal("JSONCOL"));
     string new_value = $", \"{b}\":\"{c}\""+"}";
@@ -555,7 +555,7 @@ SELECT 'c#-json-spi', 'SPIAddKeyToJson', SPIAddKeyToJson('d'::TEXT, 'Wednesday':
 CREATE OR REPLACE FUNCTION SPICombineUuid(b UUID) RETURNS UUID AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     Guid a = reader.GetFieldValue<Guid>(reader.GetOrdinal("UUIDCOL"));
     string aStr = a.ToString();
@@ -571,7 +571,7 @@ SELECT 'c#-uuid-spi', 'SPICombineUuid', SPICombineUuid('a0eebc99-9c0b-4ef8-bb6d-
 CREATE OR REPLACE FUNCTION SPIModifyInt4Range(lower BOOLEAN, value INT4) RETURNS INT4RANGE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlRange<int> range = reader.GetFieldValue<NpgsqlRange<int>>(reader.GetOrdinal("I4RCOL"));
     int lowerBound = (bool)lower ? range.LowerBound + (int)value : range.LowerBound;
@@ -586,7 +586,7 @@ SELECT 'c#-int4range-spi', 'SPIModifyInt4Range2', SPIModifyInt4Range(false, -10)
 CREATE OR REPLACE FUNCTION SPIModifyInt8Range(lower BOOLEAN, value INT8) RETURNS INT8RANGE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlRange<long> range = reader.GetFieldValue<NpgsqlRange<long>>(reader.GetOrdinal("I8RCOL"));
     long lowerBound = (bool)lower ? range.LowerBound + (long)value : range.LowerBound;
@@ -601,7 +601,7 @@ SELECT 'c#-int8range-spi', 'SPIModifyInt8Range2', SPIModifyInt8Range(false, -10)
 CREATE OR REPLACE FUNCTION SPIModifyTimeRange(lower BOOLEAN, days_to_add INT, minutes_do_add INT) RETURNS TSRANGE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlRange<DateTime> range = reader.GetFieldValue<NpgsqlRange<DateTime>>(reader.GetOrdinal("TSRCOL"));
     DateTime lowerBound = (bool)lower ? range.LowerBound.AddDays((int)days_to_add).AddMinutes((double)minutes_do_add) : range.LowerBound;
@@ -616,7 +616,7 @@ SELECT 'c#-tsrange-spi', 'SPIModifyTimeRange2', SPIModifyTimeRange(false, 10, 25
 CREATE OR REPLACE FUNCTION SPIModifyTimeTzRange(lower BOOLEAN, days_to_add INT, minutes_do_add INT) RETURNS TSTZRANGE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlRange<DateTime> range = reader.GetFieldValue<NpgsqlRange<DateTime>>(reader.GetOrdinal("TSTZRCOL"));
     DateTime lowerBound = (bool)lower ? range.LowerBound.AddDays((int)days_to_add).AddMinutes((double)minutes_do_add) : range.LowerBound;
@@ -631,7 +631,7 @@ SELECT 'c#-tstzrange-spi', 'SPIModifyTimeTzRange2', SPIModifyTimeTzRange(false, 
 CREATE OR REPLACE FUNCTION SPIModifyDateRange(lower BOOLEAN, days INTEGER, months INTEGER, years INTEGER) RETURNS DATERANGE AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPITEST");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     reader.Read();
     NpgsqlRange<DateOnly> range = reader.GetFieldValue<NpgsqlRange<DateOnly>>(reader.GetOrdinal("DRCOL"));
     DateOnly lowerBound = (bool)lower ? range.LowerBound.AddDays((int)days).AddMonths((int)months).AddYears((int)years) : range.LowerBound;
@@ -690,7 +690,7 @@ VALUES (
 CREATE OR REPLACE FUNCTION SPINullBool() RETURNS BOOLEAN[] AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPINULLS");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     List<bool?> bools = new ();
     while(reader.Read())
     {
@@ -704,7 +704,7 @@ SELECT 'c#-bool-null-spi', 'SPINullBool', SPINullBool() = ARRAY[NULL::BOOLEAN, T
 CREATE OR REPLACE FUNCTION SPINullInt4() RETURNS INTEGER[] AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPINULLS");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     List<int?> ints = new ();
     while(reader.Read())
     {
@@ -718,7 +718,7 @@ SELECT 'c#-int4-null-spi', 'SPINullInt4', SPINullInt4() = ARRAY[NULL::INTEGER, 2
 CREATE OR REPLACE FUNCTION SPINullFloat8() RETURNS FLOAT8[] AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPINULLS");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     List<double?> doubles = new ();
     while(reader.Read())
     {
@@ -732,7 +732,7 @@ SELECT 'c#-float8-null-spi', 'SPINullFloat8', SPINullFloat8() = ARRAY[NULL::FLOA
 CREATE OR REPLACE FUNCTION SPINullDate() RETURNS DATE[] AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPINULLS");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     List<DateOnly?> dates = new ();
     while(reader.Read())
     {
@@ -746,7 +746,7 @@ SELECT 'c#-date-null-spi', 'SPINullDate', SPINullDate() = ARRAY['2023-02-01'::DA
 CREATE OR REPLACE FUNCTION SPINullString() RETURNS TEXT[] AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPINULLS");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     List<string?> strings = new ();
     while(reader.Read())
     {
@@ -760,7 +760,7 @@ SELECT 'c#-string-null-spi', 'SPINullString', SPINullString() = ARRAY['Hello Ter
 CREATE OR REPLACE FUNCTION SPINullMac8() RETURNS MACADDR8[] AS $$
     var dataSource = NpgsqlMultiHostDataSource.Create();
     var cmd = dataSource.CreateCommand($"SELECT * FROM SPINULLS");
-    var reader = cmd.ExecuteDbDataReader(CommandBehavior.Default);
+    var reader = cmd.ExecuteReader(CommandBehavior.Default);
     List<PhysicalAddress?> addresses = new ();
     while(reader.Read())
     {

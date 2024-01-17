@@ -217,6 +217,7 @@ benchmark-tests:
 spi-tests:
 	make pre-tests-script
 	cat tests/csharp/testspi.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testspi.out
+	cat tests/fsharp/testfsspi.sql | (sudo -u postgres  psql 2>&1) | tee automated_test_results/testfsspi.out
 	make post-tests-script
 
 npgsql-tests:

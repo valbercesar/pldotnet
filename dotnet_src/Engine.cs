@@ -494,6 +494,7 @@ namespace PlDotNET
                     typeof(OutputResult).Assembly.Location,
                     typeof(NpgsqlCommand).Assembly.Location,
                     typeof(FSharpCompiler).Assembly.Location,
+                    typeof(System.ComponentModel.Component).Assembly.Location,
                 };
 
                 return FSharpCompiler.CompileFSharpSourceCode(functionId, Engine.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
