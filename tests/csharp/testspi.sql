@@ -773,6 +773,7 @@ SELECT 'c#-macaddr8-null-spi', 'SPINullMac8', SPINullMac8() = ARRAY['ab:01:2b:31
 
 CREATE OR REPLACE FUNCTION SPISumIntegers2(a integer, b integer, c integer) RETURNS integer AS $$
     using var conn = new NpgsqlConnection();
+    conn.Open();
     var command = new NpgsqlCommand($"SELECT {a} as a, {b} as b, {c} as c; SELECT {2*a} as a, {2*b} as b, {2*c} as c", conn);
     var reader = command.ExecuteReader();
 
@@ -886,6 +887,7 @@ CREATE OR REPLACE FUNCTION SPITestingCompoudParameters() RETURNS INTEGER AS $$
     sb.Append("SELECT * FROM SPI_COMPOUD_TESTS;");
 
     using var conn = new NpgsqlConnection();
+    conn.Open();
     var cmd = new NpgsqlCommand(sb.ToString(), conn);
 
     cmd.Parameters.AddWithValue("a", NpgsqlDbType.Integer, 1);
@@ -934,6 +936,7 @@ CREATE OR REPLACE FUNCTION SPITestingCompoudPositionalParameters() RETURNS INTEG
     sb.Append("SELECT * FROM SPI_COMPOUD_TESTS;");
 
     using var conn = new NpgsqlConnection();
+    conn.Open();
     var cmd = new NpgsqlCommand(sb.ToString(), conn)
     {
         Parameters = { new() { Value = 1 }, new() { Value = 2 }, new() { Value = 3 }, new() { Value = 4 }, new() { Value = 5 }, new() { Value = 8 } }
@@ -965,6 +968,7 @@ SELECT 'c#-int-spi-multiquery-compoud', 'SPITestingCompoudPositionalParameters',
 
 CREATE OR REPLACE FUNCTION SPIBatchCompoudParameters(init INTEGER, inc INTEGER) RETURNS INTEGER AS $$
     using var conn = new NpgsqlConnection();
+    conn.Open();
     var batch = conn.CreateBatch();
     batch.BatchCommands.Add(new ("DROP TABLE IF EXISTS SPI_COMPOUD_TESTS;"));
     batch.BatchCommands.Add(new ("CREATE TABLE IF NOT EXISTS SPI_COMPOUD_TESTS (ID INTEGER);"));
@@ -1006,6 +1010,7 @@ SELECT 'c#-int-spi-batch-query-compoud-parameters', 'SPIBatchCompoudParameters',
 
 CREATE OR REPLACE FUNCTION SPIBatchCompoudParameters(init FLOAT8, inc FLOAT8) RETURNS FLOAT8 AS $$
     using var conn = new NpgsqlConnection();
+    conn.Open();
     var batch = conn.CreateBatch();
     batch.BatchCommands.Add(new ("DROP TABLE IF EXISTS SPI_COMPOUD_TESTS;"));
     batch.BatchCommands.Add(new ("CREATE TABLE IF NOT EXISTS SPI_COMPOUD_TESTS (ID FLOAT8);"));
@@ -1051,6 +1056,7 @@ CREATE OR REPLACE PROCEDURE SPITransactionTestCommitFirst() AS $$
     int i;
 
     var conn = new NpgsqlConnection();
+    conn.Open();
     var batch = conn.CreateBatch();
     batch.BatchCommands.Add(new ("DROP TABLE IF EXISTS TRANSACTION_TEST;"));
     batch.BatchCommands.Add(new ("CREATE TABLE IF NOT EXISTS TRANSACTION_TEST (a INTEGER, b text);"));
@@ -1058,7 +1064,6 @@ CREATE OR REPLACE PROCEDURE SPITransactionTestCommitFirst() AS $$
     var transaction = conn.BeginTransaction();
     for(i = 0; i < 10; i++)
     {
-        Elog.Warning($"DEBUG: i={i}");
         command = new NpgsqlCommand($"INSERT INTO TRANSACTION_TEST (a) VALUES ({i})", conn);
         reader = command.ExecuteReader();
         if (i % 2 == 0)
@@ -1089,6 +1094,7 @@ CREATE OR REPLACE PROCEDURE SPITransactionTestRollbackFirst() AS $$
     int i;
 
     var conn = new NpgsqlConnection();
+    conn.Open();
     var batch = conn.CreateBatch();
     batch.BatchCommands.Add(new ("DROP TABLE IF EXISTS TRANSACTION_TEST;"));
     batch.BatchCommands.Add(new ("CREATE TABLE IF NOT EXISTS TRANSACTION_TEST (a INTEGER, b text);"));
@@ -1096,7 +1102,6 @@ CREATE OR REPLACE PROCEDURE SPITransactionTestRollbackFirst() AS $$
     var transaction = conn.BeginTransaction();
     for(i = 0; i < 10; i++)
     {
-        Elog.Warning($"DEBUG: i={i}");
         command = new NpgsqlCommand($"INSERT INTO TRANSACTION_TEST (a) VALUES ({i})", conn);
         reader = command.ExecuteReader();
         if (i % 2 != 0)

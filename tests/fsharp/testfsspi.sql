@@ -1,5 +1,6 @@
 CREATE OR REPLACE FUNCTION SPIScalarFSharp() RETURNS integer AS $$
     let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     let command = new NpgsqlCommand("SELECT 2024;", conn)
     let value = command.ExecuteScalar()
 
@@ -12,6 +13,7 @@ SELECT 'f#-int4-spi', 'SPIScalarFSharp', SPIScalarFSharp() = 2024;
 
 CREATE OR REPLACE FUNCTION SPIMultiQueryFsharp() RETURNS integer AS $$
     let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     let command = new NpgsqlCommand("SELECT 1; SELECT 2; SELECT 3", conn)
     let reader = command.ExecuteReader()
 
@@ -42,6 +44,7 @@ SELECT 'f#-int4-spi', 'SPIMultiQueryFsharp', SPIMultiQueryFsharp() = 6;
 
 CREATE OR REPLACE FUNCTION SPISumIntegersFSharp(a integer, b integer, c integer) RETURNS integer AS $$
     let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     let query1 = "SELECT " + a.Value.ToString() + " as a, " + b.Value.ToString() + " as b, " + c.Value.ToString() + " as c"
     let query2 = "SELECT " + (2*a.Value).ToString() + " as a, " + (2*b.Value).ToString() + " as b, " + (2*c.Value).ToString() + " as c"
@@ -72,7 +75,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-int-spi-multiquery', 'SPISumIntegersFSharp2', SPISumIntegersFSharp(4, 0, 5) = 27;
 
 CREATE OR REPLACE FUNCTION SPITestTruncateAndAlterFSharp() RETURNS BOOL AS $$
-    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     try
         let createCommand = new NpgsqlCommand("DROP TABLE IF EXISTS test_alter_truncate; CREATE TABLE test_alter_truncate (ID INTEGER); ALTER TABLE test_alter_truncate ADD COLUMN Name TEXT;", conn)
@@ -105,7 +109,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-bool-spi', 'SPITestTruncateAndAlterFSharp', SPITestTruncateAndAlterFSharp();
 
 CREATE OR REPLACE FUNCTION SPITestCreateFunctionFSharp(inputtext text) RETURNS text AS $$
-    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     try
         // SQL to create a function that duplicates the input text
@@ -131,7 +136,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-text-spi', 'SPITestCreateFunctionFSharp', SPITestCreateFunctionFSharp('Brazil') = 'BrazilBrazil';
 
 CREATE OR REPLACE FUNCTION SPITestCreateDropIndexFSharp() RETURNS text AS $$
-    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     try
         // Drop the test table if it exists, then create it
@@ -171,7 +177,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-text-spi', 'SPITestCreateDropIndexFSharp', SPITestCreateDropIndexFSharp() = 'Index creation and drop test completed successfully';
 
 CREATE OR REPLACE FUNCTION SPITestCreateDropViewFSharp() RETURNS text AS $$
-    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     try
         // Create a test view
@@ -207,7 +214,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-text-spi', 'SPITestCreateDropViewFSharp', SPITestCreateDropViewFSharp() = 'View creation and drop test completed successfully';
 
 CREATE OR REPLACE FUNCTION SPIUseCSharpSPIFSharp(input TEXT) RETURNS text AS $$
-    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     try
         // Drop/Create a table
@@ -264,7 +272,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-text-spi', 'SPIUseCSharpSPIFSharp', SPIUseCSharpSPIFSharp('💻 🖥️ 🖨️ 🖱️ 💽 💾') = '💻 🖥️ 🖨️ 🖱️ 💽 💾';
 
 CREATE OR REPLACE PROCEDURE SPITransactionTestRollbackFirstFSharp() AS $$
-    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     let batch = conn.CreateBatch()
     batch.BatchCommands.Add(new NpgsqlBatchCommand("DROP TABLE IF EXISTS TRANSACTION_TEST_FSHARP;"))
@@ -273,7 +282,6 @@ CREATE OR REPLACE PROCEDURE SPITransactionTestRollbackFirstFSharp() AS $$
     let transaction = conn.BeginTransaction()
 
     for i = 0 to 9 do
-        Elog.Warning("DEBUG: i=" + i.ToString())
         let commandText = "INSERT INTO TRANSACTION_TEST_FSHARP (a) VALUES (" + i.ToString() + ")"
         let command = new NpgsqlCommand(commandText, conn)
         use reader = command.ExecuteReader()
@@ -295,7 +303,8 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-spi-transaction', 'SPITransactionTestRollbackFirstFSharp', CASE WHEN SUM(a) = 25 THEN TRUE ELSE FALSE END AS RESULT FROM TRANSACTION_TEST_FSHARP;
 
 CREATE OR REPLACE FUNCTION SPIBatchCompoundParametersFSharp(init INTEGER, inc INTEGER) RETURNS INTEGER AS $$
-    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    let conn = new NpgsqlConnection()
+    conn.Open() |> ignore
     use _ = conn
     let batch = conn.CreateBatch()
     batch.BatchCommands.Add(new NpgsqlBatchCommand("DROP TABLE IF EXISTS SPI_COMPOUND_TESTS;"))

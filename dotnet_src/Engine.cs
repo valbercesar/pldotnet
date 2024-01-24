@@ -253,8 +253,6 @@ namespace PlDotNET
 
             paramModeArray = (paramModes != null) ? new ReadOnlySpan<byte>(paramModes, paramNameArray.Length).ToArray() : paramModeArray;
 
-            Elog.Info($"START CompileUserFunction, retset is {retset} <foo>");
-
             // Check if PL.NET supports all the PostgreSQL types of the user function
             if (!CheckSupportedTypes(returnTypeId, paramTypeArray))
             {
