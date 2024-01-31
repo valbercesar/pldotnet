@@ -20,8 +20,6 @@ using System.Net.NetworkInformation;
 using NpgsqlTypes;
 using PlDotNET.Common;
 
-#pragma warning disable CS8603
-
 namespace PlDotNET.Handler
 {
     public static class DatumConversion
@@ -64,6 +62,7 @@ namespace PlDotNET.Handler
         public static TimestampRangeHandler TimestampRangeHandlerObj = new ();
         public static TimestampTzRangeHandler TimestampTzRangeHandlerObj = new ();
         public static DateRangeHandler DateRangeHandlerObj = new ();
+        public static RecordHandler RecordHandlerObj = new ();
 
         public static Dictionary<OID, OID> ArrayTypes =
                new ()
@@ -307,7 +306,7 @@ namespace PlDotNET.Handler
             }
         }
 
-        public static object InputValue(IntPtr datum, OID type)
+        public static object InputValue(IntPtr datum, OID type, bool arrayAllowsNullElements = false)
         {
             return (object)type switch
             {
@@ -349,12 +348,55 @@ namespace PlDotNET.Handler
                 OID.TSRANGEOID => TimestampRangeHandlerObj.InputValue(datum),
                 OID.TSTZRANGEOID => TimestampTzRangeHandlerObj.InputValue(datum),
                 OID.DATERANGEOID => DateRangeHandlerObj.InputValue(datum),
+                OID.RECORDOID => RecordHandlerObj.InputValue(datum),
+
+                // Array types
+                OID.BOOLARRAYOID => BoolHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.INT2ARRAYOID => ShortHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.INT4ARRAYOID => IntHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.INT8ARRAYOID => LongHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.FLOAT4ARRAYOID => FloatHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.FLOAT8ARRAYOID => DoubleHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.POINTARRAYOID => PointHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.LINEARRAYOID => LineHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.LSEGARRAYOID => LineSegmentHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.BOXARRAYOID => BoxHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.POLYGONARRAYOID => PolygonHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.TEXTARRAYOID => TextHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.PATHARRAYOID => PathHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.CIRCLEARRAYOID => CircleHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.DATEARRAYOID => DateHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.TIMEARRAYOID => TimeHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.TIMETZARRAYOID => TimeTzHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.TIMESTAMPARRAYOID => TimestampHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.TIMESTAMPTZARRAYOID => TimestampTzHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.INTERVALARRAYOID => IntervalHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.MACADDRARRAYOID => MacaddrHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.MACADDR8ARRAYOID => Macaddr8HandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.INETARRAYOID => InetHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.CIDRARRAYOID => CidrHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.MONEYARRAYOID => MoneyHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.VARBITARRAYOID => VarBitStringHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.BITARRAYOID => BitStringHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.BYTEAARRAYOID => ByteaHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.BPCHARARRAYOID => CharHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.VARCHARARRAYOID => CharVaryingHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.XMLARRAYOID => XmlHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.JSONARRAYOID => JsonHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.UUIDARRAYOID => UuidHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.INT4RANGEARRAYOID => IntRangeHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.INT8RANGEARRAYOID => LongRangeHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.TSRANGEARRAYOID => TimestampRangeHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.TSTZRANGEARRAYOID => TimestampTzRangeHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.DATERANGEARRAYOID => DateRangeHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+                OID.RECORDARRAYOID => RecordHandlerObj.InputArrayT(datum, arrayAllowsNullElements),
+
                 _ => throw new InvalidOperationException($"Failed on InputValue. Unsupported type: {type}")
             };
         }
 
 #nullable enable
-        public static object InputNullableValue(IntPtr datum, OID type, bool isNull)
+        public static object? InputNullableValue(IntPtr datum, OID type, bool isNull, bool arrayAllowsNullElements = false)
         {
             return (object)type switch
             {
@@ -396,6 +438,49 @@ namespace PlDotNET.Handler
                 OID.TSRANGEOID => TimestampRangeHandlerObj.InputNullableValue(datum, isNull),
                 OID.TSTZRANGEOID => TimestampTzRangeHandlerObj.InputNullableValue(datum, isNull),
                 OID.DATERANGEOID => DateRangeHandlerObj.InputNullableValue(datum, isNull),
+                OID.RECORDOID => RecordHandlerObj.InputNullableValue(datum, isNull),
+
+                // Array types
+                OID.BOOLARRAYOID => BoolHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.INT2ARRAYOID => ShortHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.INT4ARRAYOID => IntHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.INT8ARRAYOID => LongHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.FLOAT4ARRAYOID => FloatHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.FLOAT8ARRAYOID => DoubleHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.POINTARRAYOID => PointHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.LINEARRAYOID => LineHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.LSEGARRAYOID => LineSegmentHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.BOXARRAYOID => BoxHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.POLYGONARRAYOID => PolygonHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.TEXTARRAYOID => TextHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.PATHARRAYOID => PathHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.CIRCLEARRAYOID => CircleHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.DATEARRAYOID => DateHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.TIMEARRAYOID => TimeHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.TIMETZARRAYOID => TimeTzHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.TIMESTAMPARRAYOID => TimestampHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.TIMESTAMPTZARRAYOID => TimestampTzHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.INTERVALARRAYOID => IntervalHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.MACADDRARRAYOID => MacaddrHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.MACADDR8ARRAYOID => Macaddr8HandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.INETARRAYOID => InetHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.CIDRARRAYOID => CidrHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.MONEYARRAYOID => MoneyHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.VARBITARRAYOID => VarBitStringHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.BITARRAYOID => BitStringHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.BYTEAARRAYOID => ByteaHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.BPCHARARRAYOID => CharHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.VARCHARARRAYOID => CharVaryingHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.XMLARRAYOID => XmlHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.JSONARRAYOID => JsonHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.UUIDARRAYOID => UuidHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.INT4RANGEARRAYOID => IntRangeHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.INT8RANGEARRAYOID => LongRangeHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.TSRANGEARRAYOID => TimestampRangeHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.TSTZRANGEARRAYOID => TimestampTzRangeHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.DATERANGEARRAYOID => DateRangeHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+                OID.RECORDARRAYOID => RecordHandlerObj.InputNullableArrayT(datum, isNull, arrayAllowsNullElements),
+
                 _ => throw new InvalidOperationException($"Failed on InputNullableValue. Unsupported type: {type}")
             };
         }
@@ -404,6 +489,11 @@ namespace PlDotNET.Handler
 #nullable enable
         public static IntPtr OutputNullableValue(OID type, object? value)
         {
+            if (DBNull.Value.Equals(value))
+            {
+                value = null;
+            }
+
             return type switch
             {
                 OID.BOOLOID => BoolHandlerObj.OutputNullableValue((bool?)value),
@@ -444,6 +534,49 @@ namespace PlDotNET.Handler
                 OID.TSRANGEOID => TimestampRangeHandlerObj.OutputNullableValue((NpgsqlRange<DateTime>?)value),
                 OID.TSTZRANGEOID => TimestampTzRangeHandlerObj.OutputNullableValue((NpgsqlRange<DateTime>?)value),
                 OID.DATERANGEOID => DateRangeHandlerObj.OutputNullableValue((NpgsqlRange<DateOnly>?)value),
+                OID.RECORDOID => RecordHandlerObj.OutputNullableValue(value as object?[]),
+
+                // Array types
+                OID.BOOLARRAYOID => BoolHandlerObj.OutputNullableArray((Array?)value),
+                OID.INT2ARRAYOID => ShortHandlerObj.OutputNullableArray((Array?)value),
+                OID.INT4ARRAYOID => IntHandlerObj.OutputNullableArray((Array?)value),
+                OID.INT8ARRAYOID => LongHandlerObj.OutputNullableArray((Array?)value),
+                OID.FLOAT4ARRAYOID => FloatHandlerObj.OutputNullableArray((Array?)value),
+                OID.FLOAT8ARRAYOID => DoubleHandlerObj.OutputNullableArray((Array?)value),
+                OID.POINTARRAYOID => PointHandlerObj.OutputNullableArray((Array?)value),
+                OID.LINEARRAYOID => LineHandlerObj.OutputNullableArray((Array?)value),
+                OID.LSEGARRAYOID => LineSegmentHandlerObj.OutputNullableArray((Array?)value),
+                OID.BOXARRAYOID => BoxHandlerObj.OutputNullableArray((Array?)value),
+                OID.POLYGONARRAYOID => PolygonHandlerObj.OutputNullableArray((Array?)value),
+                OID.TEXTARRAYOID => TextHandlerObj.OutputNullableArray((Array?)value),
+                OID.PATHARRAYOID => PathHandlerObj.OutputNullableArray((Array?)value),
+                OID.CIRCLEARRAYOID => CircleHandlerObj.OutputNullableArray((Array?)value),
+                OID.DATEARRAYOID => DateHandlerObj.OutputNullableArray((Array?)value),
+                OID.TIMEARRAYOID => TimeHandlerObj.OutputNullableArray((Array?)value),
+                OID.TIMETZARRAYOID => TimeTzHandlerObj.OutputNullableArray((Array?)value),
+                OID.TIMESTAMPARRAYOID => TimestampHandlerObj.OutputNullableArray((Array?)value),
+                OID.TIMESTAMPTZARRAYOID => TimestampTzHandlerObj.OutputNullableArray((Array?)value),
+                OID.INTERVALARRAYOID => IntervalHandlerObj.OutputNullableArray((Array?)value),
+                OID.MACADDRARRAYOID => MacaddrHandlerObj.OutputNullableArray((Array?)value),
+                OID.MACADDR8ARRAYOID => Macaddr8HandlerObj.OutputNullableArray((Array?)value),
+                OID.INETARRAYOID => InetHandlerObj.OutputNullableArray((Array?)value),
+                OID.CIDRARRAYOID => CidrHandlerObj.OutputNullableArray((Array?)value),
+                OID.MONEYARRAYOID => MoneyHandlerObj.OutputNullableArray((Array?)value),
+                OID.VARBITARRAYOID => VarBitStringHandlerObj.OutputNullableArray((Array?)value),
+                OID.BITARRAYOID => BitStringHandlerObj.OutputNullableArray((Array?)value),
+                OID.BYTEAARRAYOID => ByteaHandlerObj.OutputNullableArray((Array?)value),
+                OID.BPCHARARRAYOID => CharHandlerObj.OutputNullableArray((Array?)value),
+                OID.VARCHARARRAYOID => CharVaryingHandlerObj.OutputNullableArray((Array?)value),
+                OID.XMLARRAYOID => XmlHandlerObj.OutputNullableArray((Array?)value),
+                OID.JSONARRAYOID => JsonHandlerObj.OutputNullableArray((Array?)value),
+                OID.UUIDARRAYOID => UuidHandlerObj.OutputNullableArray((Array?)value),
+                OID.INT4RANGEARRAYOID => IntRangeHandlerObj.OutputNullableArray((Array?)value),
+                OID.INT8RANGEARRAYOID => LongRangeHandlerObj.OutputNullableArray((Array?)value),
+                OID.TSRANGEARRAYOID => TimestampRangeHandlerObj.OutputNullableArray((Array?)value),
+                OID.TSTZRANGEARRAYOID => TimestampTzRangeHandlerObj.OutputNullableArray((Array?)value),
+                OID.DATERANGEARRAYOID => DateRangeHandlerObj.OutputNullableArray((Array?)value),
+                OID.RECORDARRAYOID => RecordHandlerObj.OutputNullableArray((Array?)value),
+
                 _ => throw new InvalidOperationException($"Failed on OutputNullableValue. Unsupported type: {type}")
             };
         }

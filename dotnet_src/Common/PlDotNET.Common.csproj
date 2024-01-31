@@ -19,4 +19,7 @@
     <CodeAnalysisRuleSet>..\stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\npgsql\src\Npgsql\NpgsqlTypes\NpgsqlTypes.csproj" />
+  </ItemGroup>
 </Project>

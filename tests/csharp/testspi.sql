@@ -1125,3 +1125,233 @@ $$ LANGUAGE plcsharp;
 CALL SPITransactionTestRollbackFirst();
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-int32-spi-transaction', 'SPITransactionTestRollbackFirst', CASE WHEN SUM(a) = 25 THEN TRUE ELSE FALSE END AS RESULT FROM TRANSACTION_TEST;
+
+CREATE OR REPLACE FUNCTION IntegerOneDimensionalArray() RETURNS INTEGER AS $$
+    var conn = new NpgsqlConnection();
+    conn.Open();
+
+    var cmd = new NpgsqlCommand("SELECT @p1");
+    var p1 = new NpgsqlParameter("p1", NpgsqlDbType.Array | NpgsqlDbType.Integer);
+    cmd.Parameters.Add(p1);
+    p1.Value = new int[] {1, 5, 9};
+
+    var reader = cmd.ExecuteReader();
+    reader.Read();
+
+    int sum = 0;
+
+    /// Testing GetValue()
+    Elog.Info($"Returned type of GetValue: {reader.GetValue(0).GetType()}");
+    int[] firstArray = (int[])reader.GetValue(0);
+    for (int i = 0; i < firstArray.Length; i++)
+    {
+        sum += firstArray[i];
+    }
+
+    /// Testing GetFieldValue<T>()
+    Elog.Info($"Returned type of GetFieldValue<T>: {reader.GetFieldValue<int[]>(0).GetType()}");
+    int[] secondArray = reader.GetFieldValue<int[]>(0);
+    for (int i = 0; i < secondArray.Length; i++)
+    {
+        sum += secondArray[i];
+    }
+
+    return sum;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int-spi-array', 'IntegerOneDimensionalArray', IntegerOneDimensionalArray() = 30;
+
+CREATE OR REPLACE FUNCTION StringTwoDimensionalArray() RETURNS TEXT AS $$
+    var conn = new NpgsqlConnection();
+    conn.Open();
+
+    var cmd = new NpgsqlCommand("SELECT @p1");
+    var p1 = new NpgsqlParameter("p1", NpgsqlDbType.Array | NpgsqlDbType.Text);
+    cmd.Parameters.Add(p1);
+    p1.Value = new string[,] {
+        {"a", "b", "c"},
+        {"d", "e", "f"},
+        {"g", "h", "i"},
+        {"j", "k", "l"},
+    };
+
+    var reader = cmd.ExecuteReader();
+    reader.Read();
+
+    string sum = string.Empty;
+
+    /// Testing GetValue()
+    Elog.Info($"Returned type of GetValue: {reader.GetValue(0).GetType()}");
+    string[,] firstArray = (string[,])reader.GetValue(0);
+    for (int i = 0; i < firstArray.GetLength(0); i++)
+    {
+        for (int j = 0; j < firstArray.GetLength(1); j++)
+        {
+            sum += firstArray[i, j];
+        }
+    }
+
+    sum += " ";
+
+    /// Testing GetFieldValue<T>()
+    Elog.Info($"Returned type of GetFieldValue<T>: {reader.GetFieldValue<string[,]>(0).GetType()}");
+    string[,] secondArray = reader.GetFieldValue<string[,]>(0);
+    for (int i = 0; i < secondArray.GetLength(0); i++)
+    {
+        for (int j = 0; j < secondArray.GetLength(1); j++)
+        {
+            sum += secondArray[i, j];
+        }
+    }
+    return sum;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-text-spi-array', 'StringTwoDimensionalArray', StringTwoDimensionalArray() = 'abcdefghijkl abcdefghijkl'::TEXT;
+
+CREATE OR REPLACE FUNCTION IntegerSixDimensionalArray() RETURNS BOOLEAN AS $$
+    var conn = new NpgsqlConnection(); // Add your connection string
+    conn.Open();
+
+    var cmd = new NpgsqlCommand("SELECT @p1", conn);
+    var p1 = new NpgsqlParameter("p1", NpgsqlDbType.Array | NpgsqlDbType.Integer);
+    cmd.Parameters.Add(p1);
+
+    int[,,,,,] array6D = new int[3,1,4,1,2,2];
+    int auxCreation = 1, expectedSum = 0;
+    for (int i = 0; i < array6D.GetLength(0); i++)
+        for (int j = 0; j < array6D.GetLength(1); j++)
+            for (int k = 0; k < array6D.GetLength(2); k++)
+                for (int l = 0; l < array6D.GetLength(3); l++)
+                    for (int m = 0; m < array6D.GetLength(4); m++)
+                        for (int n = 0; n < array6D.GetLength(5); n++)
+                        {
+                            expectedSum += auxCreation;
+                            array6D[i, j, k, l, m, n] = auxCreation++;
+                        }
+
+    p1.Value = array6D;
+
+    var reader = cmd.ExecuteReader();
+    reader.Read();
+
+    /// Testing GetFieldValue<T>()
+    Elog.Info($"Returned type of GetFieldValue<T>: {reader.GetFieldValue<int[,,,,,]>(0).GetType()}");
+    int[,,,,,] array = reader.GetFieldValue<int[,,,,,]>(0);
+
+    int returnedSum = 0;
+    for (int i = 0; i < array6D.GetLength(0); i++)
+        for (int j = 0; j < array6D.GetLength(1); j++)
+            for (int k = 0; k < array6D.GetLength(2); k++)
+                for (int l = 0; l < array6D.GetLength(3); l++)
+                    for (int m = 0; m < array6D.GetLength(4); m++)
+                        for (int n = 0; n < array6D.GetLength(5); n++)
+                        {
+                            returnedSum += array[i, j, k, l, m, n];
+                            Elog.Info($"array[{i}, {j}, {k}, {l}, {m}, {n}]: {array[i, j, k, l, m, n]}");
+                        }
+
+    Elog.Info($"expectedSum = {expectedSum} | returnedSum = {returnedSum}");
+
+    return expectedSum == returnedSum;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int-spi-array', 'IntegerSixDimensionalArray', IntegerSixDimensionalArray();
+
+CREATE OR REPLACE FUNCTION IntegerArrayWithNull() RETURNS INTEGER AS $$
+    var conn = new NpgsqlConnection();
+    conn.Open();
+
+    var cmd = new NpgsqlCommand("SELECT @p1");
+    var p1 = new NpgsqlParameter("p1", NpgsqlDbType.Array | NpgsqlDbType.Integer);
+    cmd.Parameters.Add(p1);
+    p1.Value = new int?[] {1, null, 5, 9, null, 10, null, null};
+
+    var reader = cmd.ExecuteReader();
+    reader.Read();
+
+    int sum = 0;
+
+    Elog.Info($"Returned type of GetFieldValue<T>: {reader.GetFieldValue<int?[]>(0).GetType()}");
+    int?[] array = reader.GetFieldValue<int?[]>(0);
+
+    for (int i = 0; i < array.Length; i++)
+    {
+        if (array[i] == null)
+        {
+            sum++;
+        }
+    }
+    return sum;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-int-spi-array-null', 'IntegerArrayWithNull', IntegerArrayWithNull() = 4;
+
+CREATE OR REPLACE FUNCTION StringArrayWithNull() RETURNS INTEGER AS $$
+    var conn = new NpgsqlConnection();
+    conn.Open();
+
+    var cmd = new NpgsqlCommand("SELECT @p1");
+    var p1 = new NpgsqlParameter("p1", NpgsqlDbType.Array | NpgsqlDbType.Char);
+    cmd.Parameters.Add(p1);
+    p1.Value = new string[] {null, null, "aa", null, "bb", "cc", null, "dd", null, null};
+
+    var reader = cmd.ExecuteReader();
+    reader.Read();
+
+    int sum = 0;
+
+    Elog.Info($"Returned type of GetFieldValue<T>: {reader.GetFieldValue<string[]>(0).GetType()}");
+    string[] array = reader.GetFieldValue<string[]>(0);
+
+    for (int i = 0; i < array.Length; i++)
+    {
+        if (array[i] == null)
+        {
+            sum++;
+        }
+    }
+    return sum;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-text-spi-array-null', 'StringArrayWithNull', StringArrayWithNull() = 6;
+
+CREATE OR REPLACE FUNCTION RecordTestSPI(a TEXT, b FLOAT8, c MACADDR) RETURNS RECORD AS $$
+    var conn = new NpgsqlConnection();
+    conn.Open();
+    var command = new NpgsqlCommand($"SELECT (@p1, @p2, @p3)", conn);
+    command.Parameters.AddWithValue("p1", NpgsqlDbType.Text, a);
+    command.Parameters.AddWithValue("p2", NpgsqlDbType.Double, b);
+    command.Parameters.AddWithValue("p3", NpgsqlDbType.MacAddr, c);
+    var reader = command.ExecuteReader();
+    reader.Read();
+    var record = reader.GetFieldValue<object[]>(0);
+    Elog.Warning("Record[0] = " + record[0].ToString());
+    Elog.Warning("Record[1] = " + record[1].ToString());
+    Elog.Warning("Record[2] = " + record[2].ToString());
+    return record;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-record-spi', 'RecordTestSPI', (r).a = 'hello world!' AND (r).b = 3.14159265358 AND (r).c = 'f6:30:00:00:00:00'::MACADDR
+FROM RecordTestSPI('hello world!', '3.14159265358'::FLOAT8, 'f6:30:00:00:00:00'::MACADDR) AS r(a TEXT, b FLOAT8, c MACADDR);
+
+CREATE OR REPLACE FUNCTION RecordWithNullTestSPI(a TEXT, b FLOAT8, c MACADDR) RETURNS BOOL AS $$
+    var conn = new NpgsqlConnection();
+    conn.Open();
+    var command = new NpgsqlCommand($"SELECT (@p1, @p2, @p3)", conn);
+    command.Parameters.AddWithValue("p1", NpgsqlDbType.Text, a);
+    command.Parameters.AddWithValue("p2", NpgsqlDbType.Double, b);
+    command.Parameters.AddWithValue("p3", NpgsqlDbType.MacAddr, c);
+    var reader = command.ExecuteReader();
+    reader.Read();
+    var record = reader.GetFieldValue<object?[]>(0);
+    Elog.Warning("Record[0] = " + (string?)record[0]);
+    Elog.Warning("Record[1] = " + (double?)record[1]);
+    Elog.Warning("Record[2] = " + (PhysicalAddress?)record[2]);
+    return record[0] == null || record[1] == null || record[2] == null;
+$$ LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-record-spi-null', 'RecordWithNullTestSPI1', RecordWithNullTestSPI(NULL::TEXT, NULL::FLOAT8, NULL::MACADDR);
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-record-spi-null', 'RecordWithNullTestSPI2', RecordWithNullTestSPI(NULL::TEXT, '3.14159265358'::FLOAT8, NULL::MACADDR);
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-record-spi-null', 'RecordWithNullTestSPI3', RecordWithNullTestSPI('hello world!', '3.14159265358'::FLOAT8, 'f6:30:00:00:00:00'::MACADDR) IS FALSE;

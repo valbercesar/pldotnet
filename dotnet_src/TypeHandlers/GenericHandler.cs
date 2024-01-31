@@ -90,6 +90,151 @@ namespace PlDotNET.Handler
         public abstract IntPtr OutputValue(T value);
 
         /// <summary>
+        /// Converts the input array to a multi-dimensional array of type T.
+        /// </summary>
+        /// <param name="datum">The input array (the PostgreSQL datum pointer).</param>
+        /// <param name="allowsNullElements">Indicates whether null elements are allowed in the array.</param>
+        /// <returns>A multi-dimensional array of type T.</returns>
+        public virtual object InputArrayT(IntPtr datum, bool allowsNullElements = false)
+        {
+            Array array = this.InputArray(datum);
+
+            switch (array.Rank)
+            {
+                case 1:
+                    return Array.ConvertAll((object[])array, item => (T)Convert.ChangeType(item, typeof(T)));
+
+                case 2:
+                    int length0_2D = array.GetLength(0);
+                    int length1_2D = array.GetLength(1);
+                    T[,] result2D = new T[length0_2D, length1_2D];
+                    for (int i = 0; i < length0_2D; i++)
+                    {
+                        for (int j = 0; j < length1_2D; j++)
+                        {
+                            result2D[i, j] = (T)Convert.ChangeType(array.GetValue(i, j), typeof(T));
+                        }
+                    }
+
+                    return result2D;
+
+                case 3:
+                    int length0_3D = array.GetLength(0);
+                    int length1_3D = array.GetLength(1);
+                    int length2_3D = array.GetLength(2);
+                    T[,,] result3D = new T[length0_3D, length1_3D, length2_3D];
+                    for (int i = 0; i < length0_3D; i++)
+                    {
+                        for (int j = 0; j < length1_3D; j++)
+                        {
+                            for (int k = 0; k < length2_3D; k++)
+                            {
+                                result3D[i, j, k] = (T)Convert.ChangeType(array.GetValue(i, j, k), typeof(T));
+                            }
+                        }
+                    }
+
+                    return result3D;
+
+                case 4:
+                    int length0_4D = array.GetLength(0);
+                    int length1_4D = array.GetLength(1);
+                    int length2_4D = array.GetLength(2);
+                    int length3_4D = array.GetLength(3);
+                    T[,,,] result4D = new T[length0_4D, length1_4D, length2_4D, length3_4D];
+                    for (int i = 0; i < length0_4D; i++)
+                    {
+                        for (int j = 0; j < length1_4D; j++)
+                        {
+                            for (int k = 0; k < length2_4D; k++)
+                            {
+                                for (int l = 0; l < length3_4D; l++)
+                                {
+                                    result4D[i, j, k, l] = (T)Convert.ChangeType(array.GetValue(i, j, k, l), typeof(T));
+                                }
+                            }
+                        }
+                    }
+
+                    return result4D;
+
+                case 5:
+                    int length0_5D = array.GetLength(0);
+                    int length1_5D = array.GetLength(1);
+                    int length2_5D = array.GetLength(2);
+                    int length3_5D = array.GetLength(3);
+                    int length4_5D = array.GetLength(4);
+                    T[,,,,] result5D = new T[length0_5D, length1_5D, length2_5D, length3_5D, length4_5D];
+                    for (int i = 0; i < length0_5D; i++)
+                    {
+                        for (int j = 0; j < length1_5D; j++)
+                        {
+                            for (int k = 0; k < length2_5D; k++)
+                            {
+                                for (int l = 0; l < length3_5D; l++)
+                                {
+                                    for (int m = 0; m < length4_5D; m++)
+                                    {
+                                        result5D[i, j, k, l, m] = (T)Convert.ChangeType(array.GetValue(i, j, k, l, m), typeof(T));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return result5D;
+
+                case 6:
+                    int length0_6D = array.GetLength(0);
+                    int length1_6D = array.GetLength(1);
+                    int length2_6D = array.GetLength(2);
+                    int length3_6D = array.GetLength(3);
+                    int length4_6D = array.GetLength(4);
+                    int length5_6D = array.GetLength(5);
+                    T[,,,,,] result6D = new T[length0_6D, length1_6D, length2_6D, length3_6D, length4_6D, length5_6D];
+                    for (int i = 0; i < length0_6D; i++)
+                    {
+                        for (int j = 0; j < length1_6D; j++)
+                        {
+                            for (int k = 0; k < length2_6D; k++)
+                            {
+                                for (int l = 0; l < length3_6D; l++)
+                                {
+                                    for (int m = 0; m < length4_6D; m++)
+                                    {
+                                        for (int n = 0; n < length5_6D; n++)
+                                        {
+                                            result6D[i, j, k, l, m, n] = (T)Convert.ChangeType(array.GetValue(i, j, k, l, m, n), typeof(T));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return result6D;
+
+                default:
+                    throw new System.Exception(
+                        $"Undefined InputArrayT for arrays of {array.Rank} dimension{(array.Rank > 1 ? "s" : string.Empty)}.");
+            }
+        }
+
+        /// <summary>
+        /// Converts a nullable array of a specific type from a native pointer to a managed object.
+        /// </summary>
+        /// <param name="datum">The PostgreSQL pointer to the array.</param>
+        /// <param name="isnull">A flag indicating whether the array is null.</param>
+        /// <param name="allowsNullElements">A flag indicating whether the array allows null elements.</param>
+        /// <returns>The managed object representing the nullable array.</returns>
+#nullable enable
+        public object? InputNullableArrayT(IntPtr datum, bool isnull, bool allowsNullElements = false)
+        {
+            return isnull ? null : this.InputArrayT(datum, allowsNullElements);
+        }
+#nullable disable
+
+        /// <summary>
         /// Checks if the PostreSQL array is null. If the datum is null, it returns
         /// null. Otherwise, it calls the InputArray method.
         /// </summary>
@@ -310,6 +455,205 @@ namespace PlDotNET.Handler
             return isnull ? null : this.InputValue(datum);
         }
 
+        /// <i
+        public override object InputArrayT(IntPtr datum, bool allowsNullElements = false)
+        {
+            if (!allowsNullElements)
+            {
+                try
+                {
+                    return base.InputArrayT(datum);
+                }
+                catch (InvalidCastException)
+                {
+                    throw new InvalidOperationException(
+                        "Cannot read a non-nullable collection of elements because the returned array contains nulls. " +
+                        "Call GetFieldValue with a nullable array instead.");
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+
+            Array array = this.InputArray(datum);
+
+            switch (array.Rank)
+            {
+                case 1:
+                    int length0_1D = array.GetLength(0);
+                    T?[] result1D = new T?[length0_1D];
+                    for (int i = 0; i < length0_1D; i++)
+                    {
+                        object? value = array.GetValue(i);
+                        if (value != null)
+                        {
+                            result1D[i] = (T)Convert.ChangeType(value, typeof(T));
+                        }
+                        else
+                        {
+                            result1D[i] = null;
+                        }
+                    }
+
+                    return result1D;
+
+                case 2:
+                    int length0_2D = array.GetLength(0);
+                    int length1_2D = array.GetLength(1);
+                    T?[,] result2D = new T?[length0_2D, length1_2D];
+                    for (int i = 0; i < length0_2D; i++)
+                    {
+                        for (int j = 0; j < length1_2D; j++)
+                        {
+                            object? value = array.GetValue(i, j);
+                            if (value != null)
+                            {
+                                result2D[i, j] = (T)Convert.ChangeType(value, typeof(T));
+                            }
+                            else
+                            {
+                                result2D[i, j] = null;
+                            }
+                        }
+                    }
+
+                    return result2D;
+
+                case 3:
+                    int length0_3D = array.GetLength(0);
+                    int length1_3D = array.GetLength(1);
+                    int length2_3D = array.GetLength(2);
+                    T?[,,] result3D = new T?[length0_3D, length1_3D, length2_3D];
+                    for (int i = 0; i < length0_3D; i++)
+                    {
+                        for (int j = 0; j < length1_3D; j++)
+                        {
+                            for (int k = 0; k < length2_3D; k++)
+                            {
+                                object? value = array.GetValue(i, j, k);
+                                if (value != null)
+                                {
+                                    result3D[i, j, k] = (T)Convert.ChangeType(value, typeof(T));
+                                }
+                                else
+                                {
+                                    result3D[i, j, k] = null;
+                                }
+                            }
+                        }
+                    }
+
+                    return result3D;
+
+                case 4:
+                    int length0_4D = array.GetLength(0);
+                    int length1_4D = array.GetLength(1);
+                    int length2_4D = array.GetLength(2);
+                    int length3_4D = array.GetLength(3);
+                    T?[,,,] result4D = new T?[length0_4D, length1_4D, length2_4D, length3_4D];
+                    for (int i = 0; i < length0_4D; i++)
+                    {
+                        for (int j = 0; j < length1_4D; j++)
+                        {
+                            for (int k = 0; k < length2_4D; k++)
+                            {
+                                for (int l = 0; l < length3_4D; l++)
+                                {
+                                    object? value = array.GetValue(i, j, k, l);
+                                    if (value != null)
+                                    {
+                                        result4D[i, j, k, l] = (T)Convert.ChangeType(value, typeof(T));
+                                    }
+                                    else
+                                    {
+                                        result4D[i, j, k, l] = null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return result4D;
+
+                case 5:
+                    int length0_5D = array.GetLength(0);
+                    int length1_5D = array.GetLength(1);
+                    int length2_5D = array.GetLength(2);
+                    int length3_5D = array.GetLength(3);
+                    int length4_5D = array.GetLength(4);
+                    T?[,,,,] result5D = new T?[length0_5D, length1_5D, length2_5D, length3_5D, length4_5D];
+                    for (int i = 0; i < length0_5D; i++)
+                    {
+                        for (int j = 0; j < length1_5D; j++)
+                        {
+                            for (int k = 0; k < length2_5D; k++)
+                            {
+                                for (int l = 0; l < length3_5D; l++)
+                                {
+                                    for (int m = 0; m < length4_5D; m++)
+                                    {
+                                        object? value = array.GetValue(i, j, k, l, m);
+                                        if (value != null)
+                                        {
+                                            result5D[i, j, k, l, m] = (T)Convert.ChangeType(value, typeof(T));
+                                        }
+                                        else
+                                        {
+                                            result5D[i, j, k, l, m] = null;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return result5D;
+
+                case 6:
+                    int length0_6D = array.GetLength(0);
+                    int length1_6D = array.GetLength(1);
+                    int length2_6D = array.GetLength(2);
+                    int length3_6D = array.GetLength(3);
+                    int length4_6D = array.GetLength(4);
+                    int length5_6D = array.GetLength(5);
+                    T?[,,,,,] result6D = new T?[length0_6D, length1_6D, length2_6D, length3_6D, length4_6D, length5_6D];
+                    for (int i = 0; i < length0_6D; i++)
+                    {
+                        for (int j = 0; j < length1_6D; j++)
+                        {
+                            for (int k = 0; k < length2_6D; k++)
+                            {
+                                for (int l = 0; l < length3_6D; l++)
+                                {
+                                    for (int m = 0; m < length4_6D; m++)
+                                    {
+                                        for (int n = 0; n < length5_6D; n++)
+                                        {
+                                            object? value = array.GetValue(i, j, k, l, m, n);
+                                            if (value != null)
+                                            {
+                                                result6D[i, j, k, l, m, n] = (T)Convert.ChangeType(value, typeof(T));
+                                            }
+                                            else
+                                            {
+                                                result6D[i, j, k, l, m, n] = null;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return result6D;
+
+                default:
+                    throw new System.Exception(
+                        $"Undefined InputArrayT for arrays of {array.Rank} dimension{(array.Rank > 1 ? "s" : string.Empty)}.");
+            }
+        }
+
         /// <summary>
         /// Check if the PostgreSQL datum is null. If the Datum is null, it returns None.
         /// Otherwise, call the abstract method InputValue.
@@ -376,6 +720,12 @@ namespace PlDotNET.Handler
         public T? InputNullableValue(IntPtr datum, bool isnull)
         {
             return isnull ? null : this.InputValue(datum);
+        }
+
+        public override object InputArrayT(IntPtr datum, bool allowsNullElements = false)
+        {
+            // By default, arrays of objects support null element, so use the default implementation.
+            return base.InputArrayT(datum);
         }
 
         /// <summary>

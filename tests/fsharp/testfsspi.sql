@@ -336,3 +336,31 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-int-spi-batch-query-compoud-parameters', 'SPIBatchCompoundParametersFSharp1', SPIBatchCompoundParametersFSharp(1, 1) = 30;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-int-spi-batch-query-compoud-parameters', 'SPIBatchCompoundParametersFSharp2', SPIBatchCompoundParametersFSharp(5, 2) = 90;
+
+CREATE OR REPLACE FUNCTION SPIIntegerArrayWithNullFSharp() RETURNS INTEGER AS $$
+    let conn = new NpgsqlConnection() // Ensure proper connection string is provided
+    use _ = conn
+    conn.Open()
+    let cmd = new NpgsqlCommand("SELECT @p1", conn)
+    let p1 = new NpgsqlParameter("p1", NpgsqlDbType.Array ||| NpgsqlDbType.Integer)
+    cmd.Parameters.Add(p1)
+
+    let arr = Array.CreateInstance(typeof<Nullable<int>>, 5)
+    arr.SetValue((int)1, 0)
+    arr.SetValue(None, 1)
+    arr.SetValue((int)3, 2)
+    arr.SetValue(None, 3)
+    arr.SetValue((int)5, 4)
+
+    p1.Value <- arr
+
+    use reader = cmd.ExecuteReader()
+    reader.Read()
+
+    let array = reader.GetFieldValue<Nullable<int>[]>(0)
+
+    let nullCount = array |> Array.fold (fun acc x -> acc + (if x.HasValue then 0 else 1)) 0
+    Nullable(nullCount)
+$$ LANGUAGE plfsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'f#-int-spi-array', 'SPIIntegerArrayWithNullFSharp', SPIIntegerArrayWithNullFSharp() = 2;

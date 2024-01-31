@@ -463,6 +463,35 @@ extern PGDLLEXPORT void pldotnet_GetDatumRangeBoundAttributes(
     RangeBound *inputRange, Datum *rangeDatum, bool *infinite, bool *inclusive,
     bool *lower);
 
+/**
+ * @brief Get the number of attributes in a record.
+ *
+ * This function returns the number of attributes in a PostgreSQL record.
+ *
+ * @param recordDatum The Datum representing the record.
+ * @return The number of attributes in the record.
+ */
+extern PGDLLEXPORT int pldotnet_GetNumberOfRecordAttributes(Datum recordDatum);
+
+/**
+ * @brief Retrieves the attribute value from a record datum.
+ *
+ * This function is used to extract the value of a specific attribute from a
+ * record datum.
+ *
+ * @param recordDatum The record datum from which to extract the attribute
+ * value.
+ * @param attributeNumber The number of the attribute to retrieve.
+ * @param value Pointer to store the retrieved attribute value.
+ * @param isnull Pointer to store whether the attribute value is NULL or not.
+ * @param typeId Pointer to store the OID of the attribute type.
+ */
+extern PGDLLEXPORT int pldotnet_GetRecordAttributes(Datum recordDatum,
+                                                   int numAttrs,
+                                                   Datum *attrDatums,
+                                                   bool *isNulls,
+                                                   Oid *typeOids);
+
 ////////////////////////////////////
 /// Npgsql or .NET type -> Datum ///
 ////////////////////////////////////

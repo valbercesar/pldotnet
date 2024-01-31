@@ -368,6 +368,75 @@ int32_t pldotnet_GetArrayDatum(Datum arrayDatum, Datum *results, int32_t nElems,
     return 0;
 }
 
+int pldotnet_GetNumberOfRecordAttributes(Datum recordDatum) {
+    HeapTupleHeader tupleHeader;
+    TupleDesc tupleDesc;
+    int natts;
+
+    if (recordDatum == (Datum)0) {
+        return 0;
+    }
+
+    /* Convert Datum to HeapTupleHeader */
+    tupleHeader = DatumGetHeapTupleHeader(recordDatum);
+
+    /* Extract tuple descriptor using the type OID */
+    tupleDesc = lookup_rowtype_tupdesc(HeapTupleHeaderGetTypeId(tupleHeader),
+                                       HeapTupleHeaderGetTypMod(tupleHeader));
+
+    /* Get the number of attributes */
+    natts = tupleDesc->natts;
+
+    /* Release the tuple descriptor */
+    ReleaseTupleDesc(tupleDesc);
+
+    return natts;
+}
+
+int pldotnet_GetRecordAttributes(Datum recordDatum, int numAttrs,
+                                 Datum *attrDatums, bool *isNulls,
+                                 Oid *typeOids) {
+    HeapTupleData tuple;
+    HeapTupleHeader tupleHeader;
+    TupleDesc tupleDesc;
+
+    if (recordDatum == (Datum)0) {
+        return -1;  // Record datum is null
+    }
+
+    /* Convert Datum to HeapTupleHeader */
+    tupleHeader = DatumGetHeapTupleHeader(recordDatum);
+
+    /* Build a HeapTuple control structure */
+    tuple.t_len = HeapTupleHeaderGetDatumLength(tupleHeader);
+    ItemPointerSetInvalid(&(tuple.t_self));
+    tuple.t_tableOid = InvalidOid;
+    tuple.t_data = tupleHeader;
+
+    /* Get the tuple descriptor */
+    tupleDesc = lookup_rowtype_tupdesc(HeapTupleHeaderGetTypeId(tupleHeader),
+                                       HeapTupleHeaderGetTypMod(tupleHeader));
+
+    /* Check if the number of attributes is valid */
+    if (numAttrs != tupleDesc->natts) {
+        ReleaseTupleDesc(tupleDesc);
+        return -1;  // Invalid number of attributes
+    }
+
+    for (int i = 0; i < numAttrs; i++) {
+        /* Get the specified attribute's datum */
+        attrDatums[i] = heap_getattr(&tuple, i + 1, tupleDesc, &isNulls[i]);
+
+        /* Get the specified attribute's type OID */
+        typeOids[i] = TupleDescAttr(tupleDesc, i)->atttypid;
+    }
+
+    /* Release the tuple descriptor */
+    ReleaseTupleDesc(tupleDesc);
+
+    return 0;
+}
+
 ////////////////////////////////////
 /// Npgsql or .NET type -> Datum ///
 ////////////////////////////////////
