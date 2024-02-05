@@ -137,8 +137,8 @@ build-package-arm-bash:
 pre-tests-script:
 	dotnet build $(CURRENT_DIR)/tests/csharp/DotNetTestProject -c Release
 	dotnet build $(CURRENT_DIR)/tests/fsharp/DotNetTestProject -c Release
-	rm -rf automated_test_results
 	mkdir -p automated_test_results
+	find automated_test_results -mindepth 1 -delete
 	echo 'DROP TABLE IF EXISTS automated_test_results;CREATE TABLE automated_test_results(ID SERIAL PRIMARY KEY, FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER)  psql)
 
 post-tests-script:
@@ -195,8 +195,8 @@ fsharp-tests-sql:
 	make post-tests-script
 
 stress-test:
-	rm -rf automated_test_results
 	mkdir -p automated_test_results
+	find automated_test_results -mindepth 1 -delete
 	echo 'DROP TABLE automated_test_results;CREATE TABLE automated_test_results(ID SERIAL PRIMARY KEY, FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);' | (sudo -u $(DBUSER) psql)
 	sudo bash tests/stress_test/stress_test.sh
 

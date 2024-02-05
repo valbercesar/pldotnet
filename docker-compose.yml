@@ -54,6 +54,7 @@ services:
       - ./pldotnet.control:/app/pldotnet/pldotnet.control
       - ./pldotnet--0.9.sql:/app/pldotnet/pldotnet--0.9.sql
       - ./tests/:/app/pldotnet/tests/
+      - ./automated_test_results/:/app/pldotnet/automated_test_results/
       - ./debian/packages/:/app/pldotnet/debian/packages/
       - ./debian/changelog:/app/pldotnet/debian/changelog
       - ./debian/control.in:/app/pldotnet/debian/control.in

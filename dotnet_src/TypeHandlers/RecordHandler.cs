@@ -42,7 +42,7 @@ namespace PlDotNET.Handler
         }
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void resize_result(IntPtr output, int length);
+        public static extern unsafe void pldotnet_ResizeResult(IntPtr output, int length);
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern int pldotnet_GetResultLength(IntPtr result);
@@ -214,7 +214,7 @@ namespace PlDotNET.Handler
                 return true;
             }
 
-            resize_result(output, values.Length);
+            pldotnet_ResizeResult(output, values.Length);
             Elog.Info($"Result was resized");
 
             for (int i = 0; i < values.Length; i++)

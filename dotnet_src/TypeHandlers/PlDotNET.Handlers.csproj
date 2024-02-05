@@ -13,7 +13,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="FSharp.Compiler.Service" Version="41.0.5" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="41.0.7" />
   </ItemGroup>
 
   <PropertyGroup>

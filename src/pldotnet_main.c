@@ -69,9 +69,9 @@ static uint64_t global_srf_id = 0;
 
 #define RESIZE_RESULT(output, num_output_values)   \
     if (output == NULL)                            \
-        output = create_result(num_output_values); \
+        output = pldotnet_CreateResult(num_output_values); \
     else                                           \
-        resize_result(output, num_output_values);
+        pldotnet_ResizeResult(output, num_output_values);
 
 /**
  * @brief The main handler function, which receives an additional bool argument
@@ -342,7 +342,7 @@ static pldotnet_UserFunctionDeclaration *pldotnet_FindFunctionDecl(
  * @param r the pldotnet_Result object.
  * @param length the number of Datums to return.
  */
-void resize_result(struct pldotnet_Result *r, size_t length);
+void pldotnet_ResizeResult(struct pldotnet_Result *r, size_t length);
 
 /**
  * @brief Creates an array of pldotnet_Result.
@@ -350,7 +350,14 @@ void resize_result(struct pldotnet_Result *r, size_t length);
  * @param length the number of datums.
  * @return a pointer to an array of pldotnet_Result.
  */
-struct pldotnet_Result *create_result(size_t length);
+struct pldotnet_Result *pldotnet_CreateResult(size_t length);
+
+/**
+ * Frees the memory allocated for a pldotnet_Result structure.
+ *
+ * @param r The pldotnet_Result structure to be freed.
+ */
+void pldotnet_FreeResult(struct pldotnet_Result *r);
 
 /*
  * START: implementing functions
@@ -391,10 +398,10 @@ int pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value,
     return 0;
 }
 
-/* resize_result allocates new arrays for values and nulls,
+/* pldotnet_ResizeResult allocates new arrays for values and nulls,
  * discarding the old arrays.
  */
-void resize_result(struct pldotnet_Result *r, size_t length) {
+void pldotnet_ResizeResult(struct pldotnet_Result *r, size_t length) {
     if (r == NULL) {
         elog(ERROR, "Can't resize a null pldotnet_Result");
         return;  // unreached
@@ -416,7 +423,7 @@ void resize_result(struct pldotnet_Result *r, size_t length) {
     memset(r->updated, 0, (sizeof(bool) * length));
 }
 
-void free_result(struct pldotnet_Result *r) {
+void pldotnet_FreeResult(struct pldotnet_Result *r) {
     if (!r) return;
 
     if (r->values) pfree(r->values);
@@ -426,7 +433,7 @@ void free_result(struct pldotnet_Result *r) {
     pfree(r);
 }
 
-struct pldotnet_Result *create_result(size_t length) {
+struct pldotnet_Result *pldotnet_CreateResult(size_t length) {
     pldotnet_Result *output = palloc(sizeof(pldotnet_Result));
     memset(output, 0, sizeof(*output));  // safety requirement; `values` and
                                          // `nulls` must be NULL before resizing
@@ -718,7 +725,7 @@ static Datum pldotnet_execute_trigger(
     }
 
 #define MAKEROW(result, tupname, include_generated_x) \
-    result = create_result(0);                        \
+    result = pldotnet_CreateResult(0);                        \
     result_FromTuple(result, tdata->tupname, rel_descr, include_generated_x);
 
     // generate rows: new/old(include_generated)
@@ -785,8 +792,8 @@ static Datum pldotnet_execute_trigger(
 
     pfree(tableName);
     pfree(tableSchema);
-    free_result(old_row);  // this is safe on NULL
-    free_result(new_row);  // this is safe on NULL
+    pldotnet_FreeResult(old_row);  // this is safe on NULL
+    pldotnet_FreeResult(new_row);  // this is safe on NULL
 
     return rv;
 }

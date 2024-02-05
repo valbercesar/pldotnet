@@ -133,14 +133,15 @@ typedef struct cb_data {  // old-school C inheritance here
 /**
  * Set a result in pldotnet_Result.  Returns 0 on success.
  */
-extern int pldotnet_SetResult(pldotnet_Result *output, int offset, Datum value,
-                              bool is_null, Oid oid);
+extern PGDLLEXPORT int pldotnet_SetResult(pldotnet_Result *output, int offset,
+                                          Datum value, bool is_null, Oid oid);
 
 /**
  * Get a result from pldotnet_Result.
  */
-extern int pldotnet_GetResult(pldotnet_Result *output, int offset, Datum *value,
-                              bool *is_null, Oid *oid);
+extern PGDLLEXPORT int pldotnet_GetResult(pldotnet_Result *output, int offset,
+                                          Datum *value, bool *is_null,
+                                          Oid *oid);
 
 /**
  * @brief The call_handler will be called to execute the procedural
@@ -271,36 +272,23 @@ void pldotnet_StartNewMemoryContext(MemoryContextWrapper *config);
 void pldotnet_ResetMemoryContext(MemoryContextWrapper *config);
 
 /**
- * \brief Allocates and initializes a test structure of type pldotnet_Result.
+ * @brief Returns current size of the pldotnet_Result
  *
- * Allocates memory for the pldotnet_Result structure and its internal arrays,
- * then sets the default test values.
- *
- * \return Pointer to the initialized pldotnet_Result structure.
+ * @param result Pointer to the pldotnet_Result structure to be checked.
+ * @return Number of fields in the structure
  */
-extern pldotnet_Result *create_test_result_struct(void);
+extern PGDLLEXPORT int pldotnet_GetResultLength(pldotnet_Result *result);
 
 /**
- * \brief Checks the updated values in the provided pldotnet_Result structure.
+ * @brief Resizes the result structure.
  *
- * Validates the values in the pldotnet_Result structure after they have
- * been modified to ensure they match the expected values.
+ * This function is used to resize the result structure to accommodate a
+ * specified length.
  *
- * \param result Pointer to the pldotnet_Result structure to be checked.
- * \return True if all values are correct, false otherwise.
+ * @param r The result structure to be resized.
+ * @param length The new length of the result structure.
  */
-extern bool check_updated_result_struct(pldotnet_Result *result);
-
-/**
- * \brief Returns current size of the pldotnet_Result
- *
- * \param result Pointer to the pldotnet_Result structure to be checked.
- * \return Number of fields in the structure
- */
-extern int pldotnet_GetResultLength(pldotnet_Result *result);
-
-extern void free_result(struct pldotnet_Result *r);
-extern void resize_result(struct pldotnet_Result *r, size_t length);
-extern struct pldotnet_Result *create_result(size_t length);
+extern PGDLLEXPORT void pldotnet_ResizeResult(struct pldotnet_Result *r,
+                                              size_t length);
 
 #endif  // PLDOTNET_MAIN_H_
