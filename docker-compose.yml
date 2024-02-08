@@ -8,6 +8,7 @@ x-command: &command
 
 x-pgdata: &pgdata
   PGDATA: /var/lib/postgresql/data
+  PGLOG: /var/log/postgresql/postgresql-main.log
 
 x-build-args: &build-args
   context: .
@@ -43,7 +44,7 @@ services:
     container_name: pldotnet-build
     image: pldotnet:build
     <<: [*interactive, *environment]
-    command: sh -c "bash /app/pldotnet/docker/scripts/build_packages.sh"
+    command: sh -c "make pldotnet-build-debian-packages"
     build:
       dockerfile: docker/Dockerfile_deb-build
       <<: *build-args
@@ -60,10 +61,6 @@ services:
       - ./debian/control.in:/app/pldotnet/debian/control.in
       - ./debian/copyright:/app/pldotnet/debian/copyright
       - ./debian/pgversions:/app/pldotnet/debian/pgversions
-      - ./debian/postinst:/app/pldotnet/debian/postinst
-      - ./debian/postrm:/app/pldotnet/debian/postrm
-      - ./debian/preinst:/app/pldotnet/debian/preinst
-      - ./debian/prerm:/app/pldotnet/debian/prerm
       - ./debian/rules:/app/pldotnet/debian/rules
 
   pldotnet-build-arm:
@@ -82,7 +79,3 @@ services:
       - ./debian/packages/:/app/pldotnet/debian/packages/
       - ./debian/pgversions-arm:/app/pldotnet/debian/pgversions
       - ./debian/rules:/app/pldotnet/debian/rules
-      - ./debian/prerm:/app/pldotnet/debian/prerm
-      - ./debian/preinst:/app/pldotnet/debian/preinst
-      - ./debian/postrm:/app/pldotnet/debian/postrm
-      - ./debian/postinst:/app/pldotnet/debian/postinst

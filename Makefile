@@ -87,11 +87,9 @@ pldotnet-install: pldotnet-uninstall install
 pldotnet-uninstall: uninstall
 	rm -rf $(PLDOTNET_ENGINE_ROOT)/PlDotNET
 
-pldotnet-install-dpkg:
+pldotnet-build-debian-packages:
 	$(MAKE) documentation
 	rm -f debian/packages/postgresql-*-pldotnet_*.deb
-	-sudo -u $(DBUSER) pg_createcluster $(PG_VER) default
-	service postgresql start
 	pg_buildext updatecontrol
 	debuild -b -uc -us --lintian-opts --suppress-tags=initial-upload-closes-no-bugs,custom-library-search-path --profile debian
 	mkdir -p debian/packages

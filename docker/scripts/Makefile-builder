@@ -43,7 +43,6 @@ install_pg_dev: install_requirements install_misc
 	apt install -y postgresql-common
 	apt install -y postgresql-server-dev-all
 	apt install -y devscripts
-	mkdir -p /var/log/postgresql/data1
 
 install_misc:
 	# installs miscellaneous commands for convenience
