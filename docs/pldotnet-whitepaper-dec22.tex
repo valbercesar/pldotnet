@@ -57,14 +57,14 @@
 \title{The pl/dotnet extension to PostgreSQL, v0.9}
 
 %%% Authors
-\author{Todd Lewis}
+\author{The pl/dotnet team}
 \affiliation{%
        \institution{Brick Abode}
        \city{Florianópolis}
 %       \state{Santa Catarina}
        \country{\textsc{Brazil}}
 }
-\email{tlewis@brickabode.com}
+\email{pldotnet@brickabode.com}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Main
@@ -224,7 +224,7 @@ explained in more detail later in the paper.
             \item Languages: C\# and F\# both fully supported
             \item Datatypes: \pldotnettypecount\ out of \psqltypecount\ PostgreSQL user (non-system) data types, plus their arrays, and all types are nullable
             \item Code can be entered directly via \texttt{CREATE FUNCTION} or, alternatively, loaded from pre-compiled assemblies
-            \item Performance is very good in our benchmarks, surpassing all other external PL implementations and matching \texttt{pl/pgsql}
+            \item Performance is very good in our benchmarks, surpassing all other external PL implementations and nearly matching \texttt{pl/pgsql}
             \item Testing: we have 820 unit tests, covering all types, plus their arrays and nulls, are fully unit-tested in both C\# and F\#, and we imported all NPGSQL unit tests and have several hundred working
             \item Security: Code for each function is isolated in a \dotnet Assembly Load Context, providing some security protection
             \item Full trigger support, including modifying data where allowed
@@ -491,6 +491,14 @@ Language:
 
 pl/dotnet supports all four modes.
 
+Our trigger support includes all supported trigger operations:
+\begin{enumerate}[itemsep=0pt]
+    \item Trigger arguments
+    \item Full trigger information: event, level, table name, operation, etc.
+    \item Full copies of old and new rows
+    \item Ability to modify the row, when allowed under SQL
+\end{enumerate}
+
 \subsection{Using Both Code and Assemblies}
 
 Traditional PostgreSQL Procedural Languages, such as pl/pgsql
@@ -521,7 +529,7 @@ $$ LANGUAGE plfsharp STRICT;
 \end{listing}
 
 Second, here is an example of loading the function from a DLL, which
-shoud work for any \dotnet\ language.
+shoud work for any \dotnet\ language and is tested for C# and F#:
 
 \begin{listing}[H]
 \begin{minted}[breaklines, breakafter=d, frame=single, fontsize=\footnotesize]{sql}
@@ -1120,14 +1128,14 @@ as well as significant run-time overhead. We do not consider this
 to be \textquote{native} support.
 
 pl/dotnet and pl/java map PostgreSQL values into their platform's
-corresonding native type. Here, we were greatly aided by the
-existence of Npgsql, which already has extensive mapping of the
-PostgreSQL type system to the \dotnet type system. Leveraging their
-work, we are able to have the greatest range of native type support
-of any external Procedural Language in PostgreSQL.
+corresonding native type, with a rich set of operators for each one. Here,
+we were greatly aided by the existence of Npgsql, which already has
+extensive mapping of the PostgreSQL type system to the \dotnet type
+system. Leveraging their work, we are able to have the greatest range
+of native type support of any external Procedural Language in PostgreSQL.
 
 We still have four gaps in our type coverage: the Numeric type;
-composite types, also known as record types; enumerated types
+composite and table types; enumerated types
 (\textquote{ENUM}); and multirange support for all five range types.
 (Multirange will be a single, generic implementation.)
 
