@@ -16,28 +16,39 @@ pl/dotnet adds full support for C# and F# to PostgreSQL.  0.99 is our public bet
 
 ## Usage examples
 
+Here is an example that returns a set of records in C#:
+
 ```sql
 CREATE OR REPLACE FUNCTION dynamic_record_generator_srf(lim INT8)
 RETURNS SETOF record
 AS $$
-    upperLimit = lim.HasValue ? lim : System.Int32.MaxValue;
+    var upperLimit = lim.HasValue ? lim : System.Int32.MaxValue;
     for(long i=0;i<upperLimit;i++){ yield return new object?[] { i, $"Number is {i}" }; }
 $$ LANGUAGE plcsharp;
+select * from dynamic_record_generator_srf(10) as record(a int8, b text);
 ```
+
+The same example in F#:
 
 ```sql
 CREATE OR REPLACE FUNCTION dynamic_record_generator_srf_fsharp(lim INT8)
 RETURNS SETOF record
 AS $$
-    let upperLimit = Option.defaultValue (int64 System.Int32.MaxValue) lim
+    let upperLimit = if lim.HasValue then lim.Value else int64 System.Int32.MaxValue
     seq { for i in 0L .. upperLimit - 1L do yield [| box i; $"Number is {i}" |] }
 $$ LANGUAGE plfsharp;
+select * from dynamic_record_generator_srf_fsharp(10) as record(a int8, b text);
 ```
+
+The `tests/` folder has a complete suite of unit tests in both C# and F#; we
+encourage you to consult it for examples of SQL code for your favorite
+datatype or SQL feature.
+
 ## Major features
 
 We support  all SQL function modes:
 - normal procedures and functions
-- trigger functions, will full trigger support: trigger arguments, old/new row, row rewriting (where allowed), and all the standard trigger information
+- full support for trigger functions: trigger arguments, old/new row, row rewriting (where allowed), and all the standard trigger information
 - set-returning functions, nicely mapped to iterators in C# and sequences in F#
 - table functions, as well as functions returning records or sets of records
 - full support for IN/OUT/INOUT functions
