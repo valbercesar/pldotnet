@@ -68,6 +68,7 @@ namespace PlDotNET
         public string UserHandlerTemplatePath;
         public string UserTHandlerTemplatePath;
         public string UserFunctionTemplatePath;
+        public bool UserHandlerForFSharp = false;
 
         public DotNETLanguage Language;
 
@@ -336,6 +337,7 @@ namespace PlDotNET
             sourceCode = sourceCode.Replace("// $srf_middle$", this.BuildSRFMiddle());
             sourceCode = sourceCode.Replace("// $call_set_result$", this.BuildCallSetResult());
             sourceCode = sourceCode.Replace("// $srf_end$", this.BuildSRFEnd());
+            sourceCode = sourceCode.Replace("// $fsharp_wrapper_for_inout$", this.BuildWrapperFunctionForInoutOut());
 
             if (this.Language == DotNETLanguage.FSharp)
             {
@@ -388,7 +390,8 @@ namespace PlDotNET
                 return "// skipping SRF setup; not a set-returning function";
             }
 
-            return @"if (call_mode == (int)CallMode.SrfFirst){
+            return @"// Elog.Info($""Entering inside SRF code. call_id: {call_id}"");
+                    if (call_mode == (int)CallMode.SrfFirst){
                         // Elog.Info($""Got SRF_FIRST on call_id {call_id}"");
                         ";
         }
@@ -419,6 +422,9 @@ namespace PlDotNET
                     return (int)ReturnMode.SrfNext;
                 } else if (call_mode == (int)CallMode.SrfNext){
                     // Elog.Info($""Getting SRF enumerator (call_id {call_id})"");
+                    // List<ulong> keyList = new List<ulong>(EnumeratorCache.Keys);
+                    // Elog.Info($""EnumeratorCache.Keys: {string.Join(""\t"", keyList)}, call_id: {call_id}"");
+
                     var enumerator = EnumeratorCache[call_id];
                     // Elog.Info($""Got SRF enumerator ({enumerator.GetType().Name}) {enumerator}"");
                     if (enumerator.MoveNext() == false) {
@@ -504,13 +510,6 @@ namespace PlDotNET
                 return this.FuncBody;
             }
 
-            if (this.Language == DotNETLanguage.FSharp)
-            {
-                // Returns an empty string because the UserFunction code is being created
-                // along with the UserHandler code for F# functions.
-                return string.Empty;
-            }
-
             if (!File.Exists(this.UserFunctionTemplatePath))
             {
                 string msg = $"Template file '{this.UserFunctionTemplatePath}' not found";
@@ -528,44 +527,6 @@ namespace PlDotNET
             return sourceCode;
         }
 
-        public string GetComplexReturnType(bool retset)
-        {
-            // ComplexReturnType is:
-            //     - `IEnumerable<int, string>` if it's retset
-            //     - `int`/`void`/etc otherwise
-            // otherwise the plain type.
-            string returnType;
-
-            if (!this.ParamModes.Any(mode => this.TOutputModes.Contains(mode)))
-            {
-                returnType = this.SimpleReturnType;
-            }
-            else
-            {
-                // Filter by paramModes to get INOUT, OUT, and TABLE arguments
-                var filteredParams = this.ParamNames.Zip(this.ParamTypes, (name, typeId) => new { Name = name, TypeId = typeId })
-                    .Zip(this.ParamModes, (pair, mode) => new { pair.Name, pair.TypeId, Mode = mode })
-                    .Where(param => this.TOutputModes.Contains(param.Mode));
-
-                string filteredParamsStr = string.Join(", ", filteredParams.Select(p => $"Name:{p.Name}, TypeId:{p.TypeId}, Mode:{p.Mode}"));
-
-                // does not handle `void` return types, as they're meaningless
-                var args = filteredParams.Select(param =>
-                        $"{(DatumConversion.ArrayTypes.ContainsKey((OID)param.TypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)param.TypeId])}? {param.Name}")
-                    .ToList();
-                string argsStr = string.Join(", ", args);
-
-                // join the args and put parentheses around compound types
-                returnType = string.Join(", ", args);
-                returnType = (args.Count > 1) ? $"({returnType})" : returnType;
-            }
-
-            // make it an IEnumerable if it's a retset
-            returnType = retset ? $"IEnumerable<{returnType}>" : $"{returnType}";
-
-            return returnType;
-        }
-
         public string GetReturnType(uint returnTypeId, bool retset)
         {
             if ((OID)returnTypeId == OID.TRIGGEROID)
@@ -574,10 +535,91 @@ namespace PlDotNET
             }
 
             string returnType = DatumConversion.ArrayTypes.ContainsKey((OID)returnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)returnTypeId];
-            string nullAbleOutput = (returnType == "void") ? string.Empty : "?";
-            returnType = retset ? $"IEnumerable<{returnType} {nullAbleOutput}>" : $"{returnType}{nullAbleOutput}";
+            string nullAbleOutput = SetTypeAsNullable(returnType);
+            returnType = retset ? SetTypeAsSequence(returnType, retset) : nullAbleOutput;
             return returnType;
         }
+
+        /// <summary>
+        /// Builds a wrapper function for handling inout and out parameters.
+        /// </summary>
+        /// <returns>The generated wrapper function as a string.</returns>
+        public string BuildWrapperFunctionForInoutOut()
+        {
+            if (!this.UserHandlerForFSharp || !this.ParamModes.Any(mode => mode == (byte)ProArgMode.InOut || mode == (byte)ProArgMode.Out))
+            {
+                return string.Empty;
+            }
+
+            string aux = this.SupportNullInput ? "?" : string.Empty;
+            List<string> parameters = new List<string>();
+            List<string> outputParameters = new List<string>();
+            List<string> inputParameters = new List<string>();
+
+            for (int i = 0, argc = this.DotnetTypes.Length; i < argc; i++)
+            {
+                byte mode = this.ParamModes[i];
+
+                if (mode == (byte)ProArgMode.In)
+                {
+                    parameters.Add($"{this.DotnetTypes[i]}{aux} argument_{i}");
+                    inputParameters.Add($"({this.DotnetTypes[i]}{aux})argument_{i}");
+                }
+                else if (mode == (byte)ProArgMode.InOut)
+                {
+                    parameters.Add($"ref {this.DotnetTypes[i]}? argument_{i}");
+                    inputParameters.Add($"({this.DotnetTypes[i]}{aux})argument_{i}");
+                    outputParameters.Add($"argument_{i}");
+                }
+                else if (mode == (byte)ProArgMode.Out)
+                {
+                    parameters.Add($"out {this.DotnetTypes[i]}? argument_{i}");
+                    outputParameters.Add($"argument_{i}");
+                }
+                else if (mode == (byte)ProArgMode.Table)
+                {
+                    // Table arguments are actually records
+                    // No action here
+                }
+                else
+                {
+                    throw new SystemException(
+                        $"Unsupported mode {mode} on parameter number {i} of {this.FuncName}: all modes are {string.Join(", ", this.ParamModes)}.  [3]");
+                }
+            }
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append($"public static void {this.FuncName}_wrapper({string.Join(", ", parameters)}) {{\n");
+            sb.Append($"({string.Join(", ", outputParameters)}) = {this.UserFunctionPrefix}.{this.FuncName}({string.Join(", ", inputParameters)});\n}}");
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Sets the specified type as nullable.
+        /// </summary>
+        /// <param name="type">The type to set as nullable.</param>
+        /// <returns>The nullable type.</returns>
+        public abstract string SetTypeAsNullable(string type);
+
+        /// <summary>
+        /// Sets the type as a sequence.
+        /// </summary>
+        /// <param name="type">The type to set.</param>
+        /// <param name="retset">A flag indicating whether to return the type as a set.</param>
+        /// <returns>The type as a sequence.</returns>
+        public abstract string SetTypeAsSequence(string type, bool retset);
+
+        /// <summary>
+        /// Gets the complex return type based on the specified conditions.
+        /// </summary>
+        /// <param name="retset">A boolean value indicating if it's a result set.</param>
+        /// <returns>
+        /// The complex return type. If it's not a result set, it returns the simple return type.
+        /// If it's a result set, it returns the complex return type in the form of `IEnumerable<T>`
+        /// or seq<T> for C# and F# respectively.
+        /// </returns>
+        public abstract string GetComplexReturnType(bool retset);
 
         /// <summary>
         /// Creates the code to create the handler objects that will be used to make the conversions.
@@ -642,6 +684,8 @@ namespace PlDotNET
 
     public class CSharpCodeGenerator : CodeGenerator
     {
+        public bool UserHandlerFSC;
+
         public CSharpCodeGenerator(
             string funcName,
             uint returnTypeId,
@@ -652,9 +696,13 @@ namespace PlDotNET
             byte[] paramModes,
             int num_output_values,
             string funcBody,
-            bool supportNullInput)
+            bool supportNullInput,
+            bool userHandlerFSC,
+            bool userHandlerForFSharp = false)
         {
             this.Language = DotNETLanguage.CSharp;
+            this.UserHandlerFSC = userHandlerFSC;
+            this.UserHandlerForFSharp = userHandlerForFSharp;
             this.baseInitializer(
                     funcName,
                     returnTypeId,
@@ -743,6 +791,11 @@ namespace PlDotNET
         /// <inheritdoc />
         public override string BuildFunctionCall()
         {
+            if (this.UserHandlerFSC)
+            {
+                return this.BuildFunctionCallForFSC();
+            }
+
             var sb = new System.Text.StringBuilder();
             bool has_output_var = this.ParamModes.Intersect(this.OutputModes).Any();
             string aux = this.SupportNullInput ? "?" : string.Empty;
@@ -777,7 +830,15 @@ namespace PlDotNET
                 sb.AppendLine("var result = ");
             }
 
-            sb.Append($"{this.UserFunctionPrefix}.{this.FuncName}(");
+            if (this.UserHandlerForFSharp && this.ParamModes.Any(mode => mode == (byte)ProArgMode.InOut || mode == (byte)ProArgMode.Out))
+            {
+                // If the user handler is for F#, we need to call the wrapper function for INOUT/OUT parameters
+                sb.Append($"{this.FuncName}_wrapper(");
+            }
+            else
+            {
+                sb.Append($"{this.UserFunctionPrefix}.{this.FuncName}(");
+            }
 
             /*****************************************
             for (int i = 0, argc = this.DotnetTypes.Length; i < argc; i++)
@@ -837,6 +898,81 @@ namespace PlDotNET
         }
 
         /// <inheritdoc />
+        public string BuildFunctionCallForFSC()
+        {
+            var sb = new System.Text.StringBuilder();
+            bool has_output_var = this.ParamModes.Intersect(this.OutputModes).Any();
+            string aux = this.SupportNullInput ? "?" : string.Empty;
+            List<string> parameters = new List<string>();
+
+            sb.AppendLine(string.Empty);
+
+            sb.AppendLine($"var type = typeof({this.UserFunctionPrefix});");
+            sb.AppendLine($"var method = type.GetMethod(\"{this.FuncName}\");");
+
+            if (this.IsTrigger)
+            {
+                // Triggers are simple:
+                //     - they take no arguments, other than the TriggerData
+                //     - they return an integer, same as UserHandler
+                string trigger_string = $@"
+                    try
+                    {{
+                        object[] parameters = new object[] {{tg}};
+                        rv = (int) method.Invoke(null, parameters);
+                    }}
+                    catch (Exception ex)
+                    {{
+                        Elog.Warning(""Trigger gave an error: "" + ex.ToString());
+                        return (int)ReturnMode.Error;
+                    }}
+
+                ";
+                sb.Append(trigger_string);
+                return sb.ToString();
+            }
+
+            for (int i = 0, argc = this.DotnetTypes.Length; i < argc; i++)
+            {
+                byte mode = this.ParamModes[i];
+
+                if (mode == (byte)ProArgMode.In)
+                {
+                    parameters.Add($"({this.DotnetTypes[i]}{aux}) argument_{i}");
+                }
+                else if (mode == (byte)ProArgMode.InOut || mode == (byte)ProArgMode.Out)
+                {
+                    string prefix = mode == (byte)ProArgMode.InOut ? "ref" : "out";
+                    parameters.Add($"{prefix} argument_{i}");
+                }
+                else if (mode == (byte)ProArgMode.Table)
+                {
+                    // Table arguments are not actually arguments
+                    // No action here
+                }
+                else
+                {
+                    throw new SystemException($"Unrecognized parameter mode: {mode}, slot {i}");
+                }
+            }
+
+            sb.Append($"object[] parameters = new object[] {{");
+            sb.Append(string.Join(", ", parameters));
+            sb.AppendLine($"}};");
+
+            var rettype = this.GetReturnType(this.ReturnTypeId, retset: false);
+            if (rettype != "void")
+            {
+                sb.AppendLine($"var result = ({rettype}) method.Invoke(null, parameters);");
+            }
+            else
+            {
+                sb.AppendLine($"var result = method.Invoke(null, parameters);");
+            }
+
+            return sb.ToString();
+        }
+
         public override string BuildCallSetResult()
         {
             var sb = new System.Text.StringBuilder();
@@ -977,6 +1113,58 @@ namespace PlDotNET
             sourceCode = node.ToFullString();
             return sourceCode;
         }
+
+        /// <inheritdoc />
+        public override string GetComplexReturnType(bool retset)
+        {
+            // ComplexReturnType is:
+            //     - `IEnumerable<int, string>` if it's retset
+            //     - `int`/`void`/etc otherwise
+            // otherwise the plain type.
+            string returnType;
+
+            if (!this.ParamModes.Any(mode => this.TOutputModes.Contains(mode)))
+            {
+                returnType = this.SimpleReturnType;
+            }
+            else
+            {
+                // Filter by paramModes to get INOUT, OUT, and TABLE arguments
+                var filteredParams = this.ParamNames.Zip(this.ParamTypes, (name, typeId) => new { Name = name, TypeId = typeId })
+                    .Zip(this.ParamModes, (pair, mode) => new { pair.Name, pair.TypeId, Mode = mode })
+                    .Where(param => this.TOutputModes.Contains(param.Mode));
+
+                string filteredParamsStr = string.Join(", ", filteredParams.Select(p => $"Name:{p.Name}, TypeId:{p.TypeId}, Mode:{p.Mode}"));
+
+                // does not handle `void` return types, as they're meaningless
+                var args = filteredParams.Select(param =>
+                        $"{(DatumConversion.ArrayTypes.ContainsKey((OID)param.TypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)param.TypeId])}? {param.Name}")
+                    .ToList();
+                string argsStr = string.Join(", ", args);
+
+                // join the args and put parentheses around compound types
+                returnType = string.Join(", ", args);
+                returnType = (args.Count > 1) ? $"({returnType})" : returnType;
+            }
+
+            // make it an IEnumerable if it's a retset
+            returnType = retset ? $"IEnumerable<{returnType}>" : $"{returnType}";
+
+            return returnType;
+        }
+
+        /// <inheritdoc />
+        public override string SetTypeAsNullable(string type)
+        {
+            return (type == "void") ? type : $"{type}?";
+        }
+
+        /// <inheritdoc />
+        public override string SetTypeAsSequence(string type, bool retset)
+        {
+            string nullableType = SetTypeAsNullable(type);
+            return retset ? $"IEnumerable<{nullableType}>" : nullableType;
+        }
     }
 
     public class FSharpCodeGenerator : CodeGenerator
@@ -987,6 +1175,8 @@ namespace PlDotNET
         private static readonly Dictionary<string, string> FSharpTypes =
                new ()
         {
+            // TODO: Check if DatumConversion can return any other Nullable or other anomaly
+            { "Object?[]", "obj[]" },
             { "float", "float32" },
             { "short", "int16" },
             { "long", "int64" },
@@ -1000,6 +1190,8 @@ namespace PlDotNET
         private static readonly List<string> ClassTypes =
                new ()
         {
+            "Nullable<obj[]>",
+            "obj[]",
             "Array",
             "byte[]",
             "BitArray",
@@ -1031,9 +1223,18 @@ namespace PlDotNET
                     num_output_values,
                     funcBody,
                     supportNullInput);
+
             this.UserHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserHandler.tfs";
             this.UserTHandlerTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserTHandler.tfs";
             this.UserFunctionTemplatePath = "@PLDOTNET_TEMPLATE_DIR/UserFunction.tfs";
+        }
+
+        /// <summary>
+        /// Use the FSharpTypes Dictionary to convert C# types that differs from F# type names if necessary
+        /// </summary>
+        public static string EnsureFSharpType(string type)
+        {
+            return FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
         }
 
         /// <summary>
@@ -1172,7 +1373,7 @@ namespace PlDotNET
             {
                 // use "result"
                 string type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ReturnTypeId];
-                string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
+                string returnType = EnsureFSharpType(type);
                 string outputHandler = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "OutputNullableArray" : "OutputNullableValue";
                 string isnull = ClassTypes.Contains(returnType) ? "Object.ReferenceEquals(result, null)" : "not result.HasValue";
                 sb.AppendLine($"// Handling normal function return (no INOUT/OUT arguments)");
@@ -1191,7 +1392,7 @@ namespace PlDotNET
                 {
                     string outputTypeHandler = DatumConversion.GetTypeHandlerName(this.ParamTypes[i]);
                     string type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ParamTypes[i]];
-                    string returnType = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
+                    string returnType = EnsureFSharpType(type);
                     string outputHandlerMethod = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ? "OutputNullableArray" : "OutputNullableValue";
                     string isnull = ClassTypes.Contains(returnType) ? $"Object.ReferenceEquals(output_{i}, null)" : $"not output_{i}.HasValue";
 
@@ -1209,23 +1410,30 @@ namespace PlDotNET
         public override string BuildUserFunction()
         {
             var sb = new System.Text.StringBuilder();
-            string return_type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ReturnTypeId) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ReturnTypeId];
-            return_type = FSharpTypes.ContainsKey(return_type) ? FSharpTypes[return_type] : return_type;
-            List<string> outputTypes = new ();
 
-            // returns are always nullable in PostgreSQL
-            if (return_type != "void" && !ClassTypes.Contains(return_type))
+            if (this.IsTrigger)
             {
-                return_type = $"Nullable<{return_type}>";
+                sb.Append($"static member {this.FuncName} (tg: TriggerData) : ReturnMode = \n");
+                sb.Append($"#line 1\n{this.FuncBody}\n");
+                return sb.ToString();
             }
+
+            string return_type = this.SimpleReturnType;
+            if (this.Retset)
+            {
+                return_type = this.ComplexReturnType;
+            }
+
+            List<string> outputTypes = new ();
 
             sb.Append($"static member {this.FuncName}");
 
+            int totalUsedParameters = 0;
             for (int i = 0, length = this.ParamNames.Length; i < length; i++)
             {
                 if (this.OutputModes.Contains(this.ParamModes[i]))
                 {
-                    string outputParamType = FSharpTypes.ContainsKey(this.DotnetTypes[i]) ? FSharpTypes[this.DotnetTypes[i]] : this.DotnetTypes[i];
+                    string outputParamType = EnsureFSharpType(this.DotnetTypes[i]);
                     outputParamType = ClassTypes.Contains(this.DotnetTypes[i]) ? this.DotnetTypes[i] : $"Nullable<{this.DotnetTypes[i]}>";
                     outputTypes.Add(outputParamType);
                 }
@@ -1239,7 +1447,13 @@ namespace PlDotNET
                     }
 
                     sb.Append($" ({this.ParamNames[i]}: {inputParamType})");
+                    totalUsedParameters += 1;
                 }
+            }
+
+            if (totalUsedParameters == 0)
+            {
+                sb.Append("()"); // void equivalent
             }
 
             if (outputTypes.Count > 1)
@@ -1270,7 +1484,7 @@ namespace PlDotNET
             for (int i = 0, length = this.ParamTypes.Length; i < length; i++)
             {
                 string type = DatumConversion.ArrayTypes.ContainsKey((OID)this.ParamTypes[i]) ? "Array" : DatumConversion.SupportedTypesStr[(OID)this.ParamTypes[i]];
-                dotnetTypes[i] = FSharpTypes.ContainsKey(type) ? FSharpTypes[type] : type;
+                dotnetTypes[i] = EnsureFSharpType(type);
             }
 
             return dotnetTypes;
@@ -1280,6 +1494,76 @@ namespace PlDotNET
         public override string FormatGeneratedCode(string sourceCode)
         {
             return sourceCode;
+        }
+
+        /// <inheritdoc />
+        public override string GetComplexReturnType(bool retset)
+        {
+            // ComplexReturnType is:
+            //     - `IEnumerable<int, string>` if it's retset
+            //     - `int`/`void`/etc otherwise
+            // otherwise the plain type.
+            string returnType;
+
+            if (!this.ParamModes.Any(mode => this.TOutputModes.Contains(mode)))
+            {
+                returnType = this.SimpleReturnType;
+            }
+            else
+            {
+                // Filter by paramModes to get INOUT, OUT, and TABLE arguments
+                var filteredParams = this.ParamNames.Zip(this.ParamTypes, (name, typeId) => new { Name = name, TypeId = typeId })
+                    .Zip(this.ParamModes, (pair, mode) => new { pair.Name, pair.TypeId, Mode = mode })
+                    .Where(param => this.TOutputModes.Contains(param.Mode));
+
+                string filteredParamsStr = string.Join(", ", filteredParams.Select(p => $"Name:{p.Name}, TypeId:{p.TypeId}, Mode:{p.Mode}"));
+
+                // does not handle `void` return types, as they're meaningless
+                var args = filteredParams.Select(param =>
+                        $"{(DatumConversion.ArrayTypes.ContainsKey((OID)param.TypeId) ? "Array" : SetTypeAsNullable(EnsureFSharpType(DatumConversion.SupportedTypesStr[(OID)param.TypeId])))}")
+                    .ToList();
+                string argsStr = string.Join(", ", args);
+
+                // join the args and put parentheses around compound types
+                returnType = string.Join(" * ", args);
+                returnType = (args.Count > 1) ? $"({returnType})" : returnType;
+            }
+
+            if (this.ParamModes.Contains((byte)ProArgMode.Table))
+            {
+                returnType = $"seq<struct {returnType}>";
+            }
+            else
+            {
+                // make it an seq if it's a retset
+                returnType = retset ? $"seq<{returnType}>" : $"{returnType}";
+            }
+
+            return returnType;
+        }
+
+        /// <inheritdoc />
+        public override string SetTypeAsNullable(string type)
+        {
+            // Verify if there is a difference in C# and F# to the same type and convert if necessary
+            type = EnsureFSharpType(type);
+
+            // Classes already are Nullable
+            if (ClassTypes.Contains(type))
+            {
+                return type;
+            }
+
+            return (type == "void") ? type : $"Nullable<{type}>";
+        }
+
+        /// <inheritdoc />
+        public override string SetTypeAsSequence(string type, bool retset)
+        {
+            string nullableType = SetTypeAsNullable(type);
+
+            // Assumes that the type is nullable
+            return retset ? $"seq<{nullableType}>" : nullableType;
         }
     }
 }

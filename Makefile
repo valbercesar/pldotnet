@@ -78,10 +78,11 @@ endif
 pldotnet-install: pldotnet-uninstall install
 	$(CP_CHOWN)
 	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/*.cs
-	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | sed 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/Common/*.cs
+	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/Common/*.cs
 	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/TypeHandlers/*.cs
 	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/npgsql/src/Npgsql/PlDotNET/*.cs
 	$(SED) -i 's/@PLDOTNET_TEMPLATE_DIR/$(shell echo $(PLDOTNET_TEMPLATE_DIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/CodeGenerator.cs
+	$(SED) -i 's/@PLDOTNET_TEMPLATE_DIR/$(shell echo $(PLDOTNET_TEMPLATE_DIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/Engine.cs
 	$(BUILD_PLDOTNET_PROJECT)
 
 pldotnet-uninstall: uninstall

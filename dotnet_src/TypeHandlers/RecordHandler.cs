@@ -110,7 +110,13 @@ namespace PlDotNET.Handler
         /// <returns>A tuple containing the datum and OID.</returns>
         public static (IntPtr, OID) SingleValueOutput(object value)
         {
-            (NpgsqlDbType dbt, object obj) = GetNpgsqlTypeAndValue(value);
+            (NpgsqlDbType dbt, object? obj) = GetNpgsqlTypeAndValue(value);
+
+            if (DBNull.Value.Equals(obj))
+            {
+                obj = null;
+            }
+
             OID oid = (OID)NpgsqlHelper.FindOid(dbt);
             IntPtr datum = DatumConversion.OutputNullableValue(oid, obj);
 
@@ -231,7 +237,7 @@ namespace PlDotNET.Handler
                     bool isNull = false;
                     if (values[i] is BaseNpgsqlParameter param)
                     {
-                        isNull = param.Value == null;
+                        isNull = param.Value == null || DBNull.Value.Equals(param.Value);
                     }
 
                     var (datum, oid) = SingleValueOutput(values[i]);

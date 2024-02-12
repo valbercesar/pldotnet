@@ -4,6 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Uncomment the next line to enable FSharp Service Compiler in the build -->
+    <!-- <DefineConstants>ENABLE_FCS</DefineConstants> -->
   </PropertyGroup>
 
    <ItemGroup>
@@ -40,9 +42,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="FSharp\PlDotNET.FSharp.fsproj" />
     <ProjectReference Include="npgsql\src\Npgsql\Npgsql.csproj" />
     <ProjectReference Include="npgsql\test\Npgsql.Tests\Npgsql.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(DefineConstants.Contains('ENABLE_FCS'))">
+    <ProjectReference Include="FSharp\PlDotNET.FSharp.fsproj" />
   </ItemGroup>
 
 </Project>
