@@ -358,7 +358,6 @@ namespace PlDotNET
 
                 if (userFunctionDll == string.Empty)
                 {
-                    Elog.Warning($"Fail to compile UserFunction code: {userFunctionCode}");
                     return 1;
                 }
 

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Npgsql;
 using NpgsqlTypes;
 using PlDotNET.Common;
@@ -243,33 +244,24 @@ namespace PlDotNET
                         Elog.Info("Build Output:");
                         Elog.Info(output);
                     }
-                    else if (!string.IsNullOrEmpty(error))
+                    else if (output.ToLower().Contains("build failed") || !string.IsNullOrEmpty(error))
                     {
-                        Elog.Warning("Build Error:");
-                        Elog.Warning(error);
-                        retVal = 1;
-                    }
-                    else if (output.ToLower().Contains("failed."))
-                    {
-                        Elog.Warning("Build Error:");
+                        var errorLines = string.IsNullOrEmpty(error) ? output.Split('\n')
+                            .Select(line => Regex.Match(line, @"\((\d+,\d+)\): error (\w+): ([^\[]+)"))
+                            .Where(match => match.Success)
+                            .Select(match => match.Value)
+                            .Distinct()
+                            .ToArray() : error.Split('\n');
 
-                        if (Verbose > 1)
-                        {
-                            Elog.Warning(output);
-                        }
-                        else
-                        {
-                            string[] lines = output.Split('\n');
+                        string language = Language == DotNETLanguage.CSharp ? "C#" : "F#";
+                        string code = File.ReadAllText(
+                            $"{this.DestinationProjectPath}/Program.{(Language == DotNETLanguage.CSharp ? "cs" : "fs")}");
 
-                            // Filter lines containing the word "error" (case-insensitive)
-                            var errorLines = lines.Where(line => line.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
-
-                            // Join the filtered lines back into a new text
-                            string resultText = string.Join("\n", errorLines);
-
-                            // Print the result
-                            Elog.Warning(resultText);
-                        }
+                        Elog.Warning(
+                            $"PL.NET could not compile the following {language} generated code:" +
+                            $"\n**********\n{code}\n**********\n" +
+                            $"Here are the compilation results:\n{string.Join("\n", errorLines)}\n\n" +
+                            $"For additional information, please consult the {language} project created at  '{this.DestinationProjectPath}'\n");
 
                         retVal = 1;
                     }
