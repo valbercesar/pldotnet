@@ -13,6 +13,7 @@
 // </copyright>
 using System;
 using System.Net.NetworkInformation; // for Macaddr
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using NpgsqlTypes;
@@ -35,6 +36,11 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.RECORDOID, OID.RECORDARRAYOID)]
     public class RecordHandler : ObjectTypeHandler<object[]>
     {
+        /// <summary>
+        /// A type reference for the NpgsqlParameter type defined in different project.
+        /// </summary>
+        private static Type npgsqlParameterType = Assembly.Load("Npgsql").GetType("Npgsql.NpgsqlParameter");
+
         public RecordHandler()
         {
             this.ElementOID = OID.RECORDOID;
@@ -68,35 +74,31 @@ namespace PlDotNET.Handler
 
         public static (NpgsqlDbType, object) GetNpgsqlTypeAndValue(object obj)
         {
-            if (obj is BaseNpgsqlParameter param)
+            if (obj != null && npgsqlParameterType.IsInstanceOfType(obj))
             {
-                // we honor NpgsqlParameter's setting
-                return (param.NpgsqlDbType, param.Value);
-            }
+                // Extract NpgsqlDbType and Value properties
+                PropertyInfo npgsqlDbTypeProperty = npgsqlParameterType.GetProperty("NpgsqlDbType");
+                PropertyInfo valueProperty = npgsqlParameterType.GetProperty("Value");
 
-            switch (obj)
+                NpgsqlDbType npgsqlDbType = (NpgsqlDbType)npgsqlDbTypeProperty.GetValue(obj);
+                object value = valueProperty.GetValue(obj);
+
+                return (npgsqlDbType, value);
+            }
+            else
             {
-                case bool _:
-                    return (NpgsqlDbType.Boolean, obj);
-                case byte _:
-                    return (NpgsqlDbType.Smallint, obj);
-                case short _:
-                    return (NpgsqlDbType.Smallint, obj);
-                case int _:
-                    return (NpgsqlDbType.Integer, obj);
-                case long _:
-                    return (NpgsqlDbType.Bigint, obj);
-                case float _:
-                    return (NpgsqlDbType.Real, obj);
-                case double _:
-                    return (NpgsqlDbType.Double, obj);
-                case string _:
-                    return (NpgsqlDbType.Text, obj);
-                case PhysicalAddress _:
-                    return (NpgsqlDbType.MacAddr, obj);
-                default:
-                    throw new SystemException(
-                        $"Unrecognized object for type conversion: ({obj.GetType().Name}){obj}. Please use NpgsqlParameter to specify the type.");
+                // Create an NpgsqlParameter instance dynamically
+                ConstructorInfo npgsqlParameterCtor = npgsqlParameterType.GetConstructor(new Type[] { typeof(string), typeof(object) });
+                object npgsqlParameterInstance = npgsqlParameterCtor.Invoke(new object[] { "name", obj });
+
+                // Extract NpgsqlDbType and Value properties
+                PropertyInfo npgsqlDbTypeProperty = npgsqlParameterType.GetProperty("NpgsqlDbType");
+                PropertyInfo valueProperty = npgsqlParameterType.GetProperty("Value");
+
+                NpgsqlDbType npgsqlDbType = (NpgsqlDbType)npgsqlDbTypeProperty.GetValue(npgsqlParameterInstance);
+                object value = valueProperty.GetValue(npgsqlParameterInstance);
+
+                return (npgsqlDbType, value);
             }
         }
 
@@ -211,8 +213,6 @@ namespace PlDotNET.Handler
         /// </summary>
         public bool OutputSetValue(object[] values, IntPtr output)
         {
-            Elog.Info($"Entering OutputSetValue, output={output:x}, values=({string.Join(", ", values)})");
-
             if (values == null)
             {
                 // FIXME, consider handling this better
@@ -221,7 +221,6 @@ namespace PlDotNET.Handler
             }
 
             pldotnet_ResizeResult(output, values.Length);
-            Elog.Info($"Result was resized");
 
             for (int i = 0; i < values.Length; i++)
             {
@@ -229,24 +228,24 @@ namespace PlDotNET.Handler
                 {
                     // We don't know the OID of NULL, but pldotnet_main.c
                     // should handle this gracefully for NULL.
-                    Elog.Info($"OutputResult.SetDatumResult(datum=NULL, isNull={true}, output={output:x}, i={i}, (uint)oid=0");
                     OutputResult.SetDatumResult((IntPtr)0, true, output, i, 0);
                 }
                 else
                 {
                     bool isNull = false;
-                    if (values[i] is BaseNpgsqlParameter param)
+
+                    // If the value is an NpgsqlParameter, extract the Value property to check for null
+                    if (npgsqlParameterType.IsInstanceOfType(values[i]))
                     {
-                        isNull = param.Value == null || DBNull.Value.Equals(param.Value);
+                        object? value = npgsqlParameterType.GetProperty("Value")?.GetValue(values[i]);
+                        isNull = value == null || DBNull.Value.Equals(value);
                     }
 
                     var (datum, oid) = SingleValueOutput(values[i]);
-                    Elog.Info($"OutputResult.SetDatumResult(datum={datum:x}, isNull={isNull}, output={output:x}, i={i}, (uint)oid={(int)oid}");
                     OutputResult.SetDatumResult(datum, isNull, output, i, (uint)oid);
                 }
             }
 
-            Elog.Info($"Returning from OutputResult.SetDatumResult()");
             return true;
         }
     }

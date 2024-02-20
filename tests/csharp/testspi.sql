@@ -1355,3 +1355,93 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-record-spi-null', 'RecordWithNullTestSPI2', RecordWithNullTestSPI(NULL::TEXT, '3.14159265358'::FLOAT8, NULL::MACADDR);
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-record-spi-null', 'RecordWithNullTestSPI3', RecordWithNullTestSPI('hello world!', '3.14159265358'::FLOAT8, 'f6:30:00:00:00:00'::MACADDR) IS FALSE;
+
+CREATE OR REPLACE FUNCTION recordWithSupportedTypes()
+RETURNS record
+AS $$
+    var conn = new NpgsqlConnection();
+    conn.Open();
+    var cmd = new NpgsqlCommand($"SELECT * FROM SPITEST");
+    var reader = cmd.ExecuteReader();
+    reader.Read();
+    return new object[] {
+        reader.GetFieldValue<bool>(reader.GetOrdinal("BOOLCOL")),
+        reader.GetFieldValue<short>(reader.GetOrdinal("I2COL")),
+        reader.GetFieldValue<int>(reader.GetOrdinal("I4COL")),
+        reader.GetFieldValue<long>(reader.GetOrdinal("I8COL")),
+        reader.GetFieldValue<float>(reader.GetOrdinal("F4COL")),
+        reader.GetFieldValue<double>(reader.GetOrdinal("F8COL")),
+        reader.GetFieldValue<NpgsqlPoint>(reader.GetOrdinal("POINTCOL")),
+        reader.GetFieldValue<NpgsqlLine>(reader.GetOrdinal("LINECOL")),
+        reader.GetFieldValue<NpgsqlLSeg>(reader.GetOrdinal("LSEGCOL")),
+        reader.GetFieldValue<NpgsqlBox>(reader.GetOrdinal("BOXCOL")),
+        reader.GetFieldValue<NpgsqlPolygon>(reader.GetOrdinal("POLYGONCOL")),
+        reader.GetFieldValue<NpgsqlPath>(reader.GetOrdinal("PATHCOL")),
+        reader.GetFieldValue<NpgsqlCircle>(reader.GetOrdinal("CIRCLECOL")),
+        reader.GetFieldValue<DateOnly>(reader.GetOrdinal("DATECOL")),
+        reader.GetFieldValue<TimeOnly>(reader.GetOrdinal("TIMECOL")),
+        new NpgsqlParameter("TIMETZCOL", NpgsqlDbType.TimeTz) { Value = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("TIMETZCOL")) },
+        reader.GetFieldValue<DateTime>(reader.GetOrdinal("TIMESTAMPCOL")),
+        new NpgsqlParameter("TIMESTAMPTZCOL", NpgsqlDbType.TimestampTz) { Value = reader.GetFieldValue<DateTime>(reader.GetOrdinal("TIMESTAMPTZCOL")) },
+        reader.GetFieldValue<NpgsqlInterval>(reader.GetOrdinal("INTERVALCOL")),
+        reader.GetFieldValue<PhysicalAddress>(reader.GetOrdinal("MACCOL")),
+        new NpgsqlParameter("MAC8COL", NpgsqlDbType.MacAddr8) { Value = reader.GetFieldValue<PhysicalAddress>(reader.GetOrdinal("MAC8COL")) },
+        reader.GetFieldValue<(IPAddress Address, int Netmask)>(reader.GetOrdinal("INETCOL")),
+        new NpgsqlParameter("CIDRCOL", NpgsqlDbType.Cidr) { Value = reader.GetFieldValue<(IPAddress Address, int Netmask)>(reader.GetOrdinal("CIDRCOL")) },
+        new NpgsqlParameter("MONEYCOL", NpgsqlDbType.Money) { Value = reader.GetFieldValue<decimal>(reader.GetOrdinal("MONEYCOL")) },
+        reader.GetFieldValue<BitArray>(reader.GetOrdinal("VARBITCOL")),
+        new NpgsqlParameter("BITCOL", NpgsqlDbType.Bit) { Value = reader.GetFieldValue<BitArray>(reader.GetOrdinal("BITCOL")) },
+        reader.GetFieldValue<byte[]>(reader.GetOrdinal("BYTEACOL")),
+        reader.GetFieldValue<string>(reader.GetOrdinal("TEXTCOL")),
+        new NpgsqlParameter("CHARCOL", NpgsqlDbType.Char) { Value = reader.GetFieldValue<string>(reader.GetOrdinal("CHARCOL")) },
+        new NpgsqlParameter("VARCHARCOL", NpgsqlDbType.Varchar) { Value = reader.GetFieldValue<string>(reader.GetOrdinal("VARCHARCOL")) },
+        new NpgsqlParameter("XMLCOL", NpgsqlDbType.Xml) { Value = reader.GetFieldValue<string>(reader.GetOrdinal("XMLCOL")) },
+        new NpgsqlParameter("JSONCOL", NpgsqlDbType.Json) { Value = reader.GetFieldValue<string>(reader.GetOrdinal("JSONCOL")) },
+        reader.GetFieldValue<Guid>(reader.GetOrdinal("UUIDCOL")),
+        reader.GetFieldValue<NpgsqlRange<int>>(reader.GetOrdinal("I4RCOL")),
+        reader.GetFieldValue<NpgsqlRange<long>>(reader.GetOrdinal("I8RCOL")),
+        reader.GetFieldValue<NpgsqlRange<DateTime>>(reader.GetOrdinal("TSRCOL")),
+        new NpgsqlParameter("TSTZRCOL", NpgsqlDbType.TimestampTzRange) { Value = reader.GetFieldValue<NpgsqlRange<DateTime>>(reader.GetOrdinal("TSTZRCOL")) },
+        reader.GetFieldValue<NpgsqlRange<DateOnly>>(reader.GetOrdinal("DRCOL")),
+    };
+$$
+LANGUAGE plcsharp;
+
+WITH function_result AS (
+    SELECT * FROM recordWithSupportedTypes() AS t(
+        BOOLCOL BOOLEAN, I2COL SMALLINT, I4COL INTEGER, I8COL BIGINT, F4COL REAL, F8COL DOUBLE PRECISION,
+        POINTCOL POINT, LINECOL LINE, LSEGCOL LSEG, BOXCOL BOX, POLYGONCOL POLYGON, PATHCOL PATH, CIRCLECOL CIRCLE,
+        DATECOL DATE, TIMECOL TIME WITHOUT TIME ZONE, TIMETZCOL TIME WITH TIME ZONE, TIMESTAMPCOL TIMESTAMP WITHOUT TIME ZONE,
+        TIMESTAMPTZCOL TIMESTAMP WITH TIME ZONE, INTERVALCOL INTERVAL,
+        MACCOL MACADDR, MAC8COL MACADDR8, INETCOL INET, CIDRCOL CIDR, MONEYCOL MONEY, VARBITCOL BIT VARYING, BITCOL BIT,
+        BYTEACOL BYTEA, TEXTCOL TEXT, CHARCOL CHAR, VARCHARCOL VARCHAR, XMLCOL XML, JSONCOL JSON,
+        UUIDCOL UUID, I4RCOL INT4RANGE, I8RCOL INT8RANGE, TSRCOL TSRANGE, TSTZRCOL TSTZRANGE, DRCOL DATERANGE
+    )
+),
+spitest_expected AS (
+    SELECT * FROM SPITEST LIMIT 1
+)
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT
+    'c#-record-spi',
+    'recordWithSupportedTypes',
+    (fr.BOOLCOL = se.BOOLCOL) AND (fr.I2COL = se.I2COL) AND
+    (fr.I4COL = se.I4COL) AND (fr.I8COL = se.I8COL) AND
+    (fr.F4COL = se.F4COL) AND (fr.F8COL = se.F8COL) AND
+    (fr.POINTCOL::TEXT = se.POINTCOL::TEXT) AND (fr.LINECOL = se.LINECOL) AND
+    (fr.LSEGCOL = se.LSEGCOL) AND (fr.BOXCOL = se.BOXCOL) AND
+    (fr.POLYGONCOL::TEXT = se.POLYGONCOL::TEXT) AND (fr.PATHCOL::TEXT = se.PATHCOL::TEXT) AND
+    (fr.CIRCLECOL = se.CIRCLECOL) AND (fr.DATECOL = se.DATECOL) AND
+    (fr.TIMECOL = se.TIMECOL) AND (fr.TIMETZCOL = se.TIMETZCOL) AND
+    (fr.TIMESTAMPCOL = se.TIMESTAMPCOL) AND (fr.TIMESTAMPTZCOL = se.TIMESTAMPTZCOL) AND
+    (fr.INTERVALCOL = se.INTERVALCOL) AND (fr.MACCOL = se.MACCOL) AND
+    (fr.MAC8COL = se.MAC8COL) AND (fr.INETCOL = se.INETCOL) AND
+    (fr.CIDRCOL = se.CIDRCOL) AND (fr.MONEYCOL = se.MONEYCOL) AND
+    (fr.VARBITCOL = se.VARBITCOL) AND (fr.BITCOL = se.BITCOL) AND
+    (fr.BYTEACOL = se.BYTEACOL) AND (fr.TEXTCOL = se.TEXTCOL) AND
+    (fr.CHARCOL = se.CHARCOL) AND (fr.VARCHARCOL = se.VARCHARCOL) AND
+    (fr.XMLCOL::TEXT = se.XMLCOL::TEXT) AND (fr.JSONCOL::TEXT = se.JSONCOL::TEXT) AND
+    (fr.UUIDCOL = se.UUIDCOL) AND (fr.I4RCOL = se.I4RCOL) AND
+    (fr.I8RCOL = se.I8RCOL) AND (fr.TSRCOL = se.TSRCOL) AND
+    (fr.TSTZRCOL = se.TSTZRCOL) AND (fr.DRCOL = se.DRCOL) AND
+FROM function_result fr, spitest_expected se;
