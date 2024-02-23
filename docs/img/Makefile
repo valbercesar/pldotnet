@@ -4,6 +4,8 @@ LANGUAGES := plpgsql plfsharp plperl plpython pltcl pllua pljava plv8 plr
 
 IMAGE_TARGETS := $(addprefix pldotnet-comparison-, $(addsuffix .png, $(LANGUAGES)))
 
+NEWEST_CSV=$(shell ls -t pldotnet-performance-data*.csv | head -n 1)
+
 # Local software dependencies:
 #     - ImageMagick, for `convert` and `montage`
 #     - plantuml
@@ -30,17 +32,17 @@ veryclean: clean venvclean
 pldotnet-performance-comparison.png: $(IMAGE_TARGETS)
 	montage $^ -tile 3x3 -geometry +2+2 $@
 
-$(IMAGE_TARGETS): pldotnet-comparison-%.png: pldotnet-performance-graph-maker.py pldotnet-performance-data.csv .venv.created
+$(IMAGE_TARGETS): pldotnet-comparison-%.png: pldotnet-performance-graph-maker.py $(NEWEST_CSV) .venv.created
 	. venv/bin/activate && \
-	./pldotnet-performance-graph-maker.py pldotnet-performance-data.csv plcsharp $*
+	./pldotnet-performance-graph-maker.py $(NEWEST_CSV) plcsharp $*
 
 heatmap.png: heatmap-big.png
 	# The heatmap is too big, so we reduce it
 	convert $< -resize 30% -filter Lanczos $@
 
-heatmap-big.png: .venv.created pldotnet-performance-heatmap-maker.py pldotnet-performance-data.csv
+heatmap-big.png: .venv.created pldotnet-performance-heatmap-maker.py $(NEWEST_CSV)
 	. venv/bin/activate && \
-	python pldotnet-performance-heatmap-maker.py pldotnet-performance-data.csv $@
+	python pldotnet-performance-heatmap-maker.py $(NEWEST_CSV) $@
 
 pldotnet-sequence-diagram.png: ./pldotnet-sequence-diagram.puml
 	plantuml -Tpng ./pldotnet-sequence-diagram.puml

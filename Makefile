@@ -202,6 +202,7 @@ stress-test:
 benchmark-tests:
 	mkdir -p automated_test_results
 	cat tests/benchmark/python/init-extension.sql | (sudo -u $(DBUSER) psql)
+	echo "ALTER DATABASE postgres SET pljava.libjvm_location TO '$$(sudo find /usr -name libjvm.so | head -n 1)';" | sudo -u $(DBUSER) psql
 	cat tests/benchmark/java/init-extension.sql | (sudo -u $(DBUSER) psql)
 	cat tests/benchmark/perl/init-extension.sql | (sudo -u $(DBUSER) psql)
 	cat tests/benchmark/lua/init-extension.sql | (sudo -u $(DBUSER) psql)
