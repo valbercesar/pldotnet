@@ -28,7 +28,7 @@ x-ports: &ports
     - "5432:5432"
 
 services:
-  pldotnet-ubuntu22: &pldotnet-current-container
+  pldotnet-ubuntu22-dev: &pldotnet-current-container
     container_name: pldotnet-ubuntu22-dev
     image: pldotnet:ubuntu22-dev
     <<: [*interactive, *command, *environment, *ports]

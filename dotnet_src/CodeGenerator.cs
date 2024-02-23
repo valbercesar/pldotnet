@@ -1414,7 +1414,7 @@ namespace PlDotNET
             if (this.IsTrigger)
             {
                 sb.Append($"static member {this.FuncName} (tg: TriggerData) : ReturnMode = \n");
-                sb.Append($"#line 1\n{this.FuncBody}\n");
+                sb.Append($"#line 1{(this.FuncBody.StartsWith("\n") ? string.Empty : "\n")}{this.FuncBody}\n");
                 return sb.ToString();
             }
 
@@ -1467,11 +1467,11 @@ namespace PlDotNET
 
             if (return_type == "void")
             {
-                sb.Append($" = \n#line 1{IndentCode(this.FuncBody, 8)}");
+                sb.Append($" = \n#line 1{(this.FuncBody.StartsWith("\n") ? string.Empty : "\n")}{IndentCode(this.FuncBody, 8)}");
             }
             else
             {
-                sb.Append($" : {return_type} = \n#line 1{IndentCode(this.FuncBody, 8)}");
+                sb.Append($" : {return_type} = \n#line 1{(this.FuncBody.StartsWith("\n") ? string.Empty : "\n")}{IndentCode(this.FuncBody, 8)}");
             }
 
             return sb.ToString();
