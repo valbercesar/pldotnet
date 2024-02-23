@@ -3,6 +3,7 @@
 SRCDIR = $(CURDIR)
 PG_VER = $(shell pg_buildext supported-versions)
 DOTNET_SRC = dotnet_src/
+DOTNET_TESTS = tests/
 USR_LIBDIR = var/lib/
 include /usr/share/postgresql-common/pgxs_debian_control.mk
 
@@ -29,6 +30,9 @@ override_dh_installdeb:
 		find $$PLDOTNET_PATH -type f -name '*.cs' -exec sed -i 's|@PKG_LIBDIR|'$$PKG_LIBDIR'|g' {} \; ; \
 		find $$PLDOTNET_PATH -type f -name '*.cs' -exec sed -i 's|@PLDOTNET_TEMPLATE_DIR|'$$PLDOTNET_TEMPLATE_DIR'|g' {} \; ; \
 		dotnet build $$PLDOTNET_PATH -c Release ; \
+		cp -R $(DOTNET_TESTS) "$$PLDOTNET_PATH/samples" ; \
+		rm "$$PLDOTNET_PATH/samples/fsharp/testfsdll.sql" ; \
+		rm "$$PLDOTNET_PATH/samples/csharp/testdll.sql" ; \
 		cp debian/preinst debian/postinst debian/prerm debian/postrm "debian/postgresql-$$VER-pldotnet/DEBIAN/" ; \
 		chmod 755 -R "debian/postgresql-$$VER-pldotnet/DEBIAN/" ; \
 	done

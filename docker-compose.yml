@@ -29,16 +29,31 @@ x-ports: &ports
 
 services:
   pldotnet-ubuntu22: &pldotnet-current-container
-    container_name: pldotnet-ubuntu22
-    image: pldotnet:ubuntu22
+    container_name: pldotnet-ubuntu22-dev
+    image: pldotnet:ubuntu22-dev
     <<: [*interactive, *command, *environment, *ports]
     build:
-      dockerfile: docker/Dockerfile_ubuntu22
+      dockerfile: docker/Dockerfile_ubuntu22-dev
       <<: *build-args
     volumes:
       - ./:/app/pldotnet/
       - ./postgres-data/ubuntu22:/var/lib/postgresql/data
 
+  pldotnet-ubuntu22:
+    container_name: pldotnet-ubuntu22
+    image: pldotnet:ubuntu22
+    <<: [*interactive, *environment, *ports]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_ubuntu22
+
+  postgres-pldotnet:
+    container_name: postgres-pldotnet
+    image: postgres-pldotnet:15-bullseye
+    <<: [*interactive, *environment, *ports]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_postgres-pldotnet
 
   pldotnet-build:
     container_name: pldotnet-build
@@ -62,6 +77,7 @@ services:
       - ./debian/copyright:/app/pldotnet/debian/copyright
       - ./debian/pgversions:/app/pldotnet/debian/pgversions
       - ./debian/rules:/app/pldotnet/debian/rules
+      - ./debian/postinst:/app/pldotnet/debian/postinst
 
   pldotnet-build-arm:
     container_name: pldotnet-build-arm

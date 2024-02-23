@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM postgres:15-bullseye
 
 # avoids tzdata prompt
 ARG DEBIAN_FRONTEND=noninteractive
@@ -9,9 +9,6 @@ RUN apt update && \
     wget \
     libglib2.0-dev \
     lsb-release \
-    postgresql-14 \
-    postgresql-common \
-    postgresql-server-dev-all \
     sudo
 
 # Install Dotnet
@@ -25,15 +22,13 @@ RUN rm packages-microsoft-prod.deb
 
 RUN apt update && \
     apt install -y \
-    dotnet-runtime-deps-6.0 \
-    dotnet-hostfxr-6.0=6.0.8-1 \
-    dotnet-runtime-6.0=6.0.8-1 \
-    dotnet-sdk-6.0=6.0.400-1
+    dotnet-sdk-6.0 \
+    dotnet-runtime-6.0 \
+    dotnet-hostfxr-6.0
 
 # Install pldotnet
 COPY ./debian/packages /app/pldotnet/packages
-RUN dpkg -i /app/pldotnet/packages/postgresql-14-pldotnet_0.9-1_amd64.deb
-
+RUN dpkg -i /app/pldotnet/packages/postgresql-15-pldotnet_0.9-1_amd64.deb
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -48,16 +43,6 @@ ARG PGDATA
 ENV PGDATA=${PGDATA}
 
 # TODO: Change this using wget from the official repository
-COPY ./docker/scripts/install_pldotnet_deb.sh /install_pldotnet_deb.sh
-COPY ./docker/scripts/ubuntu22_entrypoint.sh /ubuntu22_entrypoint.sh
-
-# Start PostgreSQL service
-# RUN service postgresql start
-RUN ./install_pldotnet_deb.sh
+COPY ./docker/scripts/install_pldotnet_deb.sh /docker-entrypoint-initdb.d/install_pldotnet_deb.sh
 
 RUN apt-get clean
-RUN apt-get autoremove
-
-WORKDIR /var/lib/PlDotNET/samples
-
-ENTRYPOINT /ubuntu22_entrypoint.sh
