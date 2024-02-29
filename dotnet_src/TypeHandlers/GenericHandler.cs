@@ -90,6 +90,12 @@ namespace PlDotNET.Handler
         public abstract IntPtr OutputValue(T value);
 
         /// <summary>
+        /// Gets the type of the nullable version of the type.
+        /// </summary>
+        /// <returns> Returns the type of the nullable version of the type. </returns>
+        public abstract Type GetNullableType();
+
+        /// <summary>
         /// Converts the input array to a multi-dimensional array of type T.
         /// </summary>
         /// <param name="datum">The input array (the PostgreSQL datum pointer).</param>
@@ -102,7 +108,14 @@ namespace PlDotNET.Handler
             switch (array.Rank)
             {
                 case 1:
-                    return Array.ConvertAll((object[])array, item => (T)Convert.ChangeType(item, typeof(T)));
+                    int length0_1D = array.GetLength(0);
+                    T[] result1D = new T[length0_1D];
+                    for (int i = 0; i < length0_1D; i++)
+                    {
+                        result1D[i] = (T)Convert.ChangeType(array.GetValue(i), typeof(T));
+                    }
+
+                    return result1D;
 
                 case 2:
                     int length0_2D = array.GetLength(0);
@@ -305,6 +318,7 @@ namespace PlDotNET.Handler
             int[] rawDims = new int[ArrayHandler.Maxdim];
             byte* nullmap = null;
             int typeId = 0;
+
             ArrayHandler.pldotnet_GetArrayAttributes(datum, ref typeId, ref ndims, rawDims, ref nullmap);
 
             int[] dims = rawDims[..ndims];
@@ -322,19 +336,27 @@ namespace PlDotNET.Handler
                 throw new System.Exception($"Got error from pldotnet_GetArrayDatum(): {arrayRet}");
             }
 
-            var datumList = new List<IntPtr>();
-            datumList.AddRange(datums);
-
             if (nullmap != null)
             {
                 int nullmapLen = (nelems / 8) + 1;
                 ReadOnlySpan<byte> nativeSpan = new (nullmap, nullmapLen);
                 byte[] nullmapArray = nativeSpan.ToArray();
-                return this.InputArrayWithNull(datumList, dims, nullmapArray);
+                return this.InputArrayWithNull(datums, dims, nullmapArray);
             }
 
-            var ret = datumList.Select((datum, index) => this.InputValue(datum)).ToArray();
-            Array ret2 = Array.CreateInstance(typeof(object), dims);
+            T[] ret = new T[datums.Length];
+            for (int i = 0; i < datums.Length; i++)
+            {
+                ret[i] = this.InputValue(datums[i]);
+            }
+
+            // If the array is one-dimensional, return it as it does not need to be reshaped.
+            if (ndims == 1)
+            {
+                return ret;
+            }
+
+            Array ret2 = Array.CreateInstance(typeof(T), dims);
             ArrayManipulation.ReshapeArray(ret, ref ret2);
 
             return ret2;
@@ -350,7 +372,8 @@ namespace PlDotNET.Handler
         public unsafe IntPtr OutputArray(Array value)
         {
             int nelems = value.Length;
-            Array flatArray = Array.CreateInstance(typeof(object), nelems);
+            Array flatArray = Array.CreateInstance(this.GetNullableType(), nelems);
+            flatArray.SetValue(null, 0);
             ArrayManipulation.FlatArray(value, ref flatArray);
 
             // flatArray variable is an one-dimensional array with the .NET types now
@@ -387,18 +410,18 @@ namespace PlDotNET.Handler
         /// <param name="dims">The size of each dimension.</param>
         /// <param name="nullmap">The PostgreSQL nullmap.</param>
         /// <returns> Returns an Array object (multidimensional or not).</returns>
-        private Array InputArrayWithNull(List<IntPtr> datums, int[] dims, byte[] nullmap)
+        private Array InputArrayWithNull(IntPtr[] datums, int[] dims, byte[] nullmap)
         {
-            int nelms = datums.Count;
-            object[] ret = new object[nelms];
+            int nelms = datums.Length;
+            Array ret = Array.CreateInstance(this.GetNullableType(), nelms);
 
             for (int i = 0; i < nelms; i++)
             {
                 bool isNull = NullMap.CheckNullValue(nullmap, i);
-                ret[i] = isNull ? null : this.InputValue(datums[i]);
+                ret.SetValue(isNull ? null : this.InputValue(datums[i]), i);
             }
 
-            Array ret2 = Array.CreateInstance(typeof(object), dims);
+            Array ret2 = Array.CreateInstance(this.GetNullableType(), dims);
             ArrayManipulation.ReshapeArray(ret, ref ret2);
             return ret2;
         }
@@ -455,7 +478,13 @@ namespace PlDotNET.Handler
             return isnull ? null : this.InputValue(datum);
         }
 
-        /// <i
+        /// <inheritdoc/>
+        public override Type GetNullableType()
+        {
+            return typeof(T?);
+        }
+
+        /// <inheritdoc/>
         public override object InputArrayT(IntPtr datum, bool allowsNullElements = false)
         {
             if (!allowsNullElements)
@@ -720,6 +749,12 @@ namespace PlDotNET.Handler
         public T? InputNullableValue(IntPtr datum, bool isnull)
         {
             return isnull ? null : this.InputValue(datum);
+        }
+
+        /// <inheritdoc/>
+        public override Type GetNullableType()
+        {
+            return typeof(T);
         }
 
         public override object InputArrayT(IntPtr datum, bool allowsNullElements = false)

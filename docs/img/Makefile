@@ -38,7 +38,7 @@ $(IMAGE_TARGETS): pldotnet-comparison-%.png: pldotnet-performance-graph-maker.py
 
 heatmap.png: heatmap-big.png
 	# The heatmap is too big, so we reduce it
-	convert $< -resize 30% -filter Lanczos $@
+	convert $< -resize 15% -filter Lanczos $@
 
 heatmap-big.png: .venv.created pldotnet-performance-heatmap-maker.py $(NEWEST_CSV)
 	. venv/bin/activate && \
