@@ -7,9 +7,9 @@ pl/dotnet adds full support for C# and F# to PostgreSQL.  0.99 is our public bet
 
 - We support all PL operations: functions, procedures, DO, SPI, triggers, records, SRF, OUT/INOUT, table functions, etc
 - We natively support 38 out of 46 standard user types, the most of any external PL
-- Fully NPGSQL-compatible, and SPI is exposed through the NPGSQL API for maximum compatibility
+- We are the only PL using the native database API; our database access(SPI) is fully NPGSQL-compatible
 - We support both SQL-embedded code blocks and also loading functions from DLLs
-- In our benchmarks, it is the fastest external PL, nearly as fast as PL/PGSQL
+- In our benchmarks, it is the fastest Procedural Language
 - We have extensive testing, 1013 unit tests across both C# and F#
 - All features are fully tested and supported for both C# and F#
 - 100% free software under the PostgreSQL license
