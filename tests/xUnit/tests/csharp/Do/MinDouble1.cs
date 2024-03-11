@@ -3,11 +3,23 @@ using System.Collections.Generic;
 using Xunit;
 using System.Linq;
 
+public abstract class BaseDoMinDouble1Tests : PlDotNetTest
+{
+    protected abstract string FunctionBody { get; }
+
+    protected abstract LanguageType Language { get; }
+
+    public BaseDoMinDouble1Tests()
+    {
+        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.DoBlock, };
+    }
+}
+
 [Trait("Language", "CSharp")]
 [Trait("Category", "Do")]
-public class DoMinDouble1Tests : PlDotNetTest
+public class DoMinDouble1TestsCSharp : BaseDoMinDouble1Tests
 {
-    private static readonly string DoBody = @"
+    protected override string FunctionBody => @"
 do $$
     double[] doublevalues = {2.25698, 2.85956, 2.85456, 0.00128, 0.00127, 2.36875};
     double min = double.MaxValue;
@@ -19,20 +31,5 @@ do $$
     Elog.Info($""Minimum value = {min}"");
 $$ language plcsharp;
     ";
-
-	public DoMinDouble1Tests()
-	{
-		FunctionInfo = new SqlFunctionInfo
-		{
-			TestType = SqlTestType.DoBlock,
-		};
-	}
-
-    [Fact]
-    public void TestDoMinDouble1()
-    {
-        bool doExecutedSuccessfully = ExecuteSql(DoBody);
-        Assert.True(doExecutedSuccessfully);
-    }
+    protected override LanguageType Language => LanguageType.PlcSharp;
 }
-
