@@ -1,9 +1,10 @@
-using System.Data;
-using Npgsql;
-using DotNetEnv;
-using System.Collections.Generic;
-using Xunit;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using DotNetEnv;
+using Npgsql;
+using Xunit;
 
 [Collection("Sequential")]
 public class PlDotNetTest
@@ -13,7 +14,14 @@ public class PlDotNetTest
     public enum LanguageType
     {
         PlcSharp,
-        PlfSharp
+        PlfSharp,
+        PlPython,
+        PlR,
+        PlPgSQL,
+        PlV8,
+        PlTCL,
+        PlLua,
+        PlPerl
     }
 
     public enum SqlTestType
@@ -39,7 +47,6 @@ public class PlDotNetTest
         public string? ExpectedResult { get; set; }
         public string? CastFunctionAs { get; set; } = "";
 
-
         public int? TestId { get; set; }
 
         public bool FunctionCreatedSuccessfully { get; set; } = false;
@@ -50,14 +57,24 @@ public class PlDotNetTest
         {
             get
             {
-                return Language == LanguageType.PlcSharp ? "plcsharp" : "plfsharp";
+                return Language switch
+                {
+                    LanguageType.PlcSharp => "plcsharp",
+                    LanguageType.PlfSharp => "plfsharp",
+                    LanguageType.PlPython => "plpython3u",
+                    LanguageType.PlR => "plr",
+                    LanguageType.PlPgSQL => "plpgsql",
+                    LanguageType.PlV8 => "plv8",
+                    LanguageType.PlTCL => "pltcl",
+                    LanguageType.PlLua => "pllua",
+                    LanguageType.PlPerl => "plperl",
+                    _ => throw new System.NotImplementedException()
+                };
             }
         }
 
-        public SqlFunctionInfo()
-        { }
+        public SqlFunctionInfo() { }
     }
-
 
     public class FunctionArgument
     {
@@ -71,8 +88,6 @@ public class PlDotNetTest
         }
     }
 
-
-
     /// <summary>
     /// Constructs and returns the SQL definition of a function based on the provided SqlFunctionInfo.
     /// </summary>
@@ -84,23 +99,26 @@ public class PlDotNetTest
     /// </remarks>
     public virtual string GetFunctionDefinition(SqlFunctionInfo functionInfo)
     {
-        var arguments = string.Join(", ", functionInfo.Arguments.Select(arg => $"{arg.Name} {arg.Type}"));
+        var arguments = string.Join(
+            ", ",
+            functionInfo.Arguments.Select(arg => $"{arg.Name} {arg.Type}")
+        );
 
-        string methodKeyword = functionInfo.TestType == SqlTestType.Function ? "FUNCTION" : "PROCEDURE";
+        string methodKeyword =
+            functionInfo.TestType == SqlTestType.Function ? "FUNCTION" : "PROCEDURE";
 
         string strictKeyword = functionInfo.IsStrict ? "STRICT" : "";
 
         // Conditionally build the returnTypeString
         string returnTypeString = string.IsNullOrEmpty(functionInfo.ReturnType)
-                                    ? string.Empty
-                                    : $"RETURNS {functionInfo.ReturnType}";
+            ? string.Empty
+            : $"RETURNS {functionInfo.ReturnType}";
 
         return $@"CREATE OR REPLACE {methodKeyword} {functionInfo.Name}({arguments})
 {returnTypeString} AS $$
     {functionInfo.Body}
 $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     }
-
 
     /// <summary>
     /// Attempts to define a SQL function based on the provided function info.
@@ -110,7 +128,6 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     public bool DefineFunction(SqlFunctionInfo functionInfo)
     {
         string sqlFunctionDefinition = GetFunctionDefinition(functionInfo);
-
 
         return ExecuteSql(sqlFunctionDefinition);
     }
@@ -134,13 +151,17 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         string sqlCode;
         string functionCall = $"{functionInfo.Name}({functionInfo.InputStr})";
 
-        bool isReturnTypeJsonOrXml = functionInfo.ReturnType != null &&
-                                    (functionInfo.ReturnType == "XML[]" ||
-                                    functionInfo.ReturnType == "JSON[]" ||
-                                    functionInfo.ReturnType == "JSON[][][]");
+        bool isReturnTypeJsonOrXml =
+            functionInfo.ReturnType != null
+            && (
+                functionInfo.ReturnType == "XML[]"
+                || functionInfo.ReturnType == "JSON[]"
+                || functionInfo.ReturnType == "JSON[][][]"
+            );
 
-        bool isExpectedResultJsonText = functionInfo.ExpectedResult != null &&
-                                        functionInfo.ExpectedResult.Contains("::JSON::TEXT");
+        bool isExpectedResultJsonText =
+            functionInfo.ExpectedResult != null
+            && functionInfo.ExpectedResult.Contains("::JSON::TEXT");
 
         if (isReturnTypeJsonOrXml || isExpectedResultJsonText)
         {
@@ -150,7 +171,8 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
 
         if (!functionInfo.FunctionCreatedSuccessfully)
         {
-            sqlCode = $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+            sqlCode =
+                $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
             VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', false)
             RETURNING id;";
         }
@@ -158,7 +180,8 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         {
             if (functionInfo.ExpectedResult == "= null")
             {
-                sqlCode = $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+                sqlCode =
+                    $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
                 VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', CASE WHEN {functionCall} IS NULL THEN true ELSE false END)
                 RETURNING id;";
             }
@@ -166,13 +189,15 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
             {
                 if (functionInfo.CastFunctionAs == "")
                 {
-                    sqlCode = $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+                    sqlCode =
+                        $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
                     VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionCall} {functionInfo.ExpectedResult})
                     RETURNING id;";
                 }
                 else
                 {
-                    sqlCode = $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+                    sqlCode =
+                        $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
                     VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', CAST({functionCall} AS {functionInfo.CastFunctionAs}) {functionInfo.ExpectedResult})
                     RETURNING id;";
                 }
@@ -201,8 +226,9 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         try
         {
             // Retrieve database connection string from environment variables
-            string databaseConnectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
-                                              ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
+            string databaseConnectionString =
+                Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
+                ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
 
             // Establish a connection to the database
             using var connection = new NpgsqlConnection(databaseConnectionString);
@@ -226,7 +252,6 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         }
     }
 
-
     /// <summary>
     /// Fetches the test result for the given function info based on its test ID.
     /// </summary>
@@ -240,7 +265,8 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
             return null;
         }
 
-        string sqlSelect = $@"
+        string sqlSelect =
+            $@"
 SELECT RESULT
 FROM automated_test_results
 WHERE id = {functionInfo.TestId.Value};";
@@ -267,8 +293,9 @@ WHERE id = {functionInfo.TestId.Value};";
     {
         try
         {
-            string databaseConnectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
-                                              ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
+            string databaseConnectionString =
+                Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
+                ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
 
             using (var connection = new NpgsqlConnection(databaseConnectionString))
             {
@@ -277,14 +304,15 @@ WHERE id = {functionInfo.TestId.Value};";
                 {
                     command.CommandType = CommandType.Text;
 
-                    if (sqlCode.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                    if (
+                        sqlCode.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         using (var reader = command.ExecuteReader())
                         {
                             if (reader.Read())
                             {
                                 object value = reader.GetValue(0);
-
 
                                 if (value is bool booleanValue)
                                 {
@@ -325,16 +353,26 @@ WHERE id = {functionInfo.TestId.Value};";
     /// <param name="featureName">Feature associated with the test.</param>
     /// <param name="input">Input string for the SQL function.</param>
     /// <param name="expectedResult">Expected result string for the SQL function.</param>
-    public void RunGenericTest(string featureName, string testName, string input, string expectedResult)
+    public void RunGenericTest(
+        string featureName,
+        string testName,
+        string input,
+        string expectedResult
+    )
     {
-        if (FunctionInfo == null) return;
+        if (FunctionInfo == null)
+            return;
+
+        // Console.WriteLine(GetFunctionDefinition(FunctionInfo));
+        // Console.WriteLine($"Function created:\n{GetFunctionDefinition(FunctionInfo)}\n");
+        // Console.WriteLine("[DOTNET TEST OUTPUT]:");
+
         FunctionInfo.TestName = testName;
         FunctionInfo.FeatureName = featureName;
         FunctionInfo.InputStr = input;
         FunctionInfo.ExpectedResult = expectedResult;
 
         FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
-
 
         if (FunctionInfo.TestType == SqlTestType.Procedure)
         {
@@ -348,7 +386,8 @@ WHERE id = {functionInfo.TestId.Value};";
         Assert.True(FunctionInfo.FunctionCreatedSuccessfully, "Failed to create function in .NET");
         Assert.True(testInsertionResult, "Failed to execute the function.");
         Assert.True(testResult.HasValue, "Failed to get the test result value.");
-        if (!testResult.HasValue) return;
+        if (!testResult.HasValue)
+            return;
         Assert.True(testResult.Value, "Test did not return the expected value.");
     }
 }
