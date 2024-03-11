@@ -12,7 +12,7 @@ public abstract class BaseReturnJsonFsharpTests : PlDotNetTest
 
     public BaseReturnJsonFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnJsonFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "JSON")}, ReturnType = "JSON", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnJsonFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "JSON")}, ReturnType = "JSON", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

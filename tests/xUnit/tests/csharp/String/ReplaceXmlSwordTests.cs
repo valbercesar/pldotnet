@@ -12,7 +12,7 @@ public abstract class BaseReplaceXmlSwordTests : PlDotNetTest
 
     public BaseReplaceXmlSwordTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReplaceXmlSword", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "XML[]")}, ReturnType = "XML[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReplaceXmlSword", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "XML[]")}, ReturnType = "XML[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

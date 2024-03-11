@@ -12,7 +12,7 @@ public abstract class BaseCreateDateFsharpTests : PlDotNetTest
 
     public BaseCreateDateFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("year", "int"), new FunctionArgument("month", "int"), new FunctionArgument("day", "int")}, ReturnType = "DATE", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("year", "int"), new FunctionArgument("month", "int"), new FunctionArgument("day", "int")}, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

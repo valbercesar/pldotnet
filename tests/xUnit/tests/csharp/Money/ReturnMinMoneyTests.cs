@@ -12,7 +12,7 @@ public abstract class BaseReturnMinMoneyTests : PlDotNetTest
 
     public BaseReturnMinMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMinMoney", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMinMoney", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

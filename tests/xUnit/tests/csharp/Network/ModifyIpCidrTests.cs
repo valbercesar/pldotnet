@@ -12,7 +12,7 @@ public abstract class BaseModifyIpCidrTests : PlDotNetTest
 
     public BaseModifyIpCidrTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIpCidr", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("pos", "INT"), new FunctionArgument("delta", "INT")}, ReturnType = "CIDR", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIpCidr", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("pos", "INT"), new FunctionArgument("delta", "INT")}, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

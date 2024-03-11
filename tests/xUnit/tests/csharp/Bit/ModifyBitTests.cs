@@ -12,7 +12,7 @@ public abstract class BaseModifyBitTests : PlDotNetTest
 
     public BaseModifyBitTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyBit", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BIT(10)")}, ReturnType = "BIT(10)", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyBit", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BIT(10)")}, ReturnType = "BIT(10)", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseSumRealFsharpTests : PlDotNetTest
 
     public BaseSumRealFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumRealFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "float4"), new FunctionArgument("b", "float4")}, ReturnType = "float4", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "SumRealFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "float4"), new FunctionArgument("b", "float4")}, ReturnType = "float4", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

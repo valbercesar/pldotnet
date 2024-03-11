@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayTimeTzIndexTests : PlDotNetTest
 
     public BaseUpdateArrayTimeTzIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayTimeTzIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIMETZ[]"), new FunctionArgument("desired", "TIMETZ"), new FunctionArgument("index", "integer[]")}, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayTimeTzIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIMETZ[]"), new FunctionArgument("desired", "TIMETZ"), new FunctionArgument("index", "integer[]")}, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

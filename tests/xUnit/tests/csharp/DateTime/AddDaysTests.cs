@@ -12,7 +12,7 @@ public abstract class BaseAddDaysTests : PlDotNetTest
 
     public BaseAddDaysTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddDays", Arguments = new List<FunctionArgument>{new FunctionArgument("my_timestamp TIMESTAMP WITH TIME", "ZONE"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP WITH TIME ZONE", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddDays", Arguments = new List<FunctionArgument>{new FunctionArgument("my_timestamp TIMESTAMP WITH TIME", "ZONE"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP WITH TIME ZONE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayBigIntegerIndexTests : PlDotNetTest
 
     public BaseUpdateArrayBigIntegerIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBigIntegerIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("big_integers", "bigint[]"), new FunctionArgument("desired", "bigint"), new FunctionArgument("index", "integer[]")}, ReturnType = "bigint[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBigIntegerIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("big_integers", "bigint[]"), new FunctionArgument("desired", "bigint"), new FunctionArgument("index", "integer[]")}, ReturnType = "bigint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

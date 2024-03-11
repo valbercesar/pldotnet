@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayDoubleIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayDoubleIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayDoubleIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "float8[]"), new FunctionArgument("b", "float8")}, ReturnType = "float8[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayDoubleIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "float8[]"), new FunctionArgument("b", "float8")}, ReturnType = "float8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

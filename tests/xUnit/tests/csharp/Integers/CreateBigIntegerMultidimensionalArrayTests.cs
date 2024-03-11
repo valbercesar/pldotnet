@@ -12,7 +12,7 @@ public abstract class BaseCreateBigIntegerMultidimensionalArrayTests : PlDotNetT
 
     public BaseCreateBigIntegerMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBigIntegerMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "bigint[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateBigIntegerMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "bigint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

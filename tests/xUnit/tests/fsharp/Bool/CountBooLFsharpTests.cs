@@ -12,7 +12,7 @@ public abstract class BaseCountBooLFsharpTests : PlDotNetTest
 
     public BaseCountBooLFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CountBooLFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean")}, ReturnType = "Integer", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CountBooLFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean")}, ReturnType = "Integer", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseCreateLineSegmentFsharpTests : PlDotNetTest
 
     public BaseCreateLineSegmentFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineSegmentFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("start_point", "POINT"), new FunctionArgument("end_point", "POINT")}, ReturnType = "LSEG", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineSegmentFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("start_point", "POINT"), new FunctionArgument("end_point", "POINT")}, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

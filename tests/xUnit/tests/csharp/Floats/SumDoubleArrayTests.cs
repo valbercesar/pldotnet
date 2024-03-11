@@ -12,7 +12,7 @@ public abstract class BaseSumDoubleArrayTests : PlDotNetTest
 
     public BaseSumDoubleArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumDoubleArray", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]")}, ReturnType = "double precision", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "SumDoubleArray", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]")}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

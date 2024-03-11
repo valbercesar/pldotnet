@@ -12,7 +12,7 @@ public abstract class BaseModify1DArrayFsharpTests : PlDotNetTest
 
     public BaseModify1DArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Modify1DArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "int4[]"), new FunctionArgument("new_value", "int2")}, ReturnType = "int4[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Modify1DArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "int4[]"), new FunctionArgument("new_value", "int2")}, ReturnType = "int4[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

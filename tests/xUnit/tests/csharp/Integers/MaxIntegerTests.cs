@@ -12,7 +12,7 @@ public abstract class BaseMaxIntegerTests : PlDotNetTest
 
     public BaseMaxIntegerTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxInteger", Arguments = new List<FunctionArgument>{}, ReturnType = "integer", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MaxInteger", Arguments = new List<FunctionArgument>{}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

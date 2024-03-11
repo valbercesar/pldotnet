@@ -12,7 +12,7 @@ public abstract class BaseReturnMaxMoneyTests : PlDotNetTest
 
     public BaseReturnMaxMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMaxMoney", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMaxMoney", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

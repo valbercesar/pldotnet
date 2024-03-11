@@ -12,7 +12,7 @@ public abstract class BaseModifyFloat8ArrayFsharpDllTests : PlDotNetTest
 
     public BaseModifyFloat8ArrayFsharpDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyFloat8ArrayFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "FLOAT8[]"), new FunctionArgument("b", "FLOAT8")}, ReturnType = "FLOAT8[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyFloat8ArrayFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "FLOAT8[]"), new FunctionArgument("b", "FLOAT8")}, ReturnType = "FLOAT8[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

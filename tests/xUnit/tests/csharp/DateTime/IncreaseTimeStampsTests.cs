@@ -12,7 +12,7 @@ public abstract class BaseIncreaseTimeStampsTests : PlDotNetTest
 
     public BaseIncreaseTimeStampsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimeStamps", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIMESTAMP[]"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimeStamps", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIMESTAMP[]"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

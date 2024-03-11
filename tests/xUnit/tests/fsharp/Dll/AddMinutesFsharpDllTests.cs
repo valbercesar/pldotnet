@@ -12,7 +12,7 @@ public abstract class BaseAddMinutesFsharpDllTests : PlDotNetTest
 
     public BaseAddMinutesFsharpDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddMinutesFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TIME"), new FunctionArgument("b", "INT4")}, ReturnType = "TIME", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddMinutesFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TIME"), new FunctionArgument("b", "INT4")}, ReturnType = "TIME", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseMaxIntegerFsharpTests : PlDotNetTest
 
     public BaseMaxIntegerFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxIntegerFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "int4", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MaxIntegerFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "int4", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

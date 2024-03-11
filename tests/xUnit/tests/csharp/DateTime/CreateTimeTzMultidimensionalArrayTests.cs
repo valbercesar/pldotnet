@@ -12,7 +12,7 @@ public abstract class BaseCreateTimeTzMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateTimeTzMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimeTzMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimeTzMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

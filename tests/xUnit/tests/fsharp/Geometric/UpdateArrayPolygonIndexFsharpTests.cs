@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayPolygonIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayPolygonIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPolygonIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "POLYGON[]"), new FunctionArgument("b", "POLYGON")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPolygonIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "POLYGON[]"), new FunctionArgument("b", "POLYGON")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

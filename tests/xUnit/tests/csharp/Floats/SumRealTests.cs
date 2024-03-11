@@ -12,7 +12,7 @@ public abstract class BaseSumRealTests : PlDotNetTest
 
     public BaseSumRealTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumReal", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "real"), new FunctionArgument("b", "real")}, ReturnType = "real", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "SumReal", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "real"), new FunctionArgument("b", "real")}, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

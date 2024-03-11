@@ -12,7 +12,7 @@ public abstract class BaseUpdateVarCharArrayIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateVarCharArrayIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateVarCharArrayIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "VARCHAR[]"), new FunctionArgument("desired", "VARCHAR"), new FunctionArgument("index", "integer[]")}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateVarCharArrayIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "VARCHAR[]"), new FunctionArgument("desired", "VARCHAR"), new FunctionArgument("index", "integer[]")}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

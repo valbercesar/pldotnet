@@ -12,7 +12,7 @@ public abstract class BaseUpdateMoneyArrayIndexTests : PlDotNetTest
 
     public BaseUpdateMoneyArrayIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateMoneyArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MONEY[]"), new FunctionArgument("desired", "MONEY"), new FunctionArgument("index", "integer[]")}, ReturnType = "MONEY[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateMoneyArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MONEY[]"), new FunctionArgument("desired", "MONEY"), new FunctionArgument("index", "integer[]")}, ReturnType = "MONEY[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

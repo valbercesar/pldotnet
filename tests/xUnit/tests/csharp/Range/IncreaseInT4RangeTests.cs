@@ -12,7 +12,7 @@ public abstract class BaseIncreaseInT4RangeTests : PlDotNetTest
 
     public BaseIncreaseInT4RangeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInT4Range", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "INT4RANGE"), new FunctionArgument("increment_value", "INTEGER")}, ReturnType = "INT4RANGE", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInT4Range", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "INT4RANGE"), new FunctionArgument("increment_value", "INTEGER")}, ReturnType = "INT4RANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

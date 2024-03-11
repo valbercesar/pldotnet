@@ -12,7 +12,7 @@ public abstract class BaseCountBoolTests : PlDotNetTest
 
     public BaseCountBoolTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CountBool", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean")}, ReturnType = "Integer", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CountBool", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean")}, ReturnType = "Integer", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

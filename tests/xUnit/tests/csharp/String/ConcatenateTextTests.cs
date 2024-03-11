@@ -12,7 +12,7 @@ public abstract class BaseConcatenateTextTests : PlDotNetTest
 
     public BaseConcatenateTextTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateText", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "text")}, ReturnType = "text", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateText", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "text")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

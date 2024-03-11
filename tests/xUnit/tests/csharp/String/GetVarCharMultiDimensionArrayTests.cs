@@ -12,7 +12,7 @@ public abstract class BaseGetVarCharMultiDimensionArrayTests : PlDotNetTest
 
     public BaseGetVarCharMultiDimensionArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetVarCharMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "GetVarCharMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

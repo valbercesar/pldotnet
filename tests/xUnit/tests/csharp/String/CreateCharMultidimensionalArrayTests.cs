@@ -12,7 +12,7 @@ public abstract class BaseCreateCharMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateCharMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateCharMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateCharMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

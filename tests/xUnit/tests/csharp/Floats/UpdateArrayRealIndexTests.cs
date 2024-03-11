@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayRealIndexTests : PlDotNetTest
 
     public BaseUpdateArrayRealIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayRealIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("floats", "real[]"), new FunctionArgument("desired", "real"), new FunctionArgument("index", "integer[]")}, ReturnType = "real[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayRealIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("floats", "real[]"), new FunctionArgument("desired", "real"), new FunctionArgument("index", "integer[]")}, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

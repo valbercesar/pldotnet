@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayLseGIndexTests : PlDotNetTest
 
     public BaseUpdateArrayLseGIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayLseGIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LSEG[]"), new FunctionArgument("desired", "LSEG"), new FunctionArgument("index", "integer[]")}, ReturnType = "LSEG[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayLseGIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LSEG[]"), new FunctionArgument("desired", "LSEG"), new FunctionArgument("index", "integer[]")}, ReturnType = "LSEG[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

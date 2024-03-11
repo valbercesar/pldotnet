@@ -12,7 +12,7 @@ public abstract class BaseMultIntegersFsharpTests : PlDotNetTest
 
     public BaseMultIntegersFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MultIntegersFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "int4"), new FunctionArgument("b", "int4")}, ReturnType = "int4", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MultIntegersFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "int4"), new FunctionArgument("b", "int4")}, ReturnType = "int4", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

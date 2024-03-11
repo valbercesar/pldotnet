@@ -12,7 +12,7 @@ public abstract class BaseFsModifyNetMaskCidrTests : PlDotNetTest
 
     public BaseFsModifyNetMaskCidrTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyNetMaskCidr", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("delta", "INT")}, ReturnType = "CIDR", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyNetMaskCidr", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("delta", "INT")}, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

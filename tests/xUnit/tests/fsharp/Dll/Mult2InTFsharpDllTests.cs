@@ -12,7 +12,7 @@ public abstract class BaseMult2InTFsharpDllTests : PlDotNetTest
 
     public BaseMult2InTFsharpDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Mult2InTFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT4"), new FunctionArgument("b", "INT4")}, ReturnType = "INT4", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Mult2InTFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT4"), new FunctionArgument("b", "INT4")}, ReturnType = "INT4", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

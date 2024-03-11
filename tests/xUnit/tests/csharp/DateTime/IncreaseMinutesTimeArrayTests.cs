@@ -12,7 +12,7 @@ public abstract class BaseIncreaseMinutesTimeArrayTests : PlDotNetTest
 
     public BaseIncreaseMinutesTimeArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMinutesTimeArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIME[]"), new FunctionArgument("min_to_add", "INT")}, ReturnType = "TIME[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMinutesTimeArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIME[]"), new FunctionArgument("min_to_add", "INT")}, ReturnType = "TIME[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

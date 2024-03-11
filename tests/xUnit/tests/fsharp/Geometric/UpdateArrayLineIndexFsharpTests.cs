@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayLineIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayLineIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayLineIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("A", "LINE[]"), new FunctionArgument("b", "LINE")}, ReturnType = "LINE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayLineIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("A", "LINE[]"), new FunctionArgument("b", "LINE")}, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

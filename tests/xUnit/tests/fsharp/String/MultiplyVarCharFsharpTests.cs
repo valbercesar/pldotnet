@@ -12,7 +12,7 @@ public abstract class BaseMultiplyVarCharFsharpTests : PlDotNetTest
 
     public BaseMultiplyVarCharFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyVarCharFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "VARCHAR"), new FunctionArgument("b", "int")}, ReturnType = "VARCHAR", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyVarCharFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "VARCHAR"), new FunctionArgument("b", "int")}, ReturnType = "VARCHAR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

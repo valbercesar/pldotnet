@@ -12,7 +12,7 @@ public abstract class BaseAddGoodbyeFsharpTests : PlDotNetTest
 
     public BaseAddGoodbyeFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddGoodbyeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BPCHAR")}, ReturnType = "BPCHAR", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddGoodbyeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BPCHAR")}, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseModifyIpTests : PlDotNetTest
 
     public BaseModifyIpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

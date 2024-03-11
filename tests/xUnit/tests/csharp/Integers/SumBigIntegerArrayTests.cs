@@ -12,7 +12,7 @@ public abstract class BaseSumBigIntegerArrayTests : PlDotNetTest
 
     public BaseSumBigIntegerArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumBigIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("big_integers", "bigint[]")}, ReturnType = "bigint", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "SumBigIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("big_integers", "bigint[]")}, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

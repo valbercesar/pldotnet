@@ -12,7 +12,7 @@ public abstract class BaseReturnUUIdTests : PlDotNetTest
 
     public BaseReturnUUIdTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnUUId", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "UUID")}, ReturnType = "UUID", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnUUId", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "UUID")}, ReturnType = "UUID", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

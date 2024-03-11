@@ -12,7 +12,7 @@ public abstract class BaseCreateUUIdfSharpTests : PlDotNetTest
 
     public BaseCreateUUIdfSharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateUUIdfSharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TEXT")}, ReturnType = "UUID", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateUUIdfSharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TEXT")}, ReturnType = "UUID", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

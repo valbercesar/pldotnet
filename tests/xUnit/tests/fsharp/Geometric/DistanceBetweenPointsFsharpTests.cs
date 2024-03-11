@@ -12,7 +12,7 @@ public abstract class BaseDistanceBetweenPointsFsharpTests : PlDotNetTest
 
     public BaseDistanceBetweenPointsFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "DistanceBetweenPointsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "float8", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "DistanceBetweenPointsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

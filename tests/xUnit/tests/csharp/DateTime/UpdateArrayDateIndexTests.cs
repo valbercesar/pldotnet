@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayDateIndexTests : PlDotNetTest
 
     public BaseUpdateArrayDateIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayDateIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("dates", "DATE[]"), new FunctionArgument("desired", "DATE"), new FunctionArgument("index", "integer[]")}, ReturnType = "DATE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayDateIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("dates", "DATE[]"), new FunctionArgument("desired", "DATE"), new FunctionArgument("index", "integer[]")}, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

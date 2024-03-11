@@ -12,7 +12,7 @@ public abstract class BaseCreatePathMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreatePathMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreatePathMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "PATH[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreatePathMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "PATH[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseIncreaseLSegsFsharpTests : PlDotNetTest
 
     public BaseIncreaseLSegsFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseLSegsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LSEG[]")}, ReturnType = "LSEG[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseLSegsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LSEG[]")}, ReturnType = "LSEG[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
     }
 
     public static object[][] TestCases()

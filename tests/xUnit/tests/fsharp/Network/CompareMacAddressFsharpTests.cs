@@ -12,7 +12,7 @@ public abstract class BaseCompareMacAddressFsharpTests : PlDotNetTest
 
     public BaseCompareMacAddressFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CompareMacAddressFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("address1", "MACADDR"), new FunctionArgument("address2", "MACADDR")}, ReturnType = "BOOLEAN", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CompareMacAddressFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("address1", "MACADDR"), new FunctionArgument("address2", "MACADDR")}, ReturnType = "BOOLEAN", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

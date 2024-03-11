@@ -12,7 +12,7 @@ public abstract class BaseCreateUUIdMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateUUIdMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateUUIdMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "UUID[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateUUIdMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "UUID[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

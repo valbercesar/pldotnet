@@ -12,7 +12,7 @@ public abstract class BaseIncreasePolygonsTests : PlDotNetTest
 
     public BaseIncreasePolygonsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePolygons", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "POLYGON[]")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePolygons", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "POLYGON[]")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

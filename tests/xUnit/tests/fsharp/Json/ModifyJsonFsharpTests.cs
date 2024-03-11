@@ -12,7 +12,7 @@ public abstract class BaseModifyJsonFsharpTests : PlDotNetTest
 
     public BaseModifyJsonFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyJsonFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "JSON"), new FunctionArgument("b", "TEXT"), new FunctionArgument("c", "TEXT")}, ReturnType = "JSON", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyJsonFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "JSON"), new FunctionArgument("b", "TEXT"), new FunctionArgument("c", "TEXT")}, ReturnType = "JSON", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

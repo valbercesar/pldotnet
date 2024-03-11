@@ -12,7 +12,7 @@ public abstract class BaseCreateInEtMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateInEtMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateInEtMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "INET[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateInEtMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

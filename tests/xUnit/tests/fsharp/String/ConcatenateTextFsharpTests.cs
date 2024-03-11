@@ -12,7 +12,7 @@ public abstract class BaseConcatenateTextFsharpTests : PlDotNetTest
 
     public BaseConcatenateTextFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateTextFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "text")}, ReturnType = "text", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateTextFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "text")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

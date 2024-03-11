@@ -12,7 +12,7 @@ public abstract class BaseConvertByTeaArrayTests : PlDotNetTest
 
     public BaseConvertByTeaArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConvertByTeaArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BYTEA[]")}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ConvertByTeaArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BYTEA[]")}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseReturnMacAddressArrayFsharpTests : PlDotNetTest
 
     public BaseReturnMacAddressArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMacAddressArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("addresses", "MACADDR[]")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMacAddressArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("addresses", "MACADDR[]")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

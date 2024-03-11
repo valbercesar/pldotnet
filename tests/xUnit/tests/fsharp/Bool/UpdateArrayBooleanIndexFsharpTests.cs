@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayBooleanIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayBooleanIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBooleanIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "boolean[]"), new FunctionArgument("b", "boolean")}, ReturnType = "boolean[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBooleanIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "boolean[]"), new FunctionArgument("b", "boolean")}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

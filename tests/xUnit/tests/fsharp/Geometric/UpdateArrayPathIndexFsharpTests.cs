@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayPathIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayPathIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPathIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "PATH[]"), new FunctionArgument("b", "PATH")}, ReturnType = "PATH[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPathIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "PATH[]"), new FunctionArgument("b", "PATH")}, ReturnType = "PATH[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

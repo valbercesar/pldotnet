@@ -12,7 +12,7 @@ public abstract class BaseModifyVarBitDllTests : PlDotNetTest
 
     public BaseModifyVarBitDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyVarBitDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a BIT", "VARYING")}, ReturnType = "BIT VARYING", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyVarBitDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a BIT", "VARYING")}, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

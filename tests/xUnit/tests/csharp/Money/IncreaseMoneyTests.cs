@@ -12,7 +12,7 @@ public abstract class BaseIncreaseMoneyTests : PlDotNetTest
 
     public BaseIncreaseMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMoney", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MONEY[]")}, ReturnType = "MONEY[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMoney", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MONEY[]")}, ReturnType = "MONEY[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

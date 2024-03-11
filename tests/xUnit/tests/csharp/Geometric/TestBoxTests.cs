@@ -12,7 +12,7 @@ public abstract class BaseTestBoxTests : PlDotNetTest
 
     public BaseTestBoxTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "TestBox", Arguments = new List<FunctionArgument>{new FunctionArgument("my_box", "BOX")}, ReturnType = "BOX", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "TestBox", Arguments = new List<FunctionArgument>{new FunctionArgument("my_box", "BOX")}, ReturnType = "BOX", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

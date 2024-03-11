@@ -12,7 +12,7 @@ public abstract class BaseCreateDateOnlyRangeArrayFsharpTests : PlDotNetTest
 
     public BaseCreateDateOnlyRangeArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateOnlyRangeArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateOnlyRangeArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

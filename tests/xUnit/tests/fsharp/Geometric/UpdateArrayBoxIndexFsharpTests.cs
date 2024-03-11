@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayBoxIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayBoxIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBoxIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BOX[]"), new FunctionArgument("b", "BOX")}, ReturnType = "BOX[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBoxIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BOX[]"), new FunctionArgument("b", "BOX")}, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

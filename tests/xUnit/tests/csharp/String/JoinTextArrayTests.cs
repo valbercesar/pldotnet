@@ -12,7 +12,7 @@ public abstract class BaseJoinTextArrayTests : PlDotNetTest
 
     public BaseJoinTextArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "JoinTextArray", Arguments = new List<FunctionArgument>{new FunctionArgument("texts", "text[]")}, ReturnType = "text", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "JoinTextArray", Arguments = new List<FunctionArgument>{new FunctionArgument("texts", "text[]")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

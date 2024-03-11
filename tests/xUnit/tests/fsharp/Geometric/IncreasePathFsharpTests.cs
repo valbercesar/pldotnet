@@ -12,7 +12,7 @@ public abstract class BaseIncreasePathFsharpTests : PlDotNetTest
 
     public BaseIncreasePathFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePathFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePathFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

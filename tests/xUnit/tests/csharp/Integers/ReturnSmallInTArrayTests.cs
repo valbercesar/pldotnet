@@ -12,7 +12,7 @@ public abstract class BaseReturnSmallInTArrayTests : PlDotNetTest
 
     public BaseReturnSmallInTArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnSmallInTArray", Arguments = new List<FunctionArgument>{new FunctionArgument("small_integers", "smallint[]")}, ReturnType = "smallint[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnSmallInTArray", Arguments = new List<FunctionArgument>{new FunctionArgument("small_integers", "smallint[]")}, ReturnType = "smallint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

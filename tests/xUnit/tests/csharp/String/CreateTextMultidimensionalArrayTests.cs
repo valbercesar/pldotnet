@@ -12,7 +12,7 @@ public abstract class BaseCreateTextMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateTextMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTextMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "text[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateTextMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "text[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

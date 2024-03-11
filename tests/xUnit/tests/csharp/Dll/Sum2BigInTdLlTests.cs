@@ -12,7 +12,7 @@ public abstract class BaseSum2BigInTdLlTests : PlDotNetTest
 
     public BaseSum2BigInTdLlTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2BigInTdLl", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "bigint"), new FunctionArgument("b", "bigint")}, ReturnType = "bigint", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Sum2BigInTdLl", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "bigint"), new FunctionArgument("b", "bigint")}, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

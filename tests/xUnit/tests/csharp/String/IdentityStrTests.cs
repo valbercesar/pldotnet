@@ -12,7 +12,7 @@ public abstract class BaseIdentityStrTests : PlDotNetTest
 
     public BaseIdentityStrTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IdentityStr", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text")}, ReturnType = "text", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IdentityStr", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

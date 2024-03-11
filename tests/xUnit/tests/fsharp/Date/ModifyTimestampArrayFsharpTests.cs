@@ -12,7 +12,7 @@ public abstract class BaseModifyTimestampArrayFsharpTests : PlDotNetTest
 
     public BaseModifyTimestampArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyTimestampArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TIMESTAMP[]"), new FunctionArgument("b", "TIMESTAMP")}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyTimestampArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TIMESTAMP[]"), new FunctionArgument("b", "TIMESTAMP")}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

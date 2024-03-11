@@ -11,7 +11,7 @@ public abstract class BasePrintSumProcedureFsharpTests : PlDotNetTest
 
     public BasePrintSumProcedureFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.Procedure, Name = "printSumProcedureFSharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.Procedure, Name = "printSumProcedureFSharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseCreateBooleanMultidimensionalArrayFsharpTests : PlDotN
 
     public BaseCreateBooleanMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBooleanMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateBooleanMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

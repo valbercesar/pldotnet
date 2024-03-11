@@ -12,7 +12,7 @@ public abstract class BaseAddHoursFsharpTests : PlDotNetTest
 
     public BaseAddHoursFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddHoursFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_time", "TIMETZ"), new FunctionArgument("hours_to_add", "FLOAT")}, ReturnType = "TIMETZ", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddHoursFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_time", "TIMETZ"), new FunctionArgument("hours_to_add", "FLOAT")}, ReturnType = "TIMETZ", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

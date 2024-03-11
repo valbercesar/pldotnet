@@ -12,7 +12,7 @@ public abstract class BaseCreateLineMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateLineMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "LINE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
     }
 
     public static object[][] TestCases()

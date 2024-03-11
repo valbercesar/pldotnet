@@ -12,7 +12,7 @@ public abstract class BaseCreateInT8RangeArrayFsharpTests : PlDotNetTest
 
     public BaseCreateInT8RangeArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateInT8RangeArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateInT8RangeArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

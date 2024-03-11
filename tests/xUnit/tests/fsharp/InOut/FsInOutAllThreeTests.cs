@@ -12,7 +12,7 @@ public abstract class BaseFsInOutAllThreeTests : PlDotNetTest
 
     public BaseFsInOutAllThreeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "FsInOutAllThree", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "INT"), new FunctionArgument("INOUT b", "INT"), new FunctionArgument("OUT c", "INT")}, ReturnType = "", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "FsInOutAllThree", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "INT"), new FunctionArgument("INOUT b", "INT"), new FunctionArgument("OUT c", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

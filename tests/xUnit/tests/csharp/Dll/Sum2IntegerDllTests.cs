@@ -12,7 +12,7 @@ public abstract class BaseSum2IntegerDllTests : PlDotNetTest
 
     public BaseSum2IntegerDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2IntegerDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Sum2IntegerDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

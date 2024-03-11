@@ -12,7 +12,7 @@ public abstract class BaseCreateDateMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateDateMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "DATE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

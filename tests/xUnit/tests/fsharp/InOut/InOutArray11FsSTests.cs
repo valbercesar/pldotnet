@@ -12,7 +12,7 @@ public abstract class BaseInOutArray11FsSTests : PlDotNetTest
 
     public BaseInOutArray11FsSTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutArray11FsS", Arguments = new List<FunctionArgument>{new FunctionArgument("OUT values_array", "MACADDR[]"), new FunctionArgument("IN address", "MACADDR"), new FunctionArgument("IN count", "INT")}, ReturnType = "", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "InOutArray11FsS", Arguments = new List<FunctionArgument>{new FunctionArgument("OUT values_array", "MACADDR[]"), new FunctionArgument("IN address", "MACADDR"), new FunctionArgument("IN count", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

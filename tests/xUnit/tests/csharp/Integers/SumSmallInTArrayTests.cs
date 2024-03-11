@@ -12,7 +12,7 @@ public abstract class BaseSumSmallInTArrayTests : PlDotNetTest
 
     public BaseSumSmallInTArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumSmallInTArray", Arguments = new List<FunctionArgument>{new FunctionArgument("small_integers", "smallint[]")}, ReturnType = "smallint", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "SumSmallInTArray", Arguments = new List<FunctionArgument>{new FunctionArgument("small_integers", "smallint[]")}, ReturnType = "smallint", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

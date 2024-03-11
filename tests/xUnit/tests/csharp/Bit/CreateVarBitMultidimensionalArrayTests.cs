@@ -12,7 +12,7 @@ public abstract class BaseCreateVarBitMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateVarBitMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateVarBitMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateVarBitMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

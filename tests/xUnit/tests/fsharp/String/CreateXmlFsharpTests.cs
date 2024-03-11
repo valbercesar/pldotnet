@@ -12,7 +12,7 @@ public abstract class BaseCreateXmlFsharpTests : PlDotNetTest
 
     public BaseCreateXmlFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateXmlFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT")}, ReturnType = "XML", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateXmlFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT")}, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

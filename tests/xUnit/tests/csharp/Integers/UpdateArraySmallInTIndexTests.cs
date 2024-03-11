@@ -12,7 +12,7 @@ public abstract class BaseUpdateArraySmallInTIndexTests : PlDotNetTest
 
     public BaseUpdateArraySmallInTIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArraySmallInTIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("small_integers", "smallint[]"), new FunctionArgument("desired", "smallint"), new FunctionArgument("index", "integer[]")}, ReturnType = "smallint[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArraySmallInTIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("small_integers", "smallint[]"), new FunctionArgument("desired", "smallint"), new FunctionArgument("index", "integer[]")}, ReturnType = "smallint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

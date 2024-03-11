@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayPolygonIndexTests : PlDotNetTest
 
     public BaseUpdateArrayPolygonIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPolygonIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "POLYGON[]"), new FunctionArgument("desired", "POLYGON"), new FunctionArgument("index", "integer[]")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPolygonIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "POLYGON[]"), new FunctionArgument("desired", "POLYGON"), new FunctionArgument("index", "integer[]")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
     }
 
     public static object[][] TestCases()

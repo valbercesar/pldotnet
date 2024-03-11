@@ -12,7 +12,7 @@ public abstract class BaseCreateMacAddressMultidimensionalArrayTests : PlDotNetT
 
     public BaseCreateMacAddressMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateMacAddressMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateMacAddressMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

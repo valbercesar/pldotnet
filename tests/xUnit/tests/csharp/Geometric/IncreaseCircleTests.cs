@@ -12,7 +12,7 @@ public abstract class BaseIncreaseCircleTests : PlDotNetTest
 
     public BaseIncreaseCircleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseCircle", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "CIRCLE")}, ReturnType = "CIRCLE", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseCircle", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "CIRCLE")}, ReturnType = "CIRCLE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

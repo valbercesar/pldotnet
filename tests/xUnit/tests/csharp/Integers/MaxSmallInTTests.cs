@@ -12,7 +12,7 @@ public abstract class BaseMaxSmallInTTests : PlDotNetTest
 
     public BaseMaxSmallInTTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxSmallInT", Arguments = new List<FunctionArgument>{}, ReturnType = "smallint", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MaxSmallInT", Arguments = new List<FunctionArgument>{}, ReturnType = "smallint", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

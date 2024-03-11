@@ -12,7 +12,7 @@ public abstract class BaseReturnTextArrayFsharpTests : PlDotNetTest
 
     public BaseReturnTextArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnTextArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("texts", "text[]")}, ReturnType = "text[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnTextArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("texts", "text[]")}, ReturnType = "text[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

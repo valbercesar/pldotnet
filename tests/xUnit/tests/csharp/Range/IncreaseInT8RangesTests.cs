@@ -12,7 +12,7 @@ public abstract class BaseIncreaseInT8RangesTests : PlDotNetTest
 
     public BaseIncreaseInT8RangesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInT8Ranges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INT8RANGE[]")}, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInT8Ranges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INT8RANGE[]")}, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

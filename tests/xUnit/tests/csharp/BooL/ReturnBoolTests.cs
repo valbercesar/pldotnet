@@ -12,7 +12,7 @@ public abstract class BaseReturnBoolTests : PlDotNetTest
 
     public BaseReturnBoolTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBool", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBool", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

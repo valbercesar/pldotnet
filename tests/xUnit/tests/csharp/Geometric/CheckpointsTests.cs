@@ -12,7 +12,7 @@ public abstract class BaseCheckpointsTests : PlDotNetTest
 
     public BaseCheckpointsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Checkpoints", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "boolean", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Checkpoints", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

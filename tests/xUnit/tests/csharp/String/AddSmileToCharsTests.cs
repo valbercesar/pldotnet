@@ -12,7 +12,7 @@ public abstract class BaseAddSmileToCharsTests : PlDotNetTest
 
     public BaseAddSmileToCharsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddSmileToChars", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BPCHAR[]")}, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddSmileToChars", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BPCHAR[]")}, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

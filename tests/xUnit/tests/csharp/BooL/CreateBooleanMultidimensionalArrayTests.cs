@@ -12,7 +12,7 @@ public abstract class BaseCreateBooleanMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateBooleanMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBooleanMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateBooleanMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

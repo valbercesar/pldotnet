@@ -12,7 +12,7 @@ public abstract class BaseCreateLseGMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateLseGMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLseGMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "LSEG[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateLseGMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "LSEG[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

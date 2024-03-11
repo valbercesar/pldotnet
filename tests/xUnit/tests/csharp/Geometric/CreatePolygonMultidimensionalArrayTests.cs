@@ -12,7 +12,7 @@ public abstract class BaseCreatePolygonMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreatePolygonMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreatePolygonMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreatePolygonMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

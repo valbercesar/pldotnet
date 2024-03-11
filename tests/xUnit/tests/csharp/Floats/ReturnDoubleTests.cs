@@ -12,7 +12,7 @@ public abstract class BaseReturnDoubleTests : PlDotNetTest
 
     public BaseReturnDoubleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDouble", Arguments = new List<FunctionArgument>{}, ReturnType = "double precision", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDouble", Arguments = new List<FunctionArgument>{}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

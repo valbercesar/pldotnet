@@ -12,7 +12,7 @@ public abstract class BaseIncreaseMonthDateArrayTests : PlDotNetTest
 
     public BaseIncreaseMonthDateArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMonthDateArray", Arguments = new List<FunctionArgument>{new FunctionArgument("dates", "DATE[]")}, ReturnType = "DATE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMonthDateArray", Arguments = new List<FunctionArgument>{new FunctionArgument("dates", "DATE[]")}, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

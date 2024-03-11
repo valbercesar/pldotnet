@@ -12,7 +12,7 @@ public abstract class BaseCreateTimestampTzMultidimensionalArrayTests : PlDotNet
 
     public BaseCreateTimestampTzMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampTzMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampTzMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseReturnDoubleArrayTests : PlDotNetTest
 
     public BaseReturnDoubleArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDoubleArray", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]")}, ReturnType = "double precision[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDoubleArray", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]")}, ReturnType = "double precision[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseCreateCidrMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateCidrMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateCidrMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "CIDR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateCidrMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

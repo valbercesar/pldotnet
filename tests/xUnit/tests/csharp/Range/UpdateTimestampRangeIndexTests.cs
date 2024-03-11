@@ -12,7 +12,7 @@ public abstract class BaseUpdateTimestampRangeIndexTests : PlDotNetTest
 
     public BaseUpdateTimestampRangeIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateTimestampRangeIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TSRANGE[]"), new FunctionArgument("desired", "TSRANGE"), new FunctionArgument("index", "integer[]")}, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateTimestampRangeIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TSRANGE[]"), new FunctionArgument("desired", "TSRANGE"), new FunctionArgument("index", "integer[]")}, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

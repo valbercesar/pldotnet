@@ -12,7 +12,7 @@ public abstract class BaseModifyJsonTests : PlDotNetTest
 
     public BaseModifyJsonTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyJson", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "JSON"), new FunctionArgument("b", "TEXT"), new FunctionArgument("c", "TEXT")}, ReturnType = "JSON", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyJson", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "JSON"), new FunctionArgument("b", "TEXT"), new FunctionArgument("c", "TEXT")}, ReturnType = "JSON", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

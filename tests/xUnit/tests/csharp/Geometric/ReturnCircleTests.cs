@@ -12,7 +12,7 @@ public abstract class BaseReturnCircleTests : PlDotNetTest
 
     public BaseReturnCircleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnCircle", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_circle", "CIRCLE")}, ReturnType = "CIRCLE", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnCircle", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_circle", "CIRCLE")}, ReturnType = "CIRCLE", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

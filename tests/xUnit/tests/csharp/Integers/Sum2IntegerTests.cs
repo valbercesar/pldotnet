@@ -12,7 +12,7 @@ public abstract class BaseSum2IntegerTests : PlDotNetTest
 
     public BaseSum2IntegerTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2Integer", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Sum2Integer", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

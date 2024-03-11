@@ -12,7 +12,7 @@ public abstract class BaseInOutMultiArg2Tests : PlDotNetTest
 
     public BaseInOutMultiArg2Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutMultiArg2", Arguments = new List<FunctionArgument>{new FunctionArgument("INOUT argument_0", "INT"), new FunctionArgument("OUT argument_1", "INT"), new FunctionArgument("INOUT argument_2", "INT"), new FunctionArgument("INOUT argument_3", "INT"), new FunctionArgument("IN argument_4", "INT"), new FunctionArgument("OUT argument_5", "INT"), new FunctionArgument("IN argument_6", "INT"), new FunctionArgument("OUT argument_7", "INT")}, ReturnType = "", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "InOutMultiArg2", Arguments = new List<FunctionArgument>{new FunctionArgument("INOUT argument_0", "INT"), new FunctionArgument("OUT argument_1", "INT"), new FunctionArgument("INOUT argument_2", "INT"), new FunctionArgument("INOUT argument_3", "INT"), new FunctionArgument("IN argument_4", "INT"), new FunctionArgument("OUT argument_5", "INT"), new FunctionArgument("IN argument_6", "INT"), new FunctionArgument("OUT argument_7", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

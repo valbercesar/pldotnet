@@ -12,7 +12,7 @@ public abstract class BaseToggleFirstBitsTests : PlDotNetTest
 
     public BaseToggleFirstBitsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ToggleFirstBits", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BIT(8)[]")}, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ToggleFirstBits", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BIT(8)[]")}, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

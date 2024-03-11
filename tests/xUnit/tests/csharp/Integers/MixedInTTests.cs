@@ -12,7 +12,7 @@ public abstract class BaseMixedInTTests : PlDotNetTest
 
     public BaseMixedInTTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MixedInT", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "smallint"), new FunctionArgument("b", "smallint"), new FunctionArgument("c", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MixedInT", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "smallint"), new FunctionArgument("b", "smallint"), new FunctionArgument("c", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

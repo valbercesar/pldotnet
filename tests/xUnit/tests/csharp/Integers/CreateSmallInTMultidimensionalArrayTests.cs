@@ -12,7 +12,7 @@ public abstract class BaseCreateSmallInTMultidimensionalArrayTests : PlDotNetTes
 
     public BaseCreateSmallInTMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateSmallInTMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "smallint[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateSmallInTMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "smallint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

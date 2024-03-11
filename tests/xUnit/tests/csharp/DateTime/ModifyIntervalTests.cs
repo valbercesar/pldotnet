@@ -12,7 +12,7 @@ public abstract class BaseModifyIntervalTests : PlDotNetTest
 
     public BaseModifyIntervalTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyInterval", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_interval", "INTERVAL"), new FunctionArgument("days_to_add", "INT"), new FunctionArgument("months_to_add", "INT")}, ReturnType = "INTERVAL", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyInterval", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_interval", "INTERVAL"), new FunctionArgument("days_to_add", "INT"), new FunctionArgument("months_to_add", "INT")}, ReturnType = "INTERVAL", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseSum2SmallInTFsharpDllTests : PlDotNetTest
 
     public BaseSum2SmallInTFsharpDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2SmallInTFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT2"), new FunctionArgument("b", "INT2")}, ReturnType = "INT2", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Sum2SmallInTFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT2"), new FunctionArgument("b", "INT2")}, ReturnType = "INT2", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

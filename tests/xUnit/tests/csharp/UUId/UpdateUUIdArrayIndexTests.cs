@@ -12,7 +12,7 @@ public abstract class BaseUpdateUUIdArrayIndexTests : PlDotNetTest
 
     public BaseUpdateUUIdArrayIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateUUIdArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "UUID[]"), new FunctionArgument("desired", "UUID"), new FunctionArgument("index", "integer[]")}, ReturnType = "UUID[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateUUIdArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "UUID[]"), new FunctionArgument("desired", "UUID"), new FunctionArgument("index", "integer[]")}, ReturnType = "UUID[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

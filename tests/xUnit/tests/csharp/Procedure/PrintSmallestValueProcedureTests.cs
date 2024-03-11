@@ -11,7 +11,7 @@ public abstract class BasePrintSmallestValueProcedureTests : PlDotNetTest
 
     public BasePrintSmallestValueProcedureTests()
     {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.Procedure, Name = "findSmallestValueProcedure", Arguments = new List<FunctionArgument>{new FunctionArgument("doublevalues", "double precision[]")}, ReturnType = "", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.Procedure, Name = "findSmallestValueProcedure", Arguments = new List<FunctionArgument>{new FunctionArgument("doublevalues", "double precision[]")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

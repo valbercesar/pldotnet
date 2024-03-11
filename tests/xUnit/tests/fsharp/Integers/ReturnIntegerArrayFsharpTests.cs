@@ -12,7 +12,7 @@ public abstract class BaseReturnIntegerArrayFsharpTests : PlDotNetTest
 
     public BaseReturnIntegerArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnIntegerArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "int4[]")}, ReturnType = "int4[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnIntegerArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "int4[]")}, ReturnType = "int4[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseMixedBigInT2FsharpTests : PlDotNetTest
 
     public BaseMixedBigInT2FsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MixedBigInT2Fsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "int2"), new FunctionArgument("b", "int8")}, ReturnType = "int8", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MixedBigInT2Fsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "int2"), new FunctionArgument("b", "int8")}, ReturnType = "int8", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

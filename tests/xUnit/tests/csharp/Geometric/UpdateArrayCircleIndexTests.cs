@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayCircleIndexTests : PlDotNetTest
 
     public BaseUpdateArrayCircleIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayCircleIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "CIRCLE[]"), new FunctionArgument("desired", "CIRCLE"), new FunctionArgument("index", "integer[]")}, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayCircleIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "CIRCLE[]"), new FunctionArgument("desired", "CIRCLE"), new FunctionArgument("index", "integer[]")}, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

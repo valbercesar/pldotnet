@@ -12,7 +12,7 @@ public abstract class BaseIncreaseMacAddressTests : PlDotNetTest
 
     public BaseIncreaseMacAddressTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMacAddress", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MACADDR[]")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMacAddress", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MACADDR[]")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

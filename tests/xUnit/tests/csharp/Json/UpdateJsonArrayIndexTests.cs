@@ -12,7 +12,7 @@ public abstract class BaseUpdateJsonArrayIndexTests : PlDotNetTest
 
     public BaseUpdateJsonArrayIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateJsonArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "JSON[]"), new FunctionArgument("desired", "JSON"), new FunctionArgument("index", "integer[]")}, ReturnType = "JSON[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateJsonArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "JSON[]"), new FunctionArgument("desired", "JSON"), new FunctionArgument("index", "integer[]")}, ReturnType = "JSON[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

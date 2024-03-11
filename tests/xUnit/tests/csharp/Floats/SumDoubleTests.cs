@@ -12,7 +12,7 @@ public abstract class BaseSumDoubleTests : PlDotNetTest
 
     public BaseSumDoubleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumDouble", Arguments = new List<FunctionArgument>{new FunctionArgument("a double", "precision"), new FunctionArgument("b double", "precision")}, ReturnType = "double precision", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "SumDouble", Arguments = new List<FunctionArgument>{new FunctionArgument("a double", "precision"), new FunctionArgument("b double", "precision")}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

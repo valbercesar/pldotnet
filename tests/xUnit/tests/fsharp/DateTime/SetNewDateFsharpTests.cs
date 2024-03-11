@@ -12,7 +12,7 @@ public abstract class BaseSetNewDateFsharpTests : PlDotNetTest
 
     public BaseSetNewDateFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SetNewDateFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_timestamp", "TIMESTAMP"), new FunctionArgument("new_date", "DATE")}, ReturnType = "TIMESTAMP", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "SetNewDateFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_timestamp", "TIMESTAMP"), new FunctionArgument("new_date", "DATE")}, ReturnType = "TIMESTAMP", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

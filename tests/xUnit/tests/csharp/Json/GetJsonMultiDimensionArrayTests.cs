@@ -12,7 +12,7 @@ public abstract class BaseGetJsonMultiDimensionArrayTests : PlDotNetTest
 
     public BaseGetJsonMultiDimensionArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetJsonMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "JSON[][][]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "GetJsonMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "JSON[][][]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

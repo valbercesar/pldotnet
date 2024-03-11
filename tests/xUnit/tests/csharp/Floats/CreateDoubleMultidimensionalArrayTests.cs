@@ -12,7 +12,7 @@ public abstract class BaseCreateDoubleMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateDoubleMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDoubleMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "double precision[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateDoubleMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "double precision[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

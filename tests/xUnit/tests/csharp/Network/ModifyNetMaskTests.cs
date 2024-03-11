@@ -12,7 +12,7 @@ public abstract class BaseModifyNetMaskTests : PlDotNetTest
 
     public BaseModifyNetMaskTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyNetMask", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyNetMask", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

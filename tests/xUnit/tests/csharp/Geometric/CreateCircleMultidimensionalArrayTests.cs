@@ -12,7 +12,7 @@ public abstract class BaseCreateCircleMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateCircleMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateCircleMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateCircleMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

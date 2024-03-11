@@ -12,7 +12,7 @@ public abstract class BaseIncreaseTimestampTzRangesTests : PlDotNetTest
 
     public BaseIncreaseTimestampTzRangesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimestampTzRanges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TSTZRANGE[]")}, ReturnType = "TSTZRANGE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimestampTzRanges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TSTZRANGE[]")}, ReturnType = "TSTZRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

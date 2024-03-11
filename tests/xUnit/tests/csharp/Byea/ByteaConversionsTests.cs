@@ -12,7 +12,7 @@ public abstract class BaseByTeaConversionsTests : PlDotNetTest
 
     public BaseByTeaConversionsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ByTeaConversions", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "BYTEA")}, ReturnType = "BYTEA", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ByTeaConversions", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "BYTEA")}, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

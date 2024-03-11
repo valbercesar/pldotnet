@@ -12,7 +12,7 @@ public abstract class BaseModifyInputDateTests : PlDotNetTest
 
     public BaseModifyInputDateTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyInputDate", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_date", "DATE")}, ReturnType = "DATE", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyInputDate", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_date", "DATE")}, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

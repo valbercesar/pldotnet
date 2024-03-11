@@ -12,7 +12,7 @@ public abstract class BaseCreateRealMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateRealMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateRealMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "real[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateRealMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

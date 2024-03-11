@@ -12,7 +12,7 @@ public abstract class BaseAddOneMacAddress8Tests : PlDotNetTest
 
     public BaseAddOneMacAddress8Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddOneMacAddress8", Arguments = new List<FunctionArgument>{new FunctionArgument("my_address", "MACADDR8")}, ReturnType = "MACADDR8", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddOneMacAddress8", Arguments = new List<FunctionArgument>{new FunctionArgument("my_address", "MACADDR8")}, ReturnType = "MACADDR8", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

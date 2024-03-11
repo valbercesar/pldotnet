@@ -12,7 +12,7 @@ public abstract class BaseCreatePointMultidimensionalArrayFsharpTests : PlDotNet
 
     public BaseCreatePointMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreatePointMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "point[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo{Name = "CreatePointMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "point[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
     }
 
     public static object[][] TestCases()

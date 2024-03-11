@@ -12,7 +12,7 @@ public abstract class BaseReturnMoneyTests : PlDotNetTest
 
     public BaseReturnMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMoney", Arguments = new List<FunctionArgument>{new FunctionArgument("salary", "MONEY"), new FunctionArgument("bonus", "MONEY"), new FunctionArgument("discounts", "MONEY")}, ReturnType = "MONEY", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMoney", Arguments = new List<FunctionArgument>{new FunctionArgument("salary", "MONEY"), new FunctionArgument("bonus", "MONEY"), new FunctionArgument("discounts", "MONEY")}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

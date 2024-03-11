@@ -12,7 +12,7 @@ public abstract class BaseUpdateDateOnlyRangeIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateDateOnlyRangeIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateDateOnlyRangeIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "DATERANGE[]"), new FunctionArgument("b", "DATERANGE")}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateDateOnlyRangeIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "DATERANGE[]"), new FunctionArgument("b", "DATERANGE")}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

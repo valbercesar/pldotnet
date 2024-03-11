@@ -12,7 +12,7 @@ public abstract class BaseModifyCoefficientsFsharpTests : PlDotNetTest
 
     public BaseModifyCoefficientsFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyCoefficientsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("original_line", "LINE")}, ReturnType = "LINE", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyCoefficientsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("original_line", "LINE")}, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

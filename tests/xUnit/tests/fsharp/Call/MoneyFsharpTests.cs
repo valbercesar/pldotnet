@@ -12,7 +12,7 @@ public abstract class BaseMoneyFSharpTests : PlDotNetTest
 
     public BaseMoneyFSharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "testMoneyFSharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "MONEY")}, ReturnType = "MONEY", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "testMoneyFSharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "MONEY")}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

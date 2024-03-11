@@ -12,7 +12,7 @@ public abstract class BaseMultiplyTextFsharpTests : PlDotNetTest
 
     public BaseMultiplyTextFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyTextFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "int")}, ReturnType = "text", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyTextFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "int")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

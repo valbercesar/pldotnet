@@ -12,7 +12,7 @@ public abstract class BaseFsUpdateByTeaArrayIndexTests : PlDotNetTest
 
     public BaseFsUpdateByTeaArrayIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateByTeaArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA[]"), new FunctionArgument("b", "BYTEA")}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateByTeaArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA[]"), new FunctionArgument("b", "BYTEA")}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

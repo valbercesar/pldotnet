@@ -12,7 +12,7 @@ public abstract class BaseUpdateBitArrayIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateBitArrayIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateBitArrayIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BIT(8)[]"), new FunctionArgument("b", "BIT(8)"), }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateBitArrayIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BIT(8)[]"), new FunctionArgument("b", "BIT(8)"), }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

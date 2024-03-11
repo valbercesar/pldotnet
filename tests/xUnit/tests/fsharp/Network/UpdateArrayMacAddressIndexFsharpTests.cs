@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayMacAddressIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayMacAddressIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayMacAddressIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "MACADDR[]"), new FunctionArgument("b", "MACADDR")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayMacAddressIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "MACADDR[]"), new FunctionArgument("b", "MACADDR")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseCombineUUIdsFsharpTests : PlDotNetTest
 
     public BaseCombineUUIdsFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CombineUUIdsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "UUID"), new FunctionArgument("b", "UUID")}, ReturnType = "UUID", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CombineUUIdsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "UUID"), new FunctionArgument("b", "UUID")}, ReturnType = "UUID", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

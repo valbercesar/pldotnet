@@ -12,7 +12,7 @@ public abstract class BaseCreateIntegerMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateIntegerMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateIntegerMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "integer[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateIntegerMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "integer[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

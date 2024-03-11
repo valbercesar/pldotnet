@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayIntervalIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayIntervalIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayIntervalIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INTERVAL[]"), new FunctionArgument("b", "INTERVAL")}, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayIntervalIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INTERVAL[]"), new FunctionArgument("b", "INTERVAL")}, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

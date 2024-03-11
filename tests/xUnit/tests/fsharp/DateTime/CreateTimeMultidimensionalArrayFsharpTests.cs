@@ -12,7 +12,7 @@ public abstract class BaseCreateTimeMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateTimeMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimeMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIME[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimeMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIME[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

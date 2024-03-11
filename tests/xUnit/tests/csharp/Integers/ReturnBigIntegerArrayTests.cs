@@ -12,7 +12,7 @@ public abstract class BaseReturnBigIntegerArrayTests : PlDotNetTest
 
     public BaseReturnBigIntegerArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBigIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("big_integers", "bigint[]")}, ReturnType = "bigint[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBigIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("big_integers", "bigint[]")}, ReturnType = "bigint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

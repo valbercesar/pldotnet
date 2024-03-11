@@ -12,7 +12,7 @@ public abstract class BaseCreateMoneyMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateMoneyMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateMoneyMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateMoneyMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

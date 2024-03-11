@@ -12,7 +12,7 @@ public abstract class BaseUpdateXmlArrayIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateXmlArrayIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateXmlArrayIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "XML[]"), new FunctionArgument("desired", "XML"), new FunctionArgument("index", "integer[]")}, ReturnType = "XML[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateXmlArrayIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "XML[]"), new FunctionArgument("desired", "XML"), new FunctionArgument("index", "integer[]")}, ReturnType = "XML[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

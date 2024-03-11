@@ -12,7 +12,7 @@ public abstract class BaseCallFibonacciTests : PlDotNetTest
 
     public BaseCallFibonacciTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "fibonacci", Arguments = new List<FunctionArgument>{new FunctionArgument("n", "integer")}, ReturnType = "BIGINT", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "fibonacci", Arguments = new List<FunctionArgument>{new FunctionArgument("n", "integer")}, ReturnType = "BIGINT", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

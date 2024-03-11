@@ -12,7 +12,7 @@ public abstract class BaseModifyIpFsharpTests : PlDotNetTest
 
     public BaseModifyIpFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIpFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIpFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

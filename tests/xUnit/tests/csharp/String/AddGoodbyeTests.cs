@@ -12,7 +12,7 @@ public abstract class BaseAddGoodbyeTests : PlDotNetTest
 
     public BaseAddGoodbyeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddGoodbye", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BPCHAR")}, ReturnType = "BPCHAR", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddGoodbye", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BPCHAR")}, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

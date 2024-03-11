@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayIntegerFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayIntegerFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayIntegerFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "int8[]"), new FunctionArgument("b", "int8")}, ReturnType = "int8[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayIntegerFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "int8[]"), new FunctionArgument("b", "int8")}, ReturnType = "int8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

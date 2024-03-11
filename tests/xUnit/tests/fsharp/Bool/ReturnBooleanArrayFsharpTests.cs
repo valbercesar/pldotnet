@@ -12,7 +12,7 @@ public abstract class BaseReturnBooleanArrayFsharpTests : PlDotNetTest
 
     public BaseReturnBooleanArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBooleanArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]")}, ReturnType = "boolean[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBooleanArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]")}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

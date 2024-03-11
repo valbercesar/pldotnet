@@ -12,7 +12,7 @@ public abstract class BaseBooleanXorTests : PlDotNetTest
 
     public BaseBooleanXorTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "BooleanXor", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "boolean"), new FunctionArgument("b", "boolean")}, ReturnType = "boolean", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "BooleanXor", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "boolean"), new FunctionArgument("b", "boolean")}, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

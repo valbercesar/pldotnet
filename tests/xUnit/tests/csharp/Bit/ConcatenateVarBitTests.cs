@@ -12,7 +12,7 @@ public abstract class BaseConcatenateVarBitTests : PlDotNetTest
 
     public BaseConcatenateVarBitTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateVarBit", Arguments = new List<FunctionArgument>{new FunctionArgument("a BIT", "VARYING"), new FunctionArgument("b BIT", "VARYING")}, ReturnType = "BIT VARYING", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateVarBit", Arguments = new List<FunctionArgument>{new FunctionArgument("a BIT", "VARYING"), new FunctionArgument("b BIT", "VARYING")}, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

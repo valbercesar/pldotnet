@@ -12,7 +12,7 @@ public abstract class BaseCreateIntervalMultidimensionalArrayTests : PlDotNetTes
 
     public BaseCreateIntervalMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateIntervalMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateIntervalMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

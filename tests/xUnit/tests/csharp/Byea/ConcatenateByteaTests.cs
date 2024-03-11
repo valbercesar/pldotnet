@@ -12,7 +12,7 @@ public abstract class BaseConcatenateByTeaTests : PlDotNetTest
 
     public BaseConcatenateByTeaTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateByTea", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "TEXT")}, ReturnType = "BYTEA", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateByTea", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "TEXT")}, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

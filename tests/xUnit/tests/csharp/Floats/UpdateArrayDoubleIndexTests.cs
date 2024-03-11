@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayDoubleIndexTests : PlDotNetTest
 
     public BaseUpdateArrayDoubleIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayDoubleIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]"), new FunctionArgument("desired double", "precision"), new FunctionArgument("index", "integer[]")}, ReturnType = "double precision[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayDoubleIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]"), new FunctionArgument("desired double", "precision"), new FunctionArgument("index", "integer[]")}, ReturnType = "double precision[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

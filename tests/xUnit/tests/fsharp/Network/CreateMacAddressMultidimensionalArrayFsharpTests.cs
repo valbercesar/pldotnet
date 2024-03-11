@@ -12,7 +12,7 @@ public abstract class BaseCreateMacAddressMultidimensionalArrayFsharpTests : PlD
 
     public BaseCreateMacAddressMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateMacAddressMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateMacAddressMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

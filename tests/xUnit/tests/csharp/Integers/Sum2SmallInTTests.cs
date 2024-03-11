@@ -12,7 +12,7 @@ public abstract class BaseSum2SmallInTTests : PlDotNetTest
 
     public BaseSum2SmallInTTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2SmallInT", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "smallint"), new FunctionArgument("b", "smallint")}, ReturnType = "smallint", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "Sum2SmallInT", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "smallint"), new FunctionArgument("b", "smallint")}, ReturnType = "smallint", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

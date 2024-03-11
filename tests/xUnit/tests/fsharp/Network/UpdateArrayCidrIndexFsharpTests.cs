@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayCidrIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayCidrIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayCidrIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "CIDR[]"), new FunctionArgument("b", "CIDR")}, ReturnType = "CIDR[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayCidrIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "CIDR[]"), new FunctionArgument("b", "CIDR")}, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseReplaceJSonsKeyTests : PlDotNetTest
 
     public BaseReplaceJSonsKeyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReplaceJSonsKey", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "JSON[]")}, ReturnType = "JSON[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReplaceJSonsKey", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "JSON[]")}, ReturnType = "JSON[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

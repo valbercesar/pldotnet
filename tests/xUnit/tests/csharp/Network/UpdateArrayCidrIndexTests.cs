@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayCidrIndexTests : PlDotNetTest
 
     public BaseUpdateArrayCidrIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayCidrIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "CIDR[]"), new FunctionArgument("desired", "CIDR"), new FunctionArgument("index", "integer[]")}, ReturnType = "CIDR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayCidrIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "CIDR[]"), new FunctionArgument("desired", "CIDR"), new FunctionArgument("index", "integer[]")}, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseToggleFirstVarBitsFsharpTests : PlDotNetTest
 
     public BaseToggleFirstVarBitsFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ToggleFirstVarBitsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array BIT", "VARYING[]")}, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ToggleFirstVarBitsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array BIT", "VARYING[]")}, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

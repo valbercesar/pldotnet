@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayNetMaskIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayNetMaskIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayNetMaskIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INET[]"), new FunctionArgument("b", "INET")}, ReturnType = "INET[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayNetMaskIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INET[]"), new FunctionArgument("b", "INET")}, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

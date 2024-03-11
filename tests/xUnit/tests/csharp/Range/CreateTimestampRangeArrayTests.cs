@@ -12,7 +12,7 @@ public abstract class BaseCreateTimestampRangeArrayTests : PlDotNetTest
 
     public BaseCreateTimestampRangeArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampRangeArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampRangeArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

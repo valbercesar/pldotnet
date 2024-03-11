@@ -12,7 +12,7 @@ public abstract class BaseGetReverseLineSegmentFsharpTests : PlDotNetTest
 
     public BaseGetReverseLineSegmentFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetReverseLineSegmentFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_line", "LSEG")}, ReturnType = "LSEG", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "GetReverseLineSegmentFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_line", "LSEG")}, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseIncreaseDateOnlyRangeFsharpTests : PlDotNetTest
 
     public BaseIncreaseDateOnlyRangeFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseDateOnlyRangeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "DATERANGE"), new FunctionArgument("b", "INTEGER")}, ReturnType = "DATERANGE", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseDateOnlyRangeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "DATERANGE"), new FunctionArgument("b", "INTEGER")}, ReturnType = "DATERANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

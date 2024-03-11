@@ -12,7 +12,7 @@ public abstract class BaseCreateTimestampTzMultidimensionalArrayFsharpTests : Pl
 
     public BaseCreateTimestampTzMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampTzMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampTzMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

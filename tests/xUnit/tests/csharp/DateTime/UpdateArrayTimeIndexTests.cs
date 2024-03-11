@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayTimeIndexTests : PlDotNetTest
 
     public BaseUpdateArrayTimeIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayTimeIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIME[]"), new FunctionArgument("desired", "TIME"), new FunctionArgument("index", "integer[]")}, ReturnType = "TIME[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayTimeIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIME[]"), new FunctionArgument("desired", "TIME"), new FunctionArgument("index", "integer[]")}, ReturnType = "TIME[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

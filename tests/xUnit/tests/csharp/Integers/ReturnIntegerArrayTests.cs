@@ -12,7 +12,7 @@ public abstract class BaseReturnIntegerArrayTests : PlDotNetTest
 
     public BaseReturnIntegerArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "integer[]")}, ReturnType = "integer[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "integer[]")}, ReturnType = "integer[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

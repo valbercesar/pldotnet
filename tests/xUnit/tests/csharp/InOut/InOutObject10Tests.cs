@@ -12,7 +12,7 @@ public abstract class BaseInOutObject10Tests : PlDotNetTest
 
     public BaseInOutObject10Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutObject10", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "text"), new FunctionArgument("INOUT b", "text")}, ReturnType = "", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "InOutObject10", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "text"), new FunctionArgument("INOUT b", "text")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseCreateBoxMultidimensionalArrayFsharpTests : PlDotNetTe
 
     public BaseCreateBoxMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBoxMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "BOX[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateBoxMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
     }
 
     public static object[][] TestCases()

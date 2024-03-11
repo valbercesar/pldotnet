@@ -12,7 +12,7 @@ public abstract class BaseIncreaseTimeStampsTzTests : PlDotNetTest
 
     public BaseIncreaseTimeStampsTzTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimeStampsTz", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array TIMESTAMP WITH TIME", "ZONE[]"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimeStampsTz", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array TIMESTAMP WITH TIME", "ZONE[]"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

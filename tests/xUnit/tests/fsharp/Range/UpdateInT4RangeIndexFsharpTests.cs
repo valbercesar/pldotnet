@@ -12,7 +12,7 @@ public abstract class BaseUpdateInT4RangeIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateInT4RangeIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateInT4RangeIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT4RANGE[]"), new FunctionArgument("b", "INT4RANGE")}, ReturnType = "INT4RANGE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateInT4RangeIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT4RANGE[]"), new FunctionArgument("b", "INT4RANGE")}, ReturnType = "INT4RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseReturnRealFsharpTests : PlDotNetTest
 
     public BaseReturnRealFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnRealFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "real", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnRealFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

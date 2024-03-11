@@ -12,7 +12,7 @@ public abstract class BaseAddPointToPolygonTests : PlDotNetTest
 
     public BaseAddPointToPolygonTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddPointToPolygon", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_polygon", "POLYGON"), new FunctionArgument("new_point", "POINT")}, ReturnType = "POLYGON", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddPointToPolygon", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_polygon", "POLYGON"), new FunctionArgument("new_point", "POINT")}, ReturnType = "POLYGON", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

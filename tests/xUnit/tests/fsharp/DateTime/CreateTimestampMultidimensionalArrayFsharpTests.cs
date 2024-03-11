@@ -12,7 +12,7 @@ public abstract class BaseCreateTimestampMultidimensionalArrayFsharpTests : PlDo
 
     public BaseCreateTimestampMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

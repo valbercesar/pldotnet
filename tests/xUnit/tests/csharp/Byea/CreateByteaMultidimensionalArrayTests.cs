@@ -12,7 +12,7 @@ public abstract class BaseCreateByTeaMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateByTeaMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateByTeaMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateByTeaMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

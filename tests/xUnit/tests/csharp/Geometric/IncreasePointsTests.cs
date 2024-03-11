@@ -12,7 +12,7 @@ public abstract class BaseIncreasePointsTests : PlDotNetTest
 
     public BaseIncreasePointsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePoints", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "point[]")}, ReturnType = "point[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePoints", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "point[]")}, ReturnType = "point[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

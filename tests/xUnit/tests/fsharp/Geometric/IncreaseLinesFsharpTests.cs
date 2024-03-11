@@ -12,7 +12,7 @@ public abstract class BaseIncreaseLinesFsharpTests : PlDotNetTest
 
     public BaseIncreaseLinesFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseLinesFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LINE[]")}, ReturnType = "LINE[]", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseLinesFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LINE[]")}, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseCreatePointMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreatePointMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreatePointMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "point[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreatePointMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "point[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

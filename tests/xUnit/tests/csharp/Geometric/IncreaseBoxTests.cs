@@ -12,7 +12,7 @@ public abstract class BaseIncreaseBoxTests : PlDotNetTest
 
     public BaseIncreaseBoxTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseBox", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "BOX")}, ReturnType = "BOX", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseBox", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "BOX")}, ReturnType = "BOX", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

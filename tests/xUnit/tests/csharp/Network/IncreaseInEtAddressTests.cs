@@ -12,7 +12,7 @@ public abstract class BaseIncreaseInEtAddressTests : PlDotNetTest
 
     public BaseIncreaseInEtAddressTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInEtAddress", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INET[]")}, ReturnType = "INET[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInEtAddress", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INET[]")}, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

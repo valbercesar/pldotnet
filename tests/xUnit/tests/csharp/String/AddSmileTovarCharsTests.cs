@@ -12,7 +12,7 @@ public abstract class BaseAddSmileTovarCharsTests : PlDotNetTest
 
     public BaseAddSmileTovarCharsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddSmileTovarChars", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "VARCHAR[]")}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "AddSmileTovarChars", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "VARCHAR[]")}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

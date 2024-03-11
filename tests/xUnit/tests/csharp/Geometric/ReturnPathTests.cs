@@ -12,7 +12,7 @@ public abstract class BaseReturnPathTests : PlDotNetTest
 
     public BaseReturnPathTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnPath", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_path", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnPath", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_path", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

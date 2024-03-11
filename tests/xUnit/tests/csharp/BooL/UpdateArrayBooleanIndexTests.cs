@@ -12,7 +12,7 @@ public abstract class BaseUpdateArrayBooleanIndexTests : PlDotNetTest
 
     public BaseUpdateArrayBooleanIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBooleanIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean"), new FunctionArgument("index", "integer[]")}, ReturnType = "boolean[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBooleanIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean"), new FunctionArgument("index", "integer[]")}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

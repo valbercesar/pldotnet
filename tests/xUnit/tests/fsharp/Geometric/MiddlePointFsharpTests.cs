@@ -12,7 +12,7 @@ public abstract class BaseMiddlePointFsharpTests : PlDotNetTest
 
     public BaseMiddlePointFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MiddlePointFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "point", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MiddlePointFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "point", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

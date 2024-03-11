@@ -12,7 +12,7 @@ public abstract class BaseMultiplyTextTests : PlDotNetTest
 
     public BaseMultiplyTextTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyText", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "int")}, ReturnType = "text", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyText", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "int")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

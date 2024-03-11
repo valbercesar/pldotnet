@@ -12,7 +12,7 @@ public abstract class BaseCreateXmlTests : PlDotNetTest
 
     public BaseCreateXmlTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateXml", Arguments = new List<FunctionArgument>{new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT")}, ReturnType = "XML", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo{Name = "CreateXml", Arguments = new List<FunctionArgument>{new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT")}, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()

@@ -12,7 +12,7 @@ public abstract class BaseInOutNull6Tests : PlDotNetTest
 
     public BaseInOutNull6Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutNull6", Arguments = new List<FunctionArgument>{new FunctionArgument("IN argument_0", "INT"), new FunctionArgument("OUT argument_1", "INT")}, ReturnType = "", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo{Name = "InOutNull6", Arguments = new List<FunctionArgument>{new FunctionArgument("IN argument_0", "INT"), new FunctionArgument("OUT argument_1", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()

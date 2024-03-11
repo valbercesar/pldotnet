@@ -12,7 +12,7 @@ public abstract class BaseReturnDoubleFsharpTests : PlDotNetTest
 
     public BaseReturnDoubleFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDoubleFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "float8", Body = FunctionBody, Language = LanguageType.PlfSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDoubleFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()

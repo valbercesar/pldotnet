@@ -12,7 +12,7 @@ public abstract class BaseGetXmlMultiDimensionArrayTests : PlDotNetTest
 
     public BaseGetXmlMultiDimensionArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetXmlMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "XML[]", Body = FunctionBody, Language = LanguageType.PlcSharp, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo{Name = "GetXmlMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "XML[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
