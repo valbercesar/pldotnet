@@ -40,6 +40,17 @@ SELECT 'c#-float8', 'sumDouble1', sumDouble(10.5000000000055, 10.5000000000054) 
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-float8-null', 'sumDouble2', sumDouble(NULL, NULL) = double precision '0';
 
+CREATE OR REPLACE FUNCTION make_pi_n(n int) RETURNS double precision AS $$
+double sum = 0.0;
+for(int i=0;i<n;i++){ sum += ((i%2)==0?1.0:-1.0)/(2*i+1); }
+return 4.0 * sum;
+$$
+LANGUAGE plcsharp;
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-float8-make-pi', 'make_pi_lt', make_pi_n(1000) < double precision '3.15';
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT 'c#-float8-make-pi', 'make_pi_gt', make_pi_n(1000) > double precision '3.13';
+
 --- Float Arrays
 CREATE OR REPLACE FUNCTION returnRealArray(floats real[]) RETURNS real[] AS $$
 return floats;

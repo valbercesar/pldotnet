@@ -188,7 +188,7 @@ As of this beta release, pl/dotnet supports all major procedural language featur
     \item Code can be entered directly via \texttt{CREATE FUNCTION} or, alternatively, loaded from pre-compiled assemblies
     \item Performance in our benchmarks surpasses all other PL implementations
     \item Testing: we have \unittestcount\, unit tests, covering all features in both C\# and F\#
-    \item We imported all NPGSQL unit tests to measure our compatibility; \npgsqlpercentage of them are working, \npgsqlcount /\npgsqlpassing
+    \item We imported all NPGSQL unit tests to measure our compatibility; \npgsqlpercentage of them are working,  \npgsqlpassing/\npgsqlcount
     \item Security: Code for each function is isolated in a \dotnet Assembly Load Context, providing nice security protection
     \item Full trigger support, including modifying data where allowed by SQL
     \item Full support for output parameters (\texttt{OUT} and \texttt{INOUT}), nicely mapped to both C\# and F\#
@@ -282,7 +282,7 @@ all of these tests, then our compatibility will be at the same
 level which NPGSQL itself provides between version upgrades.
 
 The data from these regression tests has been interesting.
-\npgsqlpercentage\, of them are working, \npgsqlpassing / \npgsqlcount.
+\npgsqlpercentage\, of them are working, \npgsqlpassing/\npgsqlcount.
 The pattern we have observed, generally speaking, is that linear progress
 in the test suite corresponds to exponential progress in feature support:
 80\% feature support got us 20\% test passage, 95\% of feature support
@@ -291,13 +291,17 @@ The test failures are quite a thicket; we will fix a problem, and some
 of its failing tests are resolved, while others of its failing tests
 continue failing, but now with a new cause.
 
-The current test passage rate indicates a high degree of primary
-compatibility, with the calling of the API, while much work remains in
-the smaller details of the API mapping.  We have a long road ahead of us
-for the remaining unit tests, but we welcome it.  This path will get us
-to not only full compatibility, but strong confidence as an engineering
+The current test passage rate indicates a high degree of compatibility
+with the calling of the API, while work remains in the smaller
+details of the API mapping.  We have a long road ahead of us for the
+remaining unit tests, but we welcome it.  This path will get us to
+not only full compatibility, but strong confidence as an engineering
 matter that the compatibility is precisely as strong as NPGSQL's own
 inter-version compatibility.
+
+For this reason, only having \npgsqlpercentage of the tests passing
+does not concern us; we consider it a good start in a very promising
+direction.
 
 \subsection{Data type support}
 
