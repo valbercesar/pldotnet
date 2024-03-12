@@ -54,6 +54,7 @@ install_misc:
 	apt install -y strace
 	apt install -y doxygen
 	apt install -y graphviz
+	apt install -y cpplint
 
 install_cluster_requirements: install_misc
 	# cluster creation requirements; locale settings

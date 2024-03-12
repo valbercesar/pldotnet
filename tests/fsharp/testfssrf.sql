@@ -53,7 +53,7 @@ INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-srf-pi', 'make_pi-1', pi_value < 3.143 FROM data WHERE num = 2000 LIMIT 1;
 
 WITH data AS (SELECT numbers() AS num, make_pi_fsharp() AS pi_value)
--- INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'f#-srf-pi', 'make_pi-2', pi_value > 3.141 FROM data WHERE num = 2000 LIMIT 1;
 
 --------------------------------------

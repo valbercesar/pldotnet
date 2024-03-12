@@ -98,7 +98,6 @@ pldotnet-build-debian-packages:
 	rm -rf ../postgresql-*-pldotnet_*.deb
 
 cpplint:
-	apt install cpplint
 	cpplint --filter=-readability/casting,-build/include_subdir,-runtime/int,-runtime/printf,-build/header_guard src/*.c src/*.h
 
 documentation:

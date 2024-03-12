@@ -622,7 +622,8 @@ static Datum result_to_record(TupleDesc desc, pldotnet_Result *result,
             attr = TupleDescAttr(desc, i);
             if (result->oids[i] != attr->atttypid) {
                 elog(ERROR,
-                     "Type mismatch on RECORD:  psql OID(%d) != pldotnet OID(%d) (Slot %d)",
+                     "Type mismatch on RECORD:  "
+                     "psql OID(%d) != pldotnet OID(%d) (Slot %d)",
                      result->oids[i], attr->atttypid, i);
                 return (Datum)0;
             }
