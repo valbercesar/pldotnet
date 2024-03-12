@@ -1,18 +1,18 @@
-
 ![PL.NET LOGO](./PL-NET_LOGO.png)
 
 # PL/.NET
 
 pl/dotnet adds full support for C# and F# to PostgreSQL.  0.99 is our public beta release.
 
-- We support all PL operations: functions, procedures, DO, SPI, triggers, records, SRF, OUT/INOUT, table functions, etc
-- We natively support 38 out of 46 standard user types, the most of any external PL
+- In our benchmarks, pl/dotnet is the fastest PL in PostgreSQL
+- We support all Procedural Language (PL) operations: functions, procedures, DO, SPI, triggers, records, SRF, OUT/INOUT, table functions, etc
+- We natively support 38 out of 46 standard user types, the most of any non-native PL
 - We are the only PL using the native database API; our database access(SPI) is fully NPGSQL-compatible
 - We support both SQL-embedded code blocks and also loading functions from DLLs
-- In our benchmarks, it is the fastest Procedural Language
-- We have extensive testing, 1013 unit tests across both C# and F#
-- All features are fully tested and supported for both C# and F#
+- We have extensive testing, with 1065 unit tests across both C# and F#
 - 100% free software under the PostgreSQL license
+
+Our white paper has extensive discussion of all of these items; check it out.
 
 ## Usage examples
 
@@ -52,13 +52,21 @@ We support  all SQL function modes:
 - set-returning functions, nicely mapped to iterators in C# and sequences in F#
 - table functions, as well as functions returning records or sets of records
 - full support for IN/OUT/INOUT functions
+- full support for trigger functions: 
+    + trigger function arguments, 
+    + old row and new row,
+    + row rewriting (where allowed by SQL), and 
+    + all the standard trigger information: Name, When, Level, Event, Table Name, Table Schema, etc
+
+Data types and SPI are described below.
 
 ## Data type support
 
-We support 36 PostgreSQL types, with all mapped to their NPGSQL-standard dotnet types.
-The only notable exceptions are multirange, enum, and struct types, which we hope
-to add in the future.  All datatypes are nullable, have full array support, and
-are fully unit-tested for C# and F#.
+We support 36 PostgreSQL types, with all mapped to their NPGSQL-standard
+dotnet types.  The only notable exceptions are multirange, enum, and
+struct types, all of which we hope to add in the future.  All datatypes
+are nullable, have full array support, and are fully unit-tested for C#
+and F#.
 
 | PostgreSQL type  | Dotnet type                      |
 |------------------|----------------------------------|
@@ -102,17 +110,16 @@ are fully unit-tested for C# and F#.
 ## SPI
 
 Our SPI leverages the NPGSQL client library to provide a native dotnet
-implementation which is maximally compatible with existing client code.
+implementation, making it maximally compatible with existing client code.
 We intercepted the NPGSQL calls at a very low level to replace the
-client protocol handling with SPI calls; otherwise, NPGSQL was unmodified.
+client protocol handling with SPI calls; NPGSQL was otherwise unmodified.
 We imported the NPGSQL test suite as stored procedures and are using
 it for our testing, giving us high confidence in our compatibility.
 
-Work remains to improve the compatibility and add features.  Our
-biggest category of NPGSQL tests that continue to fail is error
-mapping, because SPI throws exceptions differently than NPGSQL
-does.  Such incompatibilities are minor, and we continue to work to
-improve them.
+Work remains to improve the compatibility and add features.  Our biggest
+category of NPGSQL incompatibility is error mapping, because SPI throws
+exceptions differently than NPGSQL does.  Such incompatibilities are
+minor, and work continues to improve them.
 
 Here are our currently tested SPI operations:
 
@@ -151,7 +158,7 @@ We lack support for multirange, enum, and composite/table types.
 
 Our SPI implementation lacks some minor features like sub-transactions.
 
-We fully support Linux and provide dpkg's for Debian and Ubuntu.  We have built and tested the system on OSX, but we have not packaged it there.  We have not tested the system on Windows.
+We fully support Linux and provide dpkg's for Debian and Ubuntu, but we do not yet have packaging on Windows or OS/X.
 
 Our package build system for dpkg is functional but not as tidy as we would like.
 
