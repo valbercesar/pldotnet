@@ -54,7 +54,6 @@ install_misc:
 	apt install -y strace
 	apt install -y doxygen
 	apt install -y graphviz
-	apt install -y cpplint
 
 install_cluster_requirements: install_misc
 	# cluster creation requirements; locale settings
@@ -107,7 +106,7 @@ install_pls:
 
 install_python_packages:
 	apt install -y python3-pip
-	pip3 install pandas psycopg2 tabulate
+	pip3 install pandas psycopg2 tabulate cpplint
 
 # these targets correspond to the original Dockerfiles which this Makefile replaces
 deb_build: install_pg_dev install_dotnet_deb
