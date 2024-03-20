@@ -3,23 +3,11 @@ using System.Collections.Generic;
 using Xunit;
 using System.Linq;
 
-public abstract class BaseDoEmojiTests : PlDotNetTest
-{
-    protected abstract string FunctionBody { get; }
-
-    protected abstract LanguageType Language { get; }
-
-    public BaseDoEmojiTests()
-    {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.DoBlock, };
-    }
-}
-
 [Trait("Language", "CSharp")]
 [Trait("Category", "Do")]
-public class DoEmojiTestsCSharp : BaseDoEmojiTests
+public class DoEmojiTests : PlDotNetTest
 {
-    protected override string FunctionBody => @"
+    private static readonly string DoBody = @"
 do $$
     string emoji = ""🐂"";
 	Elog.Info($""The emoji \""{emoji}\"" has lenght {emoji.Length}."");
@@ -28,5 +16,20 @@ do $$
 	Elog.Info($""The emoji \""{emoji}\"" has lenght {emoji.Length}."");
 $$ language plcsharp;
     ";
-    protected override LanguageType Language => LanguageType.PlcSharp;
+
+	public DoEmojiTests()
+	{
+		FunctionInfo = new SqlFunctionInfo
+		{
+			TestType = SqlTestType.DoBlock,
+		};
+	}
+
+    [Fact]
+    public void TestDoEmoji()
+    {
+        bool doExecutedSuccessfully = ExecuteSql(DoBody);
+        Assert.True(doExecutedSuccessfully);
+    }
 }
+

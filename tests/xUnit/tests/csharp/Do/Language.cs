@@ -3,23 +3,11 @@ using System.Collections.Generic;
 using Xunit;
 using System.Linq;
 
-public abstract class BaseDoLanguageTests : PlDotNetTest
-{
-    protected abstract string FunctionBody { get; }
-
-    protected abstract LanguageType Language { get; }
-
-    public BaseDoLanguageTests()
-    {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.DoBlock, };
-    }
-}
-
 [Trait("Language", "CSharp")]
 [Trait("Category", "Do")]
-public class DoLanguageTestsCSharp : BaseDoLanguageTests
+public class DoLanguageTests : PlDotNetTest
 {
-    protected override string FunctionBody => @"
+    private static readonly string DoBody = @"
 do $$
     string arabic = ""هل تتكلم العربية؟"";
     Elog.Info($""Do you speak Arabic? => {arabic}"");
@@ -31,11 +19,26 @@ do $$
     Elog.Info($""Do you speak Japanese? => {japanese}"");
 
     string portuguese = ""Você fala português?"";
-    Elog.Info($""Do yo speak Portuguese? => {portuguese}"");
+    Elog.Info($""Do you speak Portuguese? => {portuguese}"");
 
     string russian = ""а ты говоришь по русски?"";
     Elog.Info($""Do you speak Russian? => {russian}"");
 $$ language plcsharp;
     ";
-    protected override LanguageType Language => LanguageType.PlcSharp;
+
+	public DoLanguageTests()
+	{
+		FunctionInfo = new SqlFunctionInfo
+		{
+			TestType = SqlTestType.DoBlock,
+		};
+	}
+
+    [Fact]
+    public void TestDoLanguage()
+    {
+        bool doExecutedSuccessfully = ExecuteSql(DoBody);
+        Assert.True(doExecutedSuccessfully);
+    }
 }
+
