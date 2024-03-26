@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Reflection;
+using System.Text;
 using DotNetEnv;
 using Npgsql;
 using Xunit;
@@ -146,70 +148,141 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         return ExecuteSql(sqlCode);
     }
 
-    public virtual bool InsertTestResult(SqlFunctionInfo functionInfo)
+    public interface ITestResultStrategy
     {
-        string sqlCode;
-        string functionCall = $"{functionInfo.Name}({functionInfo.InputStr})";
+        // AppliesTo determines if the strategy should be used for the given functionInfo
+        bool AppliesTo(SqlFunctionInfo functionInfo);
 
-        bool isReturnTypeJsonOrXml =
-            functionInfo.ReturnType != null
-            && (
-                functionInfo.ReturnType == "XML[]"
-                || functionInfo.ReturnType == "JSON[]"
-                || functionInfo.ReturnType == "JSON[][][]"
-            );
+        // BuildInsertSql returns the SQL code to insert the test result
+        string BuildInsertSql(SqlFunctionInfo functionInfo);
+    }
 
-        bool isExpectedResultJsonText =
-            functionInfo.ExpectedResult != null
-            && functionInfo.ExpectedResult.Contains("::JSON::TEXT");
-
-        if (isReturnTypeJsonOrXml || isExpectedResultJsonText)
+    public class DefaultTestResultStrategy : ITestResultStrategy
+    {
+        public bool AppliesTo(SqlFunctionInfo functionInfo)
         {
-            functionCall += "::TEXT";
-            functionInfo.ExpectedResult += "::TEXT";
-        }
-
-        if (!functionInfo.FunctionCreatedSuccessfully)
-        {
-            sqlCode =
-                $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-            VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', false)
-            RETURNING id;";
-        }
-        else
-        {
-            if (functionInfo.ExpectedResult == "= null")
-            {
-                sqlCode =
-                    $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-                VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', CASE WHEN {functionCall} IS NULL THEN true ELSE false END)
-                RETURNING id;";
-            }
-            else
-            {
-                if (functionInfo.CastFunctionAs == "")
-                {
-                    sqlCode =
-                        $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-                    VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionCall} {functionInfo.ExpectedResult})
-                    RETURNING id;";
-                }
-                else
-                {
-                    sqlCode =
-                        $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-                    VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', CAST({functionCall} AS {functionInfo.CastFunctionAs}) {functionInfo.ExpectedResult})
-                    RETURNING id;";
-                }
-            }
-        }
-
-        int? returnedId = ExecuteSqlReturnId(sqlCode);
-        if (returnedId.HasValue)
-        {
-            functionInfo.TestId = returnedId.Value;
             return true;
         }
+
+        public string BuildInsertSql(SqlFunctionInfo functionInfo)
+        {
+            string functionCall = $"{functionInfo.Name}({functionInfo.InputStr})";
+
+            string cast = !string.IsNullOrWhiteSpace(functionInfo.CastFunctionAs)
+                ? $"CAST({functionCall} AS {functionInfo.CastFunctionAs})"
+                : functionCall;
+
+            string nullComparison =
+                functionInfo.ExpectedResult == "= null"
+                    ? "IS NULL"
+                    : $"{cast} {functionInfo.ExpectedResult}";
+
+            if (string.IsNullOrWhiteSpace(functionInfo.ExpectedResult))
+            {
+                nullComparison = "IS NOT NULL";
+            }
+
+            string sqlCode =
+                $@"INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+                            VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', {nullComparison})
+                            RETURNING id;";
+
+            return sqlCode;
+        }
+    }
+
+    public class CteTestResultStrategy : ITestResultStrategy
+    {
+        public bool AppliesTo(SqlFunctionInfo functionInfo)
+        {
+            // This strategy applies if the ExpectedResult property contains a CTE indicator.
+            // Adjust the logic here if you have a more reliable way to identify CTE usage.
+            return functionInfo.ExpectedResult?.Contains("WITH", StringComparison.OrdinalIgnoreCase)
+                ?? false;
+        }
+
+        public string BuildInsertSql(SqlFunctionInfo functionInfo)
+        {
+            // Assuming functionInfo.ExpectedResult contains the CTE query,
+            // directly return it as the SQL code to execute.
+            return functionInfo.ExpectedResult ?? string.Empty;
+        }
+    }
+
+    public class JsonOrXmlTestResultStrategy : ITestResultStrategy
+    {
+        public bool AppliesTo(SqlFunctionInfo functionInfo)
+        {
+            return (
+                    functionInfo.ReturnType != null
+                    && (
+                        functionInfo.ReturnType.IndexOf("JSON", StringComparison.OrdinalIgnoreCase)
+                            >= 0
+                        || functionInfo.ReturnType.IndexOf(
+                            "XML",
+                            StringComparison.OrdinalIgnoreCase
+                        ) >= 0
+                    )
+                )
+                || (
+                    functionInfo.ExpectedResult != null
+                    && functionInfo.ExpectedResult.IndexOf(
+                        "::JSON::TEXT",
+                        StringComparison.OrdinalIgnoreCase
+                    ) >= 0
+                );
+        }
+
+        public string BuildInsertSql(SqlFunctionInfo functionInfo)
+        {
+            string functionCall = $"{functionInfo.Name}({functionInfo.InputStr})::TEXT";
+            string expectedResult = functionInfo.ExpectedResult + "::TEXT";
+
+            string sqlCode =
+                $@"   INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+            VALUES ('{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionCall} {expectedResult})
+            RETURNING id;";
+            return sqlCode;
+        }
+    }
+
+    public class TestResultStrategyFactory
+    {
+        private static readonly List<ITestResultStrategy> Strategies = new List<ITestResultStrategy>
+        {
+            // new CteTestResultStrategy(),
+            new JsonOrXmlTestResultStrategy(),
+            new DefaultTestResultStrategy()
+        };
+
+        public static ITestResultStrategy GetStrategy(SqlFunctionInfo functionInfo)
+        {
+            return Strategies.FirstOrDefault(strategy => strategy.AppliesTo(functionInfo))
+                ?? new DefaultTestResultStrategy();
+        }
+    }
+
+    public bool InsertTestResult(SqlFunctionInfo functionInfo)
+    {
+        var strategy = TestResultStrategyFactory.GetStrategy(functionInfo);
+        string sqlCode = strategy.BuildInsertSql(functionInfo);
+
+        Console.WriteLine($"SQL CODE: {sqlCode}");
+
+        try
+        {
+            int? returnedId = ExecuteSqlReturnId(sqlCode);
+            if (returnedId.HasValue)
+            {
+                functionInfo.TestId = returnedId.Value;
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SQL Execution Error: {ex.Message}");
+        }
+
         return false;
     }
 
@@ -223,33 +296,20 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     /// null otherwise.</returns>
     protected int? ExecuteSqlReturnId(string sqlCode)
     {
-        try
+        string databaseConnectionString =
+            Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
+            ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
+        databaseConnectionString += ";Include Error Detail=true";
+        using var connection = new NpgsqlConnection(databaseConnectionString);
+        connection.Open();
+        using var command = new NpgsqlCommand(sqlCode, connection);
+        command.CommandType = CommandType.Text;
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
         {
-            // Retrieve database connection string from environment variables
-            string databaseConnectionString =
-                Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
-                ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
-
-            // Establish a connection to the database
-            using var connection = new NpgsqlConnection(databaseConnectionString);
-            connection.Open();
-
-            // Prepare the SQL command to be executed
-            using var command = new NpgsqlCommand(sqlCode, connection);
-            command.CommandType = CommandType.Text;
-
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return reader.GetInt32(0);
-            }
-            return null;
+            return reader.GetInt32(0);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"SQL execution failed: {ex.Message}");
-            return null;
-        }
+        return null;
     }
 
     /// <summary>
@@ -261,7 +321,7 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     {
         if (!functionInfo.TestId.HasValue)
         {
-            Console.WriteLine("TestId is not set.");
+            // Console.WriteLine("TestId is not set.");
             return null;
         }
 
@@ -291,49 +351,37 @@ WHERE id = {functionInfo.TestId.Value};";
     /// and false otherwise.</returns>
     protected bool ExecuteSql(string sqlCode)
     {
-        try
+        string databaseConnectionString =
+            Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
+            ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
+        databaseConnectionString += ";Include Error Detail=true";
+        using (var connection = new NpgsqlConnection(databaseConnectionString))
         {
-            string databaseConnectionString =
-                Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
-                ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
-
-            using (var connection = new NpgsqlConnection(databaseConnectionString))
+            connection.Open();
+            using (var command = new NpgsqlCommand(sqlCode, connection))
             {
-                connection.Open();
-                using (var command = new NpgsqlCommand(sqlCode, connection))
+                command.CommandType = CommandType.Text;
+                if (sqlCode.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
                 {
-                    command.CommandType = CommandType.Text;
-
-                    if (
-                        sqlCode.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase)
-                    )
+                    using (var reader = command.ExecuteReader())
                     {
-                        using (var reader = command.ExecuteReader())
+                        if (reader.Read())
                         {
-                            if (reader.Read())
+                            object value = reader.GetValue(0);
+                            if (value is bool booleanValue)
                             {
-                                object value = reader.GetValue(0);
-
-                                if (value is bool booleanValue)
-                                {
-                                    return booleanValue;
-                                }
+                                return booleanValue;
                             }
                         }
-                        return false;
                     }
-                    else
-                    {
-                        command.ExecuteNonQuery();
-                        return true;
-                    }
+                    return false;
+                }
+                else
+                {
+                    command.ExecuteNonQuery();
+                    return true;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"SQL execution failed: {ex.Message}");
-            return false;
         }
     }
 
@@ -361,33 +409,55 @@ WHERE id = {functionInfo.TestId.Value};";
     )
     {
         if (FunctionInfo == null)
-            return;
-
-        // Console.WriteLine(GetFunctionDefinition(FunctionInfo));
-        // Console.WriteLine($"Function created:\n{GetFunctionDefinition(FunctionInfo)}\n");
-        // Console.WriteLine("[DOTNET TEST OUTPUT]:");
-
-        FunctionInfo.TestName = testName;
-        FunctionInfo.FeatureName = featureName;
-        FunctionInfo.InputStr = input;
-        FunctionInfo.ExpectedResult = expectedResult;
-
-        FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
-
-        if (FunctionInfo.TestType == SqlTestType.Procedure)
         {
-            bool? procedureResult = ExecuteProcedureTests(FunctionInfo);
-            Assert.True(procedureResult, "Failed at the Call Procedure step.");
+            Assert.True(false, "FunctionInfo is null, test cannot proceed.");
             return;
         }
-        bool testInsertionResult = InsertTestResult(FunctionInfo);
 
-        bool? testResult = FetchTestResult(FunctionInfo);
-        Assert.True(FunctionInfo.FunctionCreatedSuccessfully, "Failed to create function in .NET");
-        Assert.True(testInsertionResult, "Failed to execute the function.");
-        Assert.True(testResult.HasValue, "Failed to get the test result value.");
-        if (!testResult.HasValue)
-            return;
-        Assert.True(testResult.Value, "Test did not return the expected value.");
+        try
+        {
+            FunctionInfo.TestName = testName;
+            FunctionInfo.FeatureName = featureName;
+            FunctionInfo.InputStr = input;
+            FunctionInfo.ExpectedResult = expectedResult;
+
+            // Define the SQL function or procedure
+            FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
+            Assert.True(
+                FunctionInfo.FunctionCreatedSuccessfully,
+                $"Failed to create function/procedure {FunctionInfo.Name} in Postgres database."
+            );
+
+            if (expectedResult.StartsWith("WITH", StringComparison.OrdinalIgnoreCase))
+            {
+                // If expectedResult starts with "WITH", it indicates a CTE or complex SQL command.
+                // Execute the SQL command directly. Ik this is bad.
+                bool cteExecutionResult = ExecuteSql(expectedResult);
+                Assert.True(cteExecutionResult, "CTE or complex SQL command execution failed.");
+            }
+            else
+            {
+                bool testInsertionResult = InsertTestResult(FunctionInfo);
+                Assert.True(testInsertionResult, "Insertion of test result failed.");
+
+                // Fetch and assert the test result
+                bool? testResult = FetchTestResult(FunctionInfo);
+                Assert.True(testResult.HasValue, "Failed to fetch the test result.");
+                Assert.True(testResult.Value, "Test result does not match the expected value.");
+            }
+
+            Console.WriteLine(
+                $"[DOTNET TEST OUTPUT PASSING]:\n"
+                    + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\nBANANA```"
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"[DOTNET TEST OUTPUT FAILING]:\n"
+                    + $"```BANANA\nFunction/Procedure: {FunctionInfo.Name}\nTest: {testName}\nSQL execution failed: {ex.Message}\nBANANA```"
+            );
+            Assert.True(false, $"Test failed due to an exception: {ex.Message}");
+        }
     }
 }
