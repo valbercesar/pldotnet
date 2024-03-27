@@ -35,6 +35,14 @@ public class PlDotNetTest
 
     public class SqlFunctionInfo
     {
+        // New properties for dynamic SQL construction
+        public string CteStatement { get; set; } = "";
+        public string CteAlias { get; set; } = "data";
+        public string FunctionResultAlias { get; set; } = "functionResult";
+        public List<string> PreQueries { get; set; } = new List<string>(); // For CTEs or setup queries
+        public List<string> FunctionCalls { get; set; } = new List<string>(); // Support multiple function calls
+        public string CustomAssertion { get; set; } = string.Empty; // For complex assertion logic
+        public string QuerySuffix { get; set; } = string.Empty; // For additional WHERE, LIMIT, etc.
         public SqlTestType TestType { get; set; } = SqlTestType.Function;
         public string Name { get; set; } = string.Empty;
         public List<FunctionArgument> Arguments { get; set; } = new List<FunctionArgument>();
@@ -88,6 +96,16 @@ public class PlDotNetTest
             Name = name;
             Type = type;
         }
+    }
+
+    public class TestQueryParameters
+    {
+        public List<(string Name, string Query)> Ctes { get; set; } =
+            new List<(string Name, string Query)>();
+        public string TestCategory { get; set; }
+        public string TestName { get; set; }
+        public string Assertion { get; set; }
+        public string FinalSelect { get; set; }
     }
 
     /// <summary>
@@ -191,23 +209,89 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         }
     }
 
+    //     public class CteTestResultStrategy : ITestResultStrategy
+    //     {
+    //         public bool AppliesTo(SqlFunctionInfo functionInfo)
+    //         {
+    //             // This strategy applies if a CTE statement is defined
+    //             return !string.IsNullOrWhiteSpace(functionInfo.CteStatement);
+    //         }
+
+    //         public string BuildInsertSql(SqlFunctionInfo functionInfo)
+    //         {
+    //             // Use the provided CTE statement directly in the SQL command construction
+    //             string sqlCode =
+    //                 $@"
+    // {functionInfo.CteStatement}
+    // INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+    // SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.CustomAssertion} FROM cte {functionInfo.QuerySuffix} RETURNING id;";
+
+    //             return sqlCode;
+    //         }
+    //     }
+
+    // Defines a class CteTestResultStrategy that implements the ITestResultStrategy interface.
     public class CteTestResultStrategy : ITestResultStrategy
     {
+        // Determines if the strategy applies to the given SQL function based on the presence of a CTE statement.
         public bool AppliesTo(SqlFunctionInfo functionInfo)
         {
-            // This strategy applies if the ExpectedResult property contains a CTE indicator.
-            // Adjust the logic here if you have a more reliable way to identify CTE usage.
-            return functionInfo.ExpectedResult?.Contains("WITH", StringComparison.OrdinalIgnoreCase)
-                ?? false;
+            // Returns true if the CteStatement property of functionInfo is not null or whitespace, indicating
+            // this strategy should be used for functions with CTEs.
+            return !string.IsNullOrWhiteSpace(functionInfo.CteStatement);
         }
 
+        // Builds an SQL INSERT statement using the information provided in the SqlFunctionInfo parameter.
         public string BuildInsertSql(SqlFunctionInfo functionInfo)
         {
-            // Assuming functionInfo.ExpectedResult contains the CTE query,
-            // directly return it as the SQL code to execute.
-            return functionInfo.ExpectedResult ?? string.Empty;
+            // Extracts the name of the CTE from its SQL statement to use in the final query.
+            string cteName = ExtractCteName(functionInfo.CteStatement);
+
+            string sqlCode =
+                $@"
+{functionInfo.CteStatement}
+INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.CustomAssertion} FROM {cteName} {functionInfo.QuerySuffix} RETURNING id;";
+
+            return sqlCode;
+        }
+
+        private string? ExtractCteName(string cteStatement)
+        {
+            // Uses a regex to find the CTE name in the CTE statement by looking for the pattern
+            // that follows "WITH" and precedes "AS" (e.g., data, cte1, data1, etc.).
+            var match = System.Text.RegularExpressions.Regex.Match(
+                cteStatement,
+                @"WITH\s+(\w+)\s+AS"
+            );
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+            return null;
         }
     }
+
+    //     public class CteTestResultStrategy : ITestResultStrategy
+    //     {
+    //         public bool AppliesTo(SqlFunctionInfo functionInfo)
+    //         {
+    //             // This strategy applies if a CTE statement is defined and not empty.
+    //             return !string.IsNullOrWhiteSpace(functionInfo.CteStatement);
+    //         }
+
+    //         public string BuildInsertSql(SqlFunctionInfo functionInfo)
+    //         {
+    //             // Directly prepend the CTE statement to the SQL command
+    //             string sqlCode =
+    //                 $@"
+    // {functionInfo.cteStatement}
+    // INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+    // SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.CustomAssertion} RETURNING id;";
+
+    //             return sqlCode;
+    //         }
+    //     }
 
     public class JsonOrXmlTestResultStrategy : ITestResultStrategy
     {
@@ -250,7 +334,7 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     {
         private static readonly List<ITestResultStrategy> Strategies = new List<ITestResultStrategy>
         {
-            // new CteTestResultStrategy(),
+            new CteTestResultStrategy(),
             new JsonOrXmlTestResultStrategy(),
             new DefaultTestResultStrategy()
         };
@@ -267,7 +351,7 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         var strategy = TestResultStrategyFactory.GetStrategy(functionInfo);
         string sqlCode = strategy.BuildInsertSql(functionInfo);
 
-        Console.WriteLine($"SQL CODE: {sqlCode}");
+        Console.WriteLine($"SQL CODE built with the strategy: {sqlCode}");
 
         try
         {
@@ -401,11 +485,12 @@ WHERE id = {functionInfo.TestId.Value};";
     /// <param name="featureName">Feature associated with the test.</param>
     /// <param name="input">Input string for the SQL function.</param>
     /// <param name="expectedResult">Expected result string for the SQL function.</param>
-    public void RunGenericTest(
+    public void RunTestWithCte(
         string featureName,
         string testName,
-        string input,
-        string expectedResult
+        string cteStatement, // Updated to
+        string customAssertion,
+        string querySuffix
     )
     {
         if (FunctionInfo == null)
@@ -418,44 +503,31 @@ WHERE id = {functionInfo.TestId.Value};";
         {
             FunctionInfo.TestName = testName;
             FunctionInfo.FeatureName = featureName;
-            FunctionInfo.InputStr = input;
-            FunctionInfo.ExpectedResult = expectedResult;
+            FunctionInfo.CteStatement = cteStatement; // Updated to use the full CTE statement
+            FunctionInfo.CustomAssertion = customAssertion;
+            FunctionInfo.QuerySuffix = querySuffix;
 
-            // Define the SQL function or procedure
+            // No need to set pre-queries and CTE alias separately now
             FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
             Assert.True(
                 FunctionInfo.FunctionCreatedSuccessfully,
-                $"Failed to create function/procedure {FunctionInfo.Name} in Postgres database."
+                "Failed to create function in the PostgreSQL database."
             );
 
-            if (expectedResult.StartsWith("WITH", StringComparison.OrdinalIgnoreCase))
-            {
-                // If expectedResult starts with "WITH", it indicates a CTE or complex SQL command.
-                // Execute the SQL command directly. Ik this is bad.
-                bool cteExecutionResult = ExecuteSql(expectedResult);
-                Assert.True(cteExecutionResult, "CTE or complex SQL command execution failed.");
-            }
-            else
-            {
-                bool testInsertionResult = InsertTestResult(FunctionInfo);
-                Assert.True(testInsertionResult, "Insertion of test result failed.");
+            bool testInsertionResult = InsertTestResult(FunctionInfo);
+            Assert.True(testInsertionResult, "Failed to execute the function.");
 
-                // Fetch and assert the test result
-                bool? testResult = FetchTestResult(FunctionInfo);
-                Assert.True(testResult.HasValue, "Failed to fetch the test result.");
-                Assert.True(testResult.Value, "Test result does not match the expected value.");
-            }
-
+            bool? testResult = FetchTestResult(FunctionInfo);
+            Assert.True(testResult.HasValue, "Failed to get the test result value.");
+            Assert.True(testResult.Value, "Test did not return the expected value.");
             Console.WriteLine(
-                $"[DOTNET TEST OUTPUT PASSING]:\n"
-                    + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\nBANANA```"
+                $"[DOTNET TEST OUTPUT PASSING]:\n{GetFunctionDefinition(FunctionInfo)}\n{InsertTestResult(FunctionInfo)}"
             );
         }
         catch (Exception ex)
         {
             Console.WriteLine(
-                $"[DOTNET TEST OUTPUT FAILING]:\n"
-                    + $"```BANANA\nFunction/Procedure: {FunctionInfo.Name}\nTest: {testName}\nSQL execution failed: {ex.Message}\nBANANA```"
+                $"[DOTNET TEST OUTPUT FAILING]:\n{GetFunctionDefinition(FunctionInfo)}\nSQL execution failed: {ex.Message}"
             );
             Assert.True(false, $"Test failed due to an exception: {ex.Message}");
         }
