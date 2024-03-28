@@ -247,27 +247,34 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
             // Extracts the name of the CTE from its SQL statement to use in the final query.
             string cteName = ExtractCteName(functionInfo.CteStatement);
 
+            // Constructs an SQL statement that includes the CTE statement and an INSERT INTO operation.
+            // The INSERT operation adds a new row into the automated_test_results table with details from the functionInfo parameter
+            // and selects values from the CTE defined earlier, applying any specified query suffix. Finally, it returns the id of the inserted row.
             string sqlCode =
                 $@"
 {functionInfo.CteStatement}
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.CustomAssertion} FROM {cteName} {functionInfo.QuerySuffix} RETURNING id;";
 
+            // Returns the constructed SQL code.
             return sqlCode;
         }
 
+        // A private helper method to extract the name of the CTE from its SQL statement.
         private string? ExtractCteName(string cteStatement)
         {
-            // Uses a regex to find the CTE name in the CTE statement by looking for the pattern
-            // that follows "WITH" and precedes "AS" (e.g., data, cte1, data1, etc.).
+            // Uses a regular expression to find the CTE name in the CTE statement by looking for the pattern
+            // that follows "WITH" and precedes "AS". Assumes the CTE name is a single word (\w+).
             var match = System.Text.RegularExpressions.Regex.Match(
                 cteStatement,
                 @"WITH\s+(\w+)\s+AS"
             );
+            // If the pattern is found, the CTE name is returned.
             if (match.Success)
             {
                 return match.Groups[1].Value;
             }
+            // If the pattern is not found, returns null indicating no CTE name could be extracted.
             return null;
         }
     }
@@ -351,7 +358,7 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
         var strategy = TestResultStrategyFactory.GetStrategy(functionInfo);
         string sqlCode = strategy.BuildInsertSql(functionInfo);
 
-        Console.WriteLine($"SQL CODE built with the strategy: {sqlCode}");
+        Console.WriteLine($"SQL CODE: {sqlCode}");
 
         try
         {
@@ -466,6 +473,77 @@ WHERE id = {functionInfo.TestId.Value};";
                     return true;
                 }
             }
+        }
+    }
+
+    public void RunGenericTest(
+        string featureName,
+        string testName,
+        string input,
+        string expectedResult
+    )
+    {
+        if (FunctionInfo == null)
+        {
+            Assert.True(false, "FunctionInfo is null, test cannot proceed.");
+            return;
+        }
+
+        try
+        {
+            FunctionInfo.TestName = testName;
+            FunctionInfo.FeatureName = featureName;
+            FunctionInfo.InputStr = input;
+            FunctionInfo.ExpectedResult = expectedResult;
+
+            // Try to define and execute the function
+            FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
+            Assert.True(
+                FunctionInfo.FunctionCreatedSuccessfully,
+                "Failed to create function in postgres database."
+            );
+
+            if (FunctionInfo.TestType == SqlTestType.Procedure)
+            {
+                bool? procedureResult = ExecuteProcedureTests(FunctionInfo);
+                Assert.True(
+                    procedureResult.HasValue && procedureResult.Value,
+                    "Failed at the Call Procedure step."
+                );
+                Console.WriteLine(
+                    $"[DOTNET TEST OUTPUT PASSING]:\n"
+                        + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\nBANANA```"
+                );
+                return;
+            }
+            else
+            {
+                bool testInsertionResult = InsertTestResult(FunctionInfo);
+                Assert.True(testInsertionResult, "Failed to execute the function.");
+            }
+
+            // Fetch and assert the test result
+            bool? testResult = FetchTestResult(FunctionInfo);
+            Assert.True(testResult.HasValue, "Failed to get the test result value.");
+            Assert.True(testResult.Value, "Test did not return the expected value.");
+            Console.WriteLine(
+                $"[DOTNET TEST OUTPUT PASSING]:\n"
+                    + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\n{InsertTestResult(FunctionInfo)}BANANA```"
+            );
+        }
+        catch (Exception ex)
+        {
+            // Handle the failure explicitly
+            // Console.WriteLine(
+            //     $"[DOTNET TEST OUTPUT FAILING]:\n"
+            //         + $"```BANANA\nOutput error: {ex.Message}\nBANANA```"
+            // );
+            Console.WriteLine(
+                $"[DOTNET TEST OUTPUT FAILING]:\n"
+                    + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\nSQL execution failed: {ex.Message}\nBANANA```"
+            );
+            Console.WriteLine($"");
+            Assert.True(false, $"Test failed due to an exception: {ex.Message}");
         }
     }
 
