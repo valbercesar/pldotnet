@@ -4,23 +4,23 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using Xunit;
 
-public abstract class BaseMakePiTests : PlDotNetTest
+public abstract class BaseNumbersLongNoArgumentTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
     protected abstract LanguageType Language { get; }
 
     protected string cteStatement = string.Empty;
 
-    public BaseMakePiTests()
+    public BaseNumbersLongNoArgumentTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "MakePi",
-            Arguments = new List<FunctionArgument>(),
-            ReturnType = "SETOF float8",
+            Name = "NumbersLongNoArgument",
+            Arguments = new List<FunctionArgument> { },
+            ReturnType = "SETOF int8",
+            Body = FunctionBody,
             Language = Language,
             IsStrict = false,
-            Body = FunctionBody,
         };
     }
 
@@ -30,37 +30,25 @@ public abstract class BaseMakePiTests : PlDotNetTest
         FunctionInfo.CteStatement = cteStatement;
     }
 
-    public static new IEnumerable<object[]> TestCases()
+    public static IEnumerable<object[]> TestCases()
     {
         yield return new object[]
         {
-            "c#-srf-pi",
-            "make_pi-1",
-            @"
-WITH data AS (SELECT numbers() AS num, make_pi() AS pi_value)",
-            "pi_value < 3.143",
-            "WHERE num = 1000 LIMIT 1"
-        };
-
-        yield return new object[]
-        {
-            "c#-srf-pi",
-            "make_pi-2",
-            @"
-WITH data AS (SELECT numbers() AS num, make_pi() AS pi_value)",
-            "pi_value > 3.141",
-            "WHERE num = 1000 LIMIT 1"
+            "c#-srf-sum",
+            "numbers-1",
+            @"WITH data AS (SELECT NumbersLongNoArgument() AS num LIMIT 100)",
+            "SUM(num) = 4950"
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestMakePi(
+    public void TestNumbersLongNoArgument(
         string featureName,
         string testName,
         string cteStatement,
         string customAssertion,
-        string querySuffix
+        string querySuffix = null
     )
     {
         SetupTest(cteStatement);
@@ -70,11 +58,11 @@ WITH data AS (SELECT numbers() AS num, make_pi() AS pi_value)",
 
 [Trait("Language", "CSharp")]
 [Trait("Category", "SRF")]
-public class MakePiTestsCsharp : BaseMakePiTests
+public class NumbersLongNoArgumentTestsCsharp : BaseNumbersLongNoArgumentTests
 {
     protected override string FunctionBody =>
-        @"double sum = 0.0;
-        for (int i = 0; ; i++) { yield return 4 * (sum += ((i % 2) == 0 ? 1.0 : -1.0) / (2 * i + 1)); }";
-
+        @"
+for(long i=0;;i++){ yield return i;}
+    ";
     protected override LanguageType Language => LanguageType.PlcSharp;
 }

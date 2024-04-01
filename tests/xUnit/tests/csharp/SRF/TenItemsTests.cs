@@ -4,23 +4,23 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using Xunit;
 
-public abstract class BaseMakePiTests : PlDotNetTest
+public abstract class BaseTenItemsTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
     protected abstract LanguageType Language { get; }
 
     protected string cteStatement = string.Empty;
 
-    public BaseMakePiTests()
+    public BaseTenItemsTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "MakePi",
-            Arguments = new List<FunctionArgument>(),
-            ReturnType = "SETOF float8",
+            Name = "TenItems",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("arg", "text") },
+            ReturnType = "SETOF text",
+            Body = FunctionBody,
             Language = Language,
             IsStrict = false,
-            Body = FunctionBody,
         };
     }
 
@@ -30,37 +30,30 @@ public abstract class BaseMakePiTests : PlDotNetTest
         FunctionInfo.CteStatement = cteStatement;
     }
 
-    public static new IEnumerable<object[]> TestCases()
+    public static IEnumerable<object[]> TestCases()
     {
         yield return new object[]
         {
-            "c#-srf-pi",
-            "make_pi-1",
+            "c#-srf-strings",
+            "string-checksum-1",
             @"
-WITH data AS (SELECT numbers() AS num, make_pi() AS pi_value)",
-            "pi_value < 3.143",
-            "WHERE num = 1000 LIMIT 1"
-        };
-
-        yield return new object[]
-        {
-            "c#-srf-pi",
-            "make_pi-2",
-            @"
-WITH data AS (SELECT numbers() AS num, make_pi() AS pi_value)",
-            "pi_value > 3.141",
-            "WHERE num = 1000 LIMIT 1"
+WITH aggregated AS (
+    SELECT string_agg(ten_items, '') AS concatenated_items
+    FROM (SELECT ten_items('apples')) AS t
+)
+",
+            "encode(digest(concatenated_items, 'sha256'), 'hex') = '94091910bae126a50dfb041cd9e9a44efd716c77185628b3bce7a5965a207555'",
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestMakePi(
+    public void TenItemsTests(
         string featureName,
         string testName,
         string cteStatement,
         string customAssertion,
-        string querySuffix
+        string querySuffix = null
     )
     {
         SetupTest(cteStatement);
@@ -70,11 +63,11 @@ WITH data AS (SELECT numbers() AS num, make_pi() AS pi_value)",
 
 [Trait("Language", "CSharp")]
 [Trait("Category", "SRF")]
-public class MakePiTestsCsharp : BaseMakePiTests
+public class TenItemsTestsCsharp : BaseTenItemsTests
 {
     protected override string FunctionBody =>
-        @"double sum = 0.0;
-        for (int i = 0; ; i++) { yield return 4 * (sum += ((i % 2) == 0 ? 1.0 : -1.0) / (2 * i + 1)); }";
-
+        @"
+for(int i=1; i<=10; i++){ yield return $""{i} {arg}""; }
+    ";
     protected override LanguageType Language => LanguageType.PlcSharp;
 }
