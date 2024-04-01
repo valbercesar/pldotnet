@@ -36,11 +36,8 @@ public class PlDotNetTest
     public class SqlFunctionInfo
     {
         // New properties for dynamic SQL construction
-        public string CteStatement { get; set; } = "";
-        public string CteAlias { get; set; } = "data";
-        public string FunctionResultAlias { get; set; } = "functionResult";
-        public List<string> PreQueries { get; set; } = new List<string>(); // For CTEs or setup queries
-        public List<string> FunctionCalls { get; set; } = new List<string>(); // Support multiple function calls
+
+        public string CteStatement { get; set; } = string.Empty;
         public string CustomAssertion { get; set; } = string.Empty; // For complex assertion logic
         public string QuerySuffix { get; set; } = string.Empty; // For additional WHERE, LIMIT, etc.
         public SqlTestType TestType { get; set; } = SqlTestType.Function;
@@ -55,7 +52,7 @@ public class PlDotNetTest
         public string? FeatureName { get; set; }
         public string? InputStr { get; set; }
         public string? ExpectedResult { get; set; }
-        public string? CastFunctionAs { get; set; } = "";
+        public string? CastFunctionAs { get; set; } = string.Empty;
 
         public int? TestId { get; set; }
 
@@ -234,6 +231,7 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     public class CteTestResultStrategy : ITestResultStrategy
     {
         // Determines if the strategy applies to the given SQL function based on the presence of a CTE statement.
+
         public bool AppliesTo(SqlFunctionInfo functionInfo)
         {
             // Returns true if the CteStatement property of functionInfo is not null or whitespace, indicating
@@ -346,16 +344,24 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
             new DefaultTestResultStrategy()
         };
 
-        public static ITestResultStrategy GetStrategy(SqlFunctionInfo functionInfo)
+        public static ITestResultStrategy GetStrategy(
+            SqlFunctionInfo functionInfo,
+            bool forceCte = false
+        )
         {
+            if (forceCte)
+            {
+                return Strategies[0];
+            }
             return Strategies.FirstOrDefault(strategy => strategy.AppliesTo(functionInfo))
                 ?? new DefaultTestResultStrategy();
         }
     }
 
-    public bool InsertTestResult(SqlFunctionInfo functionInfo)
+    public bool InsertTestResult(SqlFunctionInfo functionInfo, bool forceCte = false)
     {
-        var strategy = TestResultStrategyFactory.GetStrategy(functionInfo);
+        var strategy = TestResultStrategyFactory.GetStrategy(functionInfo, forceCte);
+
         string sqlCode = strategy.BuildInsertSql(functionInfo);
 
         Console.WriteLine($"SQL CODE: {sqlCode}");
@@ -476,6 +482,22 @@ WHERE id = {functionInfo.TestId.Value};";
         }
     }
 
+    /// <summary>
+    /// Executes a generic test for the provided SQL function, logs the test result, and asserts the success of each step.
+    /// <para>This method performs the following actions and validations:</para>
+    /// <para>1. Sets up the function information based on the provided parameters.</para>
+    /// <para>2. Attempts to define the function in the database.</para>
+    /// <para>3. Validates (via assertion) that the function was successfully created.</para>
+    /// <para>4. Inserts the test result for the defined function into the database.</para>
+    /// <para>5. Validates (via assertion) that the test result was successfully inserted.</para>
+    /// <para>6. Fetches the test result from the database.</para>
+    /// <para>7. Validates (via assertion) that a test result was retrieved.</para>
+    /// <para>8. Validates (via assertion) that the retrieved test result matches the expected result.</para>
+    /// </summary>
+    /// <param name="functionName">Name of the SQL function to test.</param>
+    /// <param name="featureName">Feature associated with the test.</param>
+    /// <param name="input">Input string for the SQL function.</param>
+    /// <param name="expectedResult">Expected result string for the SQL function.</param>
     public void RunGenericTest(
         string featureName,
         string testName,
@@ -542,35 +564,23 @@ WHERE id = {functionInfo.TestId.Value};";
                 $"[DOTNET TEST OUTPUT FAILING]:\n"
                     + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\nSQL execution failed: {ex.Message}\nBANANA```"
             );
-            Console.WriteLine($"");
             Assert.True(false, $"Test failed due to an exception: {ex.Message}");
         }
     }
 
-    /// <summary>
-    /// Executes a generic test for the provided SQL function, logs the test result, and asserts the success of each step.
-    /// <para>This method performs the following actions and validations:</para>
-    /// <para>1. Sets up the function information based on the provided parameters.</para>
-    /// <para>2. Attempts to define the function in the database.</para>
-    /// <para>3. Validates (via assertion) that the function was successfully created.</para>
-    /// <para>4. Inserts the test result for the defined function into the database.</para>
-    /// <para>5. Validates (via assertion) that the test result was successfully inserted.</para>
-    /// <para>6. Fetches the test result from the database.</para>
-    /// <para>7. Validates (via assertion) that a test result was retrieved.</para>
-    /// <para>8. Validates (via assertion) that the retrieved test result matches the expected result.</para>
-    /// </summary>
-    /// <param name="functionName">Name of the SQL function to test.</param>
-    /// <param name="featureName">Feature associated with the test.</param>
-    /// <param name="input">Input string for the SQL function.</param>
-    /// <param name="expectedResult">Expected result string for the SQL function.</param>
-    public void RunTestWithCte(
+    public void RunTestWithSuffix(
         string featureName,
         string testName,
-        string cteStatement, // Updated to
+        string cteStatement,
         string customAssertion,
-        string querySuffix
+        string querySuffix = null,
+        bool forceCte = false
     )
     {
+        if (querySuffix != null)
+        {
+            FunctionInfo.QuerySuffix = querySuffix;
+        }
         if (FunctionInfo == null)
         {
             Assert.True(false, "FunctionInfo is null, test cannot proceed.");
@@ -592,14 +602,14 @@ WHERE id = {functionInfo.TestId.Value};";
                 "Failed to create function in the PostgreSQL database."
             );
 
-            bool testInsertionResult = InsertTestResult(FunctionInfo);
+            bool testInsertionResult = InsertTestResult(FunctionInfo, forceCte);
             Assert.True(testInsertionResult, "Failed to execute the function.");
 
             bool? testResult = FetchTestResult(FunctionInfo);
             Assert.True(testResult.HasValue, "Failed to get the test result value.");
             Assert.True(testResult.Value, "Test did not return the expected value.");
             Console.WriteLine(
-                $"[DOTNET TEST OUTPUT PASSING]:\n{GetFunctionDefinition(FunctionInfo)}\n{InsertTestResult(FunctionInfo)}"
+                $"[DOTNET TEST OUTPUT PASSING]:\n{GetFunctionDefinition(FunctionInfo)}\n{InsertTestResult(FunctionInfo, forceCte)}"
             );
         }
         catch (Exception ex)
