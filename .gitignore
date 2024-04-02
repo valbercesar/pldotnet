@@ -124,3 +124,6 @@ docs/pldotnet-whitepaper-dec22.*
 tests/npgsql/bin/
 tests/npgsql/obj/
 tests/npgsql/sql/
+
+# System-specific files
+.DS_Store
