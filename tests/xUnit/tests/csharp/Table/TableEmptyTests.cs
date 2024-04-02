@@ -4,18 +4,18 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using Xunit;
 
-public abstract class BaseTableArgTests : PlDotNetTest
+public abstract class BaseTableEmptyTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
     protected abstract LanguageType Language { get; }
 
-    public BaseTableArgTests()
+    public BaseTableEmptyTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "TableArgTest",
+            Name = "TableEmptyTest",
             Arguments = new List<FunctionArgument> { new FunctionArgument("lim", "int4") },
-            ReturnType = "TABLE(id integer, name text)",
+            ReturnType = "TABLE(id integer[], name text)",
             Body = FunctionBody,
             Language = Language,
             IsStrict = false,
@@ -27,31 +27,15 @@ public abstract class BaseTableArgTests : PlDotNetTest
         yield return new object[]
         {
             "c#-table-function",
-            "data-integrity-1",
-            "SUM(id) = 45",
-            "TableArgTest(10)"
-        };
-
-        yield return new object[]
-        {
-            "c#-table-function",
-            "data-integrity-2",
-            "SUM(id) IS NULL",
-            "TableArgTest(NULL::int)"
-        };
-
-        yield return new object[]
-        {
-            "c#-table-function",
-            "data-integrity-3",
+            "empty-result-1",
             "COUNT(*) = 0",
-            "TableArgTest(NULL::int)"
+            "TableEmptyTest(5)"
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTableArg(
+    public void TestTableEmpty(
         string featureName,
         string testName,
         string customAssertion,
@@ -73,13 +57,11 @@ public abstract class BaseTableArgTests : PlDotNetTest
 
 [Trait("Language", "CSharp")]
 [Trait("Category", "Table")]
-public class TableArgTestsCsharp : BaseTableArgTests
+public class TableEmptyTestsCsharp : BaseTableEmptyTests
 {
     protected override string FunctionBody =>
         @"
-return lim.HasValue
-    ? Enumerable.Range(0, lim.Value).Select(i => ((int?)i, $""The number is {i}""))
-    : Enumerable.Empty<(int? id, string? name)>();
+ yield break;
 ";
 
     protected override LanguageType Language => LanguageType.PlcSharp;

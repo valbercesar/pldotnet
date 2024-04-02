@@ -17,9 +17,9 @@ public abstract class BaseTableTypeTests : PlDotNetTest
         {
             Name = "TableTypeTest",
             ReturnType = "TABLE(id integer, name text)",
+            Body = FunctionBody,
             Language = Language,
             IsStrict = false,
-            Body = FunctionBody
         };
     }
 
@@ -29,13 +29,13 @@ public abstract class BaseTableTypeTests : PlDotNetTest
         FunctionInfo.CteStatement = cteStatement;
     }
 
-       public static IEnumerable<object[]> TestCases()
+    public static IEnumerable<object[]> TestCases()
     {
         yield return new object[]
         {
             "c#-table-function",
             "type-integrity",
-            @"WITH data AS (SELECT * FROM table_type_test())",
+            @"WITH data AS (SELECT * FROM TableTypeTest())",
             "BOOL_AND(pg_typeof(id) = 'integer'::regtype AND pg_typeof(name) = 'text'::regtype)"
         };
     }
@@ -53,8 +53,6 @@ public abstract class BaseTableTypeTests : PlDotNetTest
         SetupTest(cteStatement);
         RunTestWithSuffix(featureName, testName, this.cteStatement, customAssertion, querySuffix);
     }
-
- 
 }
 
 [Trait("Language", "CSharp")]

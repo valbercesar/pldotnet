@@ -4,18 +4,18 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using Xunit;
 
-public abstract class BaseTableArgTests : PlDotNetTest
+public abstract class BaseTableArrayTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
     protected abstract LanguageType Language { get; }
 
-    public BaseTableArgTests()
+    public BaseTableArrayTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "TableArgTest",
+            Name = "TableArrayTest",
             Arguments = new List<FunctionArgument> { new FunctionArgument("lim", "int4") },
-            ReturnType = "TABLE(id integer, name text)",
+            ReturnType = "TABLE(id integer[], name text)",
             Body = FunctionBody,
             Language = Language,
             IsStrict = false,
@@ -27,31 +27,41 @@ public abstract class BaseTableArgTests : PlDotNetTest
         yield return new object[]
         {
             "c#-table-function",
-            "data-integrity-1",
-            "SUM(id) = 45",
-            "TableArgTest(10)"
+            "array-output-1",
+            "COUNT(*) = 5",
+            "TableArrayTest(5)"
         };
 
         yield return new object[]
         {
             "c#-table-function",
-            "data-integrity-2",
-            "SUM(id) IS NULL",
-            "TableArgTest(NULL::int)"
+            "array-output-2",
+            "SUM(val) = 110",
+            "TableArrayTest(5), UNNEST(id) AS val"
         };
 
         yield return new object[]
         {
             "c#-table-function",
-            "data-integrity-3",
-            "COUNT(*) = 0",
-            "TableArgTest(NULL::int)"
+            "array-output-3",
+            "SUM(val) = 110",
+            @"TableArrayTest(5), UNNEST(id) AS val
+            WHERE ARRAY_POSITION(id, NULL) = 3"
+        };
+
+        yield return new object[]
+        {
+            "c#-table-function",
+            "array-output-4",
+            "COALESCE(SUM(val) = 110, true)",
+            @"TableArrayTest(5), UNNEST(id) AS val 
+            WHERE ARRAY_POSITION(id, NULL) = 2"
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTableArg(
+    public void TestTableArray(
         string featureName,
         string testName,
         string customAssertion,
@@ -73,13 +83,13 @@ public abstract class BaseTableArgTests : PlDotNetTest
 
 [Trait("Language", "CSharp")]
 [Trait("Category", "Table")]
-public class TableArgTestsCsharp : BaseTableArgTests
+public class TableArrayTestsCsharp : BaseTableArrayTests
 {
     protected override string FunctionBody =>
-        @"
-return lim.HasValue
-    ? Enumerable.Range(0, lim.Value).Select(i => ((int?)i, $""The number is {i}""))
-    : Enumerable.Empty<(int? id, string? name)>();
+        $@"
+            return lim.HasValue
+                ? Enumerable.Range(0, lim.Value).Select(i => ((Array)new int?[] {{ i, i*i*i, null }}, $""The number is {{i}}""))
+                : Enumerable.Empty<(Array? id, string? name)>();
 ";
 
     protected override LanguageType Language => LanguageType.PlcSharp;
