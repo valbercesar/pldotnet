@@ -30,13 +30,13 @@ public abstract class BaseDynamicRecordGeneratorTests : PlDotNetTest
         FunctionInfo.CteStatement = cteStatement;
     }
 
-       public static IEnumerable<object[]> TestCases()
+    public static IEnumerable<object[]> TestCases()
     {
         yield return new object[]
         {
             "c#-drec",
             "drec-comparison-1a",
-            @"WITH cte AS (SELECT * FROM dynamic_record_generator(1) AS (a int4, b text))",
+            @"WITH cte AS (SELECT * FROM DynamicRecordGenerator(1) AS (a int4, b text))",
             "a = 1"
         };
 
@@ -44,7 +44,7 @@ public abstract class BaseDynamicRecordGeneratorTests : PlDotNetTest
         {
             "c#-drec",
             "drec-comparison-1b",
-            @"WITH cte AS (SELECT * FROM dynamic_record_generator(1) AS (a int4, b text))",
+            @"WITH cte AS (SELECT * FROM DynamicRecordGenerator(1) AS (a int4, b text))",
             "b = 'Alice'"
         };
 
@@ -52,7 +52,7 @@ public abstract class BaseDynamicRecordGeneratorTests : PlDotNetTest
         {
             "c#-drec",
             "drec-comparison-2a",
-            @"WITH cte AS (SELECT * FROM dynamic_record_generator(2) AS (a int4, b varchar))",
+            @"WITH cte AS (SELECT * FROM DynamicRecordGenerator(2) AS (a int4, b varchar))",
             "a = 2"
         };
 
@@ -60,7 +60,7 @@ public abstract class BaseDynamicRecordGeneratorTests : PlDotNetTest
         {
             "c#-drec",
             "drec-comparison-2b",
-            @"WITH cte AS (SELECT * FROM dynamic_record_generator(2) AS (a int4, b varchar))",
+            @"WITH cte AS (SELECT * FROM DynamicRecordGenerator(2) AS (a int4, b varchar))",
             "b = 'Barbara'"
         };
 
@@ -68,7 +68,7 @@ public abstract class BaseDynamicRecordGeneratorTests : PlDotNetTest
         {
             "c#-drec",
             "drec-comparison-3",
-            @"WITH cte AS (SELECT * FROM dynamic_record_generator(3) AS (a float, b float, c bool))",
+            @"WITH cte AS (SELECT * FROM DynamicRecordGenerator(3) AS (a float, b float, c bool))",
             "c = true"
         };
     }
@@ -86,8 +86,6 @@ public abstract class BaseDynamicRecordGeneratorTests : PlDotNetTest
         SetupTest(cteStatement);
         RunTestWithSuffix(featureName, testName, this.cteStatement, customAssertion, querySuffix);
     }
-
- 
 }
 
 [Trait("Language", "CSharp")]
