@@ -13,6 +13,10 @@ public class PlDotNetTest
 {
     protected SqlFunctionInfo? FunctionInfo;
 
+    string DatabaseConnectionString =
+        Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") + ";Include Error Detail=true"
+        ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
+
     public enum LanguageType
     {
         PlcSharp,
@@ -33,6 +37,13 @@ public class PlDotNetTest
         DoBlock
     }
 
+    public Dictionary<SqlTestType, string> TestTypeMap = new Dictionary<SqlTestType, string>
+    {
+        { SqlTestType.Function, "FUNCTION" },
+        { SqlTestType.Procedure, "PROCEDURE" },
+        { SqlTestType.DoBlock, "DO BLOCK" }
+    };
+
     public class SqlFunctionInfo
     {
         // New properties for dynamic SQL construction
@@ -47,18 +58,22 @@ public class PlDotNetTest
         public string Body { get; set; } = string.Empty;
         public LanguageType Language { get; set; }
         public bool IsStrict { get; set; }
-        public string? FunctionName { get; set; }
-        public string? TestName { get; set; }
-        public string? FeatureName { get; set; }
-        public string? InputStr { get; set; }
-        public string? ExpectedResult { get; set; }
-        public string? CastFunctionAs { get; set; } = string.Empty;
+        public string FunctionName { get; set; }
+        public string TestName { get; set; }
+        public string FeatureName { get; set; }
+        public string InputStr { get; set; }
+        public string ExpectedResult { get; set; }
+        public string CastFunctionAs { get; set; } = string.Empty;
 
         public int? TestId { get; set; }
 
         public bool FunctionCreatedSuccessfully { get; set; } = false;
 
         public bool TestInsertedSuccessfully { get; set; } = false;
+
+        public string SqlFunctionDefinition { get; set; } = string.Empty;
+
+        public string SqlFunctionCall { get; set; } = string.Empty;
 
         public string LanguageString
         {
@@ -137,30 +152,14 @@ public class PlDotNetTest
 $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     }
 
-    /// <summary>
-    /// Attempts to define a SQL function based on the provided function info.
-    /// </summary>
-    /// <param name="functionInfo">Information about the SQL function to define.</param>
-    /// <returns>True if the function was defined successfully; false otherwise.</returns>
-    public bool DefineFunction(SqlFunctionInfo functionInfo)
+    public virtual string GetFunctionCall(SqlFunctionInfo functionInfo, bool forceCte = false)
     {
-        string sqlFunctionDefinition = GetFunctionDefinition(functionInfo);
+        if (functionInfo.TestType == SqlTestType.Procedure)
+        {
+            return $"CALL {functionInfo.Name}({functionInfo.InputStr});";
+        }
 
-        return ExecuteSql(sqlFunctionDefinition);
-    }
-
-    /// <summary>
-    /// Inserts a test result into the automated_test_results table and sets the test ID in the function info.
-    /// </summary>
-    /// <param name="functionInfo">Information about the test and its result.</param>
-    /// <returns>True if the test result was inserted successfully; false otherwise.</returns>
-
-    public virtual bool ExecuteProcedureTests(SqlFunctionInfo functionInfo)
-    {
-        string sqlCode;
-
-        sqlCode = $@"CALL {functionInfo.Name}({functionInfo.InputStr});";
-        return ExecuteSql(sqlCode);
+        return TestResultStrategyFactory.GetStrategy(functionInfo, forceCte).BuildInsertSql(functionInfo);
     }
 
     public interface ITestResultStrategy
@@ -358,31 +357,6 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
         }
     }
 
-    public bool InsertTestResult(SqlFunctionInfo functionInfo, bool forceCte = false)
-    {
-        var strategy = TestResultStrategyFactory.GetStrategy(functionInfo, forceCte);
-
-        string sqlCode = strategy.BuildInsertSql(functionInfo);
-
-        Console.WriteLine($"SQL CODE: {sqlCode}");
-
-        try
-        {
-            int? returnedId = ExecuteSqlReturnId(sqlCode);
-            if (returnedId.HasValue)
-            {
-                functionInfo.TestId = returnedId.Value;
-                return true;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"SQL Execution Error: {ex.Message}");
-        }
-
-        return false;
-    }
-
     /// <summary>
     /// Executes the provided SQL command that is expected to return an integer ID.
     /// This is typically used with SQL INSERT commands that use the RETURNING clause
@@ -393,20 +367,46 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
     /// null otherwise.</returns>
     protected int? ExecuteSqlReturnId(string sqlCode)
     {
-        string databaseConnectionString =
-            Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
-            ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
-        databaseConnectionString += ";Include Error Detail=true";
-        using var connection = new NpgsqlConnection(databaseConnectionString);
-        connection.Open();
-        using var command = new NpgsqlCommand(sqlCode, connection);
-        command.CommandType = CommandType.Text;
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
+        StringBuilder messages = new StringBuilder();
+        Exception exception = null;
+
+        try
         {
-            return reader.GetInt32(0);
+            using var connection = new NpgsqlConnection(DatabaseConnectionString);
+            connection.Open();
+            connection.Notice += (sender, e) => {
+                messages.AppendLine($"{e.Notice.MessageText}");
+            };
+            using var command = new NpgsqlCommand(sqlCode, connection);
+            command.CommandType = CommandType.Text;
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return reader.GetInt32(0);
+            }
+            return null;
         }
-        return null;
+        catch (Exception ex)
+        {
+            exception = ex;
+            return null;
+        }
+        finally
+        {
+            if (messages.Length > 0 || exception != null)
+            {
+                Console.WriteLine($"[START SQL EXECUTION DETAILS (RETURN ID)]");
+                if (exception != null)
+                {
+                    Console.WriteLine($"SQL Error:\n{exception.Message}");
+                }
+                if (messages.Length > 0)
+                {
+                    Console.WriteLine($"SQL Messages:\n{messages.ToString().Trim()}");
+                }
+                Console.WriteLine($"[END SQL EXECUTION DETAILS (RETURN ID)]");
+            }
+        }
     }
 
     /// <summary>
@@ -448,36 +448,57 @@ WHERE id = {functionInfo.TestId.Value};";
     /// and false otherwise.</returns>
     protected bool ExecuteSql(string sqlCode)
     {
-        string databaseConnectionString =
-            Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
-            ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
-        databaseConnectionString += ";Include Error Detail=true";
-        using (var connection = new NpgsqlConnection(databaseConnectionString))
+        StringBuilder messages = new StringBuilder();
+        Exception exception = null;
+
+        try
         {
+            using var connection = new NpgsqlConnection(DatabaseConnectionString);
             connection.Open();
-            using (var command = new NpgsqlCommand(sqlCode, connection))
+            connection.Notice += (sender, e) => {
+                messages.AppendLine($"{e.Notice.MessageText}");
+            };
+
+            using var command = new NpgsqlCommand(sqlCode, connection);
+            // command.CommandType = CommandType.Text;
+            if (sqlCode.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
             {
-                command.CommandType = CommandType.Text;
-                if (sqlCode.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                using var reader = command.ExecuteReader();
+                if (reader.Read())
                 {
-                    using (var reader = command.ExecuteReader())
+                    object value = reader.GetValue(0);
+                    if (value is bool booleanValue)
                     {
-                        if (reader.Read())
-                        {
-                            object value = reader.GetValue(0);
-                            if (value is bool booleanValue)
-                            {
-                                return booleanValue;
-                            }
-                        }
+                        return booleanValue;
                     }
-                    return false;
                 }
-                else
+                return false;
+            }
+            else
+            {
+                command.ExecuteNonQuery();
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+            return false;
+        }
+        finally
+        {
+            if (messages.Length > 0 || exception != null)
+            {
+                Console.WriteLine($"[START SQL EXECUTION DETAILS]");
+                if (exception != null)
                 {
-                    command.ExecuteNonQuery();
-                    return true;
+                    Console.WriteLine($"SQL Error:\n{exception.Message}");
                 }
+                if (messages.Length > 0)
+                {
+                    Console.WriteLine($"SQL Messages:\n{messages.ToString().Trim()}");
+                }
+                Console.WriteLine($"[END SQL EXECUTION DETAILS]");
             }
         }
     }
@@ -543,6 +564,7 @@ WHERE id = {functionInfo.TestId.Value};";
         bool forceCte = false
     )
     {
+        Console.WriteLine($"[START TEST] Running test {testName} for feature {featureName}.");
 
         if (FunctionInfo == null)
         {
@@ -550,55 +572,63 @@ WHERE id = {functionInfo.TestId.Value};";
             return;
         }
 
-        try
-        {
-            FunctionInfo.TestName = testName;
-            FunctionInfo.FeatureName = featureName;
-            FunctionInfo.InputStr = input;
-            FunctionInfo.ExpectedResult = expectedResult;
-            FunctionInfo.CteStatement = cteStatement; // Updated to use the full CTE statement
-            FunctionInfo.CustomAssertion = customAssertion;
-            FunctionInfo.QuerySuffix = querySuffix;
+        // Set up the FunctionInfo object with the provided parameters
+        FunctionInfo.TestName = testName;
+        FunctionInfo.FeatureName = featureName;
+        FunctionInfo.InputStr = input;
+        FunctionInfo.ExpectedResult = expectedResult;
+        FunctionInfo.CteStatement = cteStatement; // Updated to use the full CTE statement
+        FunctionInfo.CustomAssertion = customAssertion;
+        FunctionInfo.QuerySuffix = querySuffix;
 
-            // No need to set pre-queries and CTE alias separately now
-            FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
+        string type = TestTypeMap[FunctionInfo.TestType];
+
+        // Combine pieces of FunctionInfo to create SQL codes
+        FunctionInfo.SqlFunctionDefinition = GetFunctionDefinition(FunctionInfo);
+        FunctionInfo.SqlFunctionCall = GetFunctionCall(FunctionInfo, forceCte);
+        Console.WriteLine(
+            $"[START SQL {type}]\n```sql\n{FunctionInfo.SqlFunctionDefinition}\n```\n[END SQL {type}]\n"
+        );
+        Console.WriteLine(
+            $"[START SQL CALL {type}]\n```sql\n{FunctionInfo.SqlFunctionCall}\n```\n[END SQL CALL {type}]"
+        );
+
+        // Create the function in the PostgreSQL database
+        FunctionInfo.FunctionCreatedSuccessfully = ExecuteSql(FunctionInfo.SqlFunctionDefinition);
+        Assert.True(
+            FunctionInfo.FunctionCreatedSuccessfully,
+            "[COMPILATION ERROR] Failed to create function in the PostgreSQL database."
+        );
+
+        if (FunctionInfo.TestType == SqlTestType.Procedure)
+        {
+            bool? procedureResult = ExecuteSql(FunctionInfo.SqlFunctionCall);
             Assert.True(
-                FunctionInfo.FunctionCreatedSuccessfully,
-                "Failed to create function in the PostgreSQL database."
+                procedureResult.HasValue && procedureResult.Value,
+                "[EXECUTION ERROR] Failed to execute procedure test."
             );
-
-            if (FunctionInfo.TestType == SqlTestType.Procedure)
-            {
-                bool? procedureResult = ExecuteProcedureTests(FunctionInfo);
-                Assert.True(
-                    procedureResult.HasValue && procedureResult.Value,
-                    "Failed at the Call Procedure step."
-                );
-                Console.WriteLine(
-                    $"[DOTNET TEST OUTPUT PASSING]:\n"
-                        + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\nBANANA```"
-                );
-                return;
-            }
-            else
-            {
-                bool testInsertionResult = InsertTestResult(FunctionInfo, forceCte);
-                Assert.True(testInsertionResult, "Failed to execute the function.");
-            }
-
-            bool? testResult = FetchTestResult(FunctionInfo);
-            Assert.True(testResult.HasValue, "Failed to get the test result value.");
-            Assert.True(testResult.Value, "Test did not return the expected value.");
-            Console.WriteLine(
-                $"[DOTNET TEST OUTPUT PASSING]:\n{GetFunctionDefinition(FunctionInfo)}\n{InsertTestResult(FunctionInfo, forceCte)}"
-            );
+            Console.WriteLine($"[END TEST] Test {testName} executed successfully.\n");
+            return;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine(
-                $"[DOTNET TEST OUTPUT FAILING]:\n{GetFunctionDefinition(FunctionInfo)}\nSQL execution failed: {ex.Message}"
-            );
-            Assert.True(false, $"Test failed due to an exception: {ex.Message}");
-        }
+
+        // Call test and insert the test result into the PostgreSQL table
+        FunctionInfo.TestId = ExecuteSqlReturnId(FunctionInfo.SqlFunctionCall);
+        Assert.True(
+            FunctionInfo.TestId.HasValue,
+            "[EXECUTION ERROR] Failed to execute test and insert test result into table."
+        );
+
+        // Fetch the test result from the PostgreSQL table and validate it
+        bool? testResult = FetchTestResult(FunctionInfo);
+        Assert.True(
+            testResult.HasValue,
+            "[UNEXPECTED ERROR] Failed to get the test result value."
+        );
+        Assert.True(
+            testResult.Value,
+            "[ASSERTION ERROR] Test returned unexpected result."
+        );
+
+        Console.WriteLine($"[END TEST] Test {testName} executed successfully.\n");
     }
 }
