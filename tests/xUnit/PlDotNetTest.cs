@@ -505,6 +505,45 @@ WHERE id = {functionInfo.TestId.Value};";
         string expectedResult
     )
     {
+        RunTest(
+            featureName: featureName,
+            testName: testName,
+            input: input,
+            expectedResult: expectedResult
+        );
+    }
+
+    public void RunTestWithSuffix(
+        string featureName,
+        string testName,
+        string cteStatement,
+        string customAssertion,
+        string querySuffix = null,
+        bool forceCte = false
+    )
+    {
+        RunTest(
+            featureName: featureName,
+            testName: testName,
+            cteStatement: cteStatement,
+            customAssertion: customAssertion,
+            querySuffix: querySuffix,
+            forceCte: forceCte
+        );
+    }
+
+    public void RunTest(
+        string featureName,
+        string testName,
+        string input = "",
+        string expectedResult = "",
+        string cteStatement = "",
+        string customAssertion = "",
+        string querySuffix = "",
+        bool forceCte = false
+    )
+    {
+
         if (FunctionInfo == null)
         {
             Assert.True(false, "FunctionInfo is null, test cannot proceed.");
@@ -517,12 +556,15 @@ WHERE id = {functionInfo.TestId.Value};";
             FunctionInfo.FeatureName = featureName;
             FunctionInfo.InputStr = input;
             FunctionInfo.ExpectedResult = expectedResult;
+            FunctionInfo.CteStatement = cteStatement; // Updated to use the full CTE statement
+            FunctionInfo.CustomAssertion = customAssertion;
+            FunctionInfo.QuerySuffix = querySuffix;
 
-            // Try to define and execute the function
+            // No need to set pre-queries and CTE alias separately now
             FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
             Assert.True(
                 FunctionInfo.FunctionCreatedSuccessfully,
-                "Failed to create function in postgres database."
+                "Failed to create function in the PostgreSQL database."
             );
 
             if (FunctionInfo.TestType == SqlTestType.Procedure)
@@ -540,70 +582,9 @@ WHERE id = {functionInfo.TestId.Value};";
             }
             else
             {
-                bool testInsertionResult = InsertTestResult(FunctionInfo);
+                bool testInsertionResult = InsertTestResult(FunctionInfo, forceCte);
                 Assert.True(testInsertionResult, "Failed to execute the function.");
             }
-
-            // Fetch and assert the test result
-            bool? testResult = FetchTestResult(FunctionInfo);
-            Assert.True(testResult.HasValue, "Failed to get the test result value.");
-            Assert.True(testResult.Value, "Test did not return the expected value.");
-            Console.WriteLine(
-                $"[DOTNET TEST OUTPUT PASSING]:\n"
-                    + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\n{InsertTestResult(FunctionInfo)}BANANA```"
-            );
-        }
-        catch (Exception ex)
-        {
-            // Handle the failure explicitly
-            // Console.WriteLine(
-            //     $"[DOTNET TEST OUTPUT FAILING]:\n"
-            //         + $"```BANANA\nOutput error: {ex.Message}\nBANANA```"
-            // );
-            Console.WriteLine(
-                $"[DOTNET TEST OUTPUT FAILING]:\n"
-                    + $"```BANANA\n{GetFunctionDefinition(FunctionInfo)}\nSQL execution failed: {ex.Message}\nBANANA```"
-            );
-            Assert.True(false, $"Test failed due to an exception: {ex.Message}");
-        }
-    }
-
-    public void RunTestWithSuffix(
-        string featureName,
-        string testName,
-        string cteStatement,
-        string customAssertion,
-        string querySuffix = null,
-        bool forceCte = false
-    )
-    {
-        if (querySuffix != null)
-        {
-            FunctionInfo.QuerySuffix = querySuffix;
-        }
-        if (FunctionInfo == null)
-        {
-            Assert.True(false, "FunctionInfo is null, test cannot proceed.");
-            return;
-        }
-
-        try
-        {
-            FunctionInfo.TestName = testName;
-            FunctionInfo.FeatureName = featureName;
-            FunctionInfo.CteStatement = cteStatement; // Updated to use the full CTE statement
-            FunctionInfo.CustomAssertion = customAssertion;
-            FunctionInfo.QuerySuffix = querySuffix;
-
-            // No need to set pre-queries and CTE alias separately now
-            FunctionInfo.FunctionCreatedSuccessfully = DefineFunction(FunctionInfo);
-            Assert.True(
-                FunctionInfo.FunctionCreatedSuccessfully,
-                "Failed to create function in the PostgreSQL database."
-            );
-
-            bool testInsertionResult = InsertTestResult(FunctionInfo, forceCte);
-            Assert.True(testInsertionResult, "Failed to execute the function.");
 
             bool? testResult = FetchTestResult(FunctionInfo);
             Assert.True(testResult.HasValue, "Failed to get the test result value.");
