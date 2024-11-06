@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PGVERSION=$(pg_config --version | grep -Po '(?<=SQL )[0-9]+')
-# PGDATA=/var/lib/postgresql/data
+PGDATA=${PGDATA:-"/var/lib/postgresql/data"}
 
 PG_HBA_FILE="/etc/postgresql/${PGVERSION}/pgnet/pg_hba.conf"
 PG_CONFIG_FILE="/etc/postgresql/${PGVERSION}/pgnet/postgresql.conf"

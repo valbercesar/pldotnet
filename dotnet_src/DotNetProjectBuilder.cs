@@ -58,6 +58,9 @@ namespace PlDotNET
         /// </summary>
         internal DotNETLanguage Language;
 
+        // Define the target framework variable based on compilation symbols
+        internal string TargetFramework;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DotNetProjectBuilder"/> class.
         /// </summary>
@@ -71,6 +74,14 @@ namespace PlDotNET
             this.DestinationPath = destinationPath;
             this.ProjectName = projectName;
             this.Language = language;
+
+        #if NET6_0
+            this.TargetFramework = "net6.0";
+        #elif NET7_0
+            this.TargetFramework = "net7.0";
+        #else
+            throw new NotSupportedException("Unsupported target framework. Please ensure the project is targeting a supported version.");
+        #endif
         }
 
         /// <summary>
@@ -153,6 +164,8 @@ namespace PlDotNET
                 "$NpgsqlTypes.dll$", typeof(NpgsqlPoint).Assembly.Location.Replace("/", "\\"));
             templateProject = templateProject.Replace(
                 "$Npgsql.dll$", typeof(NpgsqlCommand).Assembly.Location.Replace("/", "\\"));
+            templateProject = templateProject.Replace(
+                "$TargetFramework$", this.TargetFramework);
 
             // Save the project file to the destination path
             string formatFile = Language == DotNETLanguage.CSharp ? "csproj" : "fsproj";
@@ -201,8 +214,9 @@ namespace PlDotNET
                 return string.Empty;
             }
 
-            string releasePath = Path.GetFullPath(this.DestinationProjectPath + $"/bin/Release/net6.0/");
-            return releasePath + $"{this.ProjectName}.dll";
+            // Construct the release path using the defined target framework
+            string releasePath = Path.GetFullPath(Path.Combine(this.DestinationProjectPath, "bin", "Release", this.TargetFramework));
+            return Path.Combine(releasePath, $"{this.ProjectName}.dll");
         }
 
         /// <summary>

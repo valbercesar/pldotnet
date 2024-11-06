@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PGVERSION=$(pg_config --version | grep -Po '(?<=SQL )[0-9]+')
+PGDATA=${PGDATA:-"/var/lib/postgresql/data"}
 
 # if cluster is not populated, copy from backup created in the building process
 if [[ ! $(ls ${PGDATA}) ]]; then

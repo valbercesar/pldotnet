@@ -1,6 +1,10 @@
 # avoids tzdata prompt
 export DEBIAN_FRONTEND=noninteractive
 
+# User defined dotnet version for compilation, defaults to 6
+DOTNET_VERSION ?= 6.0
+PGDATA ?= "/var/lib/postgresql/data"
+
 apt_update:
 	echo "# ENVIRONMENT SETUP: running $@"
 	apt-get update
@@ -8,23 +12,21 @@ apt_update:
 add_dotnet: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
 	wget -q \
-		https://packages.microsoft.com/config/$(shell lsb_release -i | cut -f2 -d'	' | sed 's/.*/\L&/')/$(shell lsb_release -r | cut -f2 -d'	')/packages-microsoft-prod.deb \
-		-O packages-microsoft-prod.deb
+	https://packages.microsoft.com/config/$(shell lsb_release -i | cut -f2 -d'	' | sed 's/.*/\L&/')/$(shell lsb_release -r | cut -f2 -d'	')/packages-microsoft-prod.deb \
+	-O packages-microsoft-prod.deb
 	dpkg -i packages-microsoft-prod.deb
 	apt-get update
 
-install_dotnet_deb: add_dotnet
-	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y dotnet-sdk-6.0
-	apt install -y dotnet-runtime-6.0
-	apt install -y dotnet-hostfxr-6.0
-	apt install -y debhelper
+	# demote ubuntu feed to always fetch from MS
+	bash /app/pldotnet/docker/scripts/demote_ubuntu_feed.sh
+	apt-get update
 
-install_dotnet_ubuntu: add_dotnet
+install_dotnet: add_dotnet
 	echo "# ENVIRONMENT SETUP: running $@"
-	apt install -y dotnet-hostfxr-6.0=6.0.8-1
-	apt install -y dotnet-runtime-6.0=6.0.8-1
-	apt install -y dotnet-sdk-6.0=6.0.400-1
+	apt install -y dotnet-hostfxr-${DOTNET_VERSION}
+	apt install -y dotnet-sdk-${DOTNET_VERSION}
+	apt install -y dotnet-runtime-${DOTNET_VERSION}
+	apt install -y debhelper
 
 install_requirements: apt_update
 	echo "# ENVIRONMENT SETUP: running $@"
@@ -109,5 +111,5 @@ install_python_packages:
 	pip3 install pandas psycopg2 tabulate cpplint
 
 # these targets correspond to the original Dockerfiles which this Makefile replaces
-deb_build: install_pg_dev install_dotnet_deb
-ubuntu22_install: install_pg_dev install_dotnet_ubuntu install_pls install_python_packages
+deb_build: install_pg_dev install_dotnet
+ubuntu22_install: install_pg_dev install_dotnet install_python_packages

@@ -3,6 +3,11 @@ FROM ubuntu:22.04
 # avoids tzdata prompt
 ARG DEBIAN_FRONTEND=noninteractive
 
+# sets dotnet version, defaults to 6
+ARG DOTNET_VERSION=6.0
+ENV DOTNET_VERSION=${DOTNET_VERSION}
+ENV TargetFramework=net${DOTNET_VERSION}
+
 # app files
 COPY . /app/pldotnet/
 WORKDIR /app/pldotnet
@@ -23,6 +28,7 @@ ARG PGDATA
 ENV PGDATA=${PGDATA}
 
 # creating persistent cluster and installing extension
+
 RUN make -f /app/pldotnet/docker/scripts/Makefile-builder create_cluster_and_install_extension
 
 ENTRYPOINT [ "bash", "/app/pldotnet/docker/scripts/start_pg_cluster.sh" ]
