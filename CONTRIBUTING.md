@@ -50,9 +50,11 @@ We use the following commit types:
 
 #### Commit with Body
 
+```
 refactor(PLNET-165): reorganize xUnit tests
 
 Separated benchmark and SQL tests into different modules to improve code maintainability.
+```
 
 ### Additional Notes
 
