@@ -21,7 +21,7 @@ Each commit message should have the following structure:
 #### Structure Breakdown
 
 - **type**: The type of change, such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`.
-- **scope**: We use the scope to add Jira automation for managing tasks. Add the Jira identification ticket.
+- **scope**: Optional. We use the scope to add automation for managing tasks. You can add the Jira or Github identification ticket, if applicable.
 - **description**: A short, clear summary of what was changed.
 - **body**: Optional. Provides additional details, such as the reasoning behind the change or additional context.
 - **footer**: Optional. Used to reference issues or breaking changes, like `BREAKING CHANGE: <description>` or `Closes #123`.
@@ -70,7 +70,7 @@ We use the following template for writing decriptive Merge Requests.
 
 The pull request title contains a meaningful title
  - Short and informative: serves as a summary
- - Prefixed with corresponding ticket/story ID from Jira
+ - Prefixed with corresponding ticket/story ID from Jira or Github
 
 ```
 [PLNET-X] Content of the MR
@@ -81,13 +81,13 @@ The pull request title contains a meaningful title
 ```
 # Contents
 
-Explanation of your pull request in arbitrary form goes here. Please make sure the description explains the purpose and effect of your pull request and is worded well enough to be understood. Provide as much context and examples as possible. For instance, how this pull request contributes to the Jira task.
+Explanation of your pull request in arbitrary form goes here. Please make sure the description explains the purpose and effect of your pull request and is worded well enough to be understood. Provide as much context and examples as possible.
 
 # Issue
 
-This PR is associated with the following Jira Tasks:
+This PR is associated with the following Jira/Github Tasks:
 
-[PLNET-X] Jira ticket name
+[PLNET-X] Jira/Github ticket name
 
 [PLNET-X]: https://brickabode-internal.atlassian.net/browse/PLNET-X
 
