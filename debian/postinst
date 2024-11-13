@@ -1,5 +1,12 @@
 #!/bin/bash
 echo "Post install script is running now"
 
-DOTNET_LIBDIR=$(dpkg -L dotnet-apphost-pack-6.0 | fgrep libnethost.so | head -1 | xargs dirname)
-ldconfig  $DOTNET_LIBDIR
+# Dynamically locate the .NET library directory for the installed version
+DOTNET_LIBDIR=$(dpkg -L $(dpkg -l | awk '/dotnet-apphost-pack-/ {print $2}' | head -1) | fgrep libnethost.so | head -1 | xargs dirname)
+
+# Update the linker cache for the .NET library
+if [ -n "$DOTNET_LIBDIR" ]; then
+    ldconfig "$DOTNET_LIBDIR"
+else
+    echo "libnethost.so not found in any installed dotnet-apphost-pack version."
+fi

@@ -91,11 +91,16 @@ pldotnet-uninstall: uninstall
 
 pldotnet-build-debian-packages:
 	$(MAKE) documentation
-	rm -f debian/packages/postgresql-*-pldotnet_*.deb
+	rm -f debian/packages/dotnet-$(DOTNET_VERSION)-*.deb
+	sed "s/@@DOTNET_VERSION@@/${DOTNET_VERSION}/g" debian/control.tmpl > debian/control.in
 	pg_buildext updatecontrol
-	debuild -b -uc -us --lintian-opts --suppress-tags=initial-upload-closes-no-bugs,custom-library-search-path --profile debian
+	debuild -e TargetFramework=net${DOTNET_VERSION} -e DOTNET_VERSION=$(DOTNET_VERSION) -b -uc -us --lintian-opts --suppress-tags=initial-upload-closes-no-bugs,custom-library-search-path --profile debian
 	mkdir -p debian/packages
-	cp ../postgresql-*-pldotnet_*.deb debian/packages/
+
+	for file in ../postgresql-*-pldotnet_*.deb; do \
+		cp "$$file" "debian/packages/dotnet-$(DOTNET_VERSION)-$$(basename "$$file")"; \
+	done
+
 	rm -rf ../postgresql-*-pldotnet_*.deb
 
 cpplint:
