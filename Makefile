@@ -89,6 +89,9 @@ pldotnet-install: pldotnet-uninstall install
 pldotnet-uninstall: uninstall
 	rm -rf $(PLDOTNET_ENGINE_ROOT)/PlDotNET
 
+clear-dotnet-cache: uninstall
+	find . -type d \( -name bin -o -name obj \) -exec rm -rf {} +
+
 pldotnet-build-debian-packages:
 	$(MAKE) documentation
 	rm -f debian/packages/dotnet-$(DOTNET_VERSION)-*.deb

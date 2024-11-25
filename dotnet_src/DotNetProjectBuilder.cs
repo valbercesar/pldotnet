@@ -81,6 +81,8 @@ namespace PlDotNET
             this.TargetFramework = "net7.0";
         #elif NET8_0
             this.TargetFramework = "net8.0";
+        #elif NET9_0
+            this.TargetFramework = "net9.0";
         #else
             throw new NotSupportedException("Unsupported target framework. Please ensure the project is targeting a supported version.");
         #endif

@@ -53,6 +53,17 @@ x-pldotnet-build-base: &pldotnet-build-base
       - ./debian/postinst:/app/pldotnet/debian/postinst
 
 services:
+  pldotnet9-ubuntu22-dev:
+    <<: *pldotnet-dev-base
+    container_name: pldotnet9-ubuntu22-dev
+    image: pldotnet9:ubuntu22-dev
+    build:
+      dockerfile: docker/Dockerfile_ubuntu22-dev
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "9.0"
+
   pldotnet8-ubuntu22-dev:
     <<: *pldotnet-dev-base
     container_name: pldotnet8-ubuntu22-dev

@@ -19,6 +19,7 @@
     <FSharpCoreVersion Condition="'$(TargetFramework)' == 'net6.0'">6.*</FSharpCoreVersion>
     <FSharpCoreVersion Condition="'$(TargetFramework)' == 'net7.0'">7.*</FSharpCoreVersion>
     <FSharpCoreVersion Condition="'$(TargetFramework)' == 'net8.0'">8.*</FSharpCoreVersion>
+    <FSharpCoreVersion Condition="'$(TargetFramework)' == 'net9.0'">9.*</FSharpCoreVersion>
   </PropertyGroup>
 
   <ItemGroup>

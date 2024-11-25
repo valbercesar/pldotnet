@@ -15,6 +15,10 @@ add_dotnet: apt_update
 	https://packages.microsoft.com/config/$(shell lsb_release -i | cut -f2 -d'	' | sed 's/.*/\L&/')/$(shell lsb_release -r | cut -f2 -d'	')/packages-microsoft-prod.deb \
 	-O packages-microsoft-prod.deb
 	dpkg -i packages-microsoft-prod.deb
+
+	# adds backports repository for dotnet 9
+	apt-get install -y software-properties-common
+	add-apt-repository ppa:dotnet/backports
 	apt-get update
 
 	# demote ubuntu feed to always fetch from MS
