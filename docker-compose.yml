@@ -97,6 +97,17 @@ services:
         <<: *pgdata
         DOTNET_VERSION: "6.0"
 
+  pldotnet9-build:
+    <<: *pldotnet-build-base
+    container_name: pldotnet9-build
+    image: pldotnet9:build
+    build:
+      dockerfile: docker/Dockerfile_deb-build
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "9.0"
+
   pldotnet8-build:
     <<: *pldotnet-build-base
     container_name: pldotnet8-build
