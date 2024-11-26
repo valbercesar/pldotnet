@@ -29,7 +29,6 @@ x-pldotnet-dev-base: &pldotnet-dev-base
     context: .
   volumes:
     - ./:/app/pldotnet/
-    - ./postgres-data/ubuntu22:/var/lib/postgresql/data
 
 x-pldotnet-build-base: &pldotnet-build-base
     <<: [*interactive, *environment]
