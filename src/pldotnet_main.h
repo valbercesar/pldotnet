@@ -144,7 +144,12 @@ extern PGDLLEXPORT int pldotnet_GetResult(pldotnet_Result *output, int offset,
                                           Datum *value, bool *is_null,
                                           Oid *oid);
 
-extern PGDLLEXPORT const char* pldotnet_GetPostgreSettingconst (const char *settingName);
+/**
+ * @brief Get a PostgreSQL setting value.
+ * @param settingName The setting name.
+ * @return The value for the given setting name.
+ */
+extern PGDLLEXPORT const char* pldotnet_GetPostgresSetting (const char *settingName);
 
 /**
  * @brief The call_handler will be called to execute the procedural

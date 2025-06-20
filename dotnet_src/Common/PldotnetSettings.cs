@@ -44,7 +44,7 @@ namespace PlDotNET.Common
         public string PathToTemporaryFiles => settings["pldotnet.path_to_temporary_files"].Value;
 
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        private static extern IntPtr pldotnet_GetPostgreSetting(string settingName);
+        private static extern IntPtr pldotnet_GetPostgresSetting(string settingName);
 
         private static bool ConvertToBoolean(string value)
         {
@@ -53,7 +53,7 @@ namespace PlDotNET.Common
 
         private string GetPostgreSetting(string settingName)
         {
-            IntPtr resultPtr = pldotnet_GetPostgreSetting(settingName);
+            IntPtr resultPtr = pldotnet_GetPostgresSetting(settingName);
             if (resultPtr == IntPtr.Zero)
             {
                 return null;
