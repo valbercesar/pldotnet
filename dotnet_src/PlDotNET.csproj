@@ -8,7 +8,7 @@
     <!-- <DefineConstants>ENABLE_FCS</DefineConstants> -->
   </PropertyGroup>
 
-   <ItemGroup>
+  <ItemGroup>
     <Content Remove="Common\**" />
     <Compile Remove="Common\**" />
     <EmbeddedResource Remove="Common\**" />
@@ -44,6 +44,10 @@
   <ItemGroup>
     <ProjectReference Include="npgsql\src\Npgsql\Npgsql.csproj" />
     <ProjectReference Include="npgsql\test\Npgsql.Tests\Npgsql.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="TypeHandlers\PlDotNET.Handlers.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="$(DefineConstants.Contains('ENABLE_FCS'))">
