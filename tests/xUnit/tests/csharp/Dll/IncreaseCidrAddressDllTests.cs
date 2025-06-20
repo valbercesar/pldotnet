@@ -21,7 +21,7 @@ public class IncreaseCidrAddressDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "CIDR[]") },
             ReturnType = "CIDR[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

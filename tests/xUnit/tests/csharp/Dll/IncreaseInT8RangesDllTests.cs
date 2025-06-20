@@ -21,7 +21,7 @@ public class IncreaseInT8RangesDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INT8RANGE[]") },
             ReturnType = "INT8RANGE[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

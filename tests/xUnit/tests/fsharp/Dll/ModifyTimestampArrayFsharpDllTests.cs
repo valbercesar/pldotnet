@@ -21,7 +21,7 @@ public class ModifyTimestampArrayFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "TIMESTAMP[]"), new FunctionArgument("b", "TIMESTAMP") },
             ReturnType = "TIMESTAMP[]",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = false,
         };
     }

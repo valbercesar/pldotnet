@@ -21,7 +21,7 @@ public class ModifyFloat8ArrayFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "FLOAT8[]"), new FunctionArgument("b", "FLOAT8") },
             ReturnType = "FLOAT8[]",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = false,
         };
     }

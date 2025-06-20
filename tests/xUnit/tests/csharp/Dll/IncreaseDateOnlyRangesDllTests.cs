@@ -21,7 +21,7 @@ public class IncreaseDateOnlyRangesDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "DATERANGE[]") },
             ReturnType = "DATERANGE[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

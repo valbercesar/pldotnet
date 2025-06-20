@@ -21,7 +21,7 @@ public class Sum2SmallInTFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "INT2"), new FunctionArgument("b", "INT2") },
             ReturnType = "INT2",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = true,
         };
     }

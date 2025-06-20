@@ -262,7 +262,7 @@ CREATE OR REPLACE FUNCTION inoutArray11DLL(OUT values_array MACADDR[], IN addres
 '/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.OtherTests.InoutTests!inoutArray11'
 LANGUAGE plcsharp STRICT;
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-SELECT 'c#-inout-array-11-dll', 'inoutArray11DLL', inoutArray11DLL(MACADDR '08-00-2b-01-02-03', 3) = 
+SELECT 'c#-inout-array-11-dll', 'inoutArray11DLL', inoutArray11DLL(MACADDR '08-00-2b-01-02-03', 3) =
     ARRAY[
             MACADDR '08-00-2b-01-02-03',
             MACADDR '08-00-2b-01-02-03',

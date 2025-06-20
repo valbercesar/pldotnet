@@ -21,7 +21,7 @@ public class CreateDateFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "INT4"), new FunctionArgument("b", "INT4"), new FunctionArgument("c", "INT4") },
             ReturnType = "DATE",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = false,
         };
     }

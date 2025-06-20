@@ -21,7 +21,7 @@ public class MiddlePointStrictCallDefaultTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point") },
             ReturnType = "point",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
         };
     }

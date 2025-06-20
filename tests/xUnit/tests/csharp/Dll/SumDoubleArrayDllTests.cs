@@ -21,7 +21,7 @@ public class SumDoubleArrayDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("doubles double", "precision[]") },
             ReturnType = "double precision",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

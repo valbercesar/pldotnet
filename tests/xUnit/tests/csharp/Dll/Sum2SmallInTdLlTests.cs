@@ -21,7 +21,7 @@ public class Sum2SmallInTdLlTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "smallint"), new FunctionArgument("b", "smallint") },
             ReturnType = "smallint",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

@@ -21,7 +21,7 @@ public class ConcatenateStringFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "TEXT"), new FunctionArgument("b", "TEXT") },
             ReturnType = "TEXT",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = false,
         };
     }

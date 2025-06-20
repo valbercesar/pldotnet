@@ -21,7 +21,7 @@ public class ModifyVarBitDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a BIT", "VARYING") },
             ReturnType = "BIT VARYING",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

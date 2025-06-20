@@ -21,7 +21,7 @@ public class ModifyFloat4ArrayFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "FLOAT4[]"), new FunctionArgument("b", "FLOAT4") },
             ReturnType = "FLOAT4[]",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = true,
         };
     }

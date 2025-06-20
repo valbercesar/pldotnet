@@ -21,7 +21,7 @@ public class Sum2IntegerDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer") },
             ReturnType = "integer",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

@@ -21,7 +21,7 @@ public class ModifyStringArrayFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "VARCHAR[]"), new FunctionArgument("b", "TEXT") },
             ReturnType = "VARCHAR[]",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = false,
         };
     }

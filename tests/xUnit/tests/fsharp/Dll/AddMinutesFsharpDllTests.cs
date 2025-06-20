@@ -21,7 +21,7 @@ public class AddMinutesFsharpDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "TIME"), new FunctionArgument("b", "INT4") },
             ReturnType = "TIME",
             Body = FunctionBody,
-            Language = LanguageType.PlfSharp, 
+            Language = LanguageType.PlfSharp,
             IsStrict = false,
         };
     }

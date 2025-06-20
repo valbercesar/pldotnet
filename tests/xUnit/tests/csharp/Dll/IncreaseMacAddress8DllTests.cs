@@ -21,7 +21,7 @@ public class IncreaseMacAddress8DllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "MACADDR8[]") },
             ReturnType = "MACADDR8[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

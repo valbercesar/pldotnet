@@ -21,7 +21,7 @@ public class ByTeaConversionsDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "BYTEA") },
             ReturnType = "BYTEA",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

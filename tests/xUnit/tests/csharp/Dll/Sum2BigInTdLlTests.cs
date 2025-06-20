@@ -21,7 +21,7 @@ public class Sum2BigInTdLlTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "bigint"), new FunctionArgument("b", "bigint") },
             ReturnType = "bigint",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

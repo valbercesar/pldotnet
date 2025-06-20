@@ -21,7 +21,7 @@ public class UpdateArrayPolygonIndexDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "POLYGON[]"), new FunctionArgument("desired", "POLYGON"), new FunctionArgument("index", "integer[]") },
             ReturnType = "POLYGON[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = true,
 			CastFunctionAs = "text",
         };
@@ -32,16 +32,16 @@ public class UpdateArrayPolygonIndexDllTests : PlDotNetTest
         return new object[][]
         {
             new object[] {
-				"c#-polygon-null-1array-dll", 
-				"updateArrayPolygonIndexDLL1", 
-				"ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[2]", 
-				"= CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON] AS TEXT)" 
+				"c#-polygon-null-1array-dll",
+				"updateArrayPolygonIndexDLL1",
+				"ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[2]",
+				"= CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON] AS TEXT)"
 			},
         	new object[] {
-				"c#-polygon-null-2array-arraynull-dll", 
-				"updateArrayPolygonIndexDLL2", 
+				"c#-polygon-null-2array-arraynull-dll",
+				"updateArrayPolygonIndexDLL2",
 				"ARRAY[[null::POLYGON, null::POLYGON], [null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[1,0]",
-				"= CAST(ARRAY[[null::POLYGON, null::POLYGON], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]] AS TEXT)" 
+				"= CAST(ARRAY[[null::POLYGON, null::POLYGON], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]] AS TEXT)"
 			},
         };
     }

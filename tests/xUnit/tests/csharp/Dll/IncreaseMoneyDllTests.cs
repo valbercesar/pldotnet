@@ -21,7 +21,7 @@ public class IncreaseMoneyDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "MONEY[]") },
             ReturnType = "MONEY[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

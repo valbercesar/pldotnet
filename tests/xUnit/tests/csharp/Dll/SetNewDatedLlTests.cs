@@ -21,7 +21,7 @@ public class SetNewDatedLlTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("orig_timestamp", "TIMESTAMP"), new FunctionArgument("new_date", "DATE") },
             ReturnType = "TIMESTAMP",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

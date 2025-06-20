@@ -21,7 +21,7 @@ public class ModifyBitDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BIT(10)") },
             ReturnType = "BIT(10)",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

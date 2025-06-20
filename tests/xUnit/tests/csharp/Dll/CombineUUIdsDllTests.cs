@@ -21,7 +21,7 @@ public class CombineUUIdsDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("a", "UUID"), new FunctionArgument("b", "UUID") },
             ReturnType = "UUID",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
         };
     }

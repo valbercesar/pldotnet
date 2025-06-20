@@ -21,7 +21,7 @@ public class UpdateJsonArrayIndexDllTests : PlDotNetTest
             Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "JSON[]"), new FunctionArgument("desired", "JSON"), new FunctionArgument("index", "integer[]") },
             ReturnType = "JSON[]",
             Body = FunctionBody,
-            Language = LanguageType.PlcSharp, 
+            Language = LanguageType.PlcSharp,
             IsStrict = false,
             CastFunctionAs = "TEXT",
         };
