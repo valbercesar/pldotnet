@@ -68,10 +68,10 @@ COPY --from=build /app/debian/packages /
 FROM base AS runtime
 
 # Copy the built application from the build stage
-COPY --from=build /app/debian/packages/postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb /app/debian/packages/
+COPY --from=build /app/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb /app/debian/packages/
 
 # Install the application deb package
-RUN dpkg -i /app/debian/packages/postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
+RUN dpkg -i /app/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
 
 # Remove the deb package after installation
 RUN rm -rf /app
