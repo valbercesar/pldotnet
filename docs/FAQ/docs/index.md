@@ -166,7 +166,7 @@ After you install it, you can use the normal Postgresql `CREATE FUNCTION`, `CREA
 
 By default pl/dotnet saves the generated source code in `/tmp/PlDotNET/GeneratedCodes`.
 
-You can control this behavior by modifying pl/dotnet. You can set the `SaveSourceCode` variable in `dotnet_src/Engine.cs` and specify the location by updating the `PathToSaveSourceCode` variable in the same file. This path needs to have mode of `0700`. Alternatively, you can set the `PrintSourceCode` variable in `dotnet_src/Engine.cs` to `true` to print the generated code to the console.  Note that after making changes to the `dotnet_src/Engine.cs` file, you will need to rebuild and reinstall the package.
+You can control this behavior by modifying pl/dotnet. You can set the `pldotnet.save_source_code` setting and specify the location by updating the `pldotnet.path_to_save_source_code` setting on a Session or Function level. This path needs to have mode of `0700`. Alternatively, you can set the `pldotnet.print_source_code` setting  to `on` to print the generated code to the console.
 
 ## NULL and STRICT
 

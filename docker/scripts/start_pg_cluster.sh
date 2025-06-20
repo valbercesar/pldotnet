@@ -22,6 +22,14 @@ start \
 
 # Setting postgres user password to POSTGRES_PASSWORD...
 runuser -u postgres -- psql -c "ALTER USER ${POSTGRES_USER:-postgres} WITH PASSWORD '${POSTGRES_PASSWORD:-postgres}';"
+echo "pldotnet.always_nullable = 'off'" >> /etc/postgresql/14/pgnet/postgresql.conf;
+echo "pldotnet.print_source_code = 'off'" >> /etc/postgresql/14/pgnet/postgresql.conf;
+echo "pldotnet.save_source_code = 'on'" >> /etc/postgresql/14/pgnet/postgresql.conf;
+echo "pldotnet.compile_fsharp_with_fcs = 'off'" >> /etc/postgresql/14/pgnet/postgresql.conf;
+echo "pldotnet.verbose_level = 0" >> /etc/postgresql/14/pgnet/postgresql.conf;
+echo "pldotnet.path_to_save_source_code = '/tmp/PlDotNET/GeneratedCodes'" >> /etc/postgresql/14/pgnet/postgresql.conf;
+echo "pldotnet.path_to_temporary_files = '/tmp/PlDotNET/'" >> /etc/postgresql/14/pgnet/postgresql.conf;
+service postgresql restart
 /usr/bin/pg_ctlcluster \
 ${PGVERSION} pgnet \
 restart -- -l /var/log/postgresql/postgresql-main.log \

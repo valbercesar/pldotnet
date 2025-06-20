@@ -10,3 +10,23 @@ if [ -n "$DOTNET_LIBDIR" ]; then
 else
     echo "libnethost.so not found in any installed dotnet-apphost-pack version."
 fi
+
+# Locate the PostgreSQL configuration file
+PG_CONF=$(sudo -u postgres psql -t -c "SHOW config_file;" | xargs)
+
+if [ -f "$PG_CONF" ]; then
+    echo "" >> "$PG_CONF"
+    echo "# Added by PL/DOTNET package" >> "$PG_CONF"
+    echo "pldotnet.always_nullable = 'off'" >> "$PG_CONF"
+    echo "pldotnet.print_source_code = 'off'" >> "$PG_CONF"
+    echo "pldotnet.save_source_code = 'on'" >> "$PG_CONF"
+    echo "pldotnet.compile_fsharp_with_fcs = 'off'" >> "$PG_CONF"
+    echo "pldotnet.verbose_level = 0" >> "$PG_CONF"
+    echo "pldotnet.path_to_save_source_code = '/tmp/PlDotNET/GeneratedCodes'" >> "$PG_CONF"
+    echo "pldotnet.path_to_temporary_files = '/tmp/PlDotNET/'" >> "$PG_CONF"
+
+    systemctl reload postgresql || true
+    echo "PostgreSQL configuration updated and reloaded."
+else
+    echo "Could not locate postgresql.conf. Ensure PostgreSQL is installed and running." >&2
+fi

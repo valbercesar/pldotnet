@@ -1,9 +1,10 @@
-using System.Data;
-using Npgsql;
 using DotNetEnv;
-using System.Collections.Generic;
-using Xunit;
+using Npgsql;
 using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using System.Reflection;
+using Xunit;
 
 [Collection("Sequential")]
 public class PlDotNetTest
@@ -110,7 +111,6 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
     public bool DefineFunction(SqlFunctionInfo functionInfo)
     {
         string sqlFunctionDefinition = GetFunctionDefinition(functionInfo);
-
 
         return ExecuteSql(sqlFunctionDefinition);
     }
@@ -263,6 +263,7 @@ WHERE id = {functionInfo.TestId.Value};";
     /// <param name="sqlCode">The SQL code to execute.</param>
     /// <returns>It returns true for successful execution,
     /// and false otherwise.</returns>
+
     protected bool ExecuteSql(string sqlCode)
     {
         try

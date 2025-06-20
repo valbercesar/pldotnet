@@ -14,6 +14,8 @@
  */
 
 #include "pldotnet_main.h"
+#include "postgres.h"
+#include "utils/guc.h"
 
 #define ASSERT(x)                                                        \
     if (!(x)) {                                                          \
@@ -359,9 +361,19 @@ struct pldotnet_Result *pldotnet_CreateResult(size_t length);
  */
 void pldotnet_FreeResult(struct pldotnet_Result *r);
 
+const char* pldotnet_GetPostgreSetting(const char *settingName);
+
 /*
  * START: implementing functions
  */
+
+const char* pldotnet_GetPostgreSetting(const char *settingName) {
+    const char *setting_name;
+
+    setting_name = GetConfigOption(settingName, true, false);
+
+    return setting_name;
+}
 
 int pldotnet_GetResultLength(pldotnet_Result *output) { return output->length; }
 
