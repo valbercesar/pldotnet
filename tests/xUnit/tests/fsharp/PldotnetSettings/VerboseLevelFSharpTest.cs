@@ -20,7 +20,7 @@ settings.VerboseLevel
         {
             Name = "verboseLevelFSharp",
             Arguments = new List<FunctionArgument> {  },
-            ReturnType = "text",
+            ReturnType = "int",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,
             IsStrict = false,
@@ -36,7 +36,7 @@ settings.VerboseLevel
                 "f#-pldotnet-setting-verboseLevelFSharp",
                 "verboseLevelFSharp",
                 "",
-                "= '0'"
+                "= 0"
             },
         };
     }
