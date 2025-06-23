@@ -79,6 +79,11 @@ namespace PlDotNET
         // This is "output modes plus table"; it has nothing to do with trigger
         public byte[] TOutputModes = new byte[] { (byte)ProArgMode.Out, (byte)ProArgMode.InOut, (byte)ProArgMode.Table };
 
+        /// <summary>
+        /// Settings for the pldotnet engine.
+        /// </summary>
+        public PlDotNETSettings Settings;
+
         // taken from catalog/pg_proc.h
         public enum ProArgMode : byte
         {
@@ -173,6 +178,7 @@ namespace PlDotNET
             this.SupportNullInput = supportNullInput;
             this.ComplexReturnType = this.GetReturnType(returnTypeId, retset = false);
             this.SimpleReturnType = this.GetReturnType(returnTypeId, retset = false);
+            this.Settings = new PlDotNETSettings();
 
             if (this.IsTrigger)
             {
@@ -238,9 +244,7 @@ namespace PlDotNET
         /// </summary>
         public void PrintSourceCode(string sourceCode)
         {
-            PldotnetSettings settings = new PldotnetSettings();
-
-            if (settings.PrintSourceCode)
+            if (this.Settings.PrintSourceCode)
             {
                 Elog.Info("===========================");
                 Elog.Info($"Source code:\n{sourceCode}");
@@ -269,11 +273,9 @@ namespace PlDotNET
         /// </summary>
         public void SaveSourceCode(string sourceCode, string fileName)
         {
-            PldotnetSettings settings = new PldotnetSettings();
-
-            if (settings.SaveSourceCode)
+            if (this.Settings.SaveSourceCode)
             {
-                string path = Path.Combine(settings.PathToSaveSourceCode, fileName);
+                string path = Path.Combine(this.Settings.PathToSaveSourceCode, fileName);
                 path = Path.ChangeExtension(path, this.Language == DotNETLanguage.CSharp ? ".cs" : ".fs");
                 File.WriteAllText(path, sourceCode, Encoding.UTF8);
             }

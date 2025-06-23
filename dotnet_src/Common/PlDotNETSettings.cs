@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 
 namespace PlDotNET.Common
 {
-    public class PldotnetSettings
+    public class PlDotNETSettings
     {
         private readonly Dictionary<string, Lazy<string>> settings;
 
-        public PldotnetSettings()
+        public PlDotNETSettings()
         {
             settings = new Dictionary<string, Lazy<string>>();
 
@@ -37,7 +37,7 @@ namespace PlDotNET.Common
 
         public bool CompileFSharpWithFCS => ConvertToBoolean(settings["pldotnet.compile_fsharp_with_fcs"].Value);
 
-        public string VerboseLevel => settings["pldotnet.verbose_level"].Value;
+        public int VerboseLevel => int.Parse(settings["pldotnet.verbose_level"].Value);
 
         public string PathToSaveSourceCode => settings["pldotnet.path_to_save_source_code"].Value;
 

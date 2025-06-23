@@ -6,11 +6,11 @@ using Xunit;
 using System.Linq;
 
 [Trait("Language", "FSharp")]
-[Trait("Category", "PldotnetSettings")]
+[Trait("Category", "PlDotNETSettings")]
 public class AlwaysNullableFSharpTest : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
-let settings = PldotnetSettings()
+let settings = PlDotNETSettings()
 settings.AlwaysNullable
     ";
 

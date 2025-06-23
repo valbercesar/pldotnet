@@ -5,12 +5,12 @@ using Xunit;
 using System.Linq;
 
 [Trait("Language", "CSharp")]
-[Trait("Category", "PldotnetSettings")]
+[Trait("Category", "PlDotNETSettings")]
 
 public class VerboseLevelTest : PlDotNetTest
 {
     private static readonly string FunctionBody = @"
-        var settings = new PldotnetSettings();
+        var settings = new PlDotNETSettings();
         return Convert.ToInt32(settings.VerboseLevel);
     ";
 

@@ -12,7 +12,7 @@ else
 fi
 
 # Locate the PostgreSQL configuration file
-PG_CONF=$(runuser -u postgres -- psql -c "SHOW config_file;" | xargs)
+PG_CONF=$(runuser -u postgres -- psql -tAc "SHOW config_file;" | xargs)
 
 if [ -f "$PG_CONF" ]; then
     echo "" >> "$PG_CONF"
@@ -25,7 +25,7 @@ if [ -f "$PG_CONF" ]; then
     echo "pldotnet.path_to_save_source_code = '/tmp/PlDotNET/GeneratedCodes'" >> "$PG_CONF"
     echo "pldotnet.path_to_temporary_files = '/tmp/PlDotNET/'" >> "$PG_CONF"
 
-    systemctl reload postgresql || true
+    service postgresql reload || true
     echo "PostgreSQL configuration updated and reloaded."
 else
     echo "Could not locate postgresql.conf. Ensure PostgreSQL is installed and running." >&2
