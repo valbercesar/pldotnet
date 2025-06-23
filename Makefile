@@ -141,8 +141,10 @@ dev:
 
 # xUnit test directory
 XUNIT_TEST_DIR := $(CURRENT_DIR)/tests/xUnit
+# Default filter for xUnit tests
+XUNIT_FILTER ?=
 # Command to run xUnit tests
-RUN_XUNIT_TESTS = cd $(XUNIT_TEST_DIR) && dotnet test
+RUN_XUNIT_TESTS = cd $(XUNIT_TEST_DIR) && dotnet test $(if $(XUNIT_FILTER),--filter "$(XUNIT_FILTER)")
 # Where to put the test files
 APP_DIR ?= /app/pldotnet
 # The name of the running PL/.NET container
@@ -169,6 +171,7 @@ test-local:
 .PHONY: test-docker
 test-docker:
 	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make test-local
+	make test-local FILTER="$(XUNIT_FILTER)"
 
 .PHONY: test-docker-sql
 test-docker-sql:
