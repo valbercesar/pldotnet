@@ -4,17 +4,17 @@ UNAME = $(shell uname)
 SED ?= sed
 DBUSER ?= postgres
 
-# General
-# Get installed dotnet host host
-DOTNET_VER = $(shell dotnet --info | grep 'Host' -A 3 | $(SED) -n 's/Version: \(.*\)/\1/p' | xargs)
+# User defined dotnet version for compilation, defaults to 6
+DOTNET_VERSION ?= 6.0
+DOTNET_VERSION_FLAG = -DDOTNET_VERSION='"$(DOTNET_VERSION)"'
 
 PLDOTNET_ENGINE_DIR = -DPLDOTNET_ENGINE_DIR=$(PLDOTNET_ENGINE_ROOT)/PlDotNET
 PLDOTNET_TEMPLATE_DIR = $(PLDOTNET_ENGINE_ROOT)/PlDotNET/Templates
 
 # Linux support
 ifeq ($(UNAME), Linux)
-	DOTNET_HOSTDIR ?= $(shell dpkg -L dotnet-apphost-pack-6.0 | grep hostfxr.h | head -1 | xargs dirname)
-	DOTNET_LIBDIR  ?= $(shell dpkg -L dotnet-apphost-pack-6.0 | grep hostfxr.h | head -1 | xargs dirname)
+	DOTNET_HOSTDIR ?= $(shell dpkg -L dotnet-apphost-pack-$(DOTNET_VERSION) | grep hostfxr.h | head -1 | xargs dirname)
+	DOTNET_LIBDIR  ?= $(shell dpkg -L dotnet-apphost-pack-$(DOTNET_VERSION) | grep hostfxr.h | head -1 | xargs dirname)
 	DOTNET_HOSTLIB ?= -L$(DOTNET_LIBDIR) -lnethost -Wl,-rpath $(DOTNET_LIBDIR)
 	PLDOTNET_ENGINE_ROOT ?= /var/lib
 	PG_CONFIG = pg_config
@@ -53,13 +53,13 @@ DATA = pldotnet--0.9.sql
 OBJS = src/pldotnet_hostfxr.o src/pldotnet.o src/pldotnet_conversions.o src/pldotnet_main.o src/pldotnet_spi.o
 
 PG_CPPFLAGS = -I$(DOTNET_HOSTDIR) -I$(PG_INCDIR) $(GLIB_INC) \
-			  -Iinc -DLINUX $(DEFINE_DOTNET_BUILD) $(PLDOTNET_ENGINE_DIR) \
+			  -Iinc -DLINUX $(DEFINE_DOTNET_BUILD) $(PLDOTNET_ENGINE_DIR) $(DOTNET_VERSION_FLAG) \
 			  -DPKG_LIBDIR=$(PKG_LIBDIR)
 PGXS = $(shell $(PG_CONFIG) --pgxs)
 
 ifeq ($(UNAME), Darwin)
 	PG_CPPFLAGS = -isystem $(DOTNET_HOSTDIR) -isystem $(PG_INCDIR) $(GLIB_INC) \
-			  -Iinc -DLINUX $(DEFINE_DOTNET_BUILD) $(PLDOTNET_ENGINE_DIR) \
+			  -Iinc -DLINUX $(DEFINE_DOTNET_BUILD) $(PLDOTNET_ENGINE_DIR) $(DOTNET_VERSION_FLAG) \
 			  -DPKG_LIBDIR=$(PKG_LIBDIR)
 	PGXS = $(HOME)/postgresql-15/lib/pgxs/src/makefiles/pgxs.mk
 endif
@@ -75,6 +75,7 @@ ifeq ($(UNAME), Linux)
 	CP_CHOWN += && chown -R postgres $(PLDOTNET_ENGINE_ROOT)/PlDotNET
 endif
 
+
 pldotnet-install: pldotnet-uninstall install
 	$(CP_CHOWN)
 	$(SED) -i 's/@PKG_LIBDIR/$(shell echo $(PKG_LIBDIR) | $(SED) 's/\//\\\//g')/' $(PLDOTNET_ENGINE_ROOT)/PlDotNET/*.cs
@@ -88,17 +89,24 @@ pldotnet-install: pldotnet-uninstall install
 pldotnet-uninstall: uninstall
 	rm -rf $(PLDOTNET_ENGINE_ROOT)/PlDotNET
 
+clear-dotnet-cache: uninstall
+	find . -type d \( -name bin -o -name obj \) -exec rm -rf {} +
+
 pldotnet-build-debian-packages:
 	$(MAKE) documentation
-	rm -f debian/packages/postgresql-*-pldotnet_*.deb
+	rm -f debian/packages/dotnet-$(DOTNET_VERSION)-*.deb
+	sed "s/@@DOTNET_VERSION@@/${DOTNET_VERSION}/g" debian/control.tmpl > debian/control.in
 	pg_buildext updatecontrol
-	debuild -b -uc -us --lintian-opts --suppress-tags=initial-upload-closes-no-bugs,custom-library-search-path --profile debian
+	debuild -e TargetFramework=net${DOTNET_VERSION} -e DOTNET_VERSION=$(DOTNET_VERSION) -b -uc -us --lintian-opts --suppress-tags=initial-upload-closes-no-bugs,custom-library-search-path --profile debian
 	mkdir -p debian/packages
-	cp ../postgresql-*-pldotnet_*.deb debian/packages/
+
+	for file in ../postgresql-*-pldotnet_*.deb; do \
+		cp "$$file" "debian/packages/dotnet-$(DOTNET_VERSION)-$$(basename "$$file")"; \
+	done
+
 	rm -rf ../postgresql-*-pldotnet_*.deb
 
 cpplint:
-	apt install cpplint
 	cpplint --filter=-readability/casting,-build/include_subdir,-runtime/int,-runtime/printf,-build/header_guard src/*.c src/*.h
 
 documentation:

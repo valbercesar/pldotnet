@@ -1,3 +1,5 @@
+version: "3.7"
+
 x-interactive: &interactive
   tty: true        # docker run -t
   stdin_open: true # docker run -i
@@ -10,59 +12,32 @@ x-pgdata: &pgdata
   PGDATA: /var/lib/postgresql/data
   PGLOG: /var/log/postgresql/postgresql-main.log
 
-x-build-args: &build-args
-  context: .
-  args:
-    <<: *pgdata
-
 x-environment: &environment
   environment:
+    <<: *pgdata
     USE_DOTNETBUILD: "FALSE"
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: postgres
     DATABASE_CONNECTION_STRING: "Host=127.0.0.1;Port=5432;Username=postgres;Password=postgres;Database=postgres"
-    <<: *pgdata
 
 x-ports: &ports
   ports:
     - "5432:5432"
 
-services:
-  pldotnet-ubuntu22-dev: &pldotnet-current-container
-    container_name: pldotnet-ubuntu22-dev
-    image: pldotnet:ubuntu22-dev
-    <<: [*interactive, *command, *environment, *ports]
-    build:
-      dockerfile: docker/Dockerfile_ubuntu22-dev
-      <<: *build-args
-    volumes:
-      - ./:/app/pldotnet/
-      - ./postgres-data/ubuntu22:/var/lib/postgresql/data
+x-pldotnet-dev-base: &pldotnet-dev-base
+  <<: [*interactive, *command, *environment, *ports]
+  build:
+    dockerfile: docker/Dockerfile_ubuntu22-dev
+    context: .
+  volumes:
+    - ./:/app/pldotnet/
 
-  pldotnet-ubuntu22:
-    container_name: pldotnet-ubuntu22
-    image: pldotnet:ubuntu22
-    <<: [*interactive, *environment, *ports]
-    build:
-      context: .
-      dockerfile: docker/Dockerfile_ubuntu22
-
-  postgres-pldotnet:
-    container_name: postgres-pldotnet
-    image: postgres-pldotnet:15-bullseye
-    <<: [*interactive, *environment, *ports]
-    build:
-      context: .
-      dockerfile: docker/Dockerfile_postgres-pldotnet
-
-  pldotnet-build:
-    container_name: pldotnet-build
-    image: pldotnet:build
+x-pldotnet-build-base: &pldotnet-build-base
     <<: [*interactive, *environment]
     command: sh -c "make pldotnet-build-debian-packages"
     build:
       dockerfile: docker/Dockerfile_deb-build
-      <<: *build-args
+      context: .
     volumes:
       - ./dotnet_src/:/app/pldotnet/dotnet_src/
       - ./src/:/app/pldotnet/src/
@@ -73,11 +48,118 @@ services:
       - ./automated_test_results/:/app/pldotnet/automated_test_results/
       - ./debian/packages/:/app/pldotnet/debian/packages/
       - ./debian/changelog:/app/pldotnet/debian/changelog
-      - ./debian/control.in:/app/pldotnet/debian/control.in
+      - ./debian/control.tmpl:/app/pldotnet/debian/control.tmpl
       - ./debian/copyright:/app/pldotnet/debian/copyright
       - ./debian/pgversions:/app/pldotnet/debian/pgversions
       - ./debian/rules:/app/pldotnet/debian/rules
       - ./debian/postinst:/app/pldotnet/debian/postinst
+
+services:
+  pldotnet9-ubuntu22-dev:
+    <<: *pldotnet-dev-base
+    container_name: pldotnet9-ubuntu22-dev
+    image: pldotnet9:ubuntu22-dev
+    build:
+      dockerfile: docker/Dockerfile_ubuntu22-dev
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "9.0"
+
+  pldotnet8-ubuntu22-dev:
+    <<: *pldotnet-dev-base
+    container_name: pldotnet8-ubuntu22-dev
+    image: pldotnet8:ubuntu22-dev
+    build:
+      dockerfile: docker/Dockerfile_ubuntu22-dev
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "8.0"
+
+  pldotnet7-ubuntu22-dev:
+    <<: *pldotnet-dev-base
+    container_name: pldotnet7-ubuntu22-dev
+    image: pldotnet7:ubuntu22-dev
+    build:
+      dockerfile: docker/Dockerfile_ubuntu22-dev
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "7.0"
+
+  pldotnet6-ubuntu22-dev:
+    <<: *pldotnet-dev-base
+    container_name: pldotnet6-ubuntu22-dev
+    image: pldotnet6:ubuntu22-dev
+    build:
+      dockerfile: docker/Dockerfile_ubuntu22-dev
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "6.0"
+
+  pldotnet9-build:
+    <<: *pldotnet-build-base
+    container_name: pldotnet9-build
+    image: pldotnet9:build
+    build:
+      dockerfile: docker/Dockerfile_deb-build
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "9.0"
+
+  pldotnet8-build:
+    <<: *pldotnet-build-base
+    container_name: pldotnet8-build
+    image: pldotnet8:build
+    build:
+      dockerfile: docker/Dockerfile_deb-build
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "8.0"
+
+  pldotnet7-build:
+    <<: *pldotnet-build-base
+    container_name: pldotnet7-build
+    image: pldotnet7:build
+    build:
+      dockerfile: docker/Dockerfile_deb-build
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "7.0"
+
+  pldotnet6-build:
+    <<: *pldotnet-build-base
+    container_name: pldotnet6-build
+    image: pldotnet6:build
+    build:
+      dockerfile: docker/Dockerfile_deb-build
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "6.0"
+
+  pldotnet-ubuntu22:
+    container_name: pldotnet-ubuntu22
+    image: pldotnet:ubuntu22
+    <<: [*interactive, *environment, *ports]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_ubuntu22
+    volumes:
+      - ./debian/packages/:/app/pldotnet/debian/packages/
+
+  postgres-pldotnet:
+    container_name: postgres-pldotnet
+    image: postgres-pldotnet:15-bullseye
+    <<: [*interactive, *environment, *ports]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_postgres-pldotnet
 
   pldotnet-build-arm:
     container_name: pldotnet-build-arm
@@ -86,7 +168,10 @@ services:
     command: sh -c "bash /app/pldotnet/docker/scripts/build_packages.sh"
     build:
       dockerfile: docker/Dockerfile_ubuntu-build-arm
-      <<: *build-args
+      context: .
+      args:
+        <<: *pgdata
+        DOTNET_VERSION: "6.0"
     volumes:
       - ./src/:/app/pldotnet/src/
       - ./Makefile:/app/pldotnet/Makefile

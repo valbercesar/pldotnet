@@ -1,4 +1,9 @@
-FROM postgres:15.1-bullseye
+FROM postgres:15.10-bookworm
+
+# sets dotnet version, defaults to 6
+ARG DOTNET_VERSION=6.0
+ENV DOTNET_VERSION=${DOTNET_VERSION}
+ENV TargetFramework=net${DOTNET_VERSION}
 
 # PLDOTNET
 COPY . /app/pldotnet/

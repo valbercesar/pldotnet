@@ -1,11 +1,11 @@
+using DotNetEnv;
+using Npgsql;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 using System.Text;
-using DotNetEnv;
-using Npgsql;
 using Xunit;
 
 [Collection("Sequential")]
@@ -458,6 +458,7 @@ WHERE id = {functionInfo.TestId.Value};";
     /// <param name="sqlCode">The SQL code to execute.</param>
     /// <returns>It returns true for successful execution,
     /// and false otherwise.</returns>
+
     protected bool ExecuteSql(string sqlCode)
     {
         StringBuilder messages = new StringBuilder();

@@ -41,7 +41,7 @@ do $$
     Elog.Info($"Do you speak Japanese? => {japanese}");
 
     string portuguese = "Você fala português?";
-    Elog.Info($"Do yo speak Portuguese? => {portuguese}");
+    Elog.Info($"Do you speak Portuguese? => {portuguese}");
 
     string russian = "а ты говоришь по русски?";
     Elog.Info($"Do you speak Russian? => {russian}");

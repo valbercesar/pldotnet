@@ -4,7 +4,7 @@ LANGUAGES := plpgsql plfsharp plperl plpython pltcl pllua pljava plv8 plr
 
 IMAGE_TARGETS := $(addprefix pldotnet-comparison-, $(addsuffix .png, $(LANGUAGES)))
 
-NEWEST_CSV=$(shell ls -t pldotnet-performance-data*.csv | head -n 1)
+NEWEST_CSV=$(shell ls pldotnet-performance-data-*.csv | sort | tail -n 1)
 
 # Local software dependencies:
 #     - ImageMagick, for `convert` and `montage`

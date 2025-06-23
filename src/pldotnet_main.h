@@ -143,6 +143,8 @@ extern PGDLLEXPORT int pldotnet_GetResult(pldotnet_Result *output, int offset,
                                           Datum *value, bool *is_null,
                                           Oid *oid);
 
+extern PGDLLEXPORT const char* pldotnet_GetPostgreSettingconst (const char *settingName);
+
 /**
  * @brief The call_handler will be called to execute the procedural
  * language's functions.  The call handler receives a pointer to a

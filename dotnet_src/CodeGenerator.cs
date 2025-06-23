@@ -237,7 +237,9 @@ namespace PlDotNET
         /// </summary>
         public void PrintSourceCode(string sourceCode)
         {
-            if (Engine.PrintSourceCode)
+            PldotnetSettings settings = new PldotnetSettings();
+
+            if (settings.PrintSourceCode)
             {
                 Elog.Info("===========================");
                 Elog.Info($"Source code:\n{sourceCode}");
@@ -266,9 +268,11 @@ namespace PlDotNET
         /// </summary>
         public void SaveSourceCode(string sourceCode, string fileName)
         {
-            if (Engine.SaveSourceCode)
+            PldotnetSettings settings = new PldotnetSettings();
+
+            if (settings.SaveSourceCode)
             {
-                string path = Path.Combine(Engine.PathToSaveSourceCode, fileName);
+                string path = Path.Combine(settings.PathToSaveSourceCode, fileName);
                 path = Path.ChangeExtension(path, this.Language == DotNETLanguage.CSharp ? ".cs" : ".fs");
                 File.WriteAllText(path, sourceCode, Encoding.UTF8);
             }

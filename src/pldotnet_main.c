@@ -14,6 +14,8 @@
  */
 
 #include "pldotnet_main.h"
+#include "postgres.h"
+#include "utils/guc.h"
 
 #define ASSERT(x)                                                        \
     if (!(x)) {                                                          \
@@ -359,9 +361,19 @@ struct pldotnet_Result *pldotnet_CreateResult(size_t length);
  */
 void pldotnet_FreeResult(struct pldotnet_Result *r);
 
+const char* pldotnet_GetPostgreSetting(const char *settingName);
+
 /*
  * START: implementing functions
  */
+
+const char* pldotnet_GetPostgreSetting(const char *settingName) {
+    const char *setting_name;
+
+    setting_name = GetConfigOption(settingName, true, false);
+
+    return setting_name;
+}
 
 int pldotnet_GetResultLength(pldotnet_Result *output) { return output->length; }
 
@@ -470,10 +482,17 @@ Datum plfsharp_validator(PG_FUNCTION_ARGS) {
 }
 
 bool pldotnet_BuildPaths(void) {
-    const char json_path_suffix[] =
-        "/bin/Release/net6.0/PlDotNET."
-        "runtimeconfig.json";
-    const char dll_path_suffix[] = "/bin/Release/net6.0/PlDotNET.dll";
+
+    char json_path_suffix[256];
+    char dll_path_suffix[256];
+
+    snprintf(json_path_suffix, sizeof(json_path_suffix),
+        "/bin/Release/net%s/PlDotNET.runtimeconfig.json",
+        DOTNET_VERSION);
+
+    snprintf(dll_path_suffix, sizeof(dll_path_suffix),
+        "/bin/Release/net%s/PlDotNET.dll",
+        DOTNET_VERSION);
 
     SNPRINTF(path_config.prefix, MAXPGPATH, "%s", root_path);
     SNPRINTF(path_config.config_path, MAXPGPATH, "%s%s", root_path,
@@ -622,9 +641,9 @@ static Datum result_to_record(TupleDesc desc, pldotnet_Result *result,
             attr = TupleDescAttr(desc, i);
             if (result->oids[i] != attr->atttypid) {
                 elog(ERROR,
-                     "R2R: BAD: Pldotnet slot %d: psql OID != %d, pldotnet OID "
-                     "= %d",
-                     i, result->oids[i], attr->atttypid);
+                     "Type mismatch on RECORD:  "
+                     "psql OID(%d) != pldotnet OID(%d) (Slot %d)",
+                     result->oids[i], attr->atttypid, i);
                 return (Datum)0;
             }
         }

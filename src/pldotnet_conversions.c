@@ -357,7 +357,7 @@ int32_t pldotnet_GetArrayDatum(Datum arrayDatum, Datum *results, int32_t nElems,
             dataptr = (char *)att_align_nominal(dataptr, typalign);
         }
         /* advance bitmap pointer if any */
-        /* Suggestion: eliminate these branches by subsuming into the arithmetic */
+        /* Suggestion: subsume these branches into arithmetic */
         if (bitmap) {
             bitmask <<= 1;
             if (bitmask == 0x100) {
