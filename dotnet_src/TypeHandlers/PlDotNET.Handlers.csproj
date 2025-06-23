@@ -25,13 +25,13 @@
   <ItemGroup>
     <PackageReference Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
   </ItemGroup>
- 
+
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\npgsql\src\Npgsql\NpgsqlTypes\NpgsqlTypes.csproj" />
+    <ProjectReference Include="..\npgsql\src\Npgsql\Npgsql.csproj" />
     <ProjectReference Include="..\Common\PlDotNET.Common.csproj" />
   </ItemGroup>
 

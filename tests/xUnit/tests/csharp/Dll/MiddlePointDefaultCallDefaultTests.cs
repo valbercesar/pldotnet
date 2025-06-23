@@ -12,7 +12,15 @@ public abstract class BaseMiddlePointDefaultCallDefaultTests : PlDotNetTest
 
     public BaseMiddlePointDefaultCallDefaultTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MiddlePointDefaultCallDefault", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "point", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "MiddlePointDefaultCallDefault",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point") },
+            ReturnType = "point",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

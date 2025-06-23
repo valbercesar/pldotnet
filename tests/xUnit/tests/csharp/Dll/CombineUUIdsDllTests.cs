@@ -12,7 +12,15 @@ public abstract class BaseCombineUUIdsDllTests : PlDotNetTest
 
     public BaseCombineUUIdsDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CombineUUIdsDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "UUID"), new FunctionArgument("b", "UUID")}, ReturnType = "UUID", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "CombineUUIdsDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("a", "UUID"), new FunctionArgument("b", "UUID") },
+            ReturnType = "UUID",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

@@ -65,6 +65,20 @@ namespace PlDotNET
 
     public static class Engine
     {
+        public static bool AlwaysNullable = false;
+
+        public static bool PrintSourceCode = false;
+
+        public static bool SaveSourceCode = true;
+
+        public static bool CompileFSharpWithFCS = false;
+
+        public static int VerboseLevel = 0;
+
+        public static string PathToSaveSourceCode = "/tmp/PlDotNET/GeneratedCodes";
+
+        public static string PathToTemporaryFiles = "/tmp/PlDotNET/";
+
         public static IDictionary<uint, CachedFunction> FuncBuiltCodeDict = new Dictionary<uint, CachedFunction>();
         public static IDictionary<uint, CachedTrigger> TrigBuiltCodeDict = new Dictionary<uint, CachedTrigger>();
 
@@ -132,6 +146,7 @@ namespace PlDotNET
             trustedAssembliesPaths.Add(typeof(NullLoggerFactory).Assembly.Location);
             trustedAssembliesPaths.Add(typeof(NpgsqlCommand).Assembly.Location);
             trustedAssembliesPaths.Add(typeof(CommandTests).Assembly.Location);
+            trustedAssembliesPaths.Add(typeof(DatumConversion).Assembly.Location);
 
             #if ENABLE_FCS
             trustedAssembliesPaths.Add(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location);
@@ -166,6 +181,7 @@ namespace PlDotNET
                 "Npgsql.Tests",
                 "NpgsqlTypes",
                 "PlDotNET.Common",
+                "PlDotNET.Handlers",
             };
 
             List<PortableExecutableReference> references = trustedAssembliesPaths
@@ -291,8 +307,6 @@ namespace PlDotNET
             string userFunctionCode = string.Empty, userHandlerCode = string.Empty;
             MemoryStream memUserFunction, memUserHandler;
 
-            PldotnetSettings settings = new PldotnetSettings();
-
             if (!useUserAssembly && dotnetLanguage == DotNETLanguage.FSharp)
             {
                 CodeGenerator fs_dcg = new FSharpCodeGenerator(
@@ -305,7 +319,7 @@ namespace PlDotNET
                                         paramModeArray,
                                         num_output_values,
                                         funcBody,
-                                        supportNullInput || settings.AlwaysNullable);
+                                        supportNullInput || Engine.AlwaysNullable);
 
                 /// Create the F# UserFunction source code
                 userFunctionCode = fs_dcg.BuildUserFunctionSourceCode();
@@ -314,17 +328,16 @@ namespace PlDotNET
                 string userFunctionDll = string.Empty;
 
                 /// Compile the F# UserFunction and assign the assembly path to the userFunctionDll variable
-                if (!settings.CompileFSharpWithFCS)
+                if (!CompileFSharpWithFCS)
                 {
                     DotNetProjectBuilder dfp = new (
                                                     "@PLDOTNET_TEMPLATE_DIR/UserFunctionProject.tfsproj",
-                                                    settings.PathToTemporaryFiles,
+                                                    Engine.PathToTemporaryFiles,
                                                     $"FSharpUserFunctionTemplate_{functionId}",
                                                     DotNETLanguage.FSharp);
 
                     // TODO Set verbose depending on PL.NET logging config
-                    Console.WriteLine($"\u001b[32;43msettings.VerboseLevel: {settings.VerboseLevel}");
-                    dfp.SetVerboseLevel(Convert.ToInt32(settings.VerboseLevel));
+                    dfp.SetVerboseLevel(VerboseLevel);
                     userFunctionDll = dfp.BuildAndGenDLL(userFunctionCode);
                 }
                 else
@@ -339,7 +352,7 @@ namespace PlDotNET
                         typeof(FSharpCompiler).Assembly.Location,
                         typeof(System.ComponentModel.Component).Assembly.Location,
                     };
-                    userFunctionDll = FSharpCompiler.CompileFSharpSourceCodeAsDLL(functionId, settings.PathToTemporaryFiles, userFunctionCode, extraAssemblies.ToArray());
+                    userFunctionDll = FSharpCompiler.CompileFSharpSourceCodeAsDLL(functionId, Engine.PathToTemporaryFiles, userFunctionCode, extraAssemblies.ToArray());
                     #else
                     throw new SystemException("FSharp Compiler Service is not enabled in this build");
                     #endif
@@ -368,8 +381,8 @@ namespace PlDotNET
                             paramModeArray,
                             num_output_values,
                             funcBody,
-                            supportNullInput || settings.AlwaysNullable,
-                            settings.CompileFSharpWithFCS, // Used to generate a UserHandler compatible with FCS DLL
+                            supportNullInput || Engine.AlwaysNullable,
+                            CompileFSharpWithFCS, // Used to generate a UserHandler compatible with FCS DLL
                             dotnetLanguage == DotNETLanguage.FSharp); // Used to perform changes in the UserHandler code for F# language
 
                 // Create the UserFunction source code if the user does not provide an assembly
@@ -520,7 +533,6 @@ namespace PlDotNET
         public static MemoryStream CreateMemoryStreamForUserHandlerCode(DotNETLanguage language, uint functionId, string functionName, string userHandlerCode, MemoryStream assemblyToInclude)
         {
             MemoryStream memUserHandler = new ();
-            PldotnetSettings settings = new PldotnetSettings();
             #if ENABLE_FCS
             if (language == DotNETLanguage.FSharp)
             {
@@ -533,7 +545,7 @@ namespace PlDotNET
                     typeof(FSharpCompiler).Assembly.Location,
                     typeof(System.ComponentModel.Component).Assembly.Location,
                 };
-                return FSharpCompiler.CompileFSharpSourceCode(functionId, settings.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
+                return FSharpCompiler.CompileFSharpSourceCode(functionId, Engine.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
             }
             #else
             if (language == DotNETLanguage.FSharp)
@@ -687,15 +699,13 @@ namespace PlDotNET
 
             IntPtr[] argumentArray = new ReadOnlySpan<IntPtr>(arguments, num_arguments).ToArray();
             List<IntPtr> argumentList = new (argumentArray);
-            PldotnetSettings settings = new PldotnetSettings();
 
             if (Engine.FuncBuiltCodeDict.TryGetValue(functionId, out CachedFunction cached))
             {
                 try
                 {
                     bool[] isnull = new bool[argumentList.Count];
-
-                    if (cached.SupportNullInput || settings.AlwaysNullable)
+                    if (cached.SupportNullInput || Engine.AlwaysNullable)
                     {
                         for (int i = 0, nargs = isnull.Length; i < nargs; i++)
                         {
@@ -852,35 +862,33 @@ namespace PlDotNET
         /// <exception cref="SystemException">Thrown if the source code directory or the temporary files directory does not have a mode of 0700.</exception>
         public static void CheckDirectoriesAccess()
         {
-            PldotnetSettings settings = new PldotnetSettings();
-
             // Check the access of the directory to save the source codes.
-            if (settings.SaveSourceCode)
+            if (Engine.SaveSourceCode)
             {
-                if (!Directory.Exists(settings.PathToSaveSourceCode))
+                if (!Directory.Exists(Engine.PathToSaveSourceCode))
                 {
                     // Create the directory if it doesn't exist
-                    Directory.CreateDirectory(settings.PathToSaveSourceCode);
+                    Directory.CreateDirectory(Engine.PathToSaveSourceCode);
                 }
 
-                if (!CheckDirectoryMode(settings.PathToSaveSourceCode))
+                if (!CheckDirectoryMode(Engine.PathToSaveSourceCode))
                 {
                     // Throw an exception if the directory doesn't have the correct mode
-                    throw new SystemException($"Please specify a directory where the source codes can be saved and the directory must have a mode of 0700; current directory, '{settings.PathToSaveSourceCode}', is no good.");
+                    throw new SystemException($"Please specify a directory where the source codes can be saved and the directory must have a mode of 0700; current directory, '{Engine.PathToSaveSourceCode}', is no good.");
                 }
             }
 
             // Check the access of the temporary files directory
-            if (!Directory.Exists(settings.PathToTemporaryFiles))
+            if (!Directory.Exists(Engine.PathToTemporaryFiles))
             {
                 // Create the directory if it doesn't exist
-                Directory.CreateDirectory(settings.PathToTemporaryFiles);
+                Directory.CreateDirectory(Engine.PathToTemporaryFiles);
             }
 
-            if (!CheckDirectoryMode(settings.PathToTemporaryFiles))
+            if (!CheckDirectoryMode(Engine.PathToTemporaryFiles))
             {
                 // Throw an exception if the directory doesn't have the correct mode
-                throw new SystemException($"Please specify a directory where the temporary files can be saved and the directory must have a mode of 0700; current directory, '{settings.PathToTemporaryFiles}', is no good.");
+                throw new SystemException($"Please specify a directory where the temporary files can be saved and the directory must have a mode of 0700; current directory, '{Engine.PathToTemporaryFiles}', is no good.");
             }
         }
 

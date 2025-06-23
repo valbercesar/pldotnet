@@ -12,7 +12,15 @@ public abstract class BaseSumDoubleArrayDllTests : PlDotNetTest
 
     public BaseSumDoubleArrayDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumDoubleArrayDll", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]")}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "SumDoubleArrayDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("doubles double", "precision[]") },
+            ReturnType = "double precision",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

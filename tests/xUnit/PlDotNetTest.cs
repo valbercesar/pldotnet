@@ -458,7 +458,6 @@ WHERE id = {functionInfo.TestId.Value};";
     /// <param name="sqlCode">The SQL code to execute.</param>
     /// <returns>It returns true for successful execution,
     /// and false otherwise.</returns>
-
     protected bool ExecuteSql(string sqlCode)
     {
         StringBuilder messages = new StringBuilder();

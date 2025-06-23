@@ -12,7 +12,15 @@ public abstract class BaseCreateDateFsharpDllTests : PlDotNetTest
 
     public BaseCreateDateFsharpDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT4"), new FunctionArgument("b", "INT4"), new FunctionArgument("c", "INT4")}, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "CreateDateFsharpDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("a", "INT4"), new FunctionArgument("b", "INT4"), new FunctionArgument("c", "INT4") },
+            ReturnType = "DATE",
+            Body = FunctionBody,
+            Language = LanguageType.PlfSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

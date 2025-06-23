@@ -12,7 +12,15 @@ public abstract class BaseSum2SmallInTdLlTests : PlDotNetTest
 
     public BaseSum2SmallInTdLlTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2SmallInTdLl", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "smallint"), new FunctionArgument("b", "smallint")}, ReturnType = "smallint", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "Sum2SmallInTdLl",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("a", "smallint"), new FunctionArgument("b", "smallint") },
+            ReturnType = "smallint",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

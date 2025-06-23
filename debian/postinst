@@ -12,7 +12,7 @@ else
 fi
 
 # Locate the PostgreSQL configuration file
-PG_CONF=$(sudo -u postgres psql -t -c "SHOW config_file;" | xargs)
+PG_CONF=$(runuser -u postgres -- psql -c "SHOW config_file;" | xargs)
 
 if [ -f "$PG_CONF" ]; then
     echo "" >> "$PG_CONF"

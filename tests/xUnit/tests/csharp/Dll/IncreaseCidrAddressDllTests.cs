@@ -12,7 +12,15 @@ public abstract class BaseIncreaseCidrAddressDllTests : PlDotNetTest
 
     public BaseIncreaseCidrAddressDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseCidrAddressDll", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "CIDR[]")}, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "IncreaseCidrAddressDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "CIDR[]") },
+            ReturnType = "CIDR[]",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

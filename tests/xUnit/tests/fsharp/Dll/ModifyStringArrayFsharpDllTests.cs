@@ -12,7 +12,15 @@ public abstract class BaseModifyStringArrayFsharpDllTests : PlDotNetTest
 
     public BaseModifyStringArrayFsharpDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyStringArrayFsharpDll", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "VARCHAR[]"), new FunctionArgument("b", "TEXT")}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "ModifyStringArrayFsharpDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("a", "VARCHAR[]"), new FunctionArgument("b", "TEXT") },
+            ReturnType = "VARCHAR[]",
+            Body = FunctionBody,
+            Language = LanguageType.PlfSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

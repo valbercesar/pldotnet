@@ -74,7 +74,6 @@ static void *pldotnet_dlsym(void *handle, const char *symbol) {
 
 // Returns 0 on success, (other) on error
 static int pldotnet_GetHostFxrPath(char_t *buffer, size_t bufferSize) {
- 
     FILE *out;
     char cmd[256];
     const char *aux = "/libhostfxr.so";

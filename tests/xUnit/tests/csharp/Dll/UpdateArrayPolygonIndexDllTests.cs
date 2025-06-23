@@ -12,12 +12,35 @@ public abstract class BaseUpdateArrayPolygonIndexDllTests : PlDotNetTest
 
     public BaseUpdateArrayPolygonIndexDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPolygonIndexDll", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "POLYGON[]"), new FunctionArgument("desired", "POLYGON"), new FunctionArgument("index", "integer[]")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "text", };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "UpdateArrayPolygonIndexDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "POLYGON[]"), new FunctionArgument("desired", "POLYGON"), new FunctionArgument("index", "integer[]") },
+            ReturnType = "POLYGON[]",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = true,
+			CastFunctionAs = "text",
+        };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-polygon-null-1array-dll", "updateArrayPolygonIndexDLL1", "ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[2]", "= CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON] AS TEXT)"}, new object[]{"c#-polygon-null-2array-arraynull-dll", "updateArrayPolygonIndexDLL2", "ARRAY[[null::POLYGON, null::POLYGON], [null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[1,0]", "= CAST(ARRAY[[null::POLYGON, null::POLYGON], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]] AS TEXT)"}, };
+        return new object[][]
+        {
+            new object[] {
+				"c#-polygon-null-1array-dll",
+				"updateArrayPolygonIndexDLL1",
+				"ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[2]",
+				"= CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON] AS TEXT)"
+			},
+        	new object[] {
+				"c#-polygon-null-2array-arraynull-dll",
+				"updateArrayPolygonIndexDLL2",
+				"ARRAY[[null::POLYGON, null::POLYGON], [null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, ARRAY[1,0]",
+				"= CAST(ARRAY[[null::POLYGON, null::POLYGON], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]] AS TEXT)"
+			},
+        };
     }
 
     [Theory]

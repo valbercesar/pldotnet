@@ -12,7 +12,16 @@ public abstract class BaseUpdateJsonArrayIndexDllTests : PlDotNetTest
 
     public BaseUpdateJsonArrayIndexDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateJsonArrayIndexDll", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "JSON[]"), new FunctionArgument("desired", "JSON"), new FunctionArgument("index", "integer[]")}, ReturnType = "JSON[]", Body = FunctionBody, Language = Language, IsStrict = false, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "UpdateJsonArrayIndexDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "JSON[]"), new FunctionArgument("desired", "JSON"), new FunctionArgument("index", "integer[]") },
+            ReturnType = "JSON[]",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = false,
+            CastFunctionAs = "TEXT",
+        };
     }
 
     public static object[][] TestCases()

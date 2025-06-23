@@ -12,7 +12,15 @@ public abstract class BaseIncreaseDateOnlyRangesDllTests : PlDotNetTest
 
     public BaseIncreaseDateOnlyRangesDllTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseDateOnlyRangesDll", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "DATERANGE[]")}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo
+        {
+            Name = "IncreaseDateOnlyRangesDll",
+            Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "DATERANGE[]") },
+            ReturnType = "DATERANGE[]",
+            Body = FunctionBody,
+            Language = LanguageType.PlcSharp,
+            IsStrict = false,
+        };
     }
 
     public static object[][] TestCases()

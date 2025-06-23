@@ -361,13 +361,11 @@ struct pldotnet_Result *pldotnet_CreateResult(size_t length);
  */
 void pldotnet_FreeResult(struct pldotnet_Result *r);
 
-const char* pldotnet_GetPostgreSetting(const char *settingName);
-
 /*
  * START: implementing functions
  */
 
-const char* pldotnet_GetPostgreSetting(const char *settingName) {
+const char* pldotnet_GetPostgresSetting(const char *settingName) {
     const char *setting_name;
 
     setting_name = GetConfigOption(settingName, true, false);
@@ -482,7 +480,6 @@ Datum plfsharp_validator(PG_FUNCTION_ARGS) {
 }
 
 bool pldotnet_BuildPaths(void) {
-
     char json_path_suffix[256];
     char dll_path_suffix[256];
 
@@ -674,8 +671,13 @@ static void result_FromTuple(pldotnet_Result *result, HeapTuple tuple,
         attr = TupleDescAttr(desc, i);
 
         if (attr->attisdropped) continue;
-        if (attr->attgenerated && (!include_generated))
-            continue; /* don't include unless requested */
+
+        // In PG version < 12, there is no attgenerated field
+        // In PG version >= 12, attgenerated is true for generated columns
+        #if PG_VERSION_NUM >= 120000
+            if (attr->attgenerated && (!include_generated))
+                continue; /* don't include unless requested */
+        #endif
 
         datum = heap_getattr(tuple, i + 1, desc, &is_null);
 
@@ -957,8 +959,14 @@ static Datum pldotnet_CompileAndRunUserFunction(const FunctionCallInfo fcinfo,
                                           // find the enumerator in the cache
 
             // create and register the callback for garbage collection
-            cbd = (cb_data *)funcctx->multi_call_memory_ctx->methods->alloc(
-                funcctx->multi_call_memory_ctx, sizeof(cb_data));
+            // For versions >= 17, the function call receives 3 arguments
+            #if PG_VERSION_NUM >= 170000
+                cbd = (cb_data *)funcctx->multi_call_memory_ctx->methods->alloc(
+                    funcctx->multi_call_memory_ctx, sizeof(cb_data), false);
+            #else
+                cbd = (cb_data *)funcctx->multi_call_memory_ctx->methods->alloc(
+                    funcctx->multi_call_memory_ctx, sizeof(cb_data));
+            #endif
 
             cbd->cb_record.arg = cbd;
             cbd->cb_record.func = srf_MemoryContextCallback;
