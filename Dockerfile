@@ -30,6 +30,7 @@ RUN apt install -y postgresql-$POSTGRES_VERSION
 RUN apt install -y libglib2.0-dev
 
 ## Install build dependencies
+## TODO move this to build step.. this is here to speed up the build process for now
 RUN apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all
 
 # Install .NET SDK
