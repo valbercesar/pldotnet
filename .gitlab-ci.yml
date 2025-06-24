@@ -4,15 +4,13 @@ stages:
 variables:
   POSTGRES_PASSWORD: postgres
   POSTGRES_PORT: 5432
-  DOCKER_TLS_CERTDIR: "" # disable TLS so CLI can talk to DinD
-  DOCKER_HOST: tcp://docker:2375 # docker CLI -> DinD service
 
 test_matrix:
   stage: test
   image: docker:25.0.0-cli
   services:
     - name: docker:25.0.0-dind
-      command: ["--registry-mirror=https://registry-1.docker.io"] # optional
+      command: ["--host=tcp://0.0.0.0:2375"]
   parallel:
     matrix:
       - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
@@ -40,7 +38,7 @@ test_matrix:
           echo "✅ PostgreSQL ready"
           break
         fi
-        echo "🔄 Still waiting… ${i}"
+        echo "🔄 Still waiting... (${i})"
         sleep 5
       done
 
