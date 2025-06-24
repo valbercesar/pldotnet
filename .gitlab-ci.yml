@@ -21,8 +21,8 @@ variables:
           echo "✅ PostgreSQL is ready!"
           break
         fi
-        echo "🔄 Still waiting... (${i}s)"
-        sleep 2
+        echo "🔄 Still waiting... (${i*5}s)"
+        sleep 5
       done
 
     - echo "🧪 Running tests..."
