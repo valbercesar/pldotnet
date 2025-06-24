@@ -13,6 +13,7 @@ test_matrix:
       - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
   stage: test
   script:
+    - apt-get update && apt-get install -y make
     - echo "POSTGRES_VERSION=$POSTGRES_VERSION" > .env
     - echo "POSTGRES_PORT=$POSTGRES_PORT" >> .env
     - echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
