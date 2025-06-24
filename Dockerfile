@@ -70,16 +70,14 @@ FROM base AS runtime
 # Copy the built application from the build stage
 COPY --from=build /app/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb /app/debian/packages/
 
-# Install the application deb package
-RUN dpkg -i /app/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
+# Initialize PostgreSQL, install the pldotnet extension, and configure the database
+RUN pg_ctlcluster $POSTGRES_VERSION main start \
+&& dpkg -i /app/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb \
+&& runuser -u postgres -- psql -c 'CREATE EXTENSION pldotnet;' \
+&& runuser -u postgres -- psql -c "ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';"
 
 # Remove the deb package after installation
 RUN rm -rf /app
-
-# Create the Extension on the DB
-RUN pg_ctlcluster $POSTGRES_VERSION main start \
-&& runuser -u postgres -- psql -c 'CREATE EXTENSION pldotnet;' \
-&& runuser -u postgres -- psql -c "ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';"
 
 # Start the PostgreSQL service and tail the log file
 CMD ["/bin/bash", "-c", "pg_ctlcluster $POSTGRES_VERSION main start && tail -f /var/log/postgresql/postgresql-$POSTGRES_VERSION-main.log"]

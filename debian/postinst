@@ -25,7 +25,6 @@ if [ -f "$PG_CONF" ]; then
     echo "pldotnet.path_to_save_source_code = '/tmp/PlDotNET/GeneratedCodes'" >> "$PG_CONF"
     echo "pldotnet.path_to_temporary_files = '/tmp/PlDotNET/'" >> "$PG_CONF"
 
-    service postgresql reload || true
     echo "PostgreSQL configuration updated and reloaded."
 else
     echo "Could not locate postgresql.conf. Ensure PostgreSQL is installed and running." >&2

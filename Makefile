@@ -171,7 +171,6 @@ test-local:
 .PHONY: test-docker
 test-docker:
 	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make test-local
-	make test-local FILTER="$(XUNIT_FILTER)"
 
 .PHONY: test-docker-sql
 test-docker-sql:
