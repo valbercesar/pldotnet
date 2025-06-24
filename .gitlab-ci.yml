@@ -1,0 +1,41 @@
+stages:
+  - test
+
+variables:
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_PORT: 5432
+
+.test_matrix_template:
+  stage: test
+  script:
+    - echo "POSTGRES_VERSION=$POSTGRES_VERSION" > .env
+    - echo "POSTGRES_PORT=$POSTGRES_PORT" >> .env
+    - echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
+
+    - echo "🔧 Starting Docker Compose with POSTGRES_VERSION=$POSTGRES_VERSION"
+    - make dev &
+    - |
+      echo "⏳ Waiting for PostgreSQL to become ready..."
+      for i in {1..30}; do
+        if docker exec pldotnet-runtime pg_isready -U postgres > /dev/null 2>&1; then
+          echo "✅ PostgreSQL is ready!"
+          break
+        fi
+        echo "🔄 Still waiting... (${i}s)"
+        sleep 2
+      done
+
+    - echo "🧪 Running tests..."
+    - make test-docker
+
+    - echo "🧹 Cleaning up..."
+    - docker-compose -f docker-compose-dev.yml down -v || true
+
+  tags:
+    - docker
+
+test_matrix:
+  extends: .test_matrix_template
+  parallel:
+    matrix:
+      - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]

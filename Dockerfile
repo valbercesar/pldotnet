@@ -3,12 +3,11 @@
 ########
 # This image serves as base images for the next stages
 FROM ubuntu:25.04 AS base
-ARG DOTNET_VERSION=9.0
 ARG POSTGRES_VERSION=17
 ARG POSTGRES_PORT=5432
 ARG POSTGRES_PASSWORD=postgres
 
-ENV DOTNET_VERSION=$DOTNET_VERSION
+ENV DOTNET_VERSION=9.0
 ENV POSTGRES_VERSION=$POSTGRES_VERSION
 ENV POSTGRES_PORT=$POSTGRES_PORT
 ENV POSTGRES_PASSWORD=$POSTGRES_PASSWORD
@@ -29,27 +28,17 @@ RUN apt install -y postgresql-$POSTGRES_VERSION
 # Install dependencies
 RUN apt install -y libglib2.0-dev
 
-## Install build dependencies
-## TODO move this to build step.. this is here to speed up the build process for now
-RUN apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all
-
 # Install .NET SDK
-# RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
-RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
-RUN chmod +x dotnet-install.sh
-RUN ./dotnet-install.sh --channel $DOTNET_VERSION --install-dir /usr/share/dotnet
-RUN apt install -y dotnet-apphost-pack-$DOTNET_VERSION
-
-ENV DOTNET_ROOT=/usr/share/dotnet
-ENV PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH
-
-RUN dotnet --version
+RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
 
 #########
 # BUILD #
 #########
 # This image is used to build the application
 FROM base AS build
+
+## Install build dependencies
+RUN apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all
 
 # Copy application source code
 WORKDIR /app

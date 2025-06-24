@@ -117,6 +117,7 @@ For example:
 17
 ```
 
+Leave an empty line at the end of the file.
 To build the packages, you will need additional dependencies. Install them using the following command:
 
 ```bash
