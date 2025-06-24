@@ -8,7 +8,6 @@ variables:
 test_matrix:
   interruptible: true # kill me if something newer shows up
   resource_group: "test-matrix-$CI_COMMIT_REF_SLUG" # one slot per branch/MR
-  extends: .test_matrix_template
   parallel:
     matrix:
       - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
