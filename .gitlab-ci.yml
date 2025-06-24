@@ -5,15 +5,13 @@ variables:
   POSTGRES_PASSWORD: postgres
   POSTGRES_PORT: 5432
 
-# --------------------------------------------------------------------
-# Every test job is cancellable & belongs to a single ‘slot’ per branch
-# --------------------------------------------------------------------
-.default_test_settings: &default_test_settings
+test_matrix:
   interruptible: true # kill me if something newer shows up
   resource_group: "test-matrix-$CI_COMMIT_REF_SLUG" # one slot per branch/MR
-
-.test_matrix_template:
-  <<: *default_test_settings
+  extends: .test_matrix_template
+  parallel:
+    matrix:
+      - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
   stage: test
   script:
     - echo "POSTGRES_VERSION=$POSTGRES_VERSION" > .env
@@ -41,9 +39,3 @@ variables:
 
   tags:
     - docker
-
-test_matrix:
-  extends: .test_matrix_template
-  parallel:
-    matrix:
-      - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
