@@ -37,10 +37,10 @@ test_matrix:
       echo "⏳ Waiting for PostgreSQL to become ready..."
       for i in {1..30}; do
         if docker exec pldotnet-runtime pg_isready -U postgres >/dev/null 2>&1; then
-          echo "✅ PostgreSQL ready after $((i*5)) s"
+          echo "✅ PostgreSQL ready"
           break
         fi
-        echo "🔄 Still waiting… $((i*5)) s"
+        echo "🔄 Still waiting… ${i}"
         sleep 5
       done
 
