@@ -19,10 +19,7 @@ ENV TargetFramework=net${DOTNET_VERSION}
 RUN apt update && apt upgrade -y
 
 # Install make
-RUN apt install -y make
-
-# Install .NET SDK
-RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
+RUN apt install -y make wget
 
 # Install PostgreSQL
 RUN apt install -y postgresql-common
@@ -32,14 +29,26 @@ RUN apt install -y postgresql-$POSTGRES_VERSION
 # Install dependencies
 RUN apt install -y libglib2.0-dev
 
+## Install build dependencies
+RUN apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all
+
+# Install .NET SDK
+# RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
+RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+RUN chmod +x dotnet-install.sh
+RUN ./dotnet-install.sh --channel $DOTNET_VERSION --install-dir /usr/share/dotnet
+RUN apt install -y dotnet-apphost-pack-$DOTNET_VERSION
+
+ENV DOTNET_ROOT=/usr/share/dotnet
+ENV PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH
+
+RUN dotnet --version
+
 #########
 # BUILD #
 #########
 # This image is used to build the application
 FROM base AS build
-
-## Install build dependencies
-RUN apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all
 
 # Copy application source code
 WORKDIR /app
