@@ -42,7 +42,7 @@ public abstract class BaseUpdateJsonArrayIndexDllTests : PlDotNetTest
 public class UpdateJsonArrayIndexDllTestsCSharp : BaseUpdateJsonArrayIndexDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!updatejsonarrayindex'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!updatejsonarrayindex'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

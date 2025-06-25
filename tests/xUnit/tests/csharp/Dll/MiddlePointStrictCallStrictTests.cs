@@ -41,7 +41,7 @@ public abstract class BaseMiddlePointStrictCallStrictTests : PlDotNetTest
 public class MiddlePointStrictCallStrictTestsCSharp : BaseMiddlePointStrictCallStrictTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.OtherTests.TestClass!middlePointStrict'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.OtherTests.TestClass!middlePointStrict'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

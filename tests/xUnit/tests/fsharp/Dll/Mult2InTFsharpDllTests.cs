@@ -41,7 +41,7 @@ public abstract class BaseMult2InTFsharpDllTests : PlDotNetTest
 public class Mult2InTFsharpDllTestsFSharp : BaseMult2InTFsharpDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/net6.0/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!mult2IntFSharp'
+'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!mult2IntFSharp'
     ";
     protected override LanguageType Language => LanguageType.PlfSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

@@ -41,7 +41,7 @@ public abstract class BaseModifyBitDllTests : PlDotNetTest
 public class ModifyBitDllTestsCSharp : BaseModifyBitDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!modifybit'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!modifybit'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

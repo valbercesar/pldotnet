@@ -41,7 +41,7 @@ public abstract class BaseCombineUUIdsDllTests : PlDotNetTest
 public class CombineUUIdsDllTestsCSharp : BaseCombineUUIdsDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!combineuuids'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!combineuuids'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

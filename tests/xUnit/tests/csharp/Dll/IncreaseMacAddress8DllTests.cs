@@ -41,7 +41,7 @@ public abstract class BaseIncreaseMacAddress8DllTests : PlDotNetTest
 public class IncreaseMacAddress8DllTestsCSharp : BaseIncreaseMacAddress8DllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!increasemacaddress8'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!increasemacaddress8'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

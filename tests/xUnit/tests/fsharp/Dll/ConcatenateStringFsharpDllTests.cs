@@ -41,7 +41,7 @@ public abstract class BaseConcatenateStringFsharpDllTests : PlDotNetTest
 public class ConcatenateStringFsharpDllTestsFSharp : BaseConcatenateStringFsharpDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/net6.0/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!concatenateString'
+'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!concatenateString'
     ";
     protected override LanguageType Language => LanguageType.PlfSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

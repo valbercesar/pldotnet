@@ -41,7 +41,7 @@ public abstract class BaseIncreaseInT8RangesDllTests : PlDotNetTest
 public class IncreaseInT8RangesDllTestsCSharp : BaseIncreaseInT8RangesDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!increaseint8ranges'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!increaseint8ranges'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

@@ -41,7 +41,7 @@ public abstract class BaseModifyTimestampArrayFsharpDllTests : PlDotNetTest
 public class ModifyTimestampArrayFsharpDllTestsFSharp : BaseModifyTimestampArrayFsharpDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/net6.0/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!modifyTimestampArray'
+'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!modifyTimestampArray'
     ";
     protected override LanguageType Language => LanguageType.PlfSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

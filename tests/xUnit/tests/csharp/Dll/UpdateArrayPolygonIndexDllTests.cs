@@ -56,7 +56,7 @@ public abstract class BaseUpdateArrayPolygonIndexDllTests : PlDotNetTest
 public class UpdateArrayPolygonIndexDllTestsCSharp : BaseUpdateArrayPolygonIndexDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!updatearraypolygonindex'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!updatearraypolygonindex'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

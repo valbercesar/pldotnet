@@ -41,7 +41,7 @@ public abstract class BaseIncreaseDateOnlyRangesDllTests : PlDotNetTest
 public class IncreaseDateOnlyRangesDllTestsCSharp : BaseIncreaseDateOnlyRangesDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!increasedateonlyranges'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!increasedateonlyranges'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

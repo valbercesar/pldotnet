@@ -41,7 +41,7 @@ public abstract class BaseModifyFloat8ArrayFsharpDllTests : PlDotNetTest
 public class ModifyFloat8ArrayFsharpDllTestsFSharp : BaseModifyFloat8ArrayFsharpDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/net6.0/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!modifyFloat8ArrayFSharp'
+'/app/pldotnet/tests/fsharp/DotNetTestProject/bin/Release/FSharpTest.dll:TestFSharpDLLFunctions.TestFSharpClass!modifyFloat8ArrayFSharp'
     ";
     protected override LanguageType Language => LanguageType.PlfSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

@@ -41,7 +41,7 @@ public abstract class BaseSumDoubleArrayDllTests : PlDotNetTest
 public class SumDoubleArrayDllTestsCSharp : BaseSumDoubleArrayDllTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!sumdoublearray'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!sumdoublearray'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

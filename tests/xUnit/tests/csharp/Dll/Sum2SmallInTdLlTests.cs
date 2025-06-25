@@ -41,7 +41,7 @@ public abstract class BaseSum2SmallInTdLlTests : PlDotNetTest
 public class Sum2SmallInTdLlTestsCSharp : BaseSum2SmallInTdLlTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.TestClass!sum2smallint'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.TestClass!sum2smallint'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)

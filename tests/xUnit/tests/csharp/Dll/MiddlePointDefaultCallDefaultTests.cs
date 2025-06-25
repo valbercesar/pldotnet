@@ -41,7 +41,7 @@ public abstract class BaseMiddlePointDefaultCallDefaultTests : PlDotNetTest
 public class MiddlePointDefaultCallDefaultTestsCSharp : BaseMiddlePointDefaultCallDefaultTests
 {
     protected override string FunctionBody => @"
-'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/net6.0/CSharpTest.dll:TestDLLFunctions.OtherTests.TestClass!middlePointDefault'
+'/app/pldotnet/tests/csharp/DotNetTestProject/bin/Release/CSharpTest.dll:TestDLLFunctions.OtherTests.TestClass!middlePointDefault'
     ";
     protected override LanguageType Language => LanguageType.PlcSharp;
     public override string GetFunctionDefinition(SqlFunctionInfo functionInfo)
