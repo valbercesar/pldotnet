@@ -16,6 +16,7 @@ using System.Net.NetworkInformation; // for Macaddr
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using Npgsql;
 using NpgsqlTypes;
 using PlDotNET.Common;
 
@@ -36,11 +37,6 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.RECORDOID, OID.RECORDARRAYOID)]
     public class RecordHandler : ObjectTypeHandler<object[]>
     {
-        /// <summary>
-        /// A type reference for the NpgsqlParameter type defined in different project.
-        /// </summary>
-        private static Type npgsqlParameterType = Assembly.Load("Npgsql").GetType("Npgsql.NpgsqlParameter");
-
         public RecordHandler()
         {
             this.ElementOID = OID.RECORDOID;
@@ -72,36 +68,6 @@ namespace PlDotNET.Handler
         [DllImport("@PKG_LIBDIR/pldotnet.so")]
         public static extern int pldotnet_GetNumberOfRecordAttributes(IntPtr result);
 
-        public static (NpgsqlDbType, object) GetNpgsqlTypeAndValue(object obj)
-        {
-            if (obj != null && npgsqlParameterType.IsInstanceOfType(obj))
-            {
-                // Extract NpgsqlDbType and Value properties
-                PropertyInfo npgsqlDbTypeProperty = npgsqlParameterType.GetProperty("NpgsqlDbType");
-                PropertyInfo valueProperty = npgsqlParameterType.GetProperty("Value");
-
-                NpgsqlDbType npgsqlDbType = (NpgsqlDbType)npgsqlDbTypeProperty.GetValue(obj);
-                object value = valueProperty.GetValue(obj);
-
-                return (npgsqlDbType, value);
-            }
-            else
-            {
-                // Create an NpgsqlParameter instance dynamically
-                ConstructorInfo npgsqlParameterCtor = npgsqlParameterType.GetConstructor(new Type[] { typeof(string), typeof(object) });
-                object npgsqlParameterInstance = npgsqlParameterCtor.Invoke(new object[] { "name", obj });
-
-                // Extract NpgsqlDbType and Value properties
-                PropertyInfo npgsqlDbTypeProperty = npgsqlParameterType.GetProperty("NpgsqlDbType");
-                PropertyInfo valueProperty = npgsqlParameterType.GetProperty("Value");
-
-                NpgsqlDbType npgsqlDbType = (NpgsqlDbType)npgsqlDbTypeProperty.GetValue(npgsqlParameterInstance);
-                object value = valueProperty.GetValue(npgsqlParameterInstance);
-
-                return (npgsqlDbType, value);
-            }
-        }
-
 #nullable enable
 
         /// <summary>
@@ -112,7 +78,7 @@ namespace PlDotNET.Handler
         /// <returns>A tuple containing the datum and OID.</returns>
         public static (IntPtr, OID) SingleValueOutput(object value)
         {
-            (NpgsqlDbType dbt, object? obj) = GetNpgsqlTypeAndValue(value);
+            (NpgsqlDbType dbt, object? obj) = NpgsqlHelper.GetNpgsqlTypeAndValue(value);
 
             if (DBNull.Value.Equals(obj))
             {
@@ -235,9 +201,9 @@ namespace PlDotNET.Handler
                     bool isNull = false;
 
                     // If the value is an NpgsqlParameter, extract the Value property to check for null
-                    if (npgsqlParameterType.IsInstanceOfType(values[i]))
+                    if (values[i] is NpgsqlParameter npgsqlParameter)
                     {
-                        object? value = npgsqlParameterType.GetProperty("Value")?.GetValue(values[i]);
+                        object? value = npgsqlParameter.Value;
                         isNull = value == null || DBNull.Value.Equals(value);
                     }
 
