@@ -3,12 +3,11 @@
 ########
 # This image serves as base images for the next stages
 FROM ubuntu:25.04 AS base
-ARG DOTNET_VERSION=9.0
 ARG POSTGRES_VERSION=17
 ARG POSTGRES_PORT=5432
 ARG POSTGRES_PASSWORD=postgres
 
-ENV DOTNET_VERSION=$DOTNET_VERSION
+ENV DOTNET_VERSION=9.0
 ENV POSTGRES_VERSION=$POSTGRES_VERSION
 ENV POSTGRES_PORT=$POSTGRES_PORT
 ENV POSTGRES_PASSWORD=$POSTGRES_PASSWORD
@@ -21,9 +20,6 @@ RUN apt update && apt upgrade -y
 # Install make
 RUN apt install -y make
 
-# Install .NET SDK
-RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
-
 # Install PostgreSQL
 RUN apt install -y postgresql-common
 RUN /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
@@ -31,6 +27,9 @@ RUN apt install -y postgresql-$POSTGRES_VERSION
 
 # Install dependencies
 RUN apt install -y libglib2.0-dev
+
+# Install .NET SDK
+RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
 
 #########
 # BUILD #
