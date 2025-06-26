@@ -120,7 +120,6 @@ build-docker:
 	docker buildx build \
 	  --target artifacts \
 	  --output type=local,dest=./debian/packages \
-	  --build-arg DOTNET_VERSION=$$DOTNET_VERSION \
 	  --build-arg POSTGRES_VERSION=$$POSTGRES_VERSION \
 	  --build-arg POSTGRES_PORT=$$POSTGRES_PORT \
 	  --build-arg POSTGRES_PASSWORD=$$POSTGRES_PASSWORD \
