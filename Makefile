@@ -132,7 +132,15 @@ build-docker:
 
 .PHONY: dev
 dev:
-	docker-compose -f docker-compose-dev.yml up --build
+	docker-compose -f docker-compose.yml -f docker-compose-dev.yml up --build
+
+.PHONY: run
+run:
+	docker-compose -f docker-compose.yml up --build
+
+.PHONY: down
+down:
+	docker-compose down
 
 ########
 # TEST #

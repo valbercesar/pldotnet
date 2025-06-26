@@ -1,23 +1,4 @@
 services:
-  # Starts the PostgreSQL database with PL.NET installed
-  # and configured to be used.
-  # Requires .env file with the following variables:
-  # DOTNET_VERSION
-  # POSTGRES_VERSION
-  # POSTGRES_PORT
-  # POSTGRES_PASSWORD
   pldotnet-runtime:
-    container_name: pldotnet-runtime
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runtime
-      args:
-        POSTGRES_VERSION: ${POSTGRES_VERSION}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        POSTGRES_PORT: ${POSTGRES_PORT}
-    ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - .:/app/pldotnet
