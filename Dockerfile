@@ -18,7 +18,7 @@ ENV TargetFramework=net${DOTNET_VERSION}
 RUN apt update && apt upgrade -y
 
 # Install make
-RUN apt install -y make wget
+RUN apt install -y make
 
 # Install PostgreSQL
 RUN apt install -y postgresql-common
