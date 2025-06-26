@@ -87,7 +87,7 @@ SHELL := /bin/bash
 build-clean:
 	rm -rf ../postgresql-*-pldotnet*deb ../pldotnet_*.build ../pldotnet_*.changes ../pldotnet_*.buildinfo
 	rm -rf build-*
-	rm -rf debian/.debhelper debian/postgresql-*-pldotnet* debian/control debian/debhelper-build-stamp debian/files
+	rm -rf debian/.debhelper debian/postgresql-*-pldotnet* debian/control debian/debhelper-build-stamp debian/files debian/control.in
 
 # Builds PL.NET in the local machine
 .PHONY: build-local

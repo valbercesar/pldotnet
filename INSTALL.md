@@ -17,6 +17,10 @@ Ensure your system includes the following dependencies **before proceeding**:
   - 👉 [Install Docker](https://docs.docker.com/desktop/)
 - **Docker Compose** (if not included with Docker Desktop)
   - 👉 [Install Docker Compose](https://docs.docker.com/compose/install/)
+- **Make**
+  - 👉 [Install Make](https://www.gnu.org/software/make/)
+- **Git**
+  - 👉 [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - Clone the repository:
 
 ```bash
@@ -52,7 +56,7 @@ The instance must be running and the PostgreSQL version must match the one speci
 It also requires .NET SDK 9.0 or higher to be installed on your system.
 Your main application does not need to have .NET SDK 9.0 installed, only the PostgreSQL instance where PL/.NET is installed.
 
-### 1.3. Run PostgreSQL with PL/.NET
+### 1.3. Run PostgreSQL with PL/.NET in a docker container
 
 First navigate to the root directory of the repository:
 
@@ -72,13 +76,13 @@ That's it. You now have a PostgreSQL container running with PL/.NET installed an
 
 ### 1.4. Running Tests
 
-First start the PostgreSQL container (as explained on the previous step) using the following command:
+First start the PostgreSQL dev container using the following command:
 
 ```bash
-docker compose up
+make dev
 ```
 
-Then run the tests using the following command:
+Then run the tests in a separate terminal using the following command:
 
 ```bash
 make test-docker
@@ -96,13 +100,15 @@ This section provides instructions for manually building and installing PL/.NET 
 ### 2.1. Prerequisites
 
 - **PostgreSQL** 11 or higher
-  - 👉 [Install PostgreSQL](https://www.postgresql.org/download/)
-- **.NET SDK** 9.0 or higher
-  - 👉 [Install .NET SDK](https://learn.microsoft.com/en-us/dotnet/core/install/)
+  - 👉 [Install PostgreSQL](https://www.postgresql.org/download/); OR
+- **.NET SDK and Runtime** 9.0 or higher
+  - 👉 [Install .NET SDK and Runtime](https://learn.microsoft.com/en-us/dotnet/core/install/)
+  - 👉 `sudo apt install -y dotnet-sdk-9.0 dotnet-runtime-9.0` - you need to install both sdk and runtime
 - **System Packages** for Debian-based Linux distributions:
 
 ```bash
-sudo apt install -y libglib2.0 make
+sudo apt install -y libglib2.0 # or libglib2.0-dev depending on your distribution
+sudo apt install -y make postgresql-common devscripts build-essential lintian debhelper postgresql-server-dev-all
 ```
 
 - Clone the repository:
@@ -127,17 +133,15 @@ For example:
 17
 ```
 
-To build the packages, you will need additional dependencies. Install them using the following command:
-
-```bash
-sudo apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all postgresql-common
-```
+Leave an empty line at the end of the file.
 
 Then, run the following command to build the package:
 
 ```bash
 make build-local
 ```
+
+If the build process fails for any reason, try again with `sudo`. Sometimes permissions can cause issues during the build process.
 
 The packages will be generated in the `debian/packages/` directory.
 
@@ -175,13 +179,18 @@ Confirm it's active:
 SELECT * FROM pg_extension WHERE extname = 'pldotnet';
 ```
 
+Then restart PostgreSQL to ensure the extension is loaded correctly and the PL/.NET configuration is applied:
+
+```bash
+sudo systemctl restart postgresql
+```
+
 ### 2.5. Using PL/.NET
 
 You can now use PL/.NET to create and run .NET functions in PostgreSQL. For example, to create a simple function:
 
 ```sql
-CREATE FUNCTION hello_world() RETURNS text
-AS $$
+CREATE FUNCTION hello_world() RETURNS text AS $$
 return "Hello, World!";
 $$ LANGUAGE plcsharp STRICT;
 ```
