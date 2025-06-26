@@ -157,7 +157,7 @@ pre-tests-script:
 	dotnet build $(CURRENT_DIR)/tests/fsharp/DotNetTestProject -c Release
 	mkdir -p automated_test_results
 	find automated_test_results -mindepth 1 -delete
-	runuser -u $(DBUSER) -- psql -c 'DROP TABLE IF EXISTS automated_test_results;CREATE TABLE automated_test_results(ID SERIAL PRIMARY KEY, FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);'
+	runuser -u $(DBUSER) -- psql -f tests/setup.sql
 
 # Runs tests locally, on the current machine
 .PHONY: test-local
