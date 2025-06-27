@@ -28,7 +28,7 @@ test_matrix:
     - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
     - apt install -y postgresql-$POSTGRES_VERSION
     - pg_ctlcluster $POSTGRES_VERSION main start
-    - apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
+    - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
     - mkdir -p /app
     - ln -s "$CI_PROJECT_DIR" /app/pldotnet # Simulates the volume mount
     - echo "Waiting for PostgreSQL..."
