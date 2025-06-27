@@ -9,7 +9,7 @@ variables:
   POSTGRES_DB: postgres
   POSTGRES_PORT: 5432
   DOTNET_VERSION: 9.0
-  DATABASE_CONNECTION_STRING: "Host=127.0.0.1;Port=5432;Username=postgres;Password=postgres;Database=postgres"
+  DATABASE_CONNECTION_STRING: "Host=127.0.0.1;Port=$POSTGRES_PORT;Username=$POSTGRES_USER;Password=$POSTGRES_PASSWORD;Database=$POSTGRES_DB"
   TargetFramework: net9.0
 
 test_matrix:
@@ -17,6 +17,7 @@ test_matrix:
   image: ubuntu:25.04
   parallel:
     matrix:
+      # - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
       - POSTGRES_VERSION: ["17"]
   interruptible: true
   resource_group: "test-matrix-$CI_COMMIT_REF_SLUG"
@@ -35,5 +36,5 @@ test_matrix:
   script:
     - make build-local
     - dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
-    - runuser -u postgres -- psql -c 'CREATE EXTENSION pldotnet;'
+    - runuser -u $POSTGRES_USER -- psql -c 'CREATE EXTENSION pldotnet; ALTER USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';'
     - make test-local
