@@ -21,6 +21,7 @@ test_matrix:
   variables:
     PGHOST: postgres
     DBUSER: postgres
+    DATABASE_CONNECTION_STRING: "Host=127.0.0.1;Port=5432;Username=postgres;Password=postgres;Database=postgres"
   interruptible: true
   resource_group: "test-matrix-$CI_COMMIT_REF_SLUG"
   before_script:
@@ -41,7 +42,7 @@ test_matrix:
       done
   script:
     - cd /app/pldotnet
-    - echo "$POSTGRES_VERSION" > debian/pgversions
+    - echo "$POSTGRES_VERSION\n" > debian/pgversions
     - cat debian/pgversions
     - make build-local
     - pg_ctlcluster $POSTGRES_VERSION main start
