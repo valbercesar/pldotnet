@@ -25,9 +25,8 @@ test_matrix:
   interruptible: true
   resource_group: "test-matrix-$CI_COMMIT_REF_SLUG"
   before_script:
-    - apt update && apt install -y make sudo curl wget gnupg
-    - apt install -y postgresql-common postgresql-client devscripts build-essential lintian debhelper postgresql-server-dev-all
-    - apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
+    - apt update
+    - apt install -y make sudo curl wget gnupg postgresql-common postgresql-client devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
     - mkdir -p /app
     - ln -s "$CI_PROJECT_DIR" /app/pldotnet # Simulates the volume mount
     - echo "Waiting for PostgreSQL..."
