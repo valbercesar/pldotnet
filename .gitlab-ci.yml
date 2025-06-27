@@ -36,5 +36,5 @@ test_matrix:
   script:
     - make build-local
     - dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
-    - runuser -u $POSTGRES_USER -- psql -c 'CREATE EXTENSION pldotnet; ALTER USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';'
+    - runuser -u $POSTGRES_USER -- psql -c "CREATE EXTENSION pldotnet; ALTER USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';"
     - make test-local
