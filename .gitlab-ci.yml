@@ -7,21 +7,20 @@ variables:
   POSTGRES_DB: postgres
   POSTGRES_PORT: 5432
   DOTNET_VERSION: 9.0
+  DATABASE_CONNECTION_STRING: "Host=127.0.0.1;Port=5432;Username=postgres;Password=postgres;Database=postgres"
+  TargetFramework: net9.0
 
 test_matrix:
   stage: test
   image: ubuntu:25.04
   parallel:
     matrix:
-      - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
-  variables:
-    PGHOST: postgres
-    DBUSER: postgres
-    DATABASE_CONNECTION_STRING: "Host=127.0.0.1;Port=5432;Username=postgres;Password=postgres;Database=postgres"
+      - POSTGRES_VERSION: ["17"]
   interruptible: true
   resource_group: "test-matrix-$CI_COMMIT_REF_SLUG"
   before_script:
-    - apt update
+    - echo "$POSTGRES_VERSION" > debian/pgversions
+    - apt update && apt upgrade -y
     - apt install -y make sudo curl wget gnupg
     - apt install -y postgresql-common
     - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
@@ -30,19 +29,8 @@ test_matrix:
     - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
     - mkdir -p /app
     - ln -s "$CI_PROJECT_DIR" /app/pldotnet
-    - echo "Waiting for PostgreSQL..."
-    - |
-      for i in {1..30}; do
-        if pg_isready -p $POSTGRES_PORT -U $POSTGRES_USER; then
-          echo "✅ PostgreSQL ready"
-          break
-        fi
-        echo "⏳ Waiting ($i)..."
-        sleep 2
-      done
 
   script:
-    - echo "$POSTGRES_VERSION" > debian/pgversions
     - make build-local
     - dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
     - runuser -u postgres -- psql -c 'CREATE EXTENSION pldotnet;'
