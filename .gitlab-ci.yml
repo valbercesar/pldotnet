@@ -42,7 +42,7 @@ test_matrix:
   script:
     - cd /app/pldotnet
     - echo "$POSTGRES_VERSION" > debian/pgversions
-    - echo. >> debian/pgversions
+    - cat debian/pgversions
     - make build-local
     - pg_ctlcluster $POSTGRES_VERSION main start
     - dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
