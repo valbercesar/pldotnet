@@ -17,8 +17,7 @@ test_matrix:
   image: ubuntu:25.04
   parallel:
     matrix:
-      # - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
-      - POSTGRES_VERSION: ["17"]
+      - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
   interruptible: true
   resource_group: "test-matrix-$CI_COMMIT_REF_SLUG"
   before_script:
