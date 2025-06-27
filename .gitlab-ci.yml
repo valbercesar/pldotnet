@@ -1,0 +1,50 @@
+stages:
+  - test
+
+variables:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: postgres
+  POSTGRES_PORT: 5432
+  DOTNET_VERSION: 9.0
+  APP_DIR: /app/pldotnet # Matches your expected mount path
+
+test_matrix:
+  stage: test
+  image: ubuntu:25.04
+  services:
+    - name: postgres:$POSTGRES_VERSION
+      alias: postgres
+  parallel:
+    matrix:
+      - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
+  variables:
+    PGHOST: postgres
+    DBUSER: postgres
+  interruptible: true
+  resource_group: "test-matrix-$CI_COMMIT_REF_SLUG"
+  before_script:
+    - apt update && apt install -y make sudo curl wget gnupg
+    - apt install -y postgresql-common postgresql-client devscripts build-essential lintian debhelper postgresql-server-dev-all
+    - apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
+    - mkdir -p /app
+    - ln -s "$CI_PROJECT_DIR" /app/pldotnet # Simulates the volume mount
+    - echo "Waiting for PostgreSQL..."
+    - |
+      for i in {1..30}; do
+        if pg_isready -h postgres -p $POSTGRES_PORT -U $POSTGRES_USER; then
+          echo "✅ PostgreSQL ready"
+          break
+        fi
+        echo "⏳ Waiting ($i)..."
+        sleep 2
+      done
+  script:
+    - cd /app/pldotnet
+    - echo "$POSTGRES_VERSION" > debian/pgversions
+    - make build-local
+    - pg_ctlcluster $POSTGRES_VERSION main start
+    - dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
+    - runuser -u postgres -- psql -c 'CREATE EXTENSION pldotnet;'
+    - runuser -u postgres -- psql -c "ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';"
+    - make test-local
