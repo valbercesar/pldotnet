@@ -33,7 +33,7 @@ test_matrix:
     - echo "Waiting for PostgreSQL..."
     - |
       for i in {1..30}; do
-        if pg_isready -h postgres -p $POSTGRES_PORT -U $POSTGRES_USER; then
+        if pg_isready -p $POSTGRES_PORT -U $POSTGRES_USER; then
           echo "✅ PostgreSQL ready"
           break
         fi
