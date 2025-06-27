@@ -17,10 +17,11 @@ Ensure your system includes the following dependencies **before proceeding**:
   - 👉 [Install Docker](https://docs.docker.com/desktop/)
 - **Docker Compose** (if not included with Docker Desktop)
   - 👉 [Install Docker Compose](https://docs.docker.com/compose/install/)
-- Clone the repository:
+- Clone the repository and initialize the submodules:
 
 ```bash
 git clone https://github.com/Brick-Abode/pldotnet.git
+git submodule update --init --recursive
 ```
 
 - Create a `.env` file in the root directory of the repository. An example file `.env.example` is provided. You can copy it and modify it as needed.
