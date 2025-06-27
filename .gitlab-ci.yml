@@ -35,8 +35,8 @@ test_matrix:
 
   script:
     - sudo make build-local
-    - dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
-    - runuser -u $POSTGRES_USER -- psql -c "CREATE EXTENSION pldotnet; ALTER USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';"
+    - sudo dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
+    - sudo runuser -u $POSTGRES_USER -- psql -c "CREATE EXTENSION pldotnet; ALTER USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';"
     - sudo runuser -u $POSTGRES_USER -- psql -c 'CREATE OR REPLACE FUNCTION sum2SmallInt(a smallint, b smallint) RETURNS smallint AS $$ if (a == null) a = 0; if (b == null) b = 0; return (short)(a+b); $$ LANGUAGE plcsharp;'
     - sudo runuser -u $POSTGRES_USER -- psql -c "SELECT sum2SmallInt(CAST(100 AS smallint), CAST(101 AS smallint));"
     - sudo make test-local
