@@ -30,6 +30,7 @@ override_dh_installdeb:
 		PLDOTNET_TEMPLATE_DIR="/$(USR_LIBDIR)PlDotNET/Templates"; \
 		find $$PLDOTNET_PATH -type f -name '*.cs' -exec sed -i 's|@PKG_LIBDIR|'$$PKG_LIBDIR'|g' {} \; ; \
 		find $$PLDOTNET_PATH -type f -name '*.cs' -exec sed -i 's|@PLDOTNET_TEMPLATE_DIR|'$$PLDOTNET_TEMPLATE_DIR'|g' {} \; ; \
+		ls -l "$$PLDOTNET_PATH" ; \
 		dotnet build $$PLDOTNET_PATH -c Release ; \
 		cp -R $(DOTNET_TESTS) "$$PLDOTNET_PATH/samples" ; \
 		rm "$$PLDOTNET_PATH/samples/fsharp/testfsdll.sql" ; \
