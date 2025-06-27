@@ -7,7 +7,6 @@ variables:
   POSTGRES_DB: postgres
   POSTGRES_PORT: 5432
   DOTNET_VERSION: 9.0
-  APP_DIR: /app/pldotnet # Matches your expected mount path
 
 test_matrix:
   stage: test
@@ -27,10 +26,10 @@ test_matrix:
     - apt install -y postgresql-common
     - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
     - apt install -y postgresql-$POSTGRES_VERSION
-    - pg_ctlcluster $POSTGRES_VERSION main start
     - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
     - mkdir -p /app
     - ln -s "$CI_PROJECT_DIR" /app/pldotnet # Simulates the volume mount
+    - pg_ctlcluster $POSTGRES_VERSION main start
     - echo "Waiting for PostgreSQL..."
     - |
       for i in {1..30}; do
@@ -42,7 +41,6 @@ test_matrix:
         sleep 2
       done
   script:
-    - cd /app/pldotnet
     - echo "$POSTGRES_VERSION" > debian/pgversions
     - make build-local
     - dpkg -i debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb
