@@ -24,7 +24,8 @@ if [ -f "$PG_CONF" ]; then
     echo "pldotnet.verbose_level = 0" >> "$PG_CONF"
     echo "pldotnet.path_to_save_source_code = '/tmp/PlDotNET/GeneratedCodes'" >> "$PG_CONF"
     echo "pldotnet.path_to_temporary_files = '/tmp/PlDotNET/'" >> "$PG_CONF"
-
+    runuser -u postgres -- psql -c "SELECT pg_reload_conf();"
+    
     echo "PostgreSQL configuration updated and reloaded."
 else
     echo "Could not locate postgresql.conf. Ensure PostgreSQL is installed and running." >&2
