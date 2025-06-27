@@ -26,7 +26,6 @@ test_matrix:
     - apt install -y postgresql-common
     - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
     - apt install -y postgresql-$POSTGRES_VERSION
-    - pg_ctl start
     - pg_ctlcluster $POSTGRES_VERSION main start
     - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
     - mkdir -p /app
