@@ -1,6 +1,6 @@
-# Contributing to PL/.NET
+# Contributing to PL/Dotnet
 
-PL/.NET is an open source project. Everyone is welcome to contribute.
+PL/Dotnet is an open source project. Everyone is welcome to contribute.
 
 ## Commit Message Guidelines
 
@@ -58,9 +58,9 @@ Separated benchmark and SQL tests into different modules to improve code maintai
 
 ### Additional Notes
 
-1. **Breaking Changes**: 
-    - If a change is not backward-compatible, include `BREAKING CHANGE:` in the footer.
-    - Use a type with ! to draw attention to breaking change. `feat(PLNET-13)!: ...`
+1. **Breaking Changes**:
+   - If a change is not backward-compatible, include `BREAKING CHANGE:` in the footer.
+   - Use a type with ! to draw attention to breaking change. `feat(PLNET-13)!: ...`
 
 ### MR Description
 
@@ -69,8 +69,9 @@ We use the following template for writing decriptive Merge Requests.
 #### Title
 
 The pull request title contains a meaningful title
- - Short and informative: serves as a summary
- - Prefixed with corresponding ticket/story ID from Jira or Github
+
+- Short and informative: serves as a summary
+- Prefixed with corresponding ticket/story ID from Jira or Github
 
 ```
 [PLNET-X] Content of the MR
