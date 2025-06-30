@@ -43,7 +43,7 @@ test_matrix_develop:
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
 
-# Runs on all merge requests for PG 17 only
+# Runs on all merge requests for PG 17
 test_pg17_merge_request:
   <<: *test-template
   variables:
