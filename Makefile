@@ -120,7 +120,6 @@ build-docker:
 	docker buildx build \
 	  --target artifacts \
 	  --output type=local,dest=./debian/packages \
-	  --build-arg DOTNET_VERSION=$$DOTNET_VERSION \
 	  --build-arg POSTGRES_VERSION=$$POSTGRES_VERSION \
 	  --build-arg POSTGRES_PORT=$$POSTGRES_PORT \
 	  --build-arg POSTGRES_PASSWORD=$$POSTGRES_PASSWORD \
@@ -133,7 +132,15 @@ build-docker:
 
 .PHONY: dev
 dev:
-	docker-compose -f docker-compose-dev.yml up --build
+	docker-compose -f docker-compose.yml -f docker-compose-dev.yml up --build
+
+.PHONY: run
+run:
+	docker-compose -f docker-compose.yml up --build
+
+.PHONY: down
+down:
+	docker-compose down
 
 ########
 # TEST #
