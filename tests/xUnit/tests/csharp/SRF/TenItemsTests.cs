@@ -15,7 +15,7 @@ public abstract class BaseTenItemsTests : PlDotNetTest
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "TenItems",
+            Name = "ten_items",
             Arguments = new List<FunctionArgument> { new FunctionArgument("arg", "text") },
             ReturnType = "SETOF text",
             Body = FunctionBody,
