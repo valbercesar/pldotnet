@@ -39,7 +39,7 @@ test_matrix_develop:
   parallel:
     matrix:
       - POSTGRES_VERSION: ["11", "12", "13", "14", "15", "16", "17"]
-  resource_group: "test-matrix-$CI_COMMIT_REF_SLUG"
+  resource_group: test-matrix-develop
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
 
