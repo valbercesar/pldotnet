@@ -1,5 +1,6 @@
 stages:
   - test
+  - release
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
