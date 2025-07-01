@@ -92,7 +92,7 @@ build-deb:
 
 create-release:
   stage: release
-  image: curlimages/curl:latest
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
     - job: generate-changelogs
       artifacts: true
