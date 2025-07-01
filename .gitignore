@@ -477,74 +477,6 @@ FodyWeavers.xsd
 # Local History for Visual Studio Code
 .history/
 
-<<<<<<< HEAD
-# KATE
-.kate-swp
-
-# ouput from dotnet engine
-dotnet_src/obj/
-dotnet_src/bin/
-dotnet_src/Common/obj/*
-dotnet_src/Common/bin/*
-dotnet_src/FSharp/obj/
-dotnet_src/FSharp/bin/
-dotnet_src/TypeHandlers/obj/
-dotnet_src/TypeHandlers/bin/
-
-# cache extensions
-*.cache
-
-# Java
-*.class
-*.ddr
-*.jar
-*.lst
-pom.properties
-
-logs/
-automated_test_results/
-
-# debian build files
-*.log
-*.deb
-*.ddeb
-*.substvars
-build*/
-package-build-log.txt
-debian/postgresql-*-pldotnet/
-debian/.debhelper
-
-tests/benchmark/java/test-suite/
-!tests/benchmark/java/test-suite/*.java
-automated_test_results/*
-expected/*
-docs/html/*
-
-regression.*
-
-tests/csharp/DotNetTestProject/bin
-tests/csharp/DotNetTestProject/obj
-
-tests/fsharp/DotNetTestProject/bin
-tests/fsharp/DotNetTestProject/obj
-
-docs/img/*.png
-docs/_minted*
-docs/pldotnet-whitepaper-dec22.*
-!docs/pldotnet-whitepaper-dec22.tex
-.venv.created
-
-tests/npgsql/bin/
-tests/npgsql/obj/
-tests/npgsql/sql/
-<<<<<<< HEAD
-
-# System-specific files
-.DS_Store
-=======
-docs/FAQ/site/
->>>>>>> develop
-=======
 # Windows Installer files from build outputs
 *.cab
 *.msi
@@ -731,4 +663,4 @@ $RECYCLE.BIN/
 .vscode
 .env
 tests/npgsql/sql
->>>>>>> feat/PLNET-213
+docs/html
