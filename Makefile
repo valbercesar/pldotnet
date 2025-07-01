@@ -149,7 +149,7 @@ down:
 # xUnit test directory
 XUNIT_TEST_DIR := $(CURRENT_DIR)/tests/xUnit
 # Default filter for xUnit tests
-XUNIT_FILTER ?= Language=CSharp
+XUNIT_FILTER ?=
 # Command to run xUnit tests
 RUN_XUNIT_TESTS = cd $(XUNIT_TEST_DIR) && dotnet test $(if $(XUNIT_FILTER),--filter "$(XUNIT_FILTER)")
 # Where to put the test files
@@ -179,8 +179,11 @@ test-local:
 # as defined in the docker-compose.yml file.
 .PHONY: test-docker
 test-docker:
-	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make test-local
-	make test-local FILTER="$(XUNIT_FILTER)"
+	docker exec -u root \
+	  -e XUNIT_FILTER="$(XUNIT_FILTER)" \
+	  -w "$(APP_DIR)" \
+	  -it $(PLDOTNET_CONTAINER) \
+	  make test-local
 
 .PHONY: test-docker-sql
 test-docker-sql:
