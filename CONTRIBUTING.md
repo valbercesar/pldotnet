@@ -1,6 +1,6 @@
-# Contributing to PL/Dotnet
+# Contributing to PL/.NET
 
-PL/Dotnet is an open source project. Everyone is welcome to contribute.
+PL/.NET is an open source project. Everyone is welcome to contribute.
 
 ## Commit Message Guidelines
 
@@ -10,7 +10,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0
 
 Each commit message should have the following structure:
 
-```
+```text
 <type>(<scope>): <description>
 
 [optional body]
@@ -50,7 +50,7 @@ We use the following commit types:
 
 #### Commit with Body
 
-```
+```text
 refactor(PLNET-165): reorganize xUnit tests
 
 Separated benchmark and SQL tests into different modules to improve code maintainability.
@@ -73,13 +73,13 @@ The pull request title contains a meaningful title
 - Short and informative: serves as a summary
 - Prefixed with corresponding ticket/story ID from Jira or Github
 
-```
+```text
 [PLNET-X] Content of the MR
 ```
 
 #### Description
 
-```
+```text
 # Contents
 
 Explanation of your pull request in arbitrary form goes here. Please make sure the description explains the purpose and effect of your pull request and is worded well enough to be understood. Provide as much context and examples as possible.

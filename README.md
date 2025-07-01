@@ -1,10 +1,10 @@
-# PL/Dotnet
+# PL/.NET
 
 ![PL.NET LOGO](./PL-NET_LOGO.png)
 
-PL/Dotnet (or simply _pldotnet_) adds full support for C# and F# to PostgreSQL. 0.99 is our public beta release.
+PL/.NET (or simply _pldotnet_) adds full support for C# and F# to PostgreSQL. 0.99 is our public beta release.
 
-- In our benchmarks, PL/Dotnet is the fastest PL in PostgreSQL
+- In our benchmarks, PL/.NET is the fastest PL in PostgreSQL
 - We support all Procedural Language (PL) operations: functions, procedures, DO, SPI, triggers, records, SRF, OUT/INOUT, table functions, etc
 - We natively support 38 out of 46 standard user types, the most of any non-native PL
 - We are the only PL using the native database API; our database access(SPI) is fully NPGSQL-compatible
@@ -16,7 +16,7 @@ Our white paper has extensive discussion of all of these items; check it out.
 
 ## Getting started
 
-To get started with PL/Dotnet, you will need to install it on your
+To get started with PL/.NET, you will need to install it on your
 PostgreSQL server or run it with a Docker container.
 You can find more information in our [Installation Guide](https://github.com/Brick-Abode/pldotnet/blob/master/INSTALL.md).
 

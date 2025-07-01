@@ -663,3 +663,4 @@ $RECYCLE.BIN/
 .vscode
 .env
 tests/npgsql/sql
+docs/html

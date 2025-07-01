@@ -1,12 +1,12 @@
 # 📦 pldotnet Installation Guide
 
-This guide provides concise yet complete instructions for installing **PL/Dotnet** (or simply **pldotnet**) and its dependencies. For advanced configurations and full troubleshooting, refer to our [GitHub Wiki](https://github.com/Brick-Abode/pldotnet/wiki/).
+This guide provides concise yet complete instructions for installing **PL/.NET** (or simply **pldotnet**) and its dependencies. For advanced configurations and full troubleshooting, refer to our [GitHub Wiki](https://github.com/Brick-Abode/pldotnet/wiki/).
 
 ---
 
 ## 1. Docker Build
 
-This section will walk you through the process of building and running PL/Dotnet using Docker. This is the recommended method for most users, as it simplifies the installation process and ensures a consistent environment.
+This section will walk you through the process of building and running PL/.NET using Docker. This is the recommended method for most users, as it simplifies the installation process and ensures a consistent environment.
 However, if you prefer to build locally, refer to [Section 2](#2-manual-build-and-installation-debian-based-linux) for manual installation instructions.
 
 ### 1.1. Prerequisites
@@ -44,7 +44,7 @@ make build-docker
 ```
 
 This command will build the `.deb` package using Docker and place it in the `debian/packages/` directory.
-Remember to change the `.env` file to match the PostgreSQL version you want to build PL/Dotnet for.
+Remember to change the `.env` file to match the PostgreSQL version you want to build PL/.NET for.
 
 To install it in your local PostgreSQL instance, you can use the following command:
 
@@ -54,9 +54,9 @@ sudo dpkg -i debian/packages/postgresql-*-pldotnet_0.99-rc1_amd64.deb
 
 The instance must be running and the PostgreSQL version must match the one specified in the `.env` file during build.
 It also requires .NET SDK 9.0 or higher to be installed on your system.
-Your main application does not need to have .NET SDK 9.0 installed, only the PostgreSQL instance where PL/Dotnet is installed.
+Your main application does not need to have .NET SDK 9.0 installed, only the PostgreSQL instance where PL/.NET is installed.
 
-### 1.3. Run PostgreSQL with PL/Dotnet in a docker container
+### 1.3. Run PostgreSQL with PL/.NET in a docker container
 
 First navigate to the root directory of the repository:
 
@@ -64,15 +64,15 @@ First navigate to the root directory of the repository:
 cd pldotnet
 ```
 
-Then to run PostgreSQL with PL/Dotnet, execute the following command:
+Then to run PostgreSQL with PL/.NET, execute the following command:
 
 ```bash
 docker compose up
 ```
 
-This command will start a container (name `pldotnet-runtime`) with PostgreSQL + PL/Dotnet running on the specified port in the `.env` file.
+This command will start a container (name `pldotnet-runtime`) with PostgreSQL + PL/.NET running on the specified port in the `.env` file.
 
-That's it. You now have a PostgreSQL container running with PL/Dotnet installed and ready to use.
+That's it. You now have a PostgreSQL container running with PL/.NET installed and ready to use.
 
 ### 1.4. Running Tests
 
@@ -95,7 +95,7 @@ The results will also be displayed in the `automated_test_results/` directory, w
 
 ## 2. Manual Build and Installation (Debian-based Linux)
 
-This section provides instructions for manually building and installing PL/Dotnet on Debian-based Linux distributions. This method is recommended for advanced users who want more control over the installation process or need to customize the build.
+This section provides instructions for manually building and installing PL/.NET on Debian-based Linux distributions. This method is recommended for advanced users who want more control over the installation process or need to customize the build.
 
 ### 2.1. Prerequisites
 
@@ -149,7 +149,7 @@ The packages will be generated in the `debian/packages/` directory.
 
 First, build the package using the command mentioned above or download the pre-built package from the [releases page](https://github.com/Brick-Abode/pldotnet/releases).
 
-To install the PL/Dotnet `.deb` package, use the following command:
+To install the PL/.NET `.deb` package, use the following command:
 
 ```bash
 sudo dpkg -i path/to/postgresql-*-pldotnet_0.99-rc1_amd64.deb
@@ -179,15 +179,15 @@ Confirm it's active:
 SELECT * FROM pg_extension WHERE extname = 'pldotnet';
 ```
 
-Then restart PostgreSQL to ensure the extension is loaded correctly and the PL/Dotnet configuration is applied:
+Then restart PostgreSQL to ensure the extension is loaded correctly and the PL/.NET configuration is applied:
 
 ```bash
 sudo systemctl restart postgresql
 ```
 
-### 2.5. Using PL/Dotnet
+### 2.5. Using PL/.NET
 
-You can now use PL/Dotnet to create and run .NET functions in PostgreSQL. For example, to create a simple function:
+You can now use PL/.NET to create and run .NET functions in PostgreSQL. For example, to create a simple function:
 
 ```sql
 CREATE FUNCTION hello_world() RETURNS text AS $$
@@ -202,4 +202,4 @@ SELECT hello_world();
 ```
 
 This should return `Hello, World!`.
-Done, you can now use PL/Dotnet to create and run .NET functions in PostgreSQL!
+Done, you can now use PL/.NET to create and run .NET functions in PostgreSQL!

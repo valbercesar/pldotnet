@@ -182,3 +182,11 @@ test-docker:
 .PHONY: test-docker-sql
 test-docker-sql:
 	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} ./tests/npgsql/run_tests.sh
+
+########
+# DOCS #
+########
+
+.PHONY: documentation
+documentation:
+	doxygen docs/Doxyfile
