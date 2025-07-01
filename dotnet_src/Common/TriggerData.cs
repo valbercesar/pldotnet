@@ -61,8 +61,6 @@ namespace PlDotNET.Common
         // Table-related details
         public int RelationId { get; set; }
 
-        // [Obsolete("RelationName is deprecated and may be removed in future releases. Use TableName instead.")]
-        // public string RelationName { get; set; }
         public string TableName { get; set; }
 
         public string TableSchema { get; set; }

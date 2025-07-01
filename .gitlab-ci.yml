@@ -103,7 +103,7 @@ create-release:
   script:
     - echo "Generating release description"
     - |
-      echo "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/debian/packages/" > release_links.md
+      echo "## Artifacts" > release_links.md
       for file in debian/packages/dotnet-*; do
         filename=$(basename "$file")
         echo "- [$filename]($CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/debian/packages/$filename)" >> release_links.md

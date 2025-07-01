@@ -51,7 +51,7 @@ namespace PlDotNET.Common
             return value?.ToLower() == "on";
         }
 
-        private string GetPostgreSetting(string settingName)
+        private static string GetPostgreSetting(string settingName)
         {
             IntPtr resultPtr = pldotnet_GetPostgresSetting(settingName);
             if (resultPtr == IntPtr.Zero)
