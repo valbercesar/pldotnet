@@ -75,17 +75,17 @@ namespace PlDotNET
             this.ProjectName = projectName;
             this.Language = language;
 
-        #if NET6_0
+#if NET6_0
             this.TargetFramework = "net6.0";
-        #elif NET7_0
+#elif NET7_0
             this.TargetFramework = "net7.0";
-        #elif NET8_0
+#elif NET8_0
             this.TargetFramework = "net8.0";
-        #elif NET9_0
+#elif NET9_0
             this.TargetFramework = "net9.0";
-        #else
+#else
             throw new NotSupportedException("Unsupported target framework. Please ensure the project is targeting a supported version.");
-        #endif
+#endif
         }
 
         /// <summary>

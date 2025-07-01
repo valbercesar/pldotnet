@@ -199,3 +199,11 @@ test-docker-sql:
 .PHONY: documentation
 documentation:
 	doxygen docs/Doxyfile
+
+########
+# LINT #
+########
+
+.PHONY: lint
+lint:
+	cpplint --repository=. --root=./src --recursive --linelength=120 --filter=-readability/casting,-build/include_subdir src
