@@ -106,7 +106,7 @@ create-release:
       echo "## Artifacts" > release_links.md
       for file in debian/packages/dotnet-*; do
         filename=$(basename "$file")
-        echo "- [$filename]($CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/debian/packages/$filename)" >> release_links.md
+        echo "- [$filename]($CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/raw/debian/packages/$filename)" >> release_links.md
       done
     - cat release_notes.md release_links.md > final_release.md
   release:
@@ -114,3 +114,11 @@ create-release:
     description: final_release.md
     tag_name: $CI_COMMIT_TAG
     ref: $CI_COMMIT_SHA
+    assets:
+      links:
+        - name: $FILENAME
+          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/raw/debian/packages/$FILENAME"
+  artifacts:
+    paths:
+      - debian/packages/dotnet-*
+    expire_in: never
