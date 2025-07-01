@@ -112,7 +112,8 @@ create-release:
              --upload-file "$file" \
              "$CI_API_V4_URL/projects/$CI_PROJECT_ID/uploads" > upload.json
         url=$(jq -r .url upload.json)
-        release_cli_args+=" --assets-link '$(jq -n --arg name "$filename" --arg url "$CI_PROJECT_URL$url" '{name: $name, url: $url}')'""
+        asset_json=$(jq -n --arg name "$filename" --arg url "$CI_PROJECT_URL$url" '{name: $name, url: $url}')
+        release_cli_args+=" --assets-link '$asset_json'"
       done
       release-cli create \
         --name "$CI_COMMIT_TAG" \
