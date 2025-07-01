@@ -14,6 +14,7 @@
  */
 
 #include "pldotnet_main.h"
+#include <stdio.h>
 #include "postgres.h"
 #include "utils/guc.h"
 

@@ -20,7 +20,6 @@
 #include <coreclr_delegates.h>
 #include <nethost.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 
 #if defined(_WIN32)
@@ -29,7 +28,7 @@
 #ifdef _WCHAR_T_DEFINED
 typedef wchar_t char_t;
 #else
-typedef unsigned short char_t;
+typedef unsigned int16_t char_t;
 #endif
 #else
 #define CORECLR_DELEGATE_CALLTYPE
