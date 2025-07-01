@@ -21,10 +21,11 @@ Ensure your system includes the following dependencies **before proceeding**:
   - 👉 [Install Make](https://www.gnu.org/software/make/)
 - **Git**
   - 👉 [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Clone the repository:
+- Clone the repository and initialize the submodules:
 
 ```bash
 git clone https://github.com/Brick-Abode/pldotnet.git
+git submodule update --init --recursive
 ```
 
 - Create a `.env` file in the root directory of the repository. An example file `.env.example` is provided. You can copy it and modify it as needed.
