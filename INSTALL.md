@@ -92,6 +92,13 @@ make test-docker
 This command will run the tests inside the PostgreSQL container. The results will be displayed in the terminal.
 The results will also be displayed in the `automated_test_results/` directory, where you can find the detailed logs of the tests.
 
+If you would like to run only C# or F# tests, you can use one of the following commands:
+
+```bash
+make XUNIT_FILTER="CSharp" test-docker
+make XUNIT_FILTER="FSharp" test-docker
+```
+
 ---
 
 ## 2. Manual Build and Installation (Debian-based Linux)
