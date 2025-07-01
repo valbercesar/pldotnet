@@ -173,17 +173,22 @@ pre-tests-script:
 test-local:
 	$(MAKE) pre-tests-script
 	$(RUN_XUNIT_TESTS)
+	$(MAKE) post-tests-script
+
+.PHONY: post-tests-script
+post-tests-script:
+	cd $(CURRENT_DIR)/tests/csharp/DotNetTestProject/ && rm -rf bin obj
+	cd $(CURRENT_DIR)/tests/fsharp/DotNetTestProject/ && rm -rf bin obj
+	cd $(CURRENT_DIR)/
+	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (runuser -u $(DBUSER) psql 2>&1) | tee automated_test_results/automated_test_results.out
+	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (runuser -u $(DBUSER) psql)
 
 # Runs tests in a running Docker container
 # Assumes that the container is running and named pldotnet-runtime,
 # as defined in the docker-compose.yml file.
 .PHONY: test-docker
 test-docker:
-	docker exec -u root \
-	  -e XUNIT_FILTER="$(XUNIT_FILTER)" \
-	  -w "$(APP_DIR)" \
-	  -it $(PLDOTNET_CONTAINER) \
-	  make test-local
+	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make $(if $(XUNIT_FILTER),XUNIT_FILTER="Language=$(XUNIT_FILTER)") test-local
 
 .PHONY: test-docker-sql
 test-docker-sql:
