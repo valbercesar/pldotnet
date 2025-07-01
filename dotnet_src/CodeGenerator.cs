@@ -1450,7 +1450,7 @@ namespace PlDotNET
                     string inputParamType = this.DotnetTypes[i];
                     if (this.SupportNullInput && (!ClassTypes.Contains(inputParamType)))
                     {
-                       inputParamType = $"Nullable<{inputParamType}>";
+                        inputParamType = $"Nullable<{inputParamType}>";
                     }
 
                     sb.Append($" ({this.ParamNames[i]}: {inputParamType})");

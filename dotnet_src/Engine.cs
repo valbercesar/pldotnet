@@ -92,7 +92,7 @@ namespace PlDotNET
             byte* nullmap,
             IntPtr output);
 
-        public unsafe delegate int DelRunUserTFunction (
+        public unsafe delegate int DelRunUserTFunction(
             uint functionId,
             int call_mode,
             IntPtr old_row_result,
@@ -135,9 +135,9 @@ namespace PlDotNET
             trustedAssembliesPaths.Add(typeof(CommandTests).Assembly.Location);
             trustedAssembliesPaths.Add(typeof(DatumConversion).Assembly.Location);
 
-            #if ENABLE_FCS
+#if ENABLE_FCS
             trustedAssembliesPaths.Add(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location);
-            #endif
+#endif
 
             var neededAssemblies = new[]
             {
@@ -311,13 +311,13 @@ namespace PlDotNET
                                         funcBody,
                                         supportNullInput || Settings.AlwaysNullable);
 
-                /// Create the F# UserFunction source code
+                // Create the F# UserFunction source code
                 userFunctionCode = fs_dcg.BuildUserFunctionSourceCode();
 
-                /// The path to the F# UserFunction assembly
+                // The path to the F# UserFunction assembly
                 string userFunctionDll = string.Empty;
 
-                /// Compile the F# UserFunction and assign the assembly path to the userFunctionDll variable
+                // Compile the F# UserFunction and assign the assembly path to the userFunctionDll variable
                 if (!Settings.CompileFSharpWithFCS)
                 {
                     DotNetProjectBuilder dfp = new (
@@ -332,7 +332,7 @@ namespace PlDotNET
                 }
                 else
                 {
-                    #if ENABLE_FCS
+#if ENABLE_FCS
                     List<string> extraAssemblies = new ()
                     {
                         typeof(NpgsqlPoint).Assembly.Location,
@@ -343,9 +343,9 @@ namespace PlDotNET
                         typeof(System.ComponentModel.Component).Assembly.Location,
                     };
                     userFunctionDll = FSharpCompiler.CompileFSharpSourceCodeAsDLL(functionId, Settings.PathToTemporaryFiles, userFunctionCode, extraAssemblies.ToArray());
-                    #else
+#else
                     throw new SystemException("FSharp Compiler Service is not enabled in this build");
-                    #endif
+#endif
                 }
 
                 if (userFunctionDll == string.Empty)
@@ -353,7 +353,7 @@ namespace PlDotNET
                     return 1;
                 }
 
-                /// Update function body and set the user assembly flag to true, so PL.NET will handle the F# function as a user assembly
+                // Update function body and set the user assembly flag to true, so PL.NET will handle the F# function as a user assembly
                 funcBody = $"{userFunctionDll}:PlDotNET.UserSpace.UserFunction!{funcName}";
                 useUserAssembly = true;
             }
@@ -523,7 +523,7 @@ namespace PlDotNET
         public static MemoryStream CreateMemoryStreamForUserHandlerCode(DotNETLanguage language, uint functionId, string functionName, string userHandlerCode, MemoryStream assemblyToInclude)
         {
             MemoryStream memUserHandler = new ();
-            #if ENABLE_FCS
+#if ENABLE_FCS
             if (language == DotNETLanguage.FSharp)
             {
                 List<string> extraAssemblies = new ()
@@ -537,12 +537,12 @@ namespace PlDotNET
                 };
                 return FSharpCompiler.CompileFSharpSourceCode(functionId, Settings.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
             }
-            #else
+#else
             if (language == DotNETLanguage.FSharp)
             {
                 throw new SystemException("FSharp Compiler Service is not enabled in this build");
             }
-            #endif
+#endif
 
             var compileResultUserHandler = Engine.CompileSourceCode(userHandlerCode, memUserHandler, $"UserHandler_{functionId}", assemblyToInclude);
 
@@ -638,7 +638,7 @@ namespace PlDotNET
 
                 // for (int i = 0; i < nargs; i++)
                 // {
-                    // argumentArray[i] = Marshal.PtrToStringAnsi(arguments[i]);
+                // argumentArray[i] = Marshal.PtrToStringAnsi(arguments[i]);
                 // }
                 char** args = (char**)arguments.ToPointer();
                 if (args == null)
