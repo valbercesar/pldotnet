@@ -101,17 +101,22 @@ create-release:
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/
   script:
-    - echo "Generating Release"
-  release:
-    name: $CI_COMMIT_TAG
-    description: release_notes.md
-    tag_name: $CI_COMMIT_TAG
-    ref: $CI_COMMIT_SHA
-    assets:
-      links:
-        - name: $FILENAME
-          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/raw/debian/packages/$FILENAME"
-  artifacts:
-    paths:
-      - debian/packages/dotnet-*
-    expire_in: never
+    - |
+      echo "Uploading release assets"
+      mkdir -p dist
+      cp debian/packages/dotnet-* dist/
+      release_cli_args=""
+      for file in dist/*; do
+        filename=$(basename "$file")
+        curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+             --upload-file "$file" \
+             "$CI_API_V4_URL/projects/$CI_PROJECT_ID/uploads" > upload.json
+        url=$(jq -r .url upload.json)
+        release_cli_args+=" --assets-link '$(jq -n --arg name "$filename" --arg url "$CI_PROJECT_URL$url" '{name: $name, url: $url}')'""
+      done
+      release-cli create \
+        --name "$CI_COMMIT_TAG" \
+        --tag-name "$CI_COMMIT_TAG" \
+        --ref "$CI_COMMIT_SHA" \
+        --description "$(cat release_notes.md)" \
+        $release_cli_args
