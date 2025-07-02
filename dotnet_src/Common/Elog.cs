@@ -7,7 +7,7 @@ namespace PlDotNET.Common
     /// <summary>
     /// A simple class used to report messages in PostgreSQL.
     /// </summary>
-    public class Elog
+    public static class Elog
     {
         /// <summary>
         /// Reports a log message in PostgreSQL.

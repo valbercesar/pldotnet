@@ -1,4 +1,6 @@
 stages:
+  - prepare
+  - build
   - test
   - release
 
@@ -52,9 +54,26 @@ test_pg17_merge_request:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-release_deb:
-  stage: release
+generate-changelogs:
+  stage: prepare
+  image: alpine:latest
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/
+  script:
+    - apk add curl jq
+    - CI_COMMIT_TAG_NO_V=${CI_COMMIT_TAG#v}
+    - echo "Fetching changelogs from $CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/changelog?version=$CI_COMMIT_TAG_NO_V"
+    - 'curl -H "PRIVATE-TOKEN: $CI_API_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/changelog?version=$CI_COMMIT_TAG_NO_V" | jq -r .notes > release_notes.md'
+  artifacts:
+    paths:
+      - release_notes.md
+    expire_in: 1 week
+
+build-deb:
+  stage: build
   image: ubuntu:25.04
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
   variables:
     POSTGRES_VERSION: "17"
   before_script:
@@ -70,14 +89,37 @@ release_deb:
     paths:
       - debian/packages/dotnet-*
     expire_in: 1 week
-  release:
-    name: "Release $CI_COMMIT_TAG"
-    description: "Automated release for tag $CI_COMMIT_TAG"
-    tag_name: "$CI_COMMIT_TAG"
-    assets:
-      links:
-        - name: "Packages"
-          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/debian/packages/"
+
+create-release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: generate-changelogs
+      artifacts: true
+    - job: build-deb
+      artifacts: true
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
-      when: always
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/
+  script:
+    - apk add curl jq
+    - |
+      mkdir -p dist
+      cp debian/packages/dotnet-* dist/
+      echo "## Packages" > assets.md
+      for file in dist/*; do
+        filename=$(basename "$file")
+        echo "Uploading $file"
+        url="https://git.brickabode.com/DotNetInPostgreSQL/pldotnet/-/jobs/${CI_JOB_ID}/artifacts/raw/${file}?inline=false"
+        echo "- [$filename]($url)" >> assets.md
+      done
+      echo "" >> assets.md
+      cat assets.md release_notes.md > final_notes.md
+  artifacts:
+    paths:
+      - dist/*
+    expire_in: never
+  release:
+    tag_name: $CI_COMMIT_TAG
+    description: final_notes.md
+    name: $CI_COMMIT_TAG
+    ref: $CI_COMMIT_SHA
