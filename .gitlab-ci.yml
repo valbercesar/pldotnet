@@ -76,15 +76,17 @@ build-deb:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
   variables:
     POSTGRES_VERSION: "17"
-  before_script:
-    - apt update && apt upgrade -y
-    - apt install -y make sudo curl wget gnupg
-    - apt install -y postgresql-common
-    - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-    - apt install -y postgresql-17
-    - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
+  # before_script:
+  #   - apt update && apt upgrade -y
+  #   - apt install -y make sudo curl wget gnupg
+  #   - apt install -y postgresql-common
+  #   - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+  #   - apt install -y postgresql-17
+  #   - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
   script:
-    - make build-local
+    # - make build-local
+    - mkdir -p debian/packages
+    - touch debian/packages/dotnet-9.0-test.deb
   artifacts:
     paths:
       - debian/packages/dotnet-*
@@ -112,7 +114,8 @@ create-release:
         curl --header "PRIVATE-TOKEN: $CI_API_TOKEN" \
              --upload-file "$file" \
              "$CI_API_V4_URL/projects/$CI_PROJECT_ID/uploads" > upload.json
-        url=$(jq -r .url upload.json)
+        url=$(cat upload.json)
+        echo $url
         asset_json=$(jq -n --arg name "$filename" --arg url "$CI_PROJECT_URL$url" '{name: $name, url: $url}')
         release_cli_args+=" --assets-link '$asset_json'"
       done
