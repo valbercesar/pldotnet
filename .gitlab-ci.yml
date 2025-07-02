@@ -46,13 +46,13 @@ test_matrix_develop:
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
 
-# # Runs on all merge requests for PG 17
-# test_pg17_merge_request:
-#   <<: *test-template
-#   variables:
-#     POSTGRES_VERSION: "17"
-#   rules:
-#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+# Runs on all merge requests for PG 17
+test_pg17_merge_request:
+  <<: *test-template
+  variables:
+    POSTGRES_VERSION: "17"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 generate-changelogs:
   stage: prepare
@@ -76,17 +76,15 @@ build-deb:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+.*/'
   variables:
     POSTGRES_VERSION: "17"
-  # before_script:
-  #   - apt update && apt upgrade -y
-  #   - apt install -y make sudo curl wget gnupg
-  #   - apt install -y postgresql-common
-  #   - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-  #   - apt install -y postgresql-17
-  #   - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
+  before_script:
+    - apt update && apt upgrade -y
+    - apt install -y make sudo curl wget gnupg
+    - apt install -y postgresql-common
+    - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+    - apt install -y postgresql-17
+    - apt install -y libglib2.0-dev devscripts build-essential lintian debhelper postgresql-server-dev-all dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION pkg-config
   script:
-    # - make build-local
-    - mkdir -p debian/packages
-    - echo "Test" > debian/packages/dotnet-9.0-test.deb
+    - make build-local
   artifacts:
     paths:
       - debian/packages/dotnet-*
@@ -114,12 +112,12 @@ create-release:
         url="https://git.brickabode.com/DotNetInPostgreSQL/pldotnet/-/jobs/${CI_JOB_ID}/artifacts/raw/${file}?inline=false"
         echo "- [$filename]($url)" >> assets.md
       done
-      echo "---" >> assets.md
+      echo "" >> assets.md
       cat assets.md release_notes.md > final_notes.md
   artifacts:
     paths:
       - dist/*
-    expire_in: 1 week
+    expire_in: never
   release:
     tag_name: $CI_COMMIT_TAG
     description: final_notes.md
