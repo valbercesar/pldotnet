@@ -86,7 +86,7 @@ build-deb:
   script:
     # - make build-local
     - mkdir -p debian/packages
-    - touch debian/packages/dotnet-9.0-test.deb
+    - echo "Test" > debian/packages/dotnet-9.0-test.deb
   artifacts:
     paths:
       - debian/packages/dotnet-*
