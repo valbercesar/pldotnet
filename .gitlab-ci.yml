@@ -120,7 +120,7 @@ create-release:
         --name "$CI_COMMIT_TAG" \
         --tag-name "$CI_COMMIT_TAG" \
         --ref "$CI_COMMIT_SHA" \
-        --description "$(cat release_notes.md)" \
+        --description ./release_notes.md \
         $release_cli_args
   artifacts:
     paths:
