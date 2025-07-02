@@ -37,6 +37,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.RECORDOID, OID.RECORDARRAYOID)]
     public class RecordHandler : ObjectTypeHandler<object[]>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecordHandler"/> class.
+        /// </summary>
         public RecordHandler()
         {
             this.ElementOID = OID.RECORDOID;
@@ -129,7 +132,7 @@ namespace PlDotNET.Handler
         }
 
         /// <summary>
-        /// Convert a C `pldotnet_Result*` into a C# `object[]`
+        /// Convert a C `pldotnet_Result*` into a C# `object[]`.
         /// </summary>
         public object[] InputGetValue(IntPtr result)
         {
@@ -175,7 +178,7 @@ namespace PlDotNET.Handler
         }
 
         /// <summary>
-        /// Convert a C# `object[]` into a C `pldotnet_Result*`
+        /// Convert a C# `object[]` into a C `pldotnet_Result*`.
         /// </summary>
         public bool OutputSetValue(object[] values, IntPtr output)
         {

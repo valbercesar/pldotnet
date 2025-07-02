@@ -27,6 +27,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.UUIDOID, OID.UUIDARRAYOID)]
     public class UuidHandler : StructTypeHandler<Guid>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UuidHandler"/> class.
+        /// </summary>
         public UuidHandler()
         {
             this.ElementOID = OID.UUIDOID;

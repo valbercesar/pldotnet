@@ -27,6 +27,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.BOOLOID, OID.BOOLARRAYOID)]
     public class BoolHandler : StructTypeHandler<bool>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoolHandler"/> class.
+        /// </summary>
         public BoolHandler()
         {
             this.ElementOID = OID.BOOLOID;

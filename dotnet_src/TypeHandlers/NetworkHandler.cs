@@ -29,6 +29,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.MACADDROID, OID.MACADDRARRAYOID)]
     public class MacaddrHandler : ObjectTypeHandler<PhysicalAddress>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MacaddrHandler"/> class.
+        /// </summary>
         public MacaddrHandler()
         {
             this.ElementOID = OID.MACADDROID;
@@ -73,6 +76,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.MACADDR8OID, OID.MACADDR8ARRAYOID)]
     public class Macaddr8Handler : ObjectTypeHandler<PhysicalAddress>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Macaddr8Handler"/> class.
+        /// </summary>
         public Macaddr8Handler()
         {
             this.ElementOID = OID.MACADDR8OID;
@@ -103,6 +109,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.INETOID, OID.INETARRAYOID)]
     public class InetHandler : StructTypeHandler<(IPAddress Address, int Netmask)>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InetHandler"/> class.
+        /// </summary>
         public InetHandler()
         {
             this.ElementOID = OID.INETOID;
@@ -154,6 +163,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.CIDROID, OID.CIDRARRAYOID)]
     public class CidrHandler : StructTypeHandler<(IPAddress Address, int Netmask)>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CidrHandler"/> class.
+        /// </summary>
         public CidrHandler()
         {
             this.ElementOID = OID.CIDROID;

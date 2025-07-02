@@ -30,6 +30,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.BYTEAOID, OID.BYTEAARRAYOID)]
     public class ByteaHandler : ObjectTypeHandler<byte[]>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ByteaHandler"/> class.
+        /// </summary>
         public ByteaHandler()
         {
             this.ElementOID = OID.BYTEAOID;

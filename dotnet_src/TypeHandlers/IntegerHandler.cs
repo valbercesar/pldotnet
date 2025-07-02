@@ -27,6 +27,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.INT2OID, OID.INT2ARRAYOID)]
     public class ShortHandler : StructTypeHandler<short>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShortHandler"/> class.
+        /// </summary>
         public ShortHandler()
         {
             this.ElementOID = OID.INT2OID;
@@ -69,6 +72,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.INT4OID, OID.INT4ARRAYOID)]
     public class IntHandler : StructTypeHandler<int>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IntHandler"/> class.
+        /// </summary>
         public IntHandler()
         {
             this.ElementOID = OID.INT4OID;
@@ -111,6 +117,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.INT8OID, OID.INT8ARRAYOID)]
     public class LongHandler : StructTypeHandler<long>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LongHandler"/> class.
+        /// </summary>
         public LongHandler()
         {
             this.ElementOID = OID.INT8OID;

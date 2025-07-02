@@ -27,6 +27,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.POINTOID, OID.POINTARRAYOID)]
     public class PointHandler : StructTypeHandler<NpgsqlPoint>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PointHandler"/> class.
+        /// </summary>
         public PointHandler()
         {
             this.ElementOID = OID.POINTOID;
@@ -71,6 +74,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.LINEOID, OID.LINEARRAYOID)]
     public class LineHandler : StructTypeHandler<NpgsqlLine>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LineHandler"/> class.
+        /// </summary>
         public LineHandler()
         {
             this.ElementOID = OID.LINEOID;
@@ -115,6 +121,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.LSEGOID, OID.LSEGARRAYOID)]
     public class LineSegmentHandler : StructTypeHandler<NpgsqlLSeg>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LineSegmentHandler"/> class.
+        /// </summary>
         public LineSegmentHandler()
         {
             this.ElementOID = OID.LSEGOID;
@@ -159,6 +168,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.BOXOID, OID.BOXARRAYOID)]
     public class BoxHandler : StructTypeHandler<NpgsqlBox>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoxHandler"/> class.
+        /// </summary>
         public BoxHandler()
         {
             this.ElementOID = OID.BOXOID;
@@ -209,6 +221,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.PATHOID, OID.PATHARRAYOID)]
     public class PathHandler : StructTypeHandler<NpgsqlPath>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PathHandler"/> class.
+        /// </summary>
         public PathHandler()
         {
             this.ElementOID = OID.PATHOID;
@@ -281,6 +296,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.POLYGONOID, OID.POLYGONARRAYOID)]
     public class PolygonHandler : StructTypeHandler<NpgsqlPolygon>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PolygonHandler"/> class.
+        /// </summary>
         public PolygonHandler()
         {
             this.ElementOID = OID.POLYGONOID;
@@ -350,6 +368,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.CIRCLEOID, OID.CIRCLEARRAYOID)]
     public class CircleHandler : StructTypeHandler<NpgsqlCircle>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CircleHandler"/> class.
+        /// </summary>
         public CircleHandler()
         {
             this.ElementOID = OID.CIRCLEOID;

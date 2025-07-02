@@ -135,6 +135,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.TEXTOID, OID.TEXTARRAYOID)]
     public class TextHandler : StringHandler
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextHandler"/> class.
+        /// </summary>
         public TextHandler()
         {
             this.ElementOID = OID.TEXTOID;
@@ -151,6 +154,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.BPCHAROID, OID.BPCHARARRAYOID)]
     public class CharHandler : StringHandler
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CharHandler"/> class.
+        /// </summary>
         public CharHandler()
         {
             this.ElementOID = OID.BPCHAROID;
@@ -167,6 +173,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.VARCHAROID, OID.VARCHARARRAYOID)]
     public class CharVaryingHandler : StringHandler
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CharVaryingHandler"/> class.
+        /// </summary>
         public CharVaryingHandler()
         {
             this.ElementOID = OID.VARCHAROID;
@@ -183,6 +192,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.XMLOID, OID.XMLARRAYOID)]
     public class XmlHandler : StringHandler
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XmlHandler"/> class.
+        /// </summary>
         public XmlHandler()
         {
             this.ElementOID = OID.XMLOID;

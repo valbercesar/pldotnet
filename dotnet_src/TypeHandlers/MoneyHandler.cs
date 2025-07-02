@@ -27,6 +27,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.MONEYOID, OID.MONEYARRAYOID)]
     public class MoneyHandler : StructTypeHandler<decimal>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MoneyHandler"/> class.
+        /// </summary>
         public MoneyHandler()
         {
             this.ElementOID = OID.MONEYOID;

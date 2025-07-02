@@ -27,6 +27,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.FLOAT4OID, OID.FLOAT4ARRAYOID)]
     public class FloatHandler : StructTypeHandler<float>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FloatHandler"/> class.
+        /// </summary>
         public FloatHandler()
         {
             this.ElementOID = OID.FLOAT4OID;
@@ -69,6 +72,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.FLOAT8OID, OID.FLOAT8ARRAYOID)]
     public class DoubleHandler : StructTypeHandler<double>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DoubleHandler"/> class.
+        /// </summary>
         public DoubleHandler()
         {
             this.ElementOID = OID.FLOAT8OID;

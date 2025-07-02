@@ -28,6 +28,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.VARBITOID, OID.VARBITARRAYOID)]
     public class VarBitStringHandler : ObjectTypeHandler<BitArray>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VarBitStringHandler"/> class.
+        /// </summary>
         public VarBitStringHandler()
         {
             this.ElementOID = OID.VARBITOID;
@@ -135,6 +138,9 @@ namespace PlDotNET.Handler
     [OIDHandler(OID.BITOID, OID.BITARRAYOID)]
     public class BitStringHandler : ObjectTypeHandler<BitArray>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BitStringHandler"/> class.
+        /// </summary>
         public BitStringHandler()
         {
             this.ElementOID = OID.BITOID;
