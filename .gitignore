@@ -664,3 +664,4 @@ $RECYCLE.BIN/
 .env
 tests/npgsql/sql
 docs/html
+.sonarqube

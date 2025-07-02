@@ -34,6 +34,9 @@ $$;
 
 -- Tests
 
+DROP TABLE IF EXISTS automated_test_results;
+CREATE TABLE automated_test_results(ID SERIAL PRIMARY KEY, FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);
+
 WITH cte AS (
     SELECT * FROM dynamic_record_generator(1)
         AS (a int4, b text)
@@ -136,12 +139,14 @@ AS $$
             var nullInt = new NpgsqlParameter
             {
                 ParameterName = "_",
-                NpgsqlDbType = NpgsqlDbType.Integer
+                NpgsqlDbType = NpgsqlDbType.Integer,
+                Value = DBNull.Value
             };
             var nullFloat = new NpgsqlParameter
             {
                 ParameterName = "_",
-                NpgsqlDbType = NpgsqlDbType.Real
+                NpgsqlDbType = NpgsqlDbType.Real,
+                Value = DBNull.Value
             };
             return new object[]{nullInt, nullFloat};
         default:
