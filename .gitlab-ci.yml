@@ -113,15 +113,10 @@ create-release:
         echo "Uploading $file"
         filename=$(basename "$file")
         url="https://git.brickabode.com/DotNetInPostgreSQL/pldotnet/-/jobs/${CI_JOB_ID}/artifacts/raw/${file}?inline=false"
-        asset_json="{ 'name': '${filename}', 'url': '${url}' }"
-        release_cli_args="$release_cli_args --assets-link \"$asset_json\""
+        asset_json=$(jq -c --arg name "$filename" --arg url "$url" '{name: $name, url: $url}')
+        release_cli_args="$release_cli_args --assets-link $asset_json"
       done
-      release-cli create \
-        --name "$CI_COMMIT_TAG" \
-        --tag-name "$CI_COMMIT_TAG" \
-        --ref "$CI_COMMIT_SHA" \
-        --description ./release_notes.md \
-        $release_cli_args
+      release-cli create --name "$CI_COMMIT_TAG" --tag-name "$CI_COMMIT_TAG" --ref "$CI_COMMIT_SHA" --description ./release_notes.md $release_cli_args
   artifacts:
     paths:
       - dist/*
