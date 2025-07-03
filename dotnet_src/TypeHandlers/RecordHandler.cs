@@ -35,7 +35,7 @@ namespace PlDotNET.Handler
     /// Record datum.
     /// </remarks>
     [OIDHandler(OID.RECORDOID, OID.RECORDARRAYOID)]
-    public class RecordHandler : ObjectTypeHandler<object[]>
+    public partial class RecordHandler : ObjectTypeHandler<object[]>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RecordHandler"/> class.
@@ -46,30 +46,30 @@ namespace PlDotNET.Handler
             this.ArrayOID = OID.RECORDARRAYOID;
         }
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern unsafe void pldotnet_ResizeResult(IntPtr output, int length);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static unsafe partial void pldotnet_ResizeResult(IntPtr output, int length);
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int pldotnet_GetResultLength(IntPtr result);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial int pldotnet_GetResultLength(IntPtr result);
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int pldotnet_GetResult(
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial int pldotnet_GetResult(
                               IntPtr result,
                               int offset,
                               out IntPtr value,
                               [MarshalAs(UnmanagedType.U1)] out bool is_null,
                               out OID oid);
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int pldotnet_GetRecordAttributes(
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial int pldotnet_GetRecordAttributes(
                                 IntPtr recordDatum,
                                 int numAttrs,
                                 IntPtr[] datums,
                                 byte[] isNull,
                                 OID[] oid);
 
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern int pldotnet_GetNumberOfRecordAttributes(IntPtr result);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial int pldotnet_GetNumberOfRecordAttributes(IntPtr result);
 
 #nullable enable
 
@@ -79,7 +79,7 @@ namespace PlDotNET.Handler
         /// </summary>
         /// <param name="value">The value to be converted.</param>
         /// <returns>A tuple containing the datum and OID.</returns>
-        public static (IntPtr, OID) SingleValueOutput(object value)
+        public static (IntPtr Datum, OID Oid) SingleValueOutput(object value)
         {
             (NpgsqlDbType dbt, object? obj) = NpgsqlHelper.GetNpgsqlTypeAndValue(value);
 
@@ -94,52 +94,15 @@ namespace PlDotNET.Handler
             return (datum, oid);
         }
 
-        /// <inheritdoc />
-        public override object[] InputValue(IntPtr recordDatum)
-        {
-            // Return an empty array if the pointer is Null
-            if (recordDatum == IntPtr.Zero)
-            {
-                return new object[0];
-            }
-
-            int len = pldotnet_GetNumberOfRecordAttributes(recordDatum);
-
-            IntPtr[] datums = new IntPtr[len];
-            byte[] nullmap = new byte[len];
-            OID[] oids = new OID[len];
-
-            if (pldotnet_GetRecordAttributes(recordDatum, len, datums, nullmap, oids) != 0)
-            {
-                throw new SystemException($"Could not get records attributes from record datum at {recordDatum.ToInt64():x}");
-            }
-
-            object[] objects = new object[len];
-
-            for (int i = 0; i < len; i++)
-            {
-                objects[i] = nullmap[i] != 0 ? null! : DatumConversion.Instance.InputValue(datums[i], oids[i], true);
-            }
-
-            return objects;
-        }
-
-        /// <inheritdoc />
-        public override IntPtr OutputValue(object[] values)
-        {
-            // for each
-            throw new SystemException($"Do not call `OutputValue()` on a Record.");
-        }
-
         /// <summary>
         /// Convert a C `pldotnet_Result*` into a C# `object[]`.
         /// </summary>
-        public object[] InputGetValue(IntPtr result)
+        public static object[] InputGetValue(IntPtr result)
         {
             // Return an empty array if the pointer is Null
             if (result == IntPtr.Zero)
             {
-                return new object[0];
+                return [];
             }
 
             int len = pldotnet_GetResultLength(result);
@@ -147,11 +110,7 @@ namespace PlDotNET.Handler
 
             for (int i = 0; i < len; i++)
             {
-                IntPtr datum;
-                bool is_null;
-                OID oid;
-
-                if (pldotnet_GetResult(result, i, out datum, out is_null, out oid) != 0)
+                if (pldotnet_GetResult(result, i, out nint datum, out bool is_null, out OID oid) != 0)
                 {
                     throw new SystemException($"Could not get value {i} from pldotnet_Result at {result.ToInt64():x}");
                 }
@@ -169,7 +128,7 @@ namespace PlDotNET.Handler
         /// <param name="value">The value to set.</param>
         /// <param name="output">The pldotnet_Result pointer.</param>
         /// <param name="offset">The offset at which to set the field value.</param>
-        public bool OutputSetField(object value, IntPtr output, int offset)
+        public static bool OutputSetField(object value, IntPtr output, int offset)
         {
             var (datum, oid) = SingleValueOutput(value);
 
@@ -180,7 +139,7 @@ namespace PlDotNET.Handler
         /// <summary>
         /// Convert a C# `object[]` into a C `pldotnet_Result*`.
         /// </summary>
-        public bool OutputSetValue(object[] values, IntPtr output)
+        public static bool OutputSetValue(object[] values, IntPtr output)
         {
             if (values == null)
             {
@@ -216,6 +175,43 @@ namespace PlDotNET.Handler
             }
 
             return true;
+        }
+
+                /// <inheritdoc />
+        public override object[] InputValue(IntPtr recordDatum)
+        {
+            // Return an empty array if the pointer is Null
+            if (recordDatum == IntPtr.Zero)
+            {
+                return [];
+            }
+
+            int len = pldotnet_GetNumberOfRecordAttributes(recordDatum);
+
+            IntPtr[] datums = new IntPtr[len];
+            byte[] nullmap = new byte[len];
+            OID[] oids = new OID[len];
+
+            if (pldotnet_GetRecordAttributes(recordDatum, len, datums, nullmap, oids) != 0)
+            {
+                throw new SystemException($"Could not get records attributes from record datum at {recordDatum.ToInt64():x}");
+            }
+
+            object[] objects = new object[len];
+
+            for (int i = 0; i < len; i++)
+            {
+                objects[i] = nullmap[i] != 0 ? null! : DatumConversion.Instance.InputValue(datums[i], oids[i], true);
+            }
+
+            return objects;
+        }
+
+        /// <inheritdoc />
+        public override IntPtr OutputValue(object[] values)
+        {
+            // for each
+            throw new SystemException($"Do not call `OutputValue()` on a Record.");
         }
     }
 }

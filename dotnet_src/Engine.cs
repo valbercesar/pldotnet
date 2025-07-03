@@ -236,12 +236,12 @@ namespace PlDotNET
         /// <summary>
         /// Gets or sets the dictionary that contains compiled user-defined functions.
         /// </summary>
-        public static Dictionary<uint, CachedFunction> FuncBuiltCodeDict { get; set; } = new();
+        public static Dictionary<uint, CachedFunction> FuncBuiltCodeDict { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the dictionary that contains compiled user-defined triggers.
         /// </summary>
-        public static Dictionary<uint, CachedTrigger> TrigBuiltCodeDict { get; set; } = new();
+        public static Dictionary<uint, CachedTrigger> TrigBuiltCodeDict { get; set; } = [];
 
         /// <summary>
         /// This function compiles the dynamic code using Roslyn.

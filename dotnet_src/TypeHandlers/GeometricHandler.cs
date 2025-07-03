@@ -25,7 +25,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-geometric.html.
     /// </remarks>
     [OIDHandler(OID.POINTOID, OID.POINTARRAYOID)]
-    public class PointHandler : StructTypeHandler<NpgsqlPoint>
+    public partial class PointHandler : StructTypeHandler<NpgsqlPoint>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PointHandler"/> class.
@@ -40,15 +40,15 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumPointAttributes().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumPointAttributes(IntPtr datum, ref double x, ref double y);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumPointAttributes(IntPtr datum, ref double x, ref double y);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumPoint().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumPoint(double x, double y);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumPoint(double x, double y);
 
         /// <inheritdoc />
         public override NpgsqlPoint InputValue(IntPtr datum)
@@ -72,7 +72,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-geometric.html.
     /// </remarks>
     [OIDHandler(OID.LINEOID, OID.LINEARRAYOID)]
-    public class LineHandler : StructTypeHandler<NpgsqlLine>
+    public partial class LineHandler : StructTypeHandler<NpgsqlLine>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LineHandler"/> class.
@@ -87,15 +87,15 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumLineAttributes().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumLineAttributes(IntPtr datum, ref double a, ref double b, ref double c);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumLineAttributes(IntPtr datum, ref double a, ref double b, ref double c);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumLine().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumLine(double a, double b, double c);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumLine(double a, double b, double c);
 
         /// <inheritdoc />
         public override NpgsqlLine InputValue(IntPtr datum)
@@ -119,7 +119,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-geometric.html.
     /// </remarks>
     [OIDHandler(OID.LSEGOID, OID.LSEGARRAYOID)]
-    public class LineSegmentHandler : StructTypeHandler<NpgsqlLSeg>
+    public partial class LineSegmentHandler : StructTypeHandler<NpgsqlLSeg>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LineSegmentHandler"/> class.
@@ -134,15 +134,15 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumLineSegmentAttributes().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumLineSegmentAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumLineSegmentAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumLineSegment().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumLineSegment(double x1, double y1, double x2, double y2);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumLineSegment(double x1, double y1, double x2, double y2);
 
         /// <inheritdoc />
         public override NpgsqlLSeg InputValue(IntPtr datum)
@@ -166,7 +166,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-geometric.html.
     /// </remarks>
     [OIDHandler(OID.BOXOID, OID.BOXARRAYOID)]
-    public class BoxHandler : StructTypeHandler<NpgsqlBox>
+    public partial class BoxHandler : StructTypeHandler<NpgsqlBox>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BoxHandler"/> class.
@@ -181,23 +181,23 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumBoxAttributes().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumBoxAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumBoxAttributes(IntPtr datum, ref double x1, ref double y1, ref double x2, ref double y2);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumBox().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumBox(double x1, double y1, double x2, double y2);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumBox(double x1, double y1, double x2, double y2);
 
         /// <inheritdoc />
         public override NpgsqlBox InputValue(IntPtr datum)
         {
             double x1 = 0.0, y1 = 0.0, x2 = 0.0, y2 = 0.0;
             pldotnet_GetDatumBoxAttributes(datum, ref x1, ref y1, ref x2, ref y2);
-            NpgsqlPoint upperRight = new (x1, y1);
-            NpgsqlPoint lowerLeft = new (x2, y2);
+            NpgsqlPoint upperRight = new(x1, y1);
+            NpgsqlPoint lowerLeft = new(x2, y2);
             return new NpgsqlBox(upperRight, lowerLeft);
         }
 
@@ -219,7 +219,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-geometric.html.
     /// </remarks>
     [OIDHandler(OID.PATHOID, OID.PATHARRAYOID)]
-    public class PathHandler : StructTypeHandler<NpgsqlPath>
+    public partial class PathHandler : StructTypeHandler<NpgsqlPath>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PathHandler"/> class.
@@ -234,22 +234,22 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumPathAttributes().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumPathAttributes(IntPtr datum, ref int pointNumber, ref int closed);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumPathAttributes(IntPtr datum, ref int pointNumber, ref int closed);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumPathCoordinates().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumPathCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumPathCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumPath().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumPath(int npts, int closed, double[] xCoordinates, double[] yCoordinates);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumPath(int npts, int closed, double[] xCoordinates, double[] yCoordinates);
 
         /// <inheritdoc />
         public override NpgsqlPath InputValue(IntPtr datum)
@@ -259,7 +259,7 @@ namespace PlDotNET.Handler
             double[] xCoordinates = new double[npts];
             double[] yCoordinates = new double[npts];
             bool open = closed == 0;
-            NpgsqlPath origPath = new (npts, open);
+            NpgsqlPath origPath = new(npts, open);
             pldotnet_GetDatumPathCoordinates(datum, xCoordinates, yCoordinates);
             for (int i = 0; i < npts; i++)
             {
@@ -294,7 +294,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-geometric.html.
     /// </remarks>
     [OIDHandler(OID.POLYGONOID, OID.POLYGONARRAYOID)]
-    public class PolygonHandler : StructTypeHandler<NpgsqlPolygon>
+    public partial class PolygonHandler : StructTypeHandler<NpgsqlPolygon>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PolygonHandler"/> class.
@@ -309,22 +309,22 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumPolygonAttributes().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumPolygonAttributes(IntPtr datum, ref int pointNumber);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumPolygonAttributes(IntPtr datum, ref int pointNumber);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumPolygonCoordinates().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumPolygonCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumPolygonCoordinates(IntPtr datum, double[] xCoordinates, double[] yCoordinates);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumPolygon().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumPolygon(int npts, double[] xCoordinates, double[] yCoordinates);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumPolygon(int npts, double[] xCoordinates, double[] yCoordinates);
 
         /// <inheritdoc />
         public override NpgsqlPolygon InputValue(IntPtr datum)
@@ -333,7 +333,7 @@ namespace PlDotNET.Handler
             pldotnet_GetDatumPolygonAttributes(datum, ref npts);
             double[] xCoordinates = new double[npts];
             double[] yCoordinates = new double[npts];
-            NpgsqlPolygon origPolygon = new (npts);
+            NpgsqlPolygon origPolygon = new(npts);
             pldotnet_GetDatumPolygonCoordinates(datum, xCoordinates, yCoordinates);
             for (int i = 0; i < npts; i++)
             {
@@ -366,7 +366,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-geometric.html.
     /// </remarks>
     [OIDHandler(OID.CIRCLEOID, OID.CIRCLEARRAYOID)]
-    public class CircleHandler : StructTypeHandler<NpgsqlCircle>
+    public partial class CircleHandler : StructTypeHandler<NpgsqlCircle>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CircleHandler"/> class.
@@ -381,15 +381,15 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDatumCircleAttributes().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern void pldotnet_GetDatumCircleAttributes(IntPtr datum, ref double x, ref double y, ref double r);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial void pldotnet_GetDatumCircleAttributes(IntPtr datum, ref double x, ref double y, ref double r);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumCircle().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumCircle(double x, double y, double r);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumCircle(double x, double y, double r);
 
         /// <inheritdoc />
         public override NpgsqlCircle InputValue(IntPtr datum)

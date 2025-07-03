@@ -25,7 +25,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-numeric.html.
     /// </remarks>
     [OIDHandler(OID.FLOAT4OID, OID.FLOAT4ARRAYOID)]
-    public class FloatHandler : StructTypeHandler<float>
+    public partial class FloatHandler : StructTypeHandler<float>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FloatHandler"/> class.
@@ -40,15 +40,15 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetFloat().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern float pldotnet_GetFloat(IntPtr datum);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial float pldotnet_GetFloat(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumFloat().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumFloat(float value);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumFloat(float value);
 
         /// <inheritdoc />
         public override float InputValue(IntPtr datum)
@@ -70,7 +70,7 @@ namespace PlDotNET.Handler
     /// See https://www.postgresql.org/docs/current/static/datatype-numeric.html.
     /// </remarks>
     [OIDHandler(OID.FLOAT8OID, OID.FLOAT8ARRAYOID)]
-    public class DoubleHandler : StructTypeHandler<double>
+    public partial class DoubleHandler : StructTypeHandler<double>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DoubleHandler"/> class.
@@ -85,15 +85,15 @@ namespace PlDotNET.Handler
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_GetDouble().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern double pldotnet_GetDouble(IntPtr datum);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial double pldotnet_GetDouble(IntPtr datum);
 
         /// <summary>
         /// C function declared in pldotnet_conversions.h.
         /// See ::pldotnet_CreateDatumDouble().
         /// </summary>
-        [DllImport("@PKG_LIBDIR/pldotnet.so")]
-        public static extern IntPtr pldotnet_CreateDatumDouble(double value);
+        [LibraryImport("@PKG_LIBDIR/pldotnet.so")]
+        public static partial IntPtr pldotnet_CreateDatumDouble(double value);
 
         /// <inheritdoc />
         public override double InputValue(IntPtr datum)
