@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stylecop.Analyzers" Version="1.1.118">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -31,7 +31,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\npgsql\src\Npgsql\Npgsql.csproj" />
+    <!-- <ProjectReference Include="..\npgsql\src\Npgsql\Npgsql.csproj" /> -->
     <ProjectReference Include="..\Common\PlDotNET.Common.csproj" />
   </ItemGroup>
 
