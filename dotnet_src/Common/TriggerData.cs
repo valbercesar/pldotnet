@@ -1,3 +1,17 @@
+// <copyright file="TriggerData.cs" company="Brick Abode">
+//
+// PL/.NET (pldotnet) - PostgreSQL support for .NET C# and F# as
+//                      procedural languages (PL)
+//
+//
+// Copyright (c) 2023 Brick Abode
+//
+// This code is subject to the terms of the PostgreSQL License.
+// The full text of the license can be found in the LICENSE file
+// at the top level of the pldotnet repository.
+//
+// </copyright>
+
 using System;
 using System.Linq;
 
