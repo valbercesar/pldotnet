@@ -12,12 +12,12 @@ public abstract class BaseCreateXmlTests : PlDotNetTest
 
     public BaseCreateXmlTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateXml", Arguments = new List<FunctionArgument>{new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT")}, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateXml", Arguments = new List<FunctionArgument> { new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT") }, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-xml", "createXml", "'hello world'::TEXT, 'First paragraph'::TEXT, 'Second paragraph'::TEXT", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>HELLO WORLD</title><body><p>First paragraph</p><p>Second paragraph</p></body>'::XML::TEXT"}};
+        return new object[][] { new object[] { "c#-xml", "createXml", "'hello world'::TEXT, 'First paragraph'::TEXT, 'Second paragraph'::TEXT", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>HELLO WORLD</title><body><p>First paragraph</p><p>Second paragraph</p></body>'::XML::TEXT" } };
     }
 
     [Theory]

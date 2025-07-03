@@ -12,12 +12,12 @@ public abstract class BaseCreateXmlFsharpTests : PlDotNetTest
 
     public BaseCreateXmlFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateXmlFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT")}, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateXmlFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("title", "TEXT"), new FunctionArgument("p1", "TEXT"), new FunctionArgument("p2", "TEXT") }, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-xml", "createXmlFSharp1", "'hello world'::TEXT, 'First paragraph'::TEXT, 'Second paragraph'::TEXT", "= '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>HELLO WORLD</title><body><p>First paragraph</p><p>Second paragraph</p></body>'::XML::TEXT"}, };
+        return new object[][] { new object[] { "f#-xml", "createXmlFSharp1", "'hello world'::TEXT, 'First paragraph'::TEXT, 'Second paragraph'::TEXT", "= '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>HELLO WORLD</title><body><p>First paragraph</p><p>Second paragraph</p></body>'::XML::TEXT" }, };
     }
 
     [Theory]

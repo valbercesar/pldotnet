@@ -12,12 +12,12 @@ public abstract class BaseCreateCidrMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateCidrMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateCidrMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateCidrMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-cidr-3array", "CreateCIDRMultidimensionalArray", "", "= ARRAY[[[CIDR '127.123.54.0/24', CIDR '127.123.54.0/24'], [null::CIDR, null::CIDR]], [[CIDR '127.123.54.0/24', null::CIDR], [CIDR '127.123.54.0/24', CIDR '127.123.54.0/24']]]"}, };
+        return new object[][] { new object[] { "c#-cidr-3array", "CreateCIDRMultidimensionalArray", "", "= ARRAY[[[CIDR '127.123.54.0/24', CIDR '127.123.54.0/24'], [null::CIDR, null::CIDR]], [[CIDR '127.123.54.0/24', null::CIDR], [CIDR '127.123.54.0/24', CIDR '127.123.54.0/24']]]" }, };
     }
 
     [Theory]

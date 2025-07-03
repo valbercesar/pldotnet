@@ -12,12 +12,12 @@ public abstract class BaseSpinUllStringTests : PlDotNetTest
 
     public BaseSpinUllStringTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpinUllString", Arguments = new List<FunctionArgument>{}, ReturnType = "TEXT[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpinUllString", Arguments = new List<FunctionArgument> { }, ReturnType = "TEXT[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-string-null-spi", "SPINullString", "", "= ARRAY['Hello Terrible World!'::TEXT, NULL::TEXT]"}, };
+        return new object[][] { new object[] { "c#-string-null-spi", "SPINullString", "", "= ARRAY['Hello Terrible World!'::TEXT, NULL::TEXT]" }, };
     }
 
     [Theory]

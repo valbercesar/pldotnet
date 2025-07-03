@@ -12,12 +12,12 @@ public abstract class BaseReturnBoolTests : PlDotNetTest
 
     public BaseReturnBoolTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBool", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnBool", Arguments = new List<FunctionArgument> { }, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bool", "returnBool", "", " is false"}, };
+        return new object[][] { new object[] { "c#-bool", "returnBool", "", " is false" }, };
     }
 
     [Theory]

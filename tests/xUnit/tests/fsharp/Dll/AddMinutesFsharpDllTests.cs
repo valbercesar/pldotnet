@@ -25,7 +25,7 @@ public abstract class BaseAddMinutesFsharpDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-time-dll", "addMinutesFSharpDLL1", "'05:30 PM'::TIME, 75", "= '06:45 PM'::TIME"}, new object[]{"f#-time-dll", "addMinutesFSharpDLL2", "'04:20 PM', NULL::INT4", "= '04:20 PM'::TIME"}, new object[]{"f#-time-null-dll", "addMinutesFSharpDLL3", "NULL::TIME, 75", "= '01:45:20'::TIME"}, };
+        return new object[][] { new object[] { "f#-time-dll", "addMinutesFSharpDLL1", "'05:30 PM'::TIME, 75", "= '06:45 PM'::TIME" }, new object[] { "f#-time-dll", "addMinutesFSharpDLL2", "'04:20 PM', NULL::INT4", "= '04:20 PM'::TIME" }, new object[] { "f#-time-null-dll", "addMinutesFSharpDLL3", "NULL::TIME, 75", "= '01:45:20'::TIME" }, };
     }
 
     [Theory]

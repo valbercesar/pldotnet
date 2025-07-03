@@ -12,12 +12,12 @@ public abstract class BaseUpdateBitArrayIndexTests : PlDotNetTest
 
     public BaseUpdateBitArrayIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateBitArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BIT(8)[]"), new FunctionArgument("desired", "BIT(8)"), new FunctionArgument("index", "integer[]"), }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateBitArrayIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "BIT(8)[]"), new FunctionArgument("desired", "BIT(8)"), new FunctionArgument("index", "integer[]"), }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bit-null-1array", "updateBitArrayIndex1", "ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)], '11111111'::BIT(8), ARRAY[2]", "= ARRAY['10101001'::BIT(8), '10101101'::BIT(8), '11111111'::BIT(8), '11101001'::BIT(8)]"}, new object[]{"c#-bit-null-2array", "updateBitArrayIndex2", "ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]", "= ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]]"}, new object[]{"c#-bit-null-2array-arraynull", "updateBitArrayIndex3", "ARRAY[[null::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]", "= ARRAY[[null::BIT(8), null::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]]"}, };
+        return new object[][] { new object[] { "c#-bit-null-1array", "updateBitArrayIndex1", "ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)], '11111111'::BIT(8), ARRAY[2]", "= ARRAY['10101001'::BIT(8), '10101101'::BIT(8), '11111111'::BIT(8), '11101001'::BIT(8)]" }, new object[] { "c#-bit-null-2array", "updateBitArrayIndex2", "ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]", "= ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]]" }, new object[] { "c#-bit-null-2array-arraynull", "updateBitArrayIndex3", "ARRAY[[null::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8), ARRAY[1,0]", "= ARRAY[[null::BIT(8), null::BIT(8)], ['11111111'::BIT(8), '11101001'::BIT(8)]]" }, };
     }
 
     [Theory]

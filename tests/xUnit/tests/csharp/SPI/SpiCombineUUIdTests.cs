@@ -12,12 +12,12 @@ public abstract class BaseSpiCombineUUIdTests : PlDotNetTest
 
     public BaseSpiCombineUUIdTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiCombineUUId", Arguments = new List<FunctionArgument>{new FunctionArgument("b", "UUID")}, ReturnType = "UUID", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiCombineUUId", Arguments = new List<FunctionArgument> { new FunctionArgument("b", "UUID") }, ReturnType = "UUID", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-uuid-spi", "SPICombineUuid", "'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID", "= '123e4567-e89b-12d3-bb6d-6bb9bd380a11'::UUID"}, };
+        return new object[][] { new object[] { "c#-uuid-spi", "SPICombineUuid", "'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID", "= '123e4567-e89b-12d3-bb6d-6bb9bd380a11'::UUID" }, };
     }
 
     [Theory]

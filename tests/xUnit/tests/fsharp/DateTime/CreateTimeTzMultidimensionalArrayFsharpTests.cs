@@ -12,12 +12,12 @@ public abstract class BaseCreateTimeTzMultidimensionalArrayFsharpTests : PlDotNe
 
     public BaseCreateTimeTzMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimeTzMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTimeTzMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-timetz-3array", "CreateTimetzMultidimensionalArrayFSharp", "", "= ARRAY[[[TIMETZ '10:33:55+02:00']]]"}, };
+        return new object[][] { new object[] { "f#-timetz-3array", "CreateTimetzMultidimensionalArrayFSharp", "", "= ARRAY[[[TIMETZ '10:33:55+02:00']]]" }, };
     }
 
     [Theory]

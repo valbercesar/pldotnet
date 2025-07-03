@@ -12,12 +12,12 @@ public abstract class BaseCreateDateOnlyRangeArrayFsharpTests : PlDotNetTest
 
     public BaseCreateDateOnlyRangeArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateOnlyRangeArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateDateOnlyRangeArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-daterange-null-3array-arraynull", "CreateDateonlyRangeArrayFSharp1", "", "= ARRAY[[['[2022-04-14, 2022-04-15)'::DATERANGE]]]"}, };
+        return new object[][] { new object[] { "f#-daterange-null-3array-arraynull", "CreateDateonlyRangeArrayFSharp1", "", "= ARRAY[[['[2022-04-14, 2022-04-15)'::DATERANGE]]]" }, };
     }
 
     [Theory]

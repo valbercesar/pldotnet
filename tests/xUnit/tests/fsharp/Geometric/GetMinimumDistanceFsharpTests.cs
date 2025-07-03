@@ -12,12 +12,12 @@ public abstract class BaseGetMinimumDistanceFsharpTests : PlDotNetTest
 
     public BaseGetMinimumDistanceFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetMinimumDistanceFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_line", "LINE"), new FunctionArgument("orig_point", "POINT")}, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "GetMinimumDistanceFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_line", "LINE"), new FunctionArgument("orig_point", "POINT") }, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-line", "getMinimumDistanceFSharp", "LINE '{4.0, 6.0, 2.0}', POINT(3.0,-6.0)", "= float8 '3.05085107923876'"}, };
+        return new object[][] { new object[] { "f#-line", "getMinimumDistanceFSharp", "LINE '{4.0, 6.0, 2.0}', POINT(3.0,-6.0)", "= float8 '3.05085107923876'" }, };
     }
 
     [Theory]

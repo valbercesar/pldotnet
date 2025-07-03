@@ -19,7 +19,7 @@ settings.SaveSourceCode
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "saveSourceCodeFSharp",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "boolean",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,

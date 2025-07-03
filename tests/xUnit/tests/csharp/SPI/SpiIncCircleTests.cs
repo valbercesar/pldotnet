@@ -12,12 +12,12 @@ public abstract class BaseSpiIncCircleTests : PlDotNetTest
 
     public BaseSpiIncCircleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncCircle", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "POINT"), new FunctionArgument("b", "float8")}, ReturnType = "CIRCLE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncCircle", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "POINT"), new FunctionArgument("b", "float8") }, ReturnType = "CIRCLE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-circle-spi", "SPIIncCircle", "'(1.5,2.5)'::POINT, '1.25354555'::FLOAT8", "= '<(2.5,3.5),1.75354555>'::CIRCLE"}, };
+        return new object[][] { new object[] { "c#-circle-spi", "SPIIncCircle", "'(1.5,2.5)'::POINT, '1.25354555'::FLOAT8", "= '<(2.5,3.5),1.75354555>'::CIRCLE" }, };
     }
 
     [Theory]

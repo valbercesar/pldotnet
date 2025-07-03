@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayRealIndexTests : PlDotNetTest
 
     public BaseUpdateArrayRealIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayRealIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("floats", "real[]"), new FunctionArgument("desired", "real"), new FunctionArgument("index", "integer[]")}, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayRealIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("floats", "real[]"), new FunctionArgument("desired", "real"), new FunctionArgument("index", "integer[]") }, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float4-null-1array", "updateArrayRealIndex1", "ARRAY[4.55555::real, 10.11324::real, null::real], 9.83212, ARRAY[1]", "= ARRAY[4.55555::real, 9.83212::real, null::real]"}, new object[]{"c#-float4-null-2array", "updateArrayRealIndex2", "ARRAY[[4.55555::real, 10.11324::real], [null::real, 16.12464::real]], 9.83212, ARRAY[1, 0]", "= ARRAY[[4.55555::real, 10.11324::real], [9.83212::real, 16.12464::real]]"}, };
+        return new object[][] { new object[] { "c#-float4-null-1array", "updateArrayRealIndex1", "ARRAY[4.55555::real, 10.11324::real, null::real], 9.83212, ARRAY[1]", "= ARRAY[4.55555::real, 9.83212::real, null::real]" }, new object[] { "c#-float4-null-2array", "updateArrayRealIndex2", "ARRAY[[4.55555::real, 10.11324::real], [null::real, 16.12464::real]], 9.83212, ARRAY[1, 0]", "= ARRAY[[4.55555::real, 10.11324::real], [9.83212::real, 16.12464::real]]" }, };
     }
 
     [Theory]

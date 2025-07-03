@@ -12,12 +12,12 @@ public abstract class BaseCreateDateFsharpTests : PlDotNetTest
 
     public BaseCreateDateFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("year", "int"), new FunctionArgument("month", "int"), new FunctionArgument("day", "int")}, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateDateFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("year", "int"), new FunctionArgument("month", "int"), new FunctionArgument("day", "int") }, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-date", "createDateFSharp", "CAST(2022 AS int), CAST(10 AS int), CAST(14 AS int)", "= DATE 'Oct-14-2022'"}, };
+        return new object[][] { new object[] { "f#-date", "createDateFSharp", "CAST(2022 AS int), CAST(10 AS int), CAST(14 AS int)", "= DATE 'Oct-14-2022'" }, };
     }
 
     [Theory]

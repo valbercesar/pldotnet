@@ -12,12 +12,12 @@ public abstract class BaseInOutObject20FsTests : PlDotNetTest
 
     public BaseInOutObject20FsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutObject20Fs", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "text"), new FunctionArgument("b", "text"), new FunctionArgument("OUT c", "text")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "InOutObject20Fs", Arguments = new List<FunctionArgument> { new FunctionArgument("IN a", "text"), new FunctionArgument("b", "text"), new FunctionArgument("OUT c", "text") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inout-object-20", "inout_object_20_fs", "'red', 'blue'", "= 'red blue'"}, new object[]{"f#-inout-object-21", "inout_object_20_fs", "'red', NULL", "= 'red '"}, new object[]{"f#-inout-object-22", "inout_object_20_fs", "NULL, 'blue'", "= ' blue'"}, new object[]{"f#-inout-object-23", "inout_object_20_fs", "'🐂', '🥰'", "= '🐂 🥰'::TEXT"}, };
+        return new object[][] { new object[] { "f#-inout-object-20", "inout_object_20_fs", "'red', 'blue'", "= 'red blue'" }, new object[] { "f#-inout-object-21", "inout_object_20_fs", "'red', NULL", "= 'red '" }, new object[] { "f#-inout-object-22", "inout_object_20_fs", "NULL, 'blue'", "= ' blue'" }, new object[] { "f#-inout-object-23", "inout_object_20_fs", "'🐂', '🥰'", "= '🐂 🥰'::TEXT" }, };
     }
 
     [Theory]

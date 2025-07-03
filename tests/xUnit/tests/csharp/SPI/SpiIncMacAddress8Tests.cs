@@ -12,12 +12,12 @@ public abstract class BaseSpiIncMacAddress8Tests : PlDotNetTest
 
     public BaseSpiIncMacAddress8Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncMacAddress8", Arguments = new List<FunctionArgument>{new FunctionArgument("inc", "INTEGER")}, ReturnType = "MACADDR8", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncMacAddress8", Arguments = new List<FunctionArgument> { new FunctionArgument("inc", "INTEGER") }, ReturnType = "MACADDR8", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr8-spi", "SPIIncMacAddress8", "3", "= 'f6:30:00:ff:fe:00:00:03'::MACADDR8"}, };
+        return new object[][] { new object[] { "c#-macaddr8-spi", "SPIIncMacAddress8", "3", "= 'f6:30:00:ff:fe:00:00:03'::MACADDR8" }, };
     }
 
     [Theory]

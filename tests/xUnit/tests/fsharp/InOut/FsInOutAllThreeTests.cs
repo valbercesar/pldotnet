@@ -12,12 +12,12 @@ public abstract class BaseFsInOutAllThreeTests : PlDotNetTest
 
     public BaseFsInOutAllThreeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "FsInOutAllThree", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "INT"), new FunctionArgument("INOUT b", "INT"), new FunctionArgument("OUT c", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "FsInOutAllThree", Arguments = new List<FunctionArgument> { new FunctionArgument("IN a", "INT"), new FunctionArgument("INOUT b", "INT"), new FunctionArgument("OUT c", "INT") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inout-allthree-1", "fs_inout_allthree", "11, 8", "= ROW(12,19)"}, new object[]{"f#-inout-allthree-2", "fs_inout_allthree", "NULL::int, 8", "= ROW(NULL::int, NULL::int)"}, new object[]{"f#-inout-allthree-3", "fs_inout_allthree", "8, NULL::int", "= ROW(NULL::int, NULL::int)"}, };
+        return new object[][] { new object[] { "f#-inout-allthree-1", "fs_inout_allthree", "11, 8", "= ROW(12,19)" }, new object[] { "f#-inout-allthree-2", "fs_inout_allthree", "NULL::int, 8", "= ROW(NULL::int, NULL::int)" }, new object[] { "f#-inout-allthree-3", "fs_inout_allthree", "8, NULL::int", "= ROW(NULL::int, NULL::int)" }, };
     }
 
     [Theory]

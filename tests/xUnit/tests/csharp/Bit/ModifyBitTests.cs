@@ -12,12 +12,12 @@ public abstract class BaseModifyBitTests : PlDotNetTest
 
     public BaseModifyBitTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyBit", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BIT(10)")}, ReturnType = "BIT(10)", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyBit", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BIT(10)") }, ReturnType = "BIT(10)", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bit", "modifybit1", "'10101'::BIT(10)", "= '0010100001'::BIT(10)"}, new object[]{"c#-bit-null", "modifybit2", "NULL::BIT(10)", "IS NULL"}, };
+        return new object[][] { new object[] { "c#-bit", "modifybit1", "'10101'::BIT(10)", "= '0010100001'::BIT(10)" }, new object[] { "c#-bit-null", "modifybit2", "NULL::BIT(10)", "IS NULL" }, };
     }
 
     [Theory]

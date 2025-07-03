@@ -12,12 +12,12 @@ public abstract class BaseReturnCircleTests : PlDotNetTest
 
     public BaseReturnCircleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnCircle", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_circle", "CIRCLE")}, ReturnType = "CIRCLE", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnCircle", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_circle", "CIRCLE") }, ReturnType = "CIRCLE", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-circle", "returnCircle", "CIRCLE '2.5, 3.5, 12.78'", "~= CIRCLE '<(2.5, 3.5), 12.78>'"}};
+        return new object[][] { new object[] { "c#-circle", "returnCircle", "CIRCLE '2.5, 3.5, 12.78'", "~= CIRCLE '<(2.5, 3.5), 12.78>'" } };
     }
 
     [Theory]

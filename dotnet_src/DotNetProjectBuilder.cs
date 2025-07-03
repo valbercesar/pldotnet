@@ -26,7 +26,7 @@ namespace PlDotNET
     /// <summary>
     /// Represents a builder for creating a .NET project.
     /// </summary>
-    internal class DotNetProjectBuilder
+    internal partial class DotNetProjectBuilder
     {
         /// <summary>
         /// The verbose level for logging detailed information during the build process.
@@ -58,7 +58,9 @@ namespace PlDotNET
         /// </summary>
         internal DotNETLanguage Language;
 
-        // Define the target framework variable based on compilation symbols
+        /// <summary>
+        /// The target framework for the project, determined at compile time.
+        /// </summary>
         internal string TargetFramework;
 
         /// <summary>
@@ -179,7 +181,7 @@ namespace PlDotNET
             if (Verbose > 2)
             {
                 // Assuming Test is your Folder
-                DirectoryInfo d = new DirectoryInfo(DestinationProjectPath);
+                DirectoryInfo d = new(DestinationProjectPath);
 
                 // Getting Text files
                 FileInfo[] files = d.GetFiles("*");
@@ -235,7 +237,7 @@ namespace PlDotNET
             try
             {
                 // Run dotnet build command
-                ProcessStartInfo psi = new ProcessStartInfo
+                ProcessStartInfo psi = new()
                 {
                     // FileName = "dotnet",
                     FileName = "/usr/bin/dotnet",
@@ -248,49 +250,48 @@ namespace PlDotNET
 
                 psi.EnvironmentVariables["DOTNET_CLI_HOME"] = DestinationPath;
 
-                using (Process process = new Process { StartInfo = psi })
+                using Process process = new()
+                { StartInfo = psi };
+                process.Start();
+                process.WaitForExit();
+
+                // Read the output and error streams
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+
+                if (Verbose > 1)
                 {
-                    process.Start();
-                    process.WaitForExit();
-
-                    // Read the output and error streams
-                    string output = process.StandardOutput.ReadToEnd();
-                    string error = process.StandardError.ReadToEnd();
-
-                    if (Verbose > 1)
-                    {
-                        Elog.Info("Build Output:");
-                        Elog.Info(output);
-                    }
-                    else if (output.ToLower().Contains("build failed") || !string.IsNullOrEmpty(error))
-                    {
-                        var errorLines = string.IsNullOrEmpty(error) ? output.Split('\n')
-                            .Select(line => Regex.Match(line, @"\((\d+,\d+)\): error (\w+): ([^\[]+)"))
-                            .Where(match => match.Success)
-                            .Select(match => match.Value)
-                            .Distinct()
-                            .ToArray() : error.Split('\n');
-
-                        string language = Language == DotNETLanguage.CSharp ? "C#" : "F#";
-                        string code = File.ReadAllText(
-                            $"{this.DestinationProjectPath}/Program.{(Language == DotNETLanguage.CSharp ? "cs" : "fs")}");
-
-                        Elog.Warning(
-                            $"PL.NET could not compile the following {language} generated code:" +
-                            $"\n**********\n{code}\n**********\n" +
-                            $"Here are the compilation results:\n{string.Join("\n", errorLines)}\n\n" +
-                            $"For additional information, please consult the {language} project created at  '{this.DestinationProjectPath}'\n");
-
-                        retVal = 1;
-                    }
-
-                    if (Verbose > 0)
-                    {
-                        Elog.Info("Build completed.");
-                    }
-
-                    this.DestinationProjectPath = projectPath;
+                    Elog.Info("Build Output:");
+                    Elog.Info(output);
                 }
+                else if (output.Contains("build failed", StringComparison.CurrentCultureIgnoreCase) || !string.IsNullOrEmpty(error))
+                {
+                    var errorLines = string.IsNullOrEmpty(error) ? output.Split('\n')
+                        .Select(line => MyRegex().Match(line))
+                        .Where(match => match.Success)
+                        .Select(match => match.Value)
+                        .Distinct()
+                        .ToArray() : error.Split('\n');
+
+                    string language = Language == DotNETLanguage.CSharp ? "C#" : "F#";
+                    string code = File.ReadAllText(
+                        $"{this.DestinationProjectPath}/Program.{(Language == DotNETLanguage.CSharp ? "cs" : "fs")}");
+
+                    Elog.Warning(
+                        $"PL.NET could not compile the following {language} generated code:" +
+                        $"\n**********\n{code}\n**********\n" +
+                        $"Here are the compilation results:\n{string.Join("\n", errorLines)}\n\n" +
+                        $"For additional information, please consult the {language} project created at  '{this.DestinationProjectPath}'\n");
+
+                    retVal = 1;
+                }
+
+                if (Verbose > 0)
+                {
+                    Elog.Info("Build completed.");
+                }
+
+                this.DestinationProjectPath = projectPath;
             }
             catch (Exception ex)
             {
@@ -300,5 +301,8 @@ namespace PlDotNET
 
             return retVal;
         }
+
+        [GeneratedRegex(@"\((\d+,\d+)\): error (\w+): ([^\[]+)")]
+        private static partial Regex MyRegex();
     }
 }

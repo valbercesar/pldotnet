@@ -12,12 +12,12 @@ public abstract class BaseModifyXmlFsharpTests : PlDotNetTest
 
     public BaseModifyXmlFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyXmlFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "XML")}, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = false, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyXmlFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "XML") }, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = false, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-xml", "modifyXmlFSharp1", "'<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World!</title>'::XML::text"}, new object[]{"f#-xml", "modifyXmlFSharp2", "''::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text"}, new object[]{"f#-xml-null", "modifyXmlFSharp3", "NULL::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text"}, };
+        return new object[][] { new object[] { "f#-xml", "modifyXmlFSharp1", "'<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World!</title>'::XML::text" }, new object[] { "f#-xml", "modifyXmlFSharp2", "''::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text" }, new object[] { "f#-xml-null", "modifyXmlFSharp3", "NULL::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text" }, };
     }
 
     [Theory]

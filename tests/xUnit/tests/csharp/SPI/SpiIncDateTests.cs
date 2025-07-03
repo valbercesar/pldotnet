@@ -12,12 +12,12 @@ public abstract class BaseSpiIncDateTests : PlDotNetTest
 
     public BaseSpiIncDateTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncDate", Arguments = new List<FunctionArgument>{new FunctionArgument("d", "INTEGER"), new FunctionArgument("m", "INTEGER"), new FunctionArgument("y", "INTEGER")}, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncDate", Arguments = new List<FunctionArgument> { new FunctionArgument("d", "INTEGER"), new FunctionArgument("m", "INTEGER"), new FunctionArgument("y", "INTEGER") }, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-date-spi", "SPIIncDate", "5,2,10", "= '1999-09-30'::DATE"}, };
+        return new object[][] { new object[] { "c#-date-spi", "SPIIncDate", "5,2,10", "= '1999-09-30'::DATE" }, };
     }
 
     [Theory]

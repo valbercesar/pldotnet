@@ -12,12 +12,12 @@ public abstract class BaseJoinTextArrayTests : PlDotNetTest
 
     public BaseJoinTextArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "JoinTextArray", Arguments = new List<FunctionArgument>{new FunctionArgument("texts", "text[]")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "JoinTextArray", Arguments = new List<FunctionArgument> { new FunctionArgument("texts", "text[]") }, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-text-null-1array", "JoinTextArray1", "ARRAY['test1'::text, null::text, ' test string 2'::text, null::text]", "= 'test1 test string 2'"}, new object[]{"c#-text-null-3array", "JoinTextArray2", "ARRAY[[['test1'::text, null::text, ' appended'::text], [' to'::text, ' another'::text, ' text:'::text]], [[' test string 2,'::text, null::text, ' is'::text], [' this'::text, ' text'::text, ' good?'::text]]]", "= 'test1 appended to another text: test string 2, is this text good?'"}, };
+        return new object[][] { new object[] { "c#-text-null-1array", "JoinTextArray1", "ARRAY['test1'::text, null::text, ' test string 2'::text, null::text]", "= 'test1 test string 2'" }, new object[] { "c#-text-null-3array", "JoinTextArray2", "ARRAY[[['test1'::text, null::text, ' appended'::text], [' to'::text, ' another'::text, ' text:'::text]], [[' test string 2,'::text, null::text, ' is'::text], [' this'::text, ' text'::text, ' good?'::text]]]", "= 'test1 appended to another text: test string 2, is this text good?'" }, };
     }
 
     [Theory]

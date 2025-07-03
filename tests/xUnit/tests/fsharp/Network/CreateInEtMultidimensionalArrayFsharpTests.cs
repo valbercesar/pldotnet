@@ -12,12 +12,12 @@ public abstract class BaseCreateInEtMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateInEtMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateInEtMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateInEtMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inet-3array", "CreateInetMultidimensionalArrayFSharp", "", "= ARRAY[[[INET '127.0.0.1/21']]]"}, };
+        return new object[][] { new object[] { "f#-inet-3array", "CreateInetMultidimensionalArrayFSharp", "", "= ARRAY[[[INET '127.0.0.1/21']]]" }, };
     }
 
     [Theory]

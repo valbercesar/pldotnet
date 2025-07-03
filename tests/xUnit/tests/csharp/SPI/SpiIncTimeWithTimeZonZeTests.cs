@@ -12,12 +12,12 @@ public abstract class BaseSpiIncTimeWithTimeZonZeTests : PlDotNetTest
 
     public BaseSpiIncTimeWithTimeZonZeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncTimeWithTimeZonZe", Arguments = new List<FunctionArgument>{new FunctionArgument("hours", "FLOAT4")}, ReturnType = "TIME WITH TIME ZONE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncTimeWithTimeZonZe", Arguments = new List<FunctionArgument> { new FunctionArgument("hours", "FLOAT4") }, ReturnType = "TIME WITH TIME ZONE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-timetz-spi", "SPIIncTimeWithTimeZonze", "1.75", "= '07:15-03:00'::TIMETZ"}, };
+        return new object[][] { new object[] { "c#-timetz-spi", "SPIIncTimeWithTimeZonze", "1.75", "= '07:15-03:00'::TIMETZ" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseIncreaseInT8RangeFsharpTests : PlDotNetTest
 
     public BaseIncreaseInT8RangeFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInT8RangeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "INT8RANGE"), new FunctionArgument("b", "INT8")}, ReturnType = "INT8RANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseInT8RangeFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "INT8RANGE"), new FunctionArgument("b", "INT8") }, ReturnType = "INT8RANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int8range", "IncreaseInt8RangeFSharp1", "'[2,6)'::INT8RANGE, 1", "= '[3,7)'::INT8RANGE"}, new object[]{"f#-int8range", "IncreaseInt8RangeFSharp2", "'[,87)'::INT8RANGE, 3", "= '(,90)'::INT8RANGE"}, new object[]{"f#-int8range", "IncreaseInt8RangeFSharp3", "'[,)'::INT8RANGE, 3", "= '(,)'::INT8RANGE"}, new object[]{"f#-int8range", "IncreaseInt8RangeFSharp8", "'(-9223372036854775808,9223372036854775804)'::INT8RANGE, 3", "= '[-9223372036854775804,9223372036854775807)'::INT8RANGE"}, new object[]{"f#-int8range", "IncreaseInt8RangeFSharp5", "'(-456,-123]'::INT8RANGE, 1", "= '[-454,-121)'::INT8RANGE"}, new object[]{"f#-int8range-null", "IncreaseInt8RangeFSharp6", "NULL::INT8RANGE, 1", "= '[-429496728,429496730)'::INT8RANGE"}, };
+        return new object[][] { new object[] { "f#-int8range", "IncreaseInt8RangeFSharp1", "'[2,6)'::INT8RANGE, 1", "= '[3,7)'::INT8RANGE" }, new object[] { "f#-int8range", "IncreaseInt8RangeFSharp2", "'[,87)'::INT8RANGE, 3", "= '(,90)'::INT8RANGE" }, new object[] { "f#-int8range", "IncreaseInt8RangeFSharp3", "'[,)'::INT8RANGE, 3", "= '(,)'::INT8RANGE" }, new object[] { "f#-int8range", "IncreaseInt8RangeFSharp8", "'(-9223372036854775808,9223372036854775804)'::INT8RANGE, 3", "= '[-9223372036854775804,9223372036854775807)'::INT8RANGE" }, new object[] { "f#-int8range", "IncreaseInt8RangeFSharp5", "'(-456,-123]'::INT8RANGE, 1", "= '[-454,-121)'::INT8RANGE" }, new object[] { "f#-int8range-null", "IncreaseInt8RangeFSharp6", "NULL::INT8RANGE, 1", "= '[-429496728,429496730)'::INT8RANGE" }, };
     }
 
     [Theory]

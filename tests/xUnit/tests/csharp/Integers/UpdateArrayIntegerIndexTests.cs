@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayIntegerIndexTests : PlDotNetTest
 
     public BaseUpdateArrayIntegerIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayIntegerIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "integer[]"), new FunctionArgument("desired", "integer"), new FunctionArgument("index", "integer[]")}, ReturnType = "integer[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayIntegerIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("integers", "integer[]"), new FunctionArgument("desired", "integer"), new FunctionArgument("index", "integer[]") }, ReturnType = "integer[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4-null-1array", "updateArrayIntegerIndex1", "ARRAY[2047483647::integer, 304325::integer, null::integer], 65464532, ARRAY[1]", "= ARRAY[2047483647::integer, 65464532::integer, null::integer]"}, new object[]{"c#-int4-null-2array", "updateArrayIntegerIndex2", "ARRAY[[2047483647::integer, 304325::integer], [null::integer, 12465464::integer]], 65464532, ARRAY[1, 0]", "= ARRAY[[2047483647::integer, 304325::integer], [65464532::integer, 12465464::integer]]"}, };
+        return new object[][] { new object[] { "c#-int4-null-1array", "updateArrayIntegerIndex1", "ARRAY[2047483647::integer, 304325::integer, null::integer], 65464532, ARRAY[1]", "= ARRAY[2047483647::integer, 65464532::integer, null::integer]" }, new object[] { "c#-int4-null-2array", "updateArrayIntegerIndex2", "ARRAY[[2047483647::integer, 304325::integer], [null::integer, 12465464::integer]], 65464532, ARRAY[1, 0]", "= ARRAY[[2047483647::integer, 304325::integer], [65464532::integer, 12465464::integer]]" }, };
     }
 
     [Theory]

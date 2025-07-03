@@ -12,12 +12,12 @@ public abstract class BaseIncreaseInT4RangesTests : PlDotNetTest
 
     public BaseIncreaseInT4RangesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInT4Ranges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INT4RANGE[]")}, ReturnType = "INT4RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseInT4Ranges", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INT4RANGE[]") }, ReturnType = "INT4RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4range-null-1array", "IncreaseInt4Ranges1", "ARRAY['[2,6)'::INT4RANGE, '(,6)'::INT4RANGE, null::INT4RANGE, '[,)'::INT4RANGE]", "= ARRAY['[3,7)'::INT4RANGE, '(,7)'::INT4RANGE, null::INT4RANGE, '[,)'::INT4RANGE]"}, };
+        return new object[][] { new object[] { "c#-int4range-null-1array", "IncreaseInt4Ranges1", "ARRAY['[2,6)'::INT4RANGE, '(,6)'::INT4RANGE, null::INT4RANGE, '[,)'::INT4RANGE]", "= ARRAY['[3,7)'::INT4RANGE, '(,7)'::INT4RANGE, null::INT4RANGE, '[,)'::INT4RANGE]" }, };
     }
 
     [Theory]

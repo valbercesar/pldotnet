@@ -12,12 +12,12 @@ public abstract class BaseReturnBooleanArrayTests : PlDotNetTest
 
     public BaseReturnBooleanArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBooleanArray", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]")}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnBooleanArray", Arguments = new List<FunctionArgument> { new FunctionArgument("booleans", "boolean[]") }, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bool-null-1array", "returnBooleanArray1", "ARRAY[true, null::boolean, false, false]", "= ARRAY[true, null::boolean, false, false]"}, new object[]{"c#-bool-null-2array-arraynull", "returnBooleanArray2", "ARRAY[[true, false], [null::boolean, null::boolean]]", "= ARRAY[[true, false], [null::boolean, null::boolean]]"}, new object[]{"c#-bool-null-3array-arraynull", "returnBooleanArray3", "ARRAY[[[true, false], [null::boolean, null::boolean]], [[true, null::boolean], [true, null::boolean]]]", "= ARRAY[[[true, false], [null::boolean, null::boolean]], [[true, null::boolean], [true, null::boolean]]]"}, };
+        return new object[][] { new object[] { "c#-bool-null-1array", "returnBooleanArray1", "ARRAY[true, null::boolean, false, false]", "= ARRAY[true, null::boolean, false, false]" }, new object[] { "c#-bool-null-2array-arraynull", "returnBooleanArray2", "ARRAY[[true, false], [null::boolean, null::boolean]]", "= ARRAY[[true, false], [null::boolean, null::boolean]]" }, new object[] { "c#-bool-null-3array-arraynull", "returnBooleanArray3", "ARRAY[[[true, false], [null::boolean, null::boolean]], [[true, null::boolean], [true, null::boolean]]]", "= ARRAY[[[true, false], [null::boolean, null::boolean]], [[true, null::boolean], [true, null::boolean]]]" }, };
     }
 
     [Theory]

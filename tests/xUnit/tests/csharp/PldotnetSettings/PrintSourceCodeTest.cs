@@ -19,7 +19,7 @@ public class PrintSourceCodeTest : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "printSourceCode",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "boolean",
             Body = FunctionBody,
             Language = LanguageType.PlcSharp,

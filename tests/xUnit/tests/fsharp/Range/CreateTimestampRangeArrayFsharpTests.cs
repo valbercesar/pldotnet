@@ -12,12 +12,12 @@ public abstract class BaseCreateTimestampRangeArrayFsharpTests : PlDotNetTest
 
     public BaseCreateTimestampRangeArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampRangeArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTimestampRangeArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-tsrange-3array", "CreateTimestampRangeArrayFSharp1", "", "= ARRAY[[['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE]]]"}, };
+        return new object[][] { new object[] { "f#-tsrange-3array", "CreateTimestampRangeArrayFSharp1", "", "= ARRAY[[['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE]]]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseRecordWithNullTestsPiTests : PlDotNetTest
 
     public BaseRecordWithNullTestsPiTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "RecordWithNullTestsPi", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TEXT"), new FunctionArgument("b", "FLOAT8"), new FunctionArgument("c", "MACADDR")}, ReturnType = "BOOL", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "RecordWithNullTestsPi", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "TEXT"), new FunctionArgument("b", "FLOAT8"), new FunctionArgument("c", "MACADDR") }, ReturnType = "BOOL", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-record-spi-null", "RecordWithNullTestSPI3", "'hello world!', '3.14159265358'::FLOAT8, 'f6:30:00:00:00:00'::MACADDR", "IS FALSE"}, };
+        return new object[][] { new object[] { "c#-record-spi-null", "RecordWithNullTestSPI3", "'hello world!', '3.14159265358'::FLOAT8, 'f6:30:00:00:00:00'::MACADDR", "IS FALSE" }, };
     }
 
     [Theory]

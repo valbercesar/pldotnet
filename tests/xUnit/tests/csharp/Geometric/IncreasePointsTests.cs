@@ -12,12 +12,12 @@ public abstract class BaseIncreasePointsTests : PlDotNetTest
 
     public BaseIncreasePointsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePoints", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "point[]")}, ReturnType = "point[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreasePoints", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "point[]") }, ReturnType = "point[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-point-null-1array", "IncreasePoints1", "ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), null::point, POINT(40.5,21.3)]", "= CAST(ARRAY[POINT(11.0,21.0), POINT(31.0,56.0), null::point, POINT(41.5,22.3)] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-point-null-1array", "IncreasePoints1", "ARRAY[POINT(10.0,20.0), POINT(30.0,55.0), null::point, POINT(40.5,21.3)]", "= CAST(ARRAY[POINT(11.0,21.0), POINT(31.0,56.0), null::point, POINT(41.5,22.3)] AS TEXT)" }, };
     }
 
     [Theory]

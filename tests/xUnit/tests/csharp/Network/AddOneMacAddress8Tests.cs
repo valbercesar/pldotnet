@@ -12,12 +12,12 @@ public abstract class BaseAddOneMacAddress8Tests : PlDotNetTest
 
     public BaseAddOneMacAddress8Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddOneMacAddress8", Arguments = new List<FunctionArgument>{new FunctionArgument("my_address", "MACADDR8")}, ReturnType = "MACADDR8", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddOneMacAddress8", Arguments = new List<FunctionArgument> { new FunctionArgument("my_address", "MACADDR8") }, ReturnType = "MACADDR8", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr8", "addOneMacAddress8", "MACADDR8 '08:00:2b:01:02:03:04:05'", "= MACADDR8 '08:00:2b:01:02:03:04:06'"}, };
+        return new object[][] { new object[] { "c#-macaddr8", "addOneMacAddress8", "MACADDR8 '08:00:2b:01:02:03:04:05'", "= MACADDR8 '08:00:2b:01:02:03:04:06'" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseSum2BigInTTests : PlDotNetTest
 
     public BaseSum2BigInTTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2BigInT", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "bigint"), new FunctionArgument("b", "bigint")}, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "Sum2BigInT", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "bigint"), new FunctionArgument("b", "bigint") }, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8", "sum2BigInt1", "9223372036854775707, 100", "= bigint '9223372036854775807'"}, new object[]{"c#-int8-null", "sum2BigInt2", "9223372036854775707::BIGINT, NULL::BIGINT", "= bigint '9223372036854775707'"}, };
+        return new object[][] { new object[] { "c#-int8", "sum2BigInt1", "9223372036854775707, 100", "= bigint '9223372036854775807'" }, new object[] { "c#-int8-null", "sum2BigInt2", "9223372036854775707::BIGINT, NULL::BIGINT", "= bigint '9223372036854775707'" }, };
     }
 
     [Theory]

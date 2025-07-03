@@ -12,12 +12,12 @@ public abstract class BaseSPisumIntegers2Tests : PlDotNetTest
 
     public BaseSPisumIntegers2Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SPisumIntegers2", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer"), new FunctionArgument("c", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SPisumIntegers2", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer"), new FunctionArgument("c", "integer") }, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int-spi-multiquery", "SPISumIntegers2", "1, 2, 3", "= 18"}, new object[]{"c#-int-spi-multiquery", "SPISumIntegers2", "4, 0, 5", "= 27"}, };
+        return new object[][] { new object[] { "c#-int-spi-multiquery", "SPISumIntegers2", "1, 2, 3", "= 18" }, new object[] { "c#-int-spi-multiquery", "SPISumIntegers2", "4, 0, 5", "= 27" }, };
     }
 
     [Theory]

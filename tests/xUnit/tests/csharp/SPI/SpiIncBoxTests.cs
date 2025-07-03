@@ -12,12 +12,12 @@ public abstract class BaseSpiIncBoxTests : PlDotNetTest
 
     public BaseSpiIncBoxTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncBox", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "FLOAT8")}, ReturnType = "BOX", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncBox", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "FLOAT8") }, ReturnType = "BOX", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-box-spi", "SPIIncBox", "'0.2575'::FLOAT8", "= '((1.2575,1.2575),(2.2575,2.2575))'::BOX"}, };
+        return new object[][] { new object[] { "c#-box-spi", "SPIIncBox", "'0.2575'::FLOAT8", "= '((1.2575,1.2575),(2.2575,2.2575))'::BOX" }, };
     }
 
     [Theory]

@@ -25,7 +25,7 @@ public abstract class BaseBooleanAndDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bool-dll", "BooleanAndDLL1", "true, true", "is true"}, new object[]{"c#-bool-null-dll", "BooleanAndDLL2", "NULL::BOOLEAN, true", "is false"}, };
+        return new object[][] { new object[] { "c#-bool-dll", "BooleanAndDLL1", "true, true", "is true" }, new object[] { "c#-bool-null-dll", "BooleanAndDLL2", "NULL::BOOLEAN, true", "is false" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseCreateBoxMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateBoxMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBoxMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateBoxMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-box-null-3array-arraynull", "CreateBoxMultidimensionalArray1", "", "= CAST(ARRAY[[[BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), BOX(POINT(25.4,-54.2),POINT(78.3,122.31))], [null::BOX, null::BOX]], [[BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), null::BOX], [BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), BOX(POINT(25.4,-54.2),POINT(78.3,122.31))]]] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-box-null-3array-arraynull", "CreateBoxMultidimensionalArray1", "", "= CAST(ARRAY[[[BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), BOX(POINT(25.4,-54.2),POINT(78.3,122.31))], [null::BOX, null::BOX]], [[BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), null::BOX], [BOX(POINT(25.4,-54.2),POINT(78.3,122.31)), BOX(POINT(25.4,-54.2),POINT(78.3,122.31))]]] AS TEXT)" }, };
     }
 
     [Theory]

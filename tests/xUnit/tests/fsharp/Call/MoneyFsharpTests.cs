@@ -12,12 +12,12 @@ public abstract class BaseMoneyFSharpTests : PlDotNetTest
 
     public BaseMoneyFSharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "testMoneyFSharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "MONEY")}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "testMoneyFSharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "MONEY") }, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-money", "testMoneyFSharp1", "'32500.0'::MONEY", " = '32500.0'::MONEY"}, new object[]{"f#-money", "testMoneyFSharp1", "NULL::MONEY", " = 0::MONEY"}, };
+        return new object[][] { new object[] { "f#-money", "testMoneyFSharp1", "'32500.0'::MONEY", " = '32500.0'::MONEY" }, new object[] { "f#-money", "testMoneyFSharp1", "NULL::MONEY", " = 0::MONEY" }, };
     }
 
     [Theory]

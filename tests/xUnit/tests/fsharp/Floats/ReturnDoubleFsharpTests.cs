@@ -12,12 +12,12 @@ public abstract class BaseReturnDoubleFsharpTests : PlDotNetTest
 
     public BaseReturnDoubleFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDoubleFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnDoubleFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-float8", "returnDoubleFSharp", "", "= float8 '11.0050000000005'"}, };
+        return new object[][] { new object[] { "f#-float8", "returnDoubleFSharp", "", "= float8 '11.0050000000005'" }, };
     }
 
     [Theory]

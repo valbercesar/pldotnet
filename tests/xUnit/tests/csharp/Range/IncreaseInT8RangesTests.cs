@@ -12,12 +12,12 @@ public abstract class BaseIncreaseInT8RangesTests : PlDotNetTest
 
     public BaseIncreaseInT8RangesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInT8Ranges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INT8RANGE[]")}, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseInT8Ranges", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INT8RANGE[]") }, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8range-null-1array", "IncreaseInt8Ranges1", "ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]", "= ARRAY['[3,7)'::INT8RANGE, '(,7)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]"}, };
+        return new object[][] { new object[] { "c#-int8range-null-1array", "IncreaseInt8Ranges1", "ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]", "= ARRAY['[3,7)'::INT8RANGE, '(,7)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]" }, };
     }
 
     [Theory]

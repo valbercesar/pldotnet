@@ -12,12 +12,12 @@ public abstract class BaseCreateBooleanMultidimensionalArrayFsharpTests : PlDotN
 
     public BaseCreateBooleanMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBooleanMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateBooleanMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bool-null-3array-arraynull", "CreateBooleanMultidimensionalArrayFSharp", "", "= ARRAY[[true, false, false], [false, true, false], [false, false, true]]"}, };
+        return new object[][] { new object[] { "f#-bool-null-3array-arraynull", "CreateBooleanMultidimensionalArrayFSharp", "", "= ARRAY[[true, false, false], [false, true, false], [false, false, true]]" }, };
     }
 
     [Theory]

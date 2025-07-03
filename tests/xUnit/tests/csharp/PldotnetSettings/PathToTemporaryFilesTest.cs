@@ -19,7 +19,7 @@ public class PathToTemporaryFilesTest : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "pathToTemporaryFiles",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "text",
             Body = FunctionBody,
             Language = LanguageType.PlcSharp,

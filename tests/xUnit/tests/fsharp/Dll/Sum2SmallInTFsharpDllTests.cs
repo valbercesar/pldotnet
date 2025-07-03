@@ -25,7 +25,7 @@ public abstract class BaseSum2SmallInTFsharpDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int2-dll", "sum2SmallIntFSharpDLL1", "'25'::INT2, '250'::INT2", "= '275'::INT2"}, new object[]{"f#-int2-dll", "sum2SmallIntFSharpDLL2", "'1997'::INT2, '25'::INT2", "= '2022'::INT2"}, };
+        return new object[][] { new object[] { "f#-int2-dll", "sum2SmallIntFSharpDLL1", "'25'::INT2, '250'::INT2", "= '275'::INT2" }, new object[] { "f#-int2-dll", "sum2SmallIntFSharpDLL2", "'1997'::INT2, '25'::INT2", "= '2022'::INT2" }, };
     }
 
     [Theory]

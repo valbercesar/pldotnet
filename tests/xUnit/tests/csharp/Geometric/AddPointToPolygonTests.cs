@@ -12,12 +12,12 @@ public abstract class BaseAddPointToPolygonTests : PlDotNetTest
 
     public BaseAddPointToPolygonTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddPointToPolygon", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_polygon", "POLYGON"), new FunctionArgument("new_point", "POINT")}, ReturnType = "POLYGON", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddPointToPolygon", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_polygon", "POLYGON"), new FunctionArgument("new_point", "POINT") }, ReturnType = "POLYGON", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-polygon", "addPointToPolygon1", "POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0))', POINT '(6.5,8.8)'", "~= POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0),(6.5,8.8))'"}, new object[]{"c#-polygon-null", "addPointToPolygon2", "NULL::POLYGON, NULL::POINT", "~= POLYGON '((0, 0),(100,100),(200,200),(0,0))'"}, };
+        return new object[][] { new object[] { "c#-polygon", "addPointToPolygon1", "POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0))', POINT '(6.5,8.8)'", "~= POLYGON '((1.5,2.75),(3.0,4.75),(5.0,5.0),(6.5,8.8))'" }, new object[] { "c#-polygon-null", "addPointToPolygon2", "NULL::POLYGON, NULL::POINT", "~= POLYGON '((0, 0),(100,100),(200,200),(0,0))'" }, };
     }
 
     [Theory]

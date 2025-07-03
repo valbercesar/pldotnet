@@ -12,12 +12,12 @@ public abstract class BaseCreateUUIdMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateUUIdMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateUUIdMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "UUID[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateUUIdMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "UUID[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-uuid-null-3array-arraynull", "CreateUUIDMultidimensionalArray1", "", "= ARRAY[[['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID], [null::UUID, null::UUID]], [['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, null::UUID], ['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID]]]"}, };
+        return new object[][] { new object[] { "c#-uuid-null-3array-arraynull", "CreateUUIDMultidimensionalArray1", "", "= ARRAY[[['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID], [null::UUID, null::UUID]], [['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, null::UUID], ['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID]]]" }, };
     }
 
     [Theory]

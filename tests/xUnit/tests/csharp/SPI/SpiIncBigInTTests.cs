@@ -12,12 +12,12 @@ public abstract class BaseSpiIncBigInTTests : PlDotNetTest
 
     public BaseSpiIncBigInTTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncBigInT", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BIGINT")}, ReturnType = "BIGINT", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncBigInT", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BIGINT") }, ReturnType = "BIGINT", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8-spi", "SPIIncBigInt", "214748364700", "= 236223201170"}, };
+        return new object[][] { new object[] { "c#-int8-spi", "SPIIncBigInt", "214748364700", "= 236223201170" }, };
     }
 
     [Theory]

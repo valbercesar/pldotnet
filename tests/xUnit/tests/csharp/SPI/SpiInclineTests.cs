@@ -12,12 +12,12 @@ public abstract class BaseSpiInclineTests : PlDotNetTest
 
     public BaseSpiInclineTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncline", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "LINE")}, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncline", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "LINE") }, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-line-spi", "SPIIncLine", "'{3.0,2.0,1.0}'::LINE", "= '{4.0,4.0,4.0}'::LINE"}, };
+        return new object[][] { new object[] { "c#-line-spi", "SPIIncLine", "'{3.0,2.0,1.0}'::LINE", "= '{4.0,4.0,4.0}'::LINE" }, };
     }
 
     [Theory]

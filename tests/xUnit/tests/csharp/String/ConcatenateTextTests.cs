@@ -12,12 +12,12 @@ public abstract class BaseConcatenateTextTests : PlDotNetTest
 
     public BaseConcatenateTextTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateText", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "text")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ConcatenateText", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "text"), new FunctionArgument("b", "text") }, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-text", "concatenateText1", "'red', 'blue'", "= 'red blue'"}, new object[]{"c#-text-null", "concatenateText2", "NULL::TEXT, 'blue'", "= ' blue'"}, new object[]{"c#-text", "concatenateText3", "'КРАСНЫЙ', 'СИНИЙ'", "= 'КРАСНЫЙ СИНИЙ'::TEXT"}, new object[]{"c#-text", "concatenateText4", "'赤', '青い'", "= '赤 青い'::TEXT"}, new object[]{"c#-text", "concatenateText5", "'紅色的', '藍色的'", "= '紅色的 藍色的'::TEXT"}, new object[]{"c#-text", "concatenateText6", "'🐂', '🥰'", "= '🐂 🥰'::TEXT"}, };
+        return new object[][] { new object[] { "c#-text", "concatenateText1", "'red', 'blue'", "= 'red blue'" }, new object[] { "c#-text-null", "concatenateText2", "NULL::TEXT, 'blue'", "= ' blue'" }, new object[] { "c#-text", "concatenateText3", "'КРАСНЫЙ', 'СИНИЙ'", "= 'КРАСНЫЙ СИНИЙ'::TEXT" }, new object[] { "c#-text", "concatenateText4", "'赤', '青い'", "= '赤 青い'::TEXT" }, new object[] { "c#-text", "concatenateText5", "'紅色的', '藍色的'", "= '紅色的 藍色的'::TEXT" }, new object[] { "c#-text", "concatenateText6", "'🐂', '🥰'", "= '🐂 🥰'::TEXT" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayNetMaskIndexTests : PlDotNetTest
 
     public BaseUpdateArrayNetMaskIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayNetMaskIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INET[]"), new FunctionArgument("desired", "INET"), new FunctionArgument("index", "integer[]")}, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayNetMaskIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INET[]"), new FunctionArgument("desired", "INET"), new FunctionArgument("index", "integer[]") }, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-inet-1array", "updateArrayNetMaskIndex1", "ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', null::inet, INET '170.168.0.1/24'], INET '192.168.0.120/24', ARRAY[2]", "= ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', INET '192.168.0.120/24', INET '170.168.0.1/24']"}, new object[]{"c#-inet-2array", "updateArrayNetMaskIndex2", "ARRAY[[INET '192.168.0.1/24', INET '192.170.0.1/24'], [null::inet, INET '170.168.0.1/24']], INET '192.168.0.120/24', ARRAY[1, 0]", "= ARRAY[[INET '192.168.0.1/24', INET '192.170.0.1/24'], [INET '192.168.0.120/24', INET '170.168.0.1/24']]"}, new object[]{"c#-inet-null-2array-arraynull", "updateArrayNetMaskIndex3", "ARRAY[[null::INET, null::INET], [null::inet, INET '170.168.0.1/24']], INET '192.168.0.120/24', ARRAY[1, 0]", "= ARRAY[[null::INET, null::INET], [INET '192.168.0.120/24', INET '170.168.0.1/24']]"}, };
+        return new object[][] { new object[] { "c#-inet-1array", "updateArrayNetMaskIndex1", "ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', null::inet, INET '170.168.0.1/24'], INET '192.168.0.120/24', ARRAY[2]", "= ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', INET '192.168.0.120/24', INET '170.168.0.1/24']" }, new object[] { "c#-inet-2array", "updateArrayNetMaskIndex2", "ARRAY[[INET '192.168.0.1/24', INET '192.170.0.1/24'], [null::inet, INET '170.168.0.1/24']], INET '192.168.0.120/24', ARRAY[1, 0]", "= ARRAY[[INET '192.168.0.1/24', INET '192.170.0.1/24'], [INET '192.168.0.120/24', INET '170.168.0.1/24']]" }, new object[] { "c#-inet-null-2array-arraynull", "updateArrayNetMaskIndex3", "ARRAY[[null::INET, null::INET], [null::inet, INET '170.168.0.1/24']], INET '192.168.0.120/24', ARRAY[1, 0]", "= ARRAY[[null::INET, null::INET], [INET '192.168.0.120/24', INET '170.168.0.1/24']]" }, };
     }
 
     [Theory]

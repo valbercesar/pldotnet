@@ -12,12 +12,12 @@ public abstract class BaseSpiConcatenateByTeaTests : PlDotNetTest
 
     public BaseSpiConcatenateByTeaTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiConcatenateByTea", Arguments = new List<FunctionArgument>{new FunctionArgument("b", "BYTEA")}, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiConcatenateByTea", Arguments = new List<FunctionArgument> { new FunctionArgument("b", "BYTEA") }, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bytea-spi", "SPIConcatenateBytea", "'You are welcome!'::BYTEA", "= 'Thank you! You are welcome!'::BYTEA"}, };
+        return new object[][] { new object[] { "c#-bytea-spi", "SPIConcatenateBytea", "'You are welcome!'::BYTEA", "= 'Thank you! You are welcome!'::BYTEA" }, };
     }
 
     [Theory]

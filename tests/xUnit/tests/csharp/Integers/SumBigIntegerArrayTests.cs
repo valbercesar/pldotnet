@@ -12,12 +12,12 @@ public abstract class BaseSumBigIntegerArrayTests : PlDotNetTest
 
     public BaseSumBigIntegerArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumBigIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("big_integers", "bigint[]")}, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SumBigIntegerArray", Arguments = new List<FunctionArgument> { new FunctionArgument("big_integers", "bigint[]") }, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8-null-1array", "sumBigIntegerArray1", "ARRAY[223372036854775707::bigint, null::bigint, 23372036854775707::bigint, 4356::bigint]", "= '246744073709555770'"}, new object[]{"c#-int8-null-2array-arraynull", "sumBigIntegerArray2", "ARRAY[[null::bigint, null::bigint], [92332036854775707::bigint, 23372036854775707::bigint]]", "= '115704073709551414'"}, new object[]{"c#-int8-null-3array-arraynull", "sumBigIntegerArray3", "ARRAY[[[null::bigint, null::bigint], [null::bigint, null::bigint]], [[92232036854775707::bigint, 2337203684775707::bigint], [706524::bigint, 756452434247987::bigint]]]", "= '95325692974505925'"}, };
+        return new object[][] { new object[] { "c#-int8-null-1array", "sumBigIntegerArray1", "ARRAY[223372036854775707::bigint, null::bigint, 23372036854775707::bigint, 4356::bigint]", "= '246744073709555770'" }, new object[] { "c#-int8-null-2array-arraynull", "sumBigIntegerArray2", "ARRAY[[null::bigint, null::bigint], [92332036854775707::bigint, 23372036854775707::bigint]]", "= '115704073709551414'" }, new object[] { "c#-int8-null-3array-arraynull", "sumBigIntegerArray3", "ARRAY[[[null::bigint, null::bigint], [null::bigint, null::bigint]], [[92232036854775707::bigint, 2337203684775707::bigint], [706524::bigint, 756452434247987::bigint]]]", "= '95325692974505925'" }, };
     }
 
     [Theory]

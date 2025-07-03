@@ -19,7 +19,7 @@ settings.PrintSourceCode
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "printSourceCodeFSharp",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "boolean",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,

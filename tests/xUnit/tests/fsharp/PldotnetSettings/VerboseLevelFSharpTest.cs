@@ -19,7 +19,7 @@ settings.VerboseLevel
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "verboseLevelFSharp",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "int",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,

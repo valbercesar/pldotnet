@@ -12,12 +12,12 @@ public abstract class BaseCreatePathMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreatePathMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreatePathMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "PATH[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreatePathMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "PATH[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-path-null-3array-arraynull", "CreatePathMultidimensionalArray1", "", "= CAST(ARRAY[[['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH], [null::PATH, null::PATH]], [['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]]] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-path-null-3array-arraynull", "CreatePathMultidimensionalArray1", "", "= CAST(ARRAY[[['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH], [null::PATH, null::PATH]], [['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]]] AS TEXT)" }, };
     }
 
     [Theory]

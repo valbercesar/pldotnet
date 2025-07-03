@@ -11,7 +11,7 @@ public abstract class BaseDoMessageFsharpTests : PlDotNetTest
 
     public BaseDoMessageFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.DoBlock, };
+        FunctionInfo = new SqlFunctionInfo { TestType = SqlTestType.DoBlock, };
     }
 }
 

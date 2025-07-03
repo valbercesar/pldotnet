@@ -12,12 +12,12 @@ public abstract class BaseIncreaseMinutesTimeArrayTests : PlDotNetTest
 
     public BaseIncreaseMinutesTimeArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMinutesTimeArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIME[]"), new FunctionArgument("min_to_add", "INT")}, ReturnType = "TIME[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseMinutesTimeArray", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "TIME[]"), new FunctionArgument("min_to_add", "INT") }, ReturnType = "TIME[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-time-1array", "IncreaseMinutesTimeArray1", "ARRAY[TIME '05:30 PM', TIME '06:30 PM', null::time, TIME '09:30 AM'], 15", "= ARRAY[TIME '05:45 PM', TIME '06:45 PM', null::time, TIME '09:45 AM']"}, new object[]{"c#-time-2array", "IncreaseMinutesTimeArray", "ARRAY[[TIME '05:30 PM', TIME '06:30 PM'], [null::time, TIME '09:30 AM']], 15", "= ARRAY[TIME '05:45 PM', TIME '06:45 PM', null::time, TIME '09:45 AM']"}, };
+        return new object[][] { new object[] { "c#-time-1array", "IncreaseMinutesTimeArray1", "ARRAY[TIME '05:30 PM', TIME '06:30 PM', null::time, TIME '09:30 AM'], 15", "= ARRAY[TIME '05:45 PM', TIME '06:45 PM', null::time, TIME '09:45 AM']" }, new object[] { "c#-time-2array", "IncreaseMinutesTimeArray", "ARRAY[[TIME '05:30 PM', TIME '06:30 PM'], [null::time, TIME '09:30 AM']], 15", "= ARRAY[TIME '05:45 PM', TIME '06:45 PM', null::time, TIME '09:45 AM']" }, };
     }
 
     [Theory]

@@ -25,7 +25,7 @@ public abstract class BaseMult2InTFsharpDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int4-dll", "mult2IntFSharpDLL1", "'25'::INT2, '30'::INT2", "= '750'::INT4"}, new object[]{"f#-int4-null-dll", "mult2IntFSharpDLL2", "'25'::INT2, NULL::INT2", "= '25'::INT4"}, new object[]{"f#-int4-null-dll", "mult2IntFSharpDLL3", "NULL::INT2, '30'::INT2", "= '30'::INT4"}, new object[]{"f#-int4-null-dll", "mult2IntFSharpDLL4", "NULL::INT2, NULL::INT2", "IS NULL"}, };
+        return new object[][] { new object[] { "f#-int4-dll", "mult2IntFSharpDLL1", "'25'::INT2, '30'::INT2", "= '750'::INT4" }, new object[] { "f#-int4-null-dll", "mult2IntFSharpDLL2", "'25'::INT2, NULL::INT2", "= '25'::INT4" }, new object[] { "f#-int4-null-dll", "mult2IntFSharpDLL3", "NULL::INT2, '30'::INT2", "= '30'::INT4" }, new object[] { "f#-int4-null-dll", "mult2IntFSharpDLL4", "NULL::INT2, NULL::INT2", "IS NULL" }, };
     }
 
     [Theory]

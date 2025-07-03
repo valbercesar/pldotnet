@@ -12,12 +12,12 @@ public abstract class BaseConcatenateByTeaTests : PlDotNetTest
 
     public BaseConcatenateByTeaTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateByTea", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "TEXT")}, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ConcatenateByTea", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "TEXT") }, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bytea", "concatenateBytea", "'\\x427269636b2041626f6465206973206e69636521'::BYTEA, ' Thank you very much...'::TEXT", "= '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA"}, };
+        return new object[][] { new object[] { "c#-bytea", "concatenateBytea", "'\\x427269636b2041626f6465206973206e69636521'::BYTEA, ' Thank you very much...'::TEXT", "= '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA" }, };
     }
 
     [Theory]

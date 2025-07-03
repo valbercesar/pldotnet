@@ -12,12 +12,12 @@ public abstract class BaseSpiConcatenateBpCharTests : PlDotNetTest
 
     public BaseSpiConcatenateBpCharTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiConcatenateBpChar", Arguments = new List<FunctionArgument>{new FunctionArgument("b", "BPCHAR")}, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiConcatenateBpChar", Arguments = new List<FunctionArgument> { new FunctionArgument("b", "BPCHAR") }, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bpchar-spi", "SPIConcatenateBpchar", "'my friend...'::BPCHAR", "= 'good bye  my friend...'::TEXT"}, };
+        return new object[][] { new object[] { "c#-bpchar-spi", "SPIConcatenateBpchar", "'my friend...'::BPCHAR", "= 'good bye  my friend...'::TEXT" }, };
     }
 
     [Theory]

@@ -19,7 +19,7 @@ settings.AlwaysNullable
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "alwaysNullableFSharp",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "boolean",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,

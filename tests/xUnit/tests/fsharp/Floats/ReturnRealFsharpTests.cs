@@ -12,12 +12,12 @@ public abstract class BaseReturnRealFsharpTests : PlDotNetTest
 
     public BaseReturnRealFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnRealFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnRealFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-float4", "returnRealFSharp", "", "= real '1.50055'"}, };
+        return new object[][] { new object[] { "f#-float4", "returnRealFSharp", "", "= real '1.50055'" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseCreateLineTests : PlDotNetTest
 
     public BaseCreateLineTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLine", Arguments = new List<FunctionArgument>{new FunctionArgument("a double", "precision"), new FunctionArgument("b double", "precision"), new FunctionArgument("c double", "precision")}, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateLine", Arguments = new List<FunctionArgument> { new FunctionArgument("a double", "precision"), new FunctionArgument("b double", "precision"), new FunctionArgument("c double", "precision") }, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-line", "createLine", "1.50,-2.750,3.25", "= LINE '{1.50,-2.750,3.25}'"}, };
+        return new object[][] { new object[] { "c#-line", "createLine", "1.50,-2.750,3.25", "= LINE '{1.50,-2.750,3.25}'" }, };
     }
 
     [Theory]

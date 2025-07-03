@@ -12,12 +12,12 @@ public abstract class BaseMultiplyTextTests : PlDotNetTest
 
     public BaseMultiplyTextTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyText", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "text"), new FunctionArgument("b", "int")}, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MultiplyText", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "text"), new FunctionArgument("b", "int") }, ReturnType = "text", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-text", "multiplyText", "'dog ', 3", "= 'dog dog dog '"}, };
+        return new object[][] { new object[] { "c#-text", "multiplyText", "'dog ', 3", "= 'dog dog dog '" }, };
     }
 
     [Theory]

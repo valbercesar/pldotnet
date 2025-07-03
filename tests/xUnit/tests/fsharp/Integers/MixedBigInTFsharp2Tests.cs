@@ -12,12 +12,12 @@ public abstract class BaseMixedBigInTFsharp2Tests : PlDotNetTest
 
     public BaseMixedBigInTFsharp2Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MixedBigInTFsharp2", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "int2"), new FunctionArgument("b", "int4"), new FunctionArgument("c", "int8")}, ReturnType = "int8", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MixedBigInTFsharp2", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "int2"), new FunctionArgument("b", "int4"), new FunctionArgument("c", "int8") }, ReturnType = "int8", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int8", "mixedBigIntFSharp2", "'32767'::int2,  '550'::int4, '200'::int8", "= '3604370000'::int8"}, new object[]{"f#-int8", "mixedBigIntFSharp2", "'32767'::int2,  '5500'::int4, '500'::int8", "= int8 '90109250000'"}, };
+        return new object[][] { new object[] { "f#-int8", "mixedBigIntFSharp2", "'32767'::int2,  '550'::int4, '200'::int8", "= '3604370000'::int8" }, new object[] { "f#-int8", "mixedBigIntFSharp2", "'32767'::int2,  '5500'::int4, '500'::int8", "= int8 '90109250000'" }, };
     }
 
     [Theory]

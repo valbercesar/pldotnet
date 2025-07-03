@@ -12,12 +12,12 @@ public abstract class BaseCreateBitMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateBitMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBitMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateBitMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bit-null-3array-arraynull", "CreateBitMultidimensionalArray1", "", "= ARRAY[[['10101100'::BIT(8), '10101100'::BIT(8)], [null::BIT(8), null::BIT(8)]], [['10101100'::BIT(8), null::BIT(8)], ['10101100'::BIT(8), '10101100'::BIT(8)]]]"}, };
+        return new object[][] { new object[] { "c#-bit-null-3array-arraynull", "CreateBitMultidimensionalArray1", "", "= ARRAY[[['10101100'::BIT(8), '10101100'::BIT(8)], [null::BIT(8), null::BIT(8)]], [['10101100'::BIT(8), null::BIT(8)], ['10101100'::BIT(8), '10101100'::BIT(8)]]]" }, };
     }
 
     [Theory]

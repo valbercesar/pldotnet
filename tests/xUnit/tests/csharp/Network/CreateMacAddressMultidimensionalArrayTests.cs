@@ -12,12 +12,12 @@ public abstract class BaseCreateMacAddressMultidimensionalArrayTests : PlDotNetT
 
     public BaseCreateMacAddressMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateMacAddressMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateMacAddressMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr-3array", "CreateMacAddressMultidimensionalArray", "", "= ARRAY[[[MACADDR 'ab-01-2b-31-41-fa', MACADDR 'ab-01-2b-31-41-fa'], [null::MACADDR, null::MACADDR]], [[MACADDR 'ab-01-2b-31-41-fa', null::MACADDR], [MACADDR 'ab-01-2b-31-41-fa', MACADDR 'ab-01-2b-31-41-fa']]]"}, };
+        return new object[][] { new object[] { "c#-macaddr-3array", "CreateMacAddressMultidimensionalArray", "", "= ARRAY[[[MACADDR 'ab-01-2b-31-41-fa', MACADDR 'ab-01-2b-31-41-fa'], [null::MACADDR, null::MACADDR]], [[MACADDR 'ab-01-2b-31-41-fa', null::MACADDR], [MACADDR 'ab-01-2b-31-41-fa', MACADDR 'ab-01-2b-31-41-fa']]]" }, };
     }
 
     [Theory]

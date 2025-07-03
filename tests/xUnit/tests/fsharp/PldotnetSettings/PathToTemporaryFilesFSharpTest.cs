@@ -19,7 +19,7 @@ settings.PathToTemporaryFiles
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "pathToTemporaryFilesFSharp",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "text",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,

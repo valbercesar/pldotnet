@@ -12,12 +12,12 @@ public abstract class BaseSpiIncDoubleTests : PlDotNetTest
 
     public BaseSpiIncDoubleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncDouble", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "FLOAT8")}, ReturnType = "FLOAT8", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncDouble", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "FLOAT8") }, ReturnType = "FLOAT8", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float8-spi", "SPIIncDouble", "'0.0125215699789'::FLOAT8", "= ' 10.214641792002102'::FLOAT4"}, };
+        return new object[][] { new object[] { "c#-float8-spi", "SPIIncDouble", "'0.0125215699789'::FLOAT8", "= ' 10.214641792002102'::FLOAT4" }, };
     }
 
     [Theory]

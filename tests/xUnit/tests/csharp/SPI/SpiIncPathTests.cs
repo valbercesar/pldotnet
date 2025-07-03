@@ -12,12 +12,12 @@ public abstract class BaseSpiIncPathTests : PlDotNetTest
 
     public BaseSpiIncPathTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncPath", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "POINT")}, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncPath", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "POINT") }, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-path-spi", "SPIIncPath", "'(3.1415,6.2830)'::POINT", "= '( (1.0,1.0), (2.0,1.0), (2.0,2.0), (2.0,1.0), (3.1415,6.2830) )'::PATH"}, };
+        return new object[][] { new object[] { "c#-path-spi", "SPIIncPath", "'(3.1415,6.2830)'::POINT", "= '( (1.0,1.0), (2.0,1.0), (2.0,2.0), (2.0,1.0), (3.1415,6.2830) )'::PATH" }, };
     }
 
     [Theory]

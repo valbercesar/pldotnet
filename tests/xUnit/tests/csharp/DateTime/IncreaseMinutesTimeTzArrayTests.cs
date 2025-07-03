@@ -12,12 +12,12 @@ public abstract class BaseIncreaseMinutesTimeTzArrayTests : PlDotNetTest
 
     public BaseIncreaseMinutesTimeTzArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMinutesTimeTzArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIMETZ[]"), new FunctionArgument("min_to_add", "INT")}, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseMinutesTimeTzArray", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "TIMETZ[]"), new FunctionArgument("min_to_add", "INT") }, ReturnType = "TIMETZ[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-timetz-1array", "IncreaseMinutesTimetzArray1", "ARRAY[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00', null::timetz, TIMETZ '22:30-03:00'], 15", "= ARRAY[TIMETZ '05:45-03:00', TIMETZ '06:45-03:00', null::timetz, TIMETZ '22:45-03:00']"}, new object[]{"c#-timetz-2array", "IncreaseMinutesTimetzArray2", "ARRAY[[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00'], [null::timetz, TIMETZ '22:30-03:00']], 15", "= ARRAY[TIMETZ '05:45-03:00', TIMETZ '06:45-03:00', null::timetz, TIMETZ '22:45-03:00']"}, };
+        return new object[][] { new object[] { "c#-timetz-1array", "IncreaseMinutesTimetzArray1", "ARRAY[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00', null::timetz, TIMETZ '22:30-03:00'], 15", "= ARRAY[TIMETZ '05:45-03:00', TIMETZ '06:45-03:00', null::timetz, TIMETZ '22:45-03:00']" }, new object[] { "c#-timetz-2array", "IncreaseMinutesTimetzArray2", "ARRAY[[TIMETZ '05:30-03:00', TIMETZ '06:30-03:00'], [null::timetz, TIMETZ '22:30-03:00']], 15", "= ARRAY[TIMETZ '05:45-03:00', TIMETZ '06:45-03:00', null::timetz, TIMETZ '22:45-03:00']" }, };
     }
 
     [Theory]

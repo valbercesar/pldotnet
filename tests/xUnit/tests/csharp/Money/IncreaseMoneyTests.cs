@@ -12,12 +12,12 @@ public abstract class BaseIncreaseMoneyTests : PlDotNetTest
 
     public BaseIncreaseMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMoney", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MONEY[]")}, ReturnType = "MONEY[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseMoney", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "MONEY[]") }, ReturnType = "MONEY[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-money-null-1array", "IncreaseMoney1", "ARRAY['32500.0'::MONEY, '-500.4'::MONEY, null::MONEY, '900540.2'::MONEY]", "= ARRAY['32501.0'::MONEY, '-499.4'::MONEY, null::MONEY, '900541.2'::MONEY]"}, };
+        return new object[][] { new object[] { "c#-money-null-1array", "IncreaseMoney1", "ARRAY['32500.0'::MONEY, '-500.4'::MONEY, null::MONEY, '900540.2'::MONEY]", "= ARRAY['32501.0'::MONEY, '-499.4'::MONEY, null::MONEY, '900541.2'::MONEY]" }, };
     }
 
     [Theory]

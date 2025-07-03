@@ -12,12 +12,12 @@ public abstract class BaseCreateCircleMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateCircleMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateCircleMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateCircleMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-circle-null-3array-arraynull", "CreateCircleMultidimensionalArray1", "", "= CAST(ARRAY[[[CIRCLE(POINT(25.4,-54.2),3), CIRCLE(POINT(25.4,-54.2),3)], [null::CIRCLE, null::CIRCLE]], [[CIRCLE(POINT(25.4,-54.2),3), null::CIRCLE], [CIRCLE(POINT(25.4,-54.2),3), CIRCLE(POINT(25.4,-54.2),3)]]] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-circle-null-3array-arraynull", "CreateCircleMultidimensionalArray1", "", "= CAST(ARRAY[[[CIRCLE(POINT(25.4,-54.2),3), CIRCLE(POINT(25.4,-54.2),3)], [null::CIRCLE, null::CIRCLE]], [[CIRCLE(POINT(25.4,-54.2),3), null::CIRCLE], [CIRCLE(POINT(25.4,-54.2),3), CIRCLE(POINT(25.4,-54.2),3)]]] AS TEXT)" }, };
     }
 
     [Theory]

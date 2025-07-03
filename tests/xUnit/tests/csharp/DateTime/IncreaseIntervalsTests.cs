@@ -12,12 +12,12 @@ public abstract class BaseIncreaseIntervalsTests : PlDotNetTest
 
     public BaseIncreaseIntervalsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseIntervals", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INTERVAL[]"), new FunctionArgument("months_to_add", "INT"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseIntervals", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INTERVAL[]"), new FunctionArgument("months_to_add", "INT"), new FunctionArgument("days_to_add", "INT") }, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-interval-1array", "IncreaseIntervals1", "ARRAY[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds'], 2, 5", "= ARRAY[INTERVAL '2 mons 5 days 4 hours 5 minutes 6 seconds', INTERVAL '2 mons 5 days 8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 10 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds']"}, new object[]{"c#-interval-2array", "IncreaseIntervals2", "ARRAY[[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds'], [null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']], 2, 5", "= ARRAY[INTERVAL '2 mons 5 days 4 hours 5 minutes 6 seconds', INTERVAL '2 mons 5 days 8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 10 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds']"}, };
+        return new object[][] { new object[] { "c#-interval-1array", "IncreaseIntervals1", "ARRAY[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds'], 2, 5", "= ARRAY[INTERVAL '2 mons 5 days 4 hours 5 minutes 6 seconds', INTERVAL '2 mons 5 days 8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 10 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds']" }, new object[] { "c#-interval-2array", "IncreaseIntervals2", "ARRAY[[INTERVAL '4 hours 5 minutes 6 seconds', INTERVAL '8 hours 1 minutes 2 seconds'], [null::interval, INTERVAL '1 YEAR 8 MONTHS 15 DAYS 10 hours 5 minutes 6 seconds']], 2, 5", "= ARRAY[INTERVAL '2 mons 5 days 4 hours 5 minutes 6 seconds', INTERVAL '2 mons 5 days 8 hours 1 minutes 2 seconds', null::interval, INTERVAL '1 YEAR 10 MONTHS 20 DAYS 10 hours 5 minutes 6 seconds']" }, };
     }
 
     [Theory]

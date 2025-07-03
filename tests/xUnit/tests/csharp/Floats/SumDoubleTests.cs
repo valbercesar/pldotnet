@@ -12,12 +12,12 @@ public abstract class BaseSumDoubleTests : PlDotNetTest
 
     public BaseSumDoubleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumDouble", Arguments = new List<FunctionArgument>{new FunctionArgument("a double", "precision"), new FunctionArgument("b double", "precision")}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SumDouble", Arguments = new List<FunctionArgument> { new FunctionArgument("a double", "precision"), new FunctionArgument("b double", "precision") }, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float8", "sumDouble1", "10.5000000000055, 10.5000000000054", "= double precision  '21.0000000000109'"}, new object[]{"c#-float8-null", "sumDouble2", "NULL, NULL", "= double precision '0'"}, };
+        return new object[][] { new object[] { "c#-float8", "sumDouble1", "10.5000000000055, 10.5000000000054", "= double precision  '21.0000000000109'" }, new object[] { "c#-float8-null", "sumDouble2", "NULL, NULL", "= double precision '0'" }, };
     }
 
     [Theory]

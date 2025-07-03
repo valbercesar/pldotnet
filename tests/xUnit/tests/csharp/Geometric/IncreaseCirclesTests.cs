@@ -12,12 +12,12 @@ public abstract class BaseIncreaseCirclesTests : PlDotNetTest
 
     public BaseIncreaseCirclesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseCircles", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "CIRCLE[]")}, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseCircles", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "CIRCLE[]") }, ReturnType = "CIRCLE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-circle-null-1array", "IncreaseCircles1", "ARRAY[CIRCLE(POINT(0.0,1.0), 2.5), CIRCLE(POINT(-5.0,4.5), 4), null::CIRCLE, CIRCLE(POINT(0.0,1.0),4.5)]", "= CAST(ARRAY[CIRCLE(POINT(0.0,1.0), 3.5), CIRCLE(POINT(-5.0,4.5), 5), null::CIRCLE, CIRCLE(POINT(0.0,1.0),5.5)] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-circle-null-1array", "IncreaseCircles1", "ARRAY[CIRCLE(POINT(0.0,1.0), 2.5), CIRCLE(POINT(-5.0,4.5), 4), null::CIRCLE, CIRCLE(POINT(0.0,1.0),4.5)]", "= CAST(ARRAY[CIRCLE(POINT(0.0,1.0), 3.5), CIRCLE(POINT(-5.0,4.5), 5), null::CIRCLE, CIRCLE(POINT(0.0,1.0),5.5)] AS TEXT)" }, };
     }
 
     [Theory]

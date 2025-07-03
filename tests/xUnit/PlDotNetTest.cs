@@ -376,7 +376,8 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
         {
             using var connection = new NpgsqlConnection(DatabaseConnectionString);
             connection.Open();
-            connection.Notice += (sender, e) => {
+            connection.Notice += (sender, e) =>
+            {
                 messages.AppendLine($"{e.Notice.MessageText}");
             };
             using var command = new NpgsqlCommand(sqlCode, connection);
@@ -467,7 +468,8 @@ WHERE id = {functionInfo.TestId.Value};";
         {
             using var connection = new NpgsqlConnection(DatabaseConnectionString);
             connection.Open();
-            connection.Notice += (sender, e) => {
+            connection.Notice += (sender, e) =>
+            {
                 messages.AppendLine($"{e.Notice.MessageText}");
             };
 
@@ -571,7 +573,7 @@ WHERE id = {functionInfo.TestId.Value};";
 
         if (FunctionInfo == null)
         {
-            Assert.True(false, "FunctionInfo is null, test cannot proceed.");
+            Assert.Fail("FunctionInfo is null, test cannot proceed.");
             return;
         }
 

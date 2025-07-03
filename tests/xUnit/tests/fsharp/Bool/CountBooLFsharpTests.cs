@@ -12,12 +12,12 @@ public abstract class BaseCountBooLFsharpTests : PlDotNetTest
 
     public BaseCountBooLFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CountBooLFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean")}, ReturnType = "Integer", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CountBooLFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean") }, ReturnType = "Integer", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bool-null-1array", "countBoolFSharp1", "ARRAY[true, true, false, true, null::boolean], true", "= integer '3'"}, new object[]{"f#-bool-null-1array", "countBoolFSharp2", "ARRAY[true, true, false, true, null::boolean], false", "= integer '1'"}, new object[]{"f#-bool-null-2array", "countBoolFSharp3", "ARRAY[[true, null::boolean, true], [true, false, null::boolean]], true", "= integer '3'"}, new object[]{"f#-bool-null-2array", "countBoolFSharp4", "ARRAY[[true, null::boolean, true], [true, false, null::boolean]], false", "= integer '1'"}, new object[]{"f#-bool-null-3array", "countBoolFSharp5", "ARRAY[[[true, true, null::boolean], [true, null::boolean, false]], [[null::boolean, true, false], [true, null::boolean, false]]], true", "= integer '5'"}, new object[]{"f#-bool-null-3array", "countBoolFSharp6", "ARRAY[[[true, true, null::boolean], [true, null::boolean, false]], [[null::boolean, true, false], [true, null::boolean, false]]], false", "= integer '3'"}, };
+        return new object[][] { new object[] { "f#-bool-null-1array", "countBoolFSharp1", "ARRAY[true, true, false, true, null::boolean], true", "= integer '3'" }, new object[] { "f#-bool-null-1array", "countBoolFSharp2", "ARRAY[true, true, false, true, null::boolean], false", "= integer '1'" }, new object[] { "f#-bool-null-2array", "countBoolFSharp3", "ARRAY[[true, null::boolean, true], [true, false, null::boolean]], true", "= integer '3'" }, new object[] { "f#-bool-null-2array", "countBoolFSharp4", "ARRAY[[true, null::boolean, true], [true, false, null::boolean]], false", "= integer '1'" }, new object[] { "f#-bool-null-3array", "countBoolFSharp5", "ARRAY[[[true, true, null::boolean], [true, null::boolean, false]], [[null::boolean, true, false], [true, null::boolean, false]]], true", "= integer '5'" }, new object[] { "f#-bool-null-3array", "countBoolFSharp6", "ARRAY[[[true, true, null::boolean], [true, null::boolean, false]], [[null::boolean, true, false], [true, null::boolean, false]]], false", "= integer '3'" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayLineIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayLineIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayLineIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("A", "LINE[]"), new FunctionArgument("b", "LINE")}, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayLineIndexFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("A", "LINE[]"), new FunctionArgument("b", "LINE") }, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-line-1array", "updateArrayLineIndexFSharp1", "ARRAY[LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}', null::LINE, LINE '{-1.5,2.75,-3.25}'], LINE '{-1.5,2.75,-3.25}'", "= CAST(ARRAY[LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}', null::LINE, LINE '{-1.5,2.75,-3.25}'] AS TEXT)"}, new object[]{"f#-line-null-2array-arraynull", "updateArrayLineIndexFSharp2", "ARRAY[[null::LINE, null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']], LINE '{-1.5,2.75,-3.25}'", "= CAST(ARRAY[[LINE '{-1.5,2.75,-3.25}', null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']] AS TEXT)"}, new object[]{"f#-line-null-3array-arraynull", "updateArrayLineIndexFSharp3", "ARRAY[[[null::LINE, null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']]], LINE '{-1.5,2.75,-3.25}'", "= CAST(ARRAY[[[LINE '{-1.5,2.75,-3.25}', null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']]] AS TEXT)"}, };
+        return new object[][] { new object[] { "f#-line-1array", "updateArrayLineIndexFSharp1", "ARRAY[LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}', null::LINE, LINE '{-1.5,2.75,-3.25}'], LINE '{-1.5,2.75,-3.25}'", "= CAST(ARRAY[LINE '{-1.5,2.75,-3.25}', LINE '{-1.5,2.75,-3.25}', null::LINE, LINE '{-1.5,2.75,-3.25}'] AS TEXT)" }, new object[] { "f#-line-null-2array-arraynull", "updateArrayLineIndexFSharp2", "ARRAY[[null::LINE, null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']], LINE '{-1.5,2.75,-3.25}'", "= CAST(ARRAY[[LINE '{-1.5,2.75,-3.25}', null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']] AS TEXT)" }, new object[] { "f#-line-null-3array-arraynull", "updateArrayLineIndexFSharp3", "ARRAY[[[null::LINE, null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']]], LINE '{-1.5,2.75,-3.25}'", "= CAST(ARRAY[[[LINE '{-1.5,2.75,-3.25}', null::LINE], [null::LINE, LINE '{-1.5,2.75,-3.25}']]] AS TEXT)" }, };
     }
 
     [Theory]

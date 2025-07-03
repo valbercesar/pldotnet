@@ -12,12 +12,12 @@ public abstract class BaseToggleFirstBitsFsharpTests : PlDotNetTest
 
     public BaseToggleFirstBitsFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ToggleFirstBitsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BIT(8)[]")}, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ToggleFirstBitsFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "BIT(8)[]") }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bit-null-1array", "ToggleFirstBitsFSharp1", "ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '01101001'::BIT(8)]", "= ARRAY['00101001'::BIT(8), '00101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)]"}, };
+        return new object[][] { new object[] { "f#-bit-null-1array", "ToggleFirstBitsFSharp1", "ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '01101001'::BIT(8)]", "= ARRAY['00101001'::BIT(8), '00101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)]" }, };
     }
 
     [Theory]

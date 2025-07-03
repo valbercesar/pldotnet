@@ -12,12 +12,12 @@ public abstract class BaseModify2DArrayFsharpTests : PlDotNetTest
 
     public BaseModify2DArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Modify2DArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "int8[]"), new FunctionArgument("new_value", "int2")}, ReturnType = "int8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "Modify2DArrayFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("integers", "int8[]"), new FunctionArgument("new_value", "int2") }, ReturnType = "int8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int8-null-2array", "modify2DArrayFSharp1", "ARRAY[[null::int8, null::int8], [2047483647::int8, 304325::int8]], '250'::int2", "= ARRAY[[250::int8, null::int8], [2047483647::int8, 304325::int8]]"}, new object[]{"f#-int8-null-2array", "modify2DArrayFSharp2", "ARRAY[[2047483647::int8, 304325::int8], [null::int8, 12465464::int8]], '32767'::int2", "= ARRAY[[32767::int8, 304325::int8], [null::int8, 12465464::int8]]"}, };
+        return new object[][] { new object[] { "f#-int8-null-2array", "modify2DArrayFSharp1", "ARRAY[[null::int8, null::int8], [2047483647::int8, 304325::int8]], '250'::int2", "= ARRAY[[250::int8, null::int8], [2047483647::int8, 304325::int8]]" }, new object[] { "f#-int8-null-2array", "modify2DArrayFSharp2", "ARRAY[[2047483647::int8, 304325::int8], [null::int8, 12465464::int8]], '32767'::int2", "= ARRAY[[32767::int8, 304325::int8], [null::int8, 12465464::int8]]" }, };
     }
 
     [Theory]

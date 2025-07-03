@@ -25,7 +25,7 @@ public abstract class BaseIncreaseCidrAddressDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-cidr-1array-dll", "IncreaseCIDRAddressDLL1", "ARRAY[CIDR '192.168.231.0/24', CIDR '175.170.14.0/24', null::cidr, CIDR '167.168.41.0/24']", "= ARRAY[CIDR '193.168.231.0/24', CIDR '176.170.14.0/24', null::cidr, CIDR '168.168.41.0/24']"}, };
+        return new object[][] { new object[] { "c#-cidr-1array-dll", "IncreaseCIDRAddressDLL1", "ARRAY[CIDR '192.168.231.0/24', CIDR '175.170.14.0/24', null::cidr, CIDR '167.168.41.0/24']", "= ARRAY[CIDR '193.168.231.0/24', CIDR '176.170.14.0/24', null::cidr, CIDR '168.168.41.0/24']" }, };
     }
 
     [Theory]

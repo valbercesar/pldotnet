@@ -12,12 +12,12 @@ public abstract class BaseAddSmileTovarCharsTests : PlDotNetTest
 
     public BaseAddSmileTovarCharsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddSmileTovarChars", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "VARCHAR[]")}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddSmileTovarChars", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "VARCHAR[]") }, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varchar-null-1array", "AddSmileToVarchars1", "ARRAY['hello'::VARCHAR, 'hi'::VARCHAR, null::VARCHAR, 'bye'::VARCHAR]", "= ARRAY['hello :)'::VARCHAR, 'hi :)'::VARCHAR, null::VARCHAR, 'bye :)'::VARCHAR]"}, };
+        return new object[][] { new object[] { "c#-varchar-null-1array", "AddSmileToVarchars1", "ARRAY['hello'::VARCHAR, 'hi'::VARCHAR, null::VARCHAR, 'bye'::VARCHAR]", "= ARRAY['hello :)'::VARCHAR, 'hi :)'::VARCHAR, null::VARCHAR, 'bye :)'::VARCHAR]" }, };
     }
 
     [Theory]

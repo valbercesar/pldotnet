@@ -12,12 +12,12 @@ public abstract class BaseModifyNetMaskFsharpTests : PlDotNetTest
 
     public BaseModifyNetMaskFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyNetMaskFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyNetMaskFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT") }, ReturnType = "INET", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inet", "modifyNetMaskFSharp", "INET '192.168.0.1/24', 6", "= INET '192.168.0.1/30'"}, };
+        return new object[][] { new object[] { "f#-inet", "modifyNetMaskFSharp", "INET '192.168.0.1/24', 6", "= INET '192.168.0.1/30'" }, };
     }
 
     [Theory]

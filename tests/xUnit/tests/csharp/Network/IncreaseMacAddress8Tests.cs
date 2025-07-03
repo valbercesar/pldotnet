@@ -12,12 +12,12 @@ public abstract class BaseIncreaseMacAddress8Tests : PlDotNetTest
 
     public BaseIncreaseMacAddress8Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMacAddress8", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MACADDR8[]")}, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseMacAddress8", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "MACADDR8[]") }, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr8-1array", "IncreaseMacAddress81", "ARRAY[MACADDR8 '08-00-2b-01-02-03-ab-ac', MACADDR8 '09-00-2b-01-02-03-ab-ac', null::macaddr, MACADDR8 'a8-00-2b-01-02-03-ab-ac']", "= ARRAY[MACADDR8 '09-00-2b-01-02-03-ab-ac', MACADDR8 '0a-00-2b-01-02-03-ab-ac', null::macaddr, MACADDR8 'a9-00-2b-01-02-03-ab-ac']"}, };
+        return new object[][] { new object[] { "c#-macaddr8-1array", "IncreaseMacAddress81", "ARRAY[MACADDR8 '08-00-2b-01-02-03-ab-ac', MACADDR8 '09-00-2b-01-02-03-ab-ac', null::macaddr, MACADDR8 'a8-00-2b-01-02-03-ab-ac']", "= ARRAY[MACADDR8 '09-00-2b-01-02-03-ab-ac', MACADDR8 '0a-00-2b-01-02-03-ab-ac', null::macaddr, MACADDR8 'a9-00-2b-01-02-03-ab-ac']" }, };
     }
 
     [Theory]

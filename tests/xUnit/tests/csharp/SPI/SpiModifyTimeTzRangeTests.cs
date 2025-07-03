@@ -12,11 +12,11 @@ public abstract class BaseSpiModifyTimeTzRangeTests : PlDotNetTest
 
     public BaseSpiModifyTimeTzRangeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiModifyTimeTzRange", Arguments = new List<FunctionArgument>{new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("days_to_add", "INT"), new FunctionArgument("minutes_do_add", "INT")}, ReturnType = "TSTZRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiModifyTimeTzRange", Arguments = new List<FunctionArgument> { new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("days_to_add", "INT"), new FunctionArgument("minutes_do_add", "INT") }, ReturnType = "TSTZRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
-public static object[][] TestCases()
-{
-    return new object[][]{
+    public static object[][] TestCases()
+    {
+        return new object[][]{
         new object[]{
             "c#-tstzrange-spi",
             "SPIModifyTimeTzRange1",
@@ -30,7 +30,7 @@ public static object[][] TestCases()
             "= '[\"2013-10-01 07:00:00-03\",\"2013-10-16 07:55:00-03\")'::TSTZRANGE"
         }
     };
-}
+    }
 
 
     [Theory]

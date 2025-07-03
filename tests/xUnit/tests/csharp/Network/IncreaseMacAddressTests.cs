@@ -12,12 +12,12 @@ public abstract class BaseIncreaseMacAddressTests : PlDotNetTest
 
     public BaseIncreaseMacAddressTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMacAddress", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "MACADDR[]")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseMacAddress", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "MACADDR[]") }, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr-1array", "IncreaseMacAddress1", "ARRAY[MACADDR '08-00-2b-01-02-03', MACADDR '09-00-2b-01-02-03', null::macaddr, MACADDR 'a8-00-2b-01-02-03']", "= ARRAY[MACADDR '09-00-2b-01-02-03', MACADDR '0a-00-2b-01-02-03', null::macaddr, MACADDR 'a9-00-2b-01-02-03']"}, };
+        return new object[][] { new object[] { "c#-macaddr-1array", "IncreaseMacAddress1", "ARRAY[MACADDR '08-00-2b-01-02-03', MACADDR '09-00-2b-01-02-03', null::macaddr, MACADDR 'a8-00-2b-01-02-03']", "= ARRAY[MACADDR '09-00-2b-01-02-03', MACADDR '0a-00-2b-01-02-03', null::macaddr, MACADDR 'a9-00-2b-01-02-03']" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseModifyIpFsharpTests : PlDotNetTest
 
     public BaseModifyIpFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIpFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT")}, ReturnType = "INET", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyIpFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("my_inet", "INET"), new FunctionArgument("n", "INT") }, ReturnType = "INET", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inet", "modifyIPFSharp1", "INET '2001:db8:3333:4444:5555:6666:1.2.3.4/25', 20", "= INET '2001:db8:3333:4444:5555:6666:1.2.3.24/25'"}, new object[]{"f#-inet-null", "modifyIPFSharp2", "NULL::INET, 20", "= INET '127.0.0.21/21'"}, };
+        return new object[][] { new object[] { "f#-inet", "modifyIPFSharp1", "INET '2001:db8:3333:4444:5555:6666:1.2.3.4/25', 20", "= INET '2001:db8:3333:4444:5555:6666:1.2.3.24/25'" }, new object[] { "f#-inet-null", "modifyIPFSharp2", "NULL::INET, 20", "= INET '127.0.0.21/21'" }, };
     }
 
     [Theory]

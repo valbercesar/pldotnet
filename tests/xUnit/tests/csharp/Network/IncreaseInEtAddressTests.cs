@@ -12,12 +12,12 @@ public abstract class BaseIncreaseInEtAddressTests : PlDotNetTest
 
     public BaseIncreaseInEtAddressTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseInEtAddress", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INET[]")}, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseInEtAddress", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INET[]") }, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-inet-1array", "IncreaseInetAddress1", "ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', null::inet, INET '170.168.0.1/24']", "= ARRAY[INET '193.168.0.1/24', INET '193.170.0.1/24', null::inet, INET '171.168.0.1/24']"}, };
+        return new object[][] { new object[] { "c#-inet-1array", "IncreaseInetAddress1", "ARRAY[INET '192.168.0.1/24', INET '192.170.0.1/24', null::inet, INET '170.168.0.1/24']", "= ARRAY[INET '193.168.0.1/24', INET '193.170.0.1/24', null::inet, INET '171.168.0.1/24']" }, };
     }
 
     [Theory]

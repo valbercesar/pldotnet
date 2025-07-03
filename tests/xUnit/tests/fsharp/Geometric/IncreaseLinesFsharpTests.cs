@@ -12,12 +12,12 @@ public abstract class BaseIncreaseLinesFsharpTests : PlDotNetTest
 
     public BaseIncreaseLinesFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseLinesFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LINE[]")}, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseLinesFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "LINE[]") }, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT" };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-line-1array", "IncreaseLinesFSharp1", "ARRAY[LINE '{-4.5,5.75,-7.25}', LINE '{-46.5,32.75,-54.5}', null::LINE, LINE '{-1.5,2.75,-3.25}']", "= CAST(ARRAY[LINE '{-3.5,6.75,-6.25}', LINE '{-45.5,33.75,-53.5}', LINE '{1,1,1}', LINE '{-0.5,3.75,-2.25}'] AS TEXT)"}, };
+        return new object[][] { new object[] { "f#-line-1array", "IncreaseLinesFSharp1", "ARRAY[LINE '{-4.5,5.75,-7.25}', LINE '{-46.5,32.75,-54.5}', null::LINE, LINE '{-1.5,2.75,-3.25}']", "= CAST(ARRAY[LINE '{-3.5,6.75,-6.25}', LINE '{-45.5,33.75,-53.5}', LINE '{1,1,1}', LINE '{-0.5,3.75,-2.25}'] AS TEXT)" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseMaxBigInTFsharpTests : PlDotNetTest
 
     public BaseMaxBigInTFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxBigInTFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "int8", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MaxBigInTFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "int8", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int8", "maxBigIntFSharp", "", "= int8 '9223372036854775807'"}, };
+        return new object[][] { new object[] { "f#-int8", "maxBigIntFSharp", "", "= int8 '9223372036854775807'" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseCreateByTeaMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateByTeaMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateByTeaMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateByTeaMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "BYTEA[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bytea-null-3array-arraynull", "CreateByteaMultidimensionalArray1", "", "= ARRAY[[['\\x92837465564738'::BYTEA, '\\x92837465564738'::BYTEA], [null::BYTEA, null::BYTEA]], [['\\x92837465564738'::BYTEA, null::BYTEA], ['\\x92837465564738'::BYTEA, '\\x92837465564738'::BYTEA]]]"}, };
+        return new object[][] { new object[] { "c#-bytea-null-3array-arraynull", "CreateByteaMultidimensionalArray1", "", "= ARRAY[[['\\x92837465564738'::BYTEA, '\\x92837465564738'::BYTEA], [null::BYTEA, null::BYTEA]], [['\\x92837465564738'::BYTEA, null::BYTEA], ['\\x92837465564738'::BYTEA, '\\x92837465564738'::BYTEA]]]" }, };
     }
 
     [Theory]

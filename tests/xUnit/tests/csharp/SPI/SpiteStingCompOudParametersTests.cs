@@ -12,12 +12,12 @@ public abstract class BaseSpiteStingCompOudParametersTests : PlDotNetTest
 
     public BaseSpiteStingCompOudParametersTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiteStingCompOudParameters", Arguments = new List<FunctionArgument>{}, ReturnType = "INTEGER", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiteStingCompOudParameters", Arguments = new List<FunctionArgument> { }, ReturnType = "INTEGER", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int-spi-multiquery-compoud", "SPITestingCompoudParameters", "", "= 22"}, };
+        return new object[][] { new object[] { "c#-int-spi-multiquery-compoud", "SPITestingCompoudParameters", "", "= 22" }, };
     }
 
     [Theory]

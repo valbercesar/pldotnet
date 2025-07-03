@@ -12,12 +12,12 @@ public abstract class BaseBooleanOrTests : PlDotNetTest
 
     public BaseBooleanOrTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "BooleanOr", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "boolean"), new FunctionArgument("b", "boolean")}, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "BooleanOr", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "boolean"), new FunctionArgument("b", "boolean") }, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bool", "BooleanOr1", "false, false", "is false"}, new object[]{"c#-bool-null", "BooleanOr2", "true, NULL::BOOLEAN", "is true"}};
+        return new object[][] { new object[] { "c#-bool", "BooleanOr1", "false, false", "is false" }, new object[] { "c#-bool-null", "BooleanOr2", "true, NULL::BOOLEAN", "is true" } };
     }
 
     [Theory]

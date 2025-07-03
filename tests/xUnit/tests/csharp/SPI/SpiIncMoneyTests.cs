@@ -12,12 +12,12 @@ public abstract class BaseSpiIncMoneyTests : PlDotNetTest
 
     public BaseSpiIncMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncMoney", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "MONEY")}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncMoney", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "MONEY") }, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-money-spi", "SPIIncMoney", "'1315.23'::MONEY", "= '32731.15'::MONEY"}, };
+        return new object[][] { new object[] { "c#-money-spi", "SPIIncMoney", "'1315.23'::MONEY", "= '32731.15'::MONEY" }, };
     }
 
     [Theory]

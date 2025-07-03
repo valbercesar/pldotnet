@@ -25,7 +25,7 @@ public abstract class BaseMiddlePointDefaultCallDefaultTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-point-null-dll", "middlePointDefaultCallDefault", "NULL::POINT, POINT(20.0,40.0)", "~= POINT(10.0,20.0)"}, };
+        return new object[][] { new object[] { "c#-point-null-dll", "middlePointDefaultCallDefault", "NULL::POINT, POINT(20.0,40.0)", "~= POINT(10.0,20.0)" }, };
     }
 
     [Theory]

@@ -19,7 +19,7 @@ public class SaveSourceCodeTest : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "saveSourceCode",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "boolean",
             Body = FunctionBody,
             Language = LanguageType.PlcSharp,

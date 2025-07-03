@@ -12,12 +12,12 @@ public abstract class BaseSpiConcatenateVarBitTests : PlDotNetTest
 
     public BaseSpiConcatenateVarBitTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiConcatenateVarBit", Arguments = new List<FunctionArgument>{new FunctionArgument("b BIT", "VARYING")}, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiConcatenateVarBit", Arguments = new List<FunctionArgument> { new FunctionArgument("b BIT", "VARYING") }, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varbit-spi", "SPIConcatenateVarBit", "'111010111101111000'::BIT VARYING", "= '100111001111010111101111000'::BIT VARYING"}, };
+        return new object[][] { new object[] { "c#-varbit-spi", "SPIConcatenateVarBit", "'111010111101111000'::BIT VARYING", "= '100111001111010111101111000'::BIT VARYING" }, };
     }
 
     [Theory]

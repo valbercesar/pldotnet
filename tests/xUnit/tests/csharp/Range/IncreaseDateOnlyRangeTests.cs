@@ -12,12 +12,12 @@ public abstract class BaseIncreaseDateOnlyRangeTests : PlDotNetTest
 
     public BaseIncreaseDateOnlyRangeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseDateOnlyRange", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "DATERANGE"), new FunctionArgument("days_to_add", "INTEGER")}, ReturnType = "DATERANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseDateOnlyRange", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_value", "DATERANGE"), new FunctionArgument("days_to_add", "INTEGER") }, ReturnType = "DATERANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-daterange", "IncreaseDateonlyRange1", "'[2021-01-01, 2021-01-04)'::DATERANGE, 1", "= '[2021-01-02, 2021-01-05)'::DATERANGE"}, new object[]{"c#-daterange", "IncreaseDateonlyRange2", "'[, 2021-01-01)'::DATERANGE, 3", "= '[, 2021-01-04)'::DATERANGE"}, new object[]{"c#-daterange", "IncreaseDateonlyRange3", "'[,)'::DATERANGE, 3", "= '(,)'::DATERANGE"}, new object[]{"c#-daterange", "IncreaseDateonlyRange4", "'(2021-01-01, 2021-01-04]'::DATERANGE, 3", "= '(2021-01-04, 2021-01-07]'::DATERANGE"}, new object[]{"c#-daterange-null", "IncreaseDateonlyRange5", "NULL::DATERANGE, 3", "= '[2022-01-04,2022-12-28)'::DATERANGE"}, };
+        return new object[][] { new object[] { "c#-daterange", "IncreaseDateonlyRange1", "'[2021-01-01, 2021-01-04)'::DATERANGE, 1", "= '[2021-01-02, 2021-01-05)'::DATERANGE" }, new object[] { "c#-daterange", "IncreaseDateonlyRange2", "'[, 2021-01-01)'::DATERANGE, 3", "= '[, 2021-01-04)'::DATERANGE" }, new object[] { "c#-daterange", "IncreaseDateonlyRange3", "'[,)'::DATERANGE, 3", "= '(,)'::DATERANGE" }, new object[] { "c#-daterange", "IncreaseDateonlyRange4", "'(2021-01-01, 2021-01-04]'::DATERANGE, 3", "= '(2021-01-04, 2021-01-07]'::DATERANGE" }, new object[] { "c#-daterange-null", "IncreaseDateonlyRange5", "NULL::DATERANGE, 3", "= '[2022-01-04,2022-12-28)'::DATERANGE" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseAddMinutesTimeFsharpTests : PlDotNetTest
 
     public BaseAddMinutesTimeFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddMinutesTimeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_time", "TIME"), new FunctionArgument("minutes", "int")}, ReturnType = "TIME", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddMinutesTimeFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_time", "TIME"), new FunctionArgument("minutes", "int") }, ReturnType = "TIME", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-date", "addMinutesTimeFSharp1", "TIME '05:30 PM', CAST(75 AS int)", "= TIME '06:45 PM'"}, new object[]{"f#-date-null", "addMinutesTimeFSharp2", "TIME '05:30 PM', NULL::int", "= TIME '05:30 PM'"}, new object[]{"f#-date-null", "addMinutesTimeFSharp3", "NULL::TIME, CAST(75 AS int)", "= TIME '01:15:00'"}, new object[]{"f#-date-null", "addMinutesTimeFSharp4", "NULL::TIME, NULL::int", "= TIME '00:00:00'"}, };
+        return new object[][] { new object[] { "f#-date", "addMinutesTimeFSharp1", "TIME '05:30 PM', CAST(75 AS int)", "= TIME '06:45 PM'" }, new object[] { "f#-date-null", "addMinutesTimeFSharp2", "TIME '05:30 PM', NULL::int", "= TIME '05:30 PM'" }, new object[] { "f#-date-null", "addMinutesTimeFSharp3", "NULL::TIME, CAST(75 AS int)", "= TIME '01:15:00'" }, new object[] { "f#-date-null", "addMinutesTimeFSharp4", "NULL::TIME, NULL::int", "= TIME '00:00:00'" }, };
     }
 
     [Theory]

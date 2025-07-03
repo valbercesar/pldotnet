@@ -12,12 +12,12 @@ public abstract class BaseCreateVarBitMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateVarBitMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateVarBitMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateVarBitMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varbit-null-3array-arraynull", "CreateVarbitMultidimensionalArray1", "", "= ARRAY[[['10101100'::BIT VARYING, '10101100'::BIT VARYING], [null::BIT VARYING, null::BIT VARYING]], [['10101100'::BIT VARYING, null::BIT VARYING], ['10101100'::BIT VARYING, '10101100'::BIT VARYING]]]"}, };
+        return new object[][] { new object[] { "c#-varbit-null-3array-arraynull", "CreateVarbitMultidimensionalArray1", "", "= ARRAY[[['10101100'::BIT VARYING, '10101100'::BIT VARYING], [null::BIT VARYING, null::BIT VARYING]], [['10101100'::BIT VARYING, null::BIT VARYING], ['10101100'::BIT VARYING, '10101100'::BIT VARYING]]]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseModifyIpCidrFsharpTests : PlDotNetTest
 
     public BaseModifyIpCidrFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyIpCidrFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("pos", "INT"), new FunctionArgument("delta", "INT")}, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyIpCidrFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("pos", "INT"), new FunctionArgument("delta", "INT") }, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-cidr", "modifyIP_CIDRFSharp", "CIDR '192.168/24', 0, 6", "= CIDR '198.168.0.0/24'"}, };
+        return new object[][] { new object[] { "f#-cidr", "modifyIP_CIDRFSharp", "CIDR '192.168/24', 0, 6", "= CIDR '198.168.0.0/24'" }, };
     }
 
     [Theory]

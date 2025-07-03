@@ -11,12 +11,12 @@ public abstract class BasePrintSumProcedureTests : PlDotNetTest
 
     public BasePrintSumProcedureTests()
     {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.Procedure, Name = "printSumProcedure", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { TestType = SqlTestType.Procedure, Name = "printSumProcedure", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-sum", "printSumProcedure1", "10, 25", "= 35"}, new object[]{"c#-sum", "printSumProcedure2", "1450, 275", "= 1725"}, };
+        return new object[][] { new object[] { "c#-sum", "printSumProcedure1", "10, 25", "= 35" }, new object[] { "c#-sum", "printSumProcedure2", "1450, 275", "= 1725" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseIncreaseTimeStampsTests : PlDotNetTest
 
     public BaseIncreaseTimeStampsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimeStamps", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TIMESTAMP[]"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseTimeStamps", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "TIMESTAMP[]"), new FunctionArgument("days_to_add", "INT") }, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-timestamp-1array", "IncreaseTimestamps", "ARRAY[TIMESTAMP '2004-12-19 10:23:54 PM', TIMESTAMP '2020-10-19 10:23:54 PM', null::timestamp, TIMESTAMP '2022-12-25 10:23:54 PM'], 2", "= ARRAY[TIMESTAMP '2004-12-21 10:23:54 PM', TIMESTAMP '2020-10-21 10:23:54 PM', null::timestamp, TIMESTAMP '2022-12-27 10:23:54 PM']"}, };
+        return new object[][] { new object[] { "c#-timestamp-1array", "IncreaseTimestamps", "ARRAY[TIMESTAMP '2004-12-19 10:23:54 PM', TIMESTAMP '2020-10-19 10:23:54 PM', null::timestamp, TIMESTAMP '2022-12-25 10:23:54 PM'], 2", "= ARRAY[TIMESTAMP '2004-12-21 10:23:54 PM', TIMESTAMP '2020-10-21 10:23:54 PM', null::timestamp, TIMESTAMP '2022-12-27 10:23:54 PM']" }, };
     }
 
     [Theory]

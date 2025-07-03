@@ -12,12 +12,12 @@ public abstract class BaseUpdateBitArrayIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateBitArrayIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateBitArrayIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BIT(8)[]"), new FunctionArgument("b", "BIT(8)"), }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateBitArrayIndexFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BIT(8)[]"), new FunctionArgument("b", "BIT(8)"), }, ReturnType = "BIT(8)[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bit-null-1array", "updateBitArrayIndexFSharp1", "ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)], '11111111'::BIT(8)", "= ARRAY['11111111'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)]"}, new object[]{"f#-bit-null-2array", "updateBitArrayIndexFSharp2", "ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8)", "= ARRAY[['11111111'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]"}, new object[]{"f#-bit-null-3array", "updateBitArrayIndexFSharp3", "ARRAY[[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]], '11111111'::BIT(8)", "= ARRAY[[['11111111'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]]"}, new object[]{"f#-bit-null-2array-arraynull", "updateBitArrayIndexFSharp4", "ARRAY[[null::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8)", "= ARRAY[['11111111'::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]"}, };
+        return new object[][] { new object[] { "f#-bit-null-1array", "updateBitArrayIndexFSharp1", "ARRAY['10101001'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)], '11111111'::BIT(8)", "= ARRAY['11111111'::BIT(8), '10101101'::BIT(8), null::BIT(8), '11101001'::BIT(8)]" }, new object[] { "f#-bit-null-2array", "updateBitArrayIndexFSharp2", "ARRAY[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8)", "= ARRAY[['11111111'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]" }, new object[] { "f#-bit-null-3array", "updateBitArrayIndexFSharp3", "ARRAY[[['10101001'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]], '11111111'::BIT(8)", "= ARRAY[[['11111111'::BIT(8), '10101101'::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]]" }, new object[] { "f#-bit-null-2array-arraynull", "updateBitArrayIndexFSharp4", "ARRAY[[null::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]], '11111111'::BIT(8)", "= ARRAY[['11111111'::BIT(8), null::BIT(8)], [null::BIT(8), '11101001'::BIT(8)]]" }, };
     }
 
     [Theory]

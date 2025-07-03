@@ -12,12 +12,12 @@ public abstract class BaseSpinUllDateTests : PlDotNetTest
 
     public BaseSpinUllDateTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpinUllDate", Arguments = new List<FunctionArgument>{}, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpinUllDate", Arguments = new List<FunctionArgument> { }, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-date-null-spi", "SPINullDate", "", "= ARRAY['2023-02-01'::DATE, NULL::DATE]"}, };
+        return new object[][] { new object[] { "c#-date-null-spi", "SPINullDate", "", "= ARRAY['2023-02-01'::DATE, NULL::DATE]" }, };
     }
 
     [Theory]

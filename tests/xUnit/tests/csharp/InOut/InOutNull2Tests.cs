@@ -12,12 +12,12 @@ public abstract class BaseInOutNull2Tests : PlDotNetTest
 
     public BaseInOutNull2Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutNull2", Arguments = new List<FunctionArgument>{new FunctionArgument("INOUT argument_0", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "InOutNull2", Arguments = new List<FunctionArgument> { new FunctionArgument("INOUT argument_0", "INT") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-inout-null-2", "inout_null_2", "NULL", "= 3"}, };
+        return new object[][] { new object[] { "c#-inout-null-2", "inout_null_2", "NULL", "= 3" }, };
     }
 
     [Theory]

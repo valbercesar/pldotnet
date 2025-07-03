@@ -12,12 +12,12 @@ public abstract class BaseModifyNetMaskCidrTests : PlDotNetTest
 
     public BaseModifyNetMaskCidrTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyNetMaskCidr", Arguments = new List<FunctionArgument>{new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("delta", "INT")}, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyNetMaskCidr", Arguments = new List<FunctionArgument> { new FunctionArgument("my_inet", "CIDR"), new FunctionArgument("delta", "INT") }, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-cidr", "modifyNetmask_CIDR1", "CIDR '2001:4f8:3:ba::/64', 10", "= CIDR '2001:4f8:3:ba::/74'"}, new object[]{"c#-cidr-null", "modifyNetmask_CIDR2", "NULL::CIDR, 10", "= CIDR '127.0.0.0/31'"}, };
+        return new object[][] { new object[] { "c#-cidr", "modifyNetmask_CIDR1", "CIDR '2001:4f8:3:ba::/64', 10", "= CIDR '2001:4f8:3:ba::/74'" }, new object[] { "c#-cidr-null", "modifyNetmask_CIDR2", "NULL::CIDR, 10", "= CIDR '127.0.0.0/31'" }, };
     }
 
     [Theory]

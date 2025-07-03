@@ -12,12 +12,12 @@ public abstract class BaseCreateMacAddress8MultidimensionalArrayFsharpTests : Pl
 
     public BaseCreateMacAddress8MultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateMacAddress8MultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("objects_value", "MACADDR8")}, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateMacAddress8MultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("objects_value", "MACADDR8") }, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-macaddr8-3array", "CreateMacAddress8MultidimensionalArrayFSharp", "MACADDR8 'ab-01-2b-31-41-fa-ab-ac'", "= ARRAY[[[MACADDR8 'ab-01-2b-31-41-fa-ab-ac']]]"}, };
+        return new object[][] { new object[] { "f#-macaddr8-3array", "CreateMacAddress8MultidimensionalArrayFSharp", "MACADDR8 'ab-01-2b-31-41-fa-ab-ac'", "= ARRAY[[[MACADDR8 'ab-01-2b-31-41-fa-ab-ac']]]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseReturnPathFsharpTests : PlDotNetTest
 
     public BaseReturnPathFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnPathFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_path", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnPathFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_path", "PATH") }, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-path", "returnPathFSharp - open", "PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'", "<= PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'"}, new object[]{"f#-path", "returnPathFSharp - close", "PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'", "<= PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'"}, };
+        return new object[][] { new object[] { "f#-path", "returnPathFSharp - open", "PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'", "<= PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'" }, new object[] { "f#-path", "returnPathFSharp - close", "PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'", "<= PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'" }, };
     }
 
     [Theory]

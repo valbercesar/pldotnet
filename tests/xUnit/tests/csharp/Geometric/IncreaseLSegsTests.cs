@@ -12,12 +12,12 @@ public abstract class BaseIncreaseLSegsTests : PlDotNetTest
 
     public BaseIncreaseLSegsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseLSegs", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "LSEG[]")}, ReturnType = "LSEG[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseLSegs", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "LSEG[]") }, ReturnType = "LSEG[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-lseg-null-1array", "IncreaseLSEGs1", "ARRAY[LSEG(POINT(0.0,1.0),POINT(5.0,3.0)), LSEG(POINT(-5.0,4.5),POINT(6.7,12.3)), null::LSEG, LSEG(POINT(0.0,1.0),POINT(4.7,9.2))]", "= CAST(ARRAY[LSEG(POINT(1.0,2.0),POINT(6.0,4.0)), LSEG(POINT(-4.0,5.5),POINT(7.7,13.3)), null::LSEG, LSEG(POINT(1.0,2.0),POINT(5.7,10.2))] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-lseg-null-1array", "IncreaseLSEGs1", "ARRAY[LSEG(POINT(0.0,1.0),POINT(5.0,3.0)), LSEG(POINT(-5.0,4.5),POINT(6.7,12.3)), null::LSEG, LSEG(POINT(0.0,1.0),POINT(4.7,9.2))]", "= CAST(ARRAY[LSEG(POINT(1.0,2.0),POINT(6.0,4.0)), LSEG(POINT(-4.0,5.5),POINT(7.7,13.3)), null::LSEG, LSEG(POINT(1.0,2.0),POINT(5.7,10.2))] AS TEXT)" }, };
     }
 
     [Theory]

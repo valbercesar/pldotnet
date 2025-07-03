@@ -12,12 +12,12 @@ public abstract class BaseCreateBigIntegerMultidimensionalArrayTests : PlDotNetT
 
     public BaseCreateBigIntegerMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBigIntegerMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "bigint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateBigIntegerMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "bigint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8-null-3array-arraynull", "CreateBigIntegerMultidimensionalArray", "", "= ARRAY[[[92232036854775707::bigint, 2337203684775707::bigint], [null::bigint, null::bigint]], [[706524::bigint, 756452434247987::bigint], [943::bigint, 4134677::bigint]]]"}, };
+        return new object[][] { new object[] { "c#-int8-null-3array-arraynull", "CreateBigIntegerMultidimensionalArray", "", "= ARRAY[[[92232036854775707::bigint, 2337203684775707::bigint], [null::bigint, null::bigint]], [[706524::bigint, 756452434247987::bigint], [943::bigint, 4134677::bigint]]]" }, };
     }
 
     [Theory]

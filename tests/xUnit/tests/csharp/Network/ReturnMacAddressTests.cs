@@ -12,12 +12,12 @@ public abstract class BaseReturnMacAddressTests : PlDotNetTest
 
     public BaseReturnMacAddressTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMacAddress", Arguments = new List<FunctionArgument>{new FunctionArgument("my_address", "MACADDR")}, ReturnType = "MACADDR", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnMacAddress", Arguments = new List<FunctionArgument> { new FunctionArgument("my_address", "MACADDR") }, ReturnType = "MACADDR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr", "returnMacAddress", "MACADDR '08-00-2b-01-02-03'", "= MACADDR '08-00-2b-01-02-03'"}, };
+        return new object[][] { new object[] { "c#-macaddr", "returnMacAddress", "MACADDR '08-00-2b-01-02-03'", "= MACADDR '08-00-2b-01-02-03'" }, };
     }
 
     [Theory]

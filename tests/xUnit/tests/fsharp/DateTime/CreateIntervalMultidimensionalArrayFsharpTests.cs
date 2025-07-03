@@ -12,12 +12,12 @@ public abstract class BaseCreateIntervalMultidimensionalArrayFsharpTests : PlDot
 
     public BaseCreateIntervalMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateIntervalMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateIntervalMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-interval-3array", "CreateIntervalMultidimensionalArrayFSharp", "", "= ARRAY[[[INTERVAL '10 months 33 days 15 minutes']]]"}, };
+        return new object[][] { new object[] { "f#-interval-3array", "CreateIntervalMultidimensionalArrayFSharp", "", "= ARRAY[[[INTERVAL '10 months 33 days 15 minutes']]]" }, };
     }
 
     [Theory]

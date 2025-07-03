@@ -12,12 +12,12 @@ public abstract class BaseCreateRealMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateRealMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateRealMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateRealMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-float4-null-3array-arraynull", "CreateRealMultidimensionalArrayFSharp", "", "= ARRAY[[1.24323::real, 0::real, 0::real], [0::real, 8.11134::real, 0::real], [0::real, 0::real, 16.14256::real]]"}, };
+        return new object[][] { new object[] { "f#-float4-null-3array-arraynull", "CreateRealMultidimensionalArrayFSharp", "", "= ARRAY[[1.24323::real, 0::real, 0::real], [0::real, 8.11134::real, 0::real], [0::real, 0::real, 16.14256::real]]" }, };
     }
 
     [Theory]

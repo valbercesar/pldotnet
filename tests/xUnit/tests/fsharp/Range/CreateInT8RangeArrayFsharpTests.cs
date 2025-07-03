@@ -12,12 +12,12 @@ public abstract class BaseCreateInT8RangeArrayFsharpTests : PlDotNetTest
 
     public BaseCreateInT8RangeArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateInT8RangeArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateInT8RangeArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int8range-null-3array-arraynull", "CreateInt8RangeArrayFSharp1", "", "= ARRAY[[['[64,89)'::INT8RANGE]]]"}, };
+        return new object[][] { new object[] { "f#-int8range-null-3array-arraynull", "CreateInt8RangeArrayFSharp1", "", "= ARRAY[[['[64,89)'::INT8RANGE]]]" }, };
     }
 
     [Theory]

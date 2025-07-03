@@ -12,12 +12,12 @@ public abstract class BaseReturnMoneyTests : PlDotNetTest
 
     public BaseReturnMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMoney", Arguments = new List<FunctionArgument>{new FunctionArgument("salary", "MONEY"), new FunctionArgument("bonus", "MONEY"), new FunctionArgument("discounts", "MONEY")}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnMoney", Arguments = new List<FunctionArgument> { new FunctionArgument("salary", "MONEY"), new FunctionArgument("bonus", "MONEY"), new FunctionArgument("discounts", "MONEY") }, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-money", "returnMoney1", "'32500.0'::MONEY, '1556.25'::MONEY, '899.99'::MONEY", "= '33156.26'::MONEY"}, new object[]{"c#-money-null", "returnMoney2", "'13525.21'::MONEY, null::MONEY, '899.99'::MONEY", "= '12625.22'::MONEY"}, new object[]{"c#-money-null", "returnMoney3", "null::MONEY, null::MONEY, null::MONEY", "= '0'::MONEY"}, };
+        return new object[][] { new object[] { "c#-money", "returnMoney1", "'32500.0'::MONEY, '1556.25'::MONEY, '899.99'::MONEY", "= '33156.26'::MONEY" }, new object[] { "c#-money-null", "returnMoney2", "'13525.21'::MONEY, null::MONEY, '899.99'::MONEY", "= '12625.22'::MONEY" }, new object[] { "c#-money-null", "returnMoney3", "null::MONEY, null::MONEY, null::MONEY", "= '0'::MONEY" }, };
     }
 
     [Theory]

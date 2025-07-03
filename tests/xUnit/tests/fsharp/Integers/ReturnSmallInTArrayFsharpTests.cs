@@ -12,12 +12,12 @@ public abstract class BaseReturnSmallInTArrayFsharpTests : PlDotNetTest
 
     public BaseReturnSmallInTArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnSmallInTArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("small_integers", "int2[]")}, ReturnType = "int2[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnSmallInTArrayFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("small_integers", "int2[]") }, ReturnType = "int2[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int2-null-1array", "returnSmallIntArrayFSharp1", "ARRAY[12345::int2, null::int2, 123::int2, 4356::int2]", "= ARRAY[12345::int2, null::int2, 123::int2, 4356::int2]"}, new object[]{"f#-int2-null-2array-arraynull", "returnSmallIntArrayFSharp2", "ARRAY[[null::int2, null::int2], [12345::int2, 654::int2]]", "= ARRAY[[null::int2, null::int2], [12345::int2, 654::int2]]"}, new object[]{"f#-int2-null-3array-arraynull", "returnSmallIntArrayFSharp3", "ARRAY[[[null::int2, null::int2], [null::int2, null::int2]], [[186::int2, 23823::int2], [9521::int2, 934::int2]]]", "= ARRAY[[[null::int2, null::int2], [null::int2, null::int2]], [[186::int2, 23823::int2], [9521::int2, 934::int2]]]"}, };
+        return new object[][] { new object[] { "f#-int2-null-1array", "returnSmallIntArrayFSharp1", "ARRAY[12345::int2, null::int2, 123::int2, 4356::int2]", "= ARRAY[12345::int2, null::int2, 123::int2, 4356::int2]" }, new object[] { "f#-int2-null-2array-arraynull", "returnSmallIntArrayFSharp2", "ARRAY[[null::int2, null::int2], [12345::int2, 654::int2]]", "= ARRAY[[null::int2, null::int2], [12345::int2, 654::int2]]" }, new object[] { "f#-int2-null-3array-arraynull", "returnSmallIntArrayFSharp3", "ARRAY[[[null::int2, null::int2], [null::int2, null::int2]], [[186::int2, 23823::int2], [9521::int2, 934::int2]]]", "= ARRAY[[[null::int2, null::int2], [null::int2, null::int2]], [[186::int2, 23823::int2], [9521::int2, 934::int2]]]" }, };
     }
 
     [Theory]

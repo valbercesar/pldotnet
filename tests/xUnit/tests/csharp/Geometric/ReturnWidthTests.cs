@@ -12,12 +12,12 @@ public abstract class BaseReturnWidthTests : PlDotNetTest
 
     public BaseReturnWidthTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnWidth", Arguments = new List<FunctionArgument>{new FunctionArgument("high", "POINT"), new FunctionArgument("low", "POINT")}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnWidth", Arguments = new List<FunctionArgument> { new FunctionArgument("high", "POINT"), new FunctionArgument("low", "POINT") }, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-box", "returnWidth", "POINT '(0.025988, 1.021653)', POINT '(2.052787, 3.005716)'", "= double precision '2.026799'"}, };
+        return new object[][] { new object[] { "c#-box", "returnWidth", "POINT '(0.025988, 1.021653)', POINT '(2.052787, 3.005716)'", "= double precision '2.026799'" }, };
     }
 
     [Theory]

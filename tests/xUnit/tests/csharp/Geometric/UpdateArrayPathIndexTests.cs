@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayPathIndexTests : PlDotNetTest
 
     public BaseUpdateArrayPathIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayPathIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "PATH[]"), new FunctionArgument("desired", "PATH"), new FunctionArgument("index", "integer[]")}, ReturnType = "PATH[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayPathIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "PATH[]"), new FunctionArgument("desired", "PATH"), new FunctionArgument("index", "integer[]") }, ReturnType = "PATH[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-path-null-1array", "updateArrayPathIndex1", "ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[2]", "= CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH] AS TEXT)"}, new object[]{"c#-path-null-2array-arraynull", "updateArrayPathIndex2", "ARRAY[[null::PATH, null::PATH], [null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[1,0]", "= CAST(ARRAY[[null::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-path-null-1array", "updateArrayPathIndex1", "ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[2]", "= CAST(ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH] AS TEXT)" }, new object[] { "c#-path-null-2array-arraynull", "updateArrayPathIndex2", "ARRAY[[null::PATH, null::PATH], [null::path, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]], '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, ARRAY[1,0]", "= CAST(ARRAY[[null::PATH, null::PATH], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::PATH]] AS TEXT)" }, };
     }
 
     [Theory]

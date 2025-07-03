@@ -12,12 +12,12 @@ public abstract class BaseGetXmlMultiDimensionArrayTests : PlDotNetTest
 
     public BaseGetXmlMultiDimensionArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetXmlMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "XML[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "GetXmlMultiDimensionArray", Arguments = new List<FunctionArgument> { }, ReturnType = "XML[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-xml-null-3array-arraynull", "GetXMLMultidimensionArray", "", "= ARRAY[[['<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML, '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML], [null::XML, null::XML]], [['<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML, null::XML], ['<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML, '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML]]]::TEXT"}};
+        return new object[][] { new object[] { "c#-xml-null-3array-arraynull", "GetXMLMultidimensionArray", "", "= ARRAY[[['<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML, '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML], [null::XML, null::XML]], [['<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML, null::XML], ['<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML, '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML]]]::TEXT" } };
     }
 
     [Theory]

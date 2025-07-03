@@ -12,12 +12,12 @@ public abstract class BaseCreateInT4RangeArrayTests : PlDotNetTest
 
     public BaseCreateInT4RangeArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateInT4RangeArray", Arguments = new List<FunctionArgument>{}, ReturnType = "INT4RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateInT4RangeArray", Arguments = new List<FunctionArgument> { }, ReturnType = "INT4RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4range-null-3array-arraynull", "CreateInt4RangeArray1", "", "= ARRAY[[['[64,89)'::INT4RANGE,'[64,89)'::INT4RANGE], [null::INT4RANGE, null::INT4RANGE]], [['[64,89)'::INT4RANGE, null::INT4RANGE], ['[64,89)'::INT4RANGE, '[64,89)'::INT4RANGE]]]"}, };
+        return new object[][] { new object[] { "c#-int4range-null-3array-arraynull", "CreateInt4RangeArray1", "", "= ARRAY[[['[64,89)'::INT4RANGE,'[64,89)'::INT4RANGE], [null::INT4RANGE, null::INT4RANGE]], [['[64,89)'::INT4RANGE, null::INT4RANGE], ['[64,89)'::INT4RANGE, '[64,89)'::INT4RANGE]]]" }, };
     }
 
     [Theory]
