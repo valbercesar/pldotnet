@@ -12,12 +12,12 @@ public abstract class BaseInOutArray10Tests : PlDotNetTest
 
     public BaseInOutArray10Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutArray10", Arguments = new List<FunctionArgument>{new FunctionArgument("INOUT values_array", "MACADDR[]"), new FunctionArgument("OUT nulls", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "InOutArray10", Arguments = new List<FunctionArgument> { new FunctionArgument("INOUT values_array", "MACADDR[]"), new FunctionArgument("OUT nulls", "INT") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"inout_array_10", "c#-inout-array-10", "ARRAY[MACADDR '08-00-2b-01-02-03',MACADDR '09-00-2b-01-02-03',null::macaddr,MACADDR 'a8-00-2b-01-02-03',null::macaddr]", "= ROW(ARRAY[MACADDR '09-00-2b-01-02-03',MACADDR '0a-00-2b-01-02-03',null::macaddr,MACADDR 'a9-00-2b-01-02-03',null::macaddr],2)"}};
+        return new object[][] { new object[] { "inout_array_10", "c#-inout-array-10", "ARRAY[MACADDR '08-00-2b-01-02-03',MACADDR '09-00-2b-01-02-03',null::macaddr,MACADDR 'a8-00-2b-01-02-03',null::macaddr]", "= ROW(ARRAY[MACADDR '09-00-2b-01-02-03',MACADDR '0a-00-2b-01-02-03',null::macaddr,MACADDR 'a9-00-2b-01-02-03',null::macaddr],2)" } };
     }
 
     [Theory]

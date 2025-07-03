@@ -12,12 +12,12 @@ public abstract class BaseCreateLineMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateLineMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateLineMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT" };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-line-3array", "CreateLineMultidimensionalArrayFSharp1", "", @"= '{{{""{2.4,8.2,-32.43}""},{""{0,0,0}""},{""{0,0,0}""}},{{""{0,0,0}""},{""{2.4,8.2,-32.43}""},{""{0,0,0}""}},{{""{0,0,0}""},{""{0,0,0}""},{""{2.4,8.2,-32.43}""}}}'"}, };
+        return new object[][] { new object[] { "f#-line-3array", "CreateLineMultidimensionalArrayFSharp1", "", @"= '{{{""{2.4,8.2,-32.43}""},{""{0,0,0}""},{""{0,0,0}""}},{{""{0,0,0}""},{""{2.4,8.2,-32.43}""},{""{0,0,0}""}},{{""{0,0,0}""},{""{0,0,0}""},{""{2.4,8.2,-32.43}""}}}'" }, };
     }
 
     [Theory]

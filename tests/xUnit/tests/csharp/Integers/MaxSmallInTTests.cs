@@ -12,12 +12,12 @@ public abstract class BaseMaxSmallInTTests : PlDotNetTest
 
     public BaseMaxSmallInTTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxSmallInT", Arguments = new List<FunctionArgument>{}, ReturnType = "smallint", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MaxSmallInT", Arguments = new List<FunctionArgument> { }, ReturnType = "smallint", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int2", "maxSmallInt", "", "= smallint '32767'"}, };
+        return new object[][] { new object[] { "c#-int2", "maxSmallInt", "", "= smallint '32767'" }, };
     }
 
     [Theory]

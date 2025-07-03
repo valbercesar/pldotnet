@@ -12,12 +12,12 @@ public abstract class BaseReplaceJSonsKeyTests : PlDotNetTest
 
     public BaseReplaceJSonsKeyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReplaceJSonsKey", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "JSON[]")}, ReturnType = "JSON[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReplaceJSonsKey", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "JSON[]") }, ReturnType = "JSON[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-json-null-1array", "ReplaceJsonsKey1", "ARRAY['{\"age\": 20, \"name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"name\": \"Rosicley\"}'::JSON, null::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]", "= ARRAY['{\"age\": 20, \"first_name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"first_name\": \"Rosicley\"}'::JSON, null::JSON, '{\"age\": 30, \"first_name\": \"Todd\"}'::JSON]::TEXT"}};
+        return new object[][] { new object[] { "c#-json-null-1array", "ReplaceJsonsKey1", "ARRAY['{\"age\": 20, \"name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"name\": \"Rosicley\"}'::JSON, null::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]", "= ARRAY['{\"age\": 20, \"first_name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"first_name\": \"Rosicley\"}'::JSON, null::JSON, '{\"age\": 30, \"first_name\": \"Todd\"}'::JSON]::TEXT" } };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseAddGoodbyeTests : PlDotNetTest
 
     public BaseAddGoodbyeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddGoodbye", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BPCHAR")}, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddGoodbye", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BPCHAR") }, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bpchar", "testingBpChar", "'HELLO!'", "= 'HELLO! Goodbye ^.^'::BPCHAR"}, };
+        return new object[][] { new object[] { "c#-bpchar", "testingBpChar", "'HELLO!'", "= 'HELLO! Goodbye ^.^'::BPCHAR" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseSpinUlLint4Tests : PlDotNetTest
 
     public BaseSpinUlLint4Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpinUlLint4", Arguments = new List<FunctionArgument>{}, ReturnType = "INTEGER[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpinUlLint4", Arguments = new List<FunctionArgument> { }, ReturnType = "INTEGER[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4-null-spi", "SPINullInt4", "", "= ARRAY[NULL::INTEGER, 2023]"}, };
+        return new object[][] { new object[] { "c#-int4-null-spi", "SPINullInt4", "", "= ARRAY[NULL::INTEGER, 2023]" }, };
     }
 
     [Theory]

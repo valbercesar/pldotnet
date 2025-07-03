@@ -12,12 +12,12 @@ public abstract class BaseCreatePointMultidimensionalArrayFsharpTests : PlDotNet
 
     public BaseCreatePointMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreatePointMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "point[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo { Name = "CreatePointMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "point[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT" };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-point-null-3array-arraynull", "CreatePointMultidimensionalArrayFSharp1", "", "= CAST(ARRAY[[[POINT(2.4,8.2)], [POINT(0,0)], [POINT(0,0)]], [[POINT(0,0)], [POINT(2.4,8.2)], [POINT(0,0)]], [[POINT(0,0)], [POINT(0,0)], [POINT(2.4,8.2)]]] AS TEXT)"}, };
+        return new object[][] { new object[] { "f#-point-null-3array-arraynull", "CreatePointMultidimensionalArrayFSharp1", "", "= CAST(ARRAY[[[POINT(2.4,8.2)], [POINT(0,0)], [POINT(0,0)]], [[POINT(0,0)], [POINT(2.4,8.2)], [POINT(0,0)]], [[POINT(0,0)], [POINT(0,0)], [POINT(2.4,8.2)]]] AS TEXT)" }, };
     }
 
     [Theory]

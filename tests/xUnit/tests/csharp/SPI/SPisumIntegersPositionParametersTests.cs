@@ -12,12 +12,12 @@ public abstract class BaseSPisumIntegersPositionParametersTests : PlDotNetTest
 
     public BaseSPisumIntegersPositionParametersTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SPisumIntegersPositionParameters", Arguments = new List<FunctionArgument>{new FunctionArgument("num", "INTEGER")}, ReturnType = "INTEGER", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SPisumIntegersPositionParameters", Arguments = new List<FunctionArgument> { new FunctionArgument("num", "INTEGER") }, ReturnType = "INTEGER", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int-spi-multiquery", "SPISUMIntegersPositionParameters1", "1", "= 3"}, new object[]{"c#-int-spi-multiquery", "SPISUMIntegersPositionParameters2", "10", "= 30"}, };
+        return new object[][] { new object[] { "c#-int-spi-multiquery", "SPISUMIntegersPositionParameters1", "1", "= 3" }, new object[] { "c#-int-spi-multiquery", "SPISUMIntegersPositionParameters2", "10", "= 30" }, };
     }
 
     [Theory]

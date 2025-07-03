@@ -12,12 +12,12 @@ public abstract class BaseMixedBigInTTests : PlDotNetTest
 
     public BaseMixedBigInTTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MixedBigInT", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer"), new FunctionArgument("c", "bigint")}, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MixedBigInT", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer"), new FunctionArgument("c", "bigint") }, ReturnType = "bigint", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8", "mixedBigInt", "32767,  2147483647, 100", "= bigint '2147516514'"}, };
+        return new object[][] { new object[] { "c#-int8", "mixedBigInt", "32767,  2147483647, 100", "= bigint '2147516514'" }, };
     }
 
     [Theory]

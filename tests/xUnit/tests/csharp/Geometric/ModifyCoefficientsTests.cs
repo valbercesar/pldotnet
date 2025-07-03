@@ -12,12 +12,12 @@ public abstract class BaseModifyCoefficientsTests : PlDotNetTest
 
     public BaseModifyCoefficientsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyCoefficients", Arguments = new List<FunctionArgument>{new FunctionArgument("original_line", "LINE")}, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyCoefficients", Arguments = new List<FunctionArgument> { new FunctionArgument("original_line", "LINE") }, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-line", "modifyCoefficients1", "LINE '{-1.5,2.75,-3.25}'", "= LINE '{1.50,-2.75,3.25}'"}, new object[]{"c#-line-null", "modifyCoefficients2", "NULL::LINE", "= LINE '{2.4, 8.2, -32.43}'"}, };
+        return new object[][] { new object[] { "c#-line", "modifyCoefficients1", "LINE '{-1.5,2.75,-3.25}'", "= LINE '{1.50,-2.75,3.25}'" }, new object[] { "c#-line-null", "modifyCoefficients2", "NULL::LINE", "= LINE '{2.4, 8.2, -32.43}'" }, };
     }
 
     [Theory]

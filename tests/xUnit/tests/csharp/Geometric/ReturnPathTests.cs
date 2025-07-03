@@ -12,12 +12,12 @@ public abstract class BaseReturnPathTests : PlDotNetTest
 
     public BaseReturnPathTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnPath", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_path", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnPath", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_path", "PATH") }, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-path", "returnPath - open", "PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'", " <= PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'"}, new object[]{"c#-path", "returnPath - close", "PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'", "<= PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'"}, };
+        return new object[][] { new object[] { "c#-path", "returnPath - open", "PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'", " <= PATH '[(1.5,2.75),(3.0,4.75),(5.0,5.0)]'" }, new object[] { "c#-path", "returnPath - close", "PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'", "<= PATH '((1.5,2.75),(3.0,4.75),(5.0,5.0))'" }, };
     }
 
     [Theory]

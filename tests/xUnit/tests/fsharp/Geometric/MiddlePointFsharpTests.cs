@@ -12,12 +12,12 @@ public abstract class BaseMiddlePointFsharpTests : PlDotNetTest
 
     public BaseMiddlePointFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MiddlePointFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point")}, ReturnType = "point", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MiddlePointFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("pointa", "point"), new FunctionArgument("pointb", "point") }, ReturnType = "point", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-point", "middlePointFSharp1", "POINT(10.0,20.0),POINT(20.0,40.0)", "~= POINT(15.0,30.0)"}, new object[]{"f#-point-null", "middlePointFSharp2", "NULL::POINT,POINT(20.0,40.0)", "~= POINT(10.0,20.0)"}, };
+        return new object[][] { new object[] { "f#-point", "middlePointFSharp1", "POINT(10.0,20.0),POINT(20.0,40.0)", "~= POINT(15.0,30.0)" }, new object[] { "f#-point-null", "middlePointFSharp2", "NULL::POINT,POINT(20.0,40.0)", "~= POINT(10.0,20.0)" }, };
     }
 
     [Theory]

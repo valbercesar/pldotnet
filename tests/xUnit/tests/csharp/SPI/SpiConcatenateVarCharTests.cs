@@ -12,12 +12,12 @@ public abstract class BaseSpiConcatenateVarCharTests : PlDotNetTest
 
     public BaseSpiConcatenateVarCharTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiConcatenateVarChar", Arguments = new List<FunctionArgument>{new FunctionArgument("b", "VARCHAR")}, ReturnType = "VARCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiConcatenateVarChar", Arguments = new List<FunctionArgument> { new FunctionArgument("b", "VARCHAR") }, ReturnType = "VARCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varchar-spi", "SPIConcatenateVarchar", "'my friend...'::VARCHAR", "= 'BYE BYE MY FRIEND...'::TEXT"}, };
+        return new object[][] { new object[] { "c#-varchar-spi", "SPIConcatenateVarchar", "'my friend...'::VARCHAR", "= 'BYE BYE MY FRIEND...'::TEXT" }, };
     }
 
     [Theory]

@@ -25,7 +25,7 @@ public abstract class BaseConcatenateVarCharsDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varchar-dll", "concatenateVarCharsDLL1", "'hello'::VARCHAR, 'beautiful'::VARCHAR, 'world!'::BPCHAR", "= 'HELLO BEAUTIFUL WORLD!'::VARCHAR"}, new object[]{"c#-varchar-null-dll", "concatenateVarCharsDLL2", "NULL::VARCHAR, 'beautiful'::VARCHAR, NULL::BPCHAR", "= ' BEAUTIFUL '::VARCHAR"}, };
+        return new object[][] { new object[] { "c#-varchar-dll", "concatenateVarCharsDLL1", "'hello'::VARCHAR, 'beautiful'::VARCHAR, 'world!'::BPCHAR", "= 'HELLO BEAUTIFUL WORLD!'::VARCHAR" }, new object[] { "c#-varchar-null-dll", "concatenateVarCharsDLL2", "NULL::VARCHAR, 'beautiful'::VARCHAR, NULL::BPCHAR", "= ' BEAUTIFUL '::VARCHAR" }, };
     }
 
     [Theory]

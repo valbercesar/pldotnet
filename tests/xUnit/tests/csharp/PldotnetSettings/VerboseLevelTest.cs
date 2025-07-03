@@ -19,7 +19,7 @@ public class VerboseLevelTest : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "verboseLevel",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "integer",
             Body = FunctionBody,
             Language = LanguageType.PlcSharp,

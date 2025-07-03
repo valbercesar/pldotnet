@@ -12,12 +12,12 @@ public abstract class BaseCreateLineMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateLineMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateLineMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "LINE[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-line-3array", "CreateLineMultidimensionalArray1", "", "= CAST(ARRAY[[[LINE '{2.4,8.2,-32.43}', LINE '{2.4,8.2,-32.43}'], [null::LINE, null::LINE]], [[LINE '{2.4,8.2,-32.43}', null::LINE], [LINE '{2.4,8.2,-32.43}', LINE '{2.4,8.2,-32.43}']]] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-line-3array", "CreateLineMultidimensionalArray1", "", "= CAST(ARRAY[[[LINE '{2.4,8.2,-32.43}', LINE '{2.4,8.2,-32.43}'], [null::LINE, null::LINE]], [[LINE '{2.4,8.2,-32.43}', null::LINE], [LINE '{2.4,8.2,-32.43}', LINE '{2.4,8.2,-32.43}']]] AS TEXT)" }, };
     }
 
     [Theory]

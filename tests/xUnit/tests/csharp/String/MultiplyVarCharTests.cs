@@ -12,12 +12,12 @@ public abstract class BaseMultiplyVarCharTests : PlDotNetTest
 
     public BaseMultiplyVarCharTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MultiplyVarChar", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "VARCHAR"), new FunctionArgument("b", "int")}, ReturnType = "VARCHAR", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MultiplyVarChar", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "VARCHAR"), new FunctionArgument("b", "int") }, ReturnType = "VARCHAR", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varchar", "multiplyVarChar", "'hello '::VARCHAR, 5", "= 'HELLO HELLO HELLO HELLO HELLO '::VARCHAR"}, };
+        return new object[][] { new object[] { "c#-varchar", "multiplyVarChar", "'hello '::VARCHAR, 5", "= 'HELLO HELLO HELLO HELLO HELLO '::VARCHAR" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseCreateDateMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateDateMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateDateMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-date-null-3array-arraynull", "CreateDateMultidimensionalArray", "", "= ARRAY[[[DATE 'Dec-25-2022'::date, DATE 'Dec-25-2022'::date], [null::date, null::date]], [[DATE 'Dec-25-2022'::date, null::date], [DATE 'Dec-25-2022'::date, DATE 'Dec-25-2022'::date]]]"}, };
+        return new object[][] { new object[] { "c#-date-null-3array-arraynull", "CreateDateMultidimensionalArray", "", "= ARRAY[[[DATE 'Dec-25-2022'::date, DATE 'Dec-25-2022'::date], [null::date, null::date]], [[DATE 'Dec-25-2022'::date, null::date], [DATE 'Dec-25-2022'::date, DATE 'Dec-25-2022'::date]]]" }, };
     }
 
     [Theory]

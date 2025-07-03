@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayRealIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayRealIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayRealIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "real[]"), new FunctionArgument("b", "real")}, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayRealIndexFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "real[]"), new FunctionArgument("b", "real") }, ReturnType = "real[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-float4-null-1array", "updateArrayRealIndexFSharp1", "ARRAY[4.55555::real, 10.11324::real, null::real], 9.83212", "= ARRAY[9.83212::real, 10.11324::real, null::real]"}, new object[]{"f#-float4-null-2array", "updateArrayRealIndexFSharp2", "ARRAY[[4.55555::real, 10.11324::real], [null::real, 16.12464::real]], 9.83212", "= ARRAY[[9.83212::real, 10.11324::real], [null::real, 16.12464::real]]"}, new object[]{"f#-float4-null-3array", "updateArrayRealIndexFSharp3", "ARRAY[[[4.55555::real, 10.11324::real], [null::real, 16.12464::real]]], 9.83212", "= ARRAY[[[9.83212::real, 10.11324::real], [null::real, 16.12464::real]]]"}, };
+        return new object[][] { new object[] { "f#-float4-null-1array", "updateArrayRealIndexFSharp1", "ARRAY[4.55555::real, 10.11324::real, null::real], 9.83212", "= ARRAY[9.83212::real, 10.11324::real, null::real]" }, new object[] { "f#-float4-null-2array", "updateArrayRealIndexFSharp2", "ARRAY[[4.55555::real, 10.11324::real], [null::real, 16.12464::real]], 9.83212", "= ARRAY[[9.83212::real, 10.11324::real], [null::real, 16.12464::real]]" }, new object[] { "f#-float4-null-3array", "updateArrayRealIndexFSharp3", "ARRAY[[[4.55555::real, 10.11324::real], [null::real, 16.12464::real]]], 9.83212", "= ARRAY[[[9.83212::real, 10.11324::real], [null::real, 16.12464::real]]]" }, };
     }
 
     [Theory]

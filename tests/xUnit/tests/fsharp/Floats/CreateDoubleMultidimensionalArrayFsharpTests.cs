@@ -12,12 +12,12 @@ public abstract class BaseCreateDoubleMultidimensionalArrayFsharpTests : PlDotNe
 
     public BaseCreateDoubleMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDoubleMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "float8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateDoubleMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "float8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-float4-null-3array-arraynull", "CreateDoubleMultidimensionalArrayFSharp", "", "= ARRAY[[1.24323::float8, 0::float8, 0::float8], [0::float8, 8.11134::float8, 0::float8], [0::float8, 0::float8, 16.14256::float8]]"}, };
+        return new object[][] { new object[] { "f#-float4-null-3array-arraynull", "CreateDoubleMultidimensionalArrayFSharp", "", "= ARRAY[[1.24323::float8, 0::float8, 0::float8], [0::float8, 8.11134::float8, 0::float8], [0::float8, 0::float8, 16.14256::float8]]" }, };
     }
 
     [Theory]

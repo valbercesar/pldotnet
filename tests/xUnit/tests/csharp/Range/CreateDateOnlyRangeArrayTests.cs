@@ -12,12 +12,12 @@ public abstract class BaseCreateDateOnlyRangeArrayTests : PlDotNetTest
 
     public BaseCreateDateOnlyRangeArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateDateOnlyRangeArray", Arguments = new List<FunctionArgument>{}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateDateOnlyRangeArray", Arguments = new List<FunctionArgument> { }, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-daterange-null-3array-arraynull", "CreateDateonlyRangeArray1", "", "= ARRAY[[['[2022-04-14, 2022-04-15)'::DATERANGE,'[2022-04-14, 2022-04-15)'::DATERANGE], [null::DATERANGE, null::DATERANGE]], [['[2022-04-14, 2022-04-15)'::DATERANGE, null::DATERANGE], ['[2022-04-14, 2022-04-15)'::DATERANGE, '[2022-04-14, 2022-04-15)'::DATERANGE]]]"}, };
+        return new object[][] { new object[] { "c#-daterange-null-3array-arraynull", "CreateDateonlyRangeArray1", "", "= ARRAY[[['[2022-04-14, 2022-04-15)'::DATERANGE,'[2022-04-14, 2022-04-15)'::DATERANGE], [null::DATERANGE, null::DATERANGE]], [['[2022-04-14, 2022-04-15)'::DATERANGE, null::DATERANGE], ['[2022-04-14, 2022-04-15)'::DATERANGE, '[2022-04-14, 2022-04-15)'::DATERANGE]]]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayBoxIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayBoxIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBoxIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BOX[]"), new FunctionArgument("b", "BOX")}, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayBoxIndexFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BOX[]"), new FunctionArgument("b", "BOX") }, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-box-null-1array", "updateArrayBoxIndexFSharp1", "ARRAY[BOX(POINT(0.0,1.0),POINT(5.0,3.0)), BOX(POINT(-5.0,4.5),POINT(6.7,12.3)), null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))], BOX(POINT(0.0,1.0),POINT(4.7,9.2))", "= CAST(ARRAY[BOX(POINT(0.0,1.0),POINT(4.7,9.2)), BOX(POINT(-5.0,4.5),POINT(6.7,12.3)), null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))] AS TEXT)"}, new object[]{"f#-box-null-2array-arraynull", "updateArrayBoxIndexFSharp2", "ARRAY[[null::BOX, null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]], BOX(POINT(0.0,1.0),POINT(4.7,9.2))", "= CAST(ARRAY[[BOX(POINT(0.0,1.0),POINT(4.7,9.2)), null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]] AS TEXT)"}, new object[]{"f#-box-null-3array-arraynull", "updateArrayBoxIndexFSharp3", "ARRAY[[[null::BOX, null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]]], BOX(POINT(0.0,1.0),POINT(4.7,9.2))", "= CAST(ARRAY[[[BOX(POINT(0.0,1.0),POINT(4.7,9.2)), null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]]] AS TEXT)"}, };
+        return new object[][] { new object[] { "f#-box-null-1array", "updateArrayBoxIndexFSharp1", "ARRAY[BOX(POINT(0.0,1.0),POINT(5.0,3.0)), BOX(POINT(-5.0,4.5),POINT(6.7,12.3)), null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))], BOX(POINT(0.0,1.0),POINT(4.7,9.2))", "= CAST(ARRAY[BOX(POINT(0.0,1.0),POINT(4.7,9.2)), BOX(POINT(-5.0,4.5),POINT(6.7,12.3)), null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))] AS TEXT)" }, new object[] { "f#-box-null-2array-arraynull", "updateArrayBoxIndexFSharp2", "ARRAY[[null::BOX, null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]], BOX(POINT(0.0,1.0),POINT(4.7,9.2))", "= CAST(ARRAY[[BOX(POINT(0.0,1.0),POINT(4.7,9.2)), null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]] AS TEXT)" }, new object[] { "f#-box-null-3array-arraynull", "updateArrayBoxIndexFSharp3", "ARRAY[[[null::BOX, null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]]], BOX(POINT(0.0,1.0),POINT(4.7,9.2))", "= CAST(ARRAY[[[BOX(POINT(0.0,1.0),POINT(4.7,9.2)), null::BOX], [null::BOX, BOX(POINT(0.0,1.0),POINT(4.7,9.2))]]] AS TEXT)" }, };
     }
 
     [Theory]

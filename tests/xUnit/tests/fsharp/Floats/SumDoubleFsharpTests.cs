@@ -12,12 +12,12 @@ public abstract class BaseSumDoubleFsharpTests : PlDotNetTest
 
     public BaseSumDoubleFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumDoubleFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "float8"), new FunctionArgument("b", "float8")}, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SumDoubleFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "float8"), new FunctionArgument("b", "float8") }, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-float8", "sumDoubleFSharp1", "10.5000000000055, 10.5000000000054", "= float8  '21.0000000000109'"}, new object[]{"f#-float8-null", "sumDoubleFSharp2", "NULL, NULL", "= float8 '0'"}, };
+        return new object[][] { new object[] { "f#-float8", "sumDoubleFSharp1", "10.5000000000055, 10.5000000000054", "= float8  '21.0000000000109'" }, new object[] { "f#-float8-null", "sumDoubleFSharp2", "NULL, NULL", "= float8 '0'" }, };
     }
 
     [Theory]

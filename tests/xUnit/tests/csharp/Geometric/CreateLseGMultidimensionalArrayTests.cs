@@ -12,12 +12,12 @@ public abstract class BaseCreateLseGMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateLseGMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLseGMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "LSEG[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateLseGMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "LSEG[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-lseg-null-3array-arraynull", "CreateLSEGMultidimensionalArray1", "", "= CAST(ARRAY[[[LSEG(POINT(25.4,-54.2),POINT(78.3,122.31)), LSEG(POINT(25.4,-54.2),POINT(78.3,122.31))], [null::LSEG, null::LSEG]], [[LSEG(POINT(25.4,-54.2),POINT(78.3,122.31)), null::LSEG], [LSEG(POINT(25.4,-54.2),POINT(78.3,122.31)), LSEG(POINT(25.4,-54.2),POINT(78.3,122.31))]]] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-lseg-null-3array-arraynull", "CreateLSEGMultidimensionalArray1", "", "= CAST(ARRAY[[[LSEG(POINT(25.4,-54.2),POINT(78.3,122.31)), LSEG(POINT(25.4,-54.2),POINT(78.3,122.31))], [null::LSEG, null::LSEG]], [[LSEG(POINT(25.4,-54.2),POINT(78.3,122.31)), null::LSEG], [LSEG(POINT(25.4,-54.2),POINT(78.3,122.31)), LSEG(POINT(25.4,-54.2),POINT(78.3,122.31))]]] AS TEXT)" }, };
     }
 
     [Theory]

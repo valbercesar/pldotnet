@@ -12,12 +12,12 @@ public abstract class BaseIncreaseTimestampTzRangesTests : PlDotNetTest
 
     public BaseIncreaseTimestampTzRangesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimestampTzRanges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TSTZRANGE[]")}, ReturnType = "TSTZRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseTimestampTzRanges", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "TSTZRANGE[]") }, ReturnType = "TSTZRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-tstzrange-null-1array", "IncreaseTimestampTzRanges1", "ARRAY['[2021-01-01 14:30 +02, 2021-01-01 15:30 -05)'::TSTZRANGE, '(, 2021-04-01 15:30 +05)'::TSTZRANGE, null::TSTZRANGE, '[,)'::TSTZRANGE]", "= ARRAY['[2021-01-02 14:30 +02, 2021-01-02 15:30 -05)'::TSTZRANGE, '(, 2021-04-02 15:30 +05)'::TSTZRANGE, null::TSTZRANGE, '[,)'::TSTZRANGE]"}, };
+        return new object[][] { new object[] { "c#-tstzrange-null-1array", "IncreaseTimestampTzRanges1", "ARRAY['[2021-01-01 14:30 +02, 2021-01-01 15:30 -05)'::TSTZRANGE, '(, 2021-04-01 15:30 +05)'::TSTZRANGE, null::TSTZRANGE, '[,)'::TSTZRANGE]", "= ARRAY['[2021-01-02 14:30 +02, 2021-01-02 15:30 -05)'::TSTZRANGE, '(, 2021-04-02 15:30 +05)'::TSTZRANGE, null::TSTZRANGE, '[,)'::TSTZRANGE]" }, };
     }
 
     [Theory]

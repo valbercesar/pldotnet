@@ -25,7 +25,7 @@ public abstract class BaseIncreaseInT8RangesDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8range-null-1array-dll", "IncreaseInt8RangesDLL1", "ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]", "= ARRAY['[3,7)'::INT8RANGE, '(,7)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]"}, };
+        return new object[][] { new object[] { "c#-int8range-null-1array-dll", "IncreaseInt8RangesDLL1", "ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]", "= ARRAY['[3,7)'::INT8RANGE, '(,7)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE]" }, };
     }
 
     [Theory]

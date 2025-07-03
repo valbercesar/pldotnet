@@ -12,12 +12,12 @@ public abstract class BaseUpdateUUIdArrayTests : PlDotNetTest
 
     public BaseUpdateUUIdArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateUUIdArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "UUID[]")}, ReturnType = "UUID[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateUUIdArray", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "UUID[]") }, ReturnType = "UUID[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-uuid-null-1array", "updateUUIDArray1", "ARRAY['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, '87e3006a-604e-11ed-9b6a-0242ac120002'::UUID, null::UUID, 'a0eebc99-9c0b-4ef8-9b6a-0242ac120002'::UUID]", "= ARRAY['aaaaaaaa-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, 'aaaaaaaa-604e-11ed-9b6a-0242ac120002'::UUID, null::UUID, 'aaaaaaaa-9c0b-4ef8-9b6a-0242ac120002'::UUID]"}, };
+        return new object[][] { new object[] { "c#-uuid-null-1array", "updateUUIDArray1", "ARRAY['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, '87e3006a-604e-11ed-9b6a-0242ac120002'::UUID, null::UUID, 'a0eebc99-9c0b-4ef8-9b6a-0242ac120002'::UUID]", "= ARRAY['aaaaaaaa-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID, 'aaaaaaaa-604e-11ed-9b6a-0242ac120002'::UUID, null::UUID, 'aaaaaaaa-9c0b-4ef8-9b6a-0242ac120002'::UUID]" }, };
     }
 
     [Theory]

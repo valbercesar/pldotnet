@@ -12,12 +12,12 @@ public abstract class BaseReturnWidthFsharpTests : PlDotNetTest
 
     public BaseReturnWidthFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnWidthFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("high", "POINT"), new FunctionArgument("low", "POINT")}, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnWidthFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("high", "POINT"), new FunctionArgument("low", "POINT") }, ReturnType = "float8", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-box", "returnWidthFSharp", "POINT '(0.025988, 1.021653)', POINT '(2.052787, 3.005716)'", "= float8 '2.026799'"}, };
+        return new object[][] { new object[] { "f#-box", "returnWidthFSharp", "POINT '(0.025988, 1.021653)', POINT '(2.052787, 3.005716)'", "= float8 '2.026799'" }, };
     }
 
     [Theory]

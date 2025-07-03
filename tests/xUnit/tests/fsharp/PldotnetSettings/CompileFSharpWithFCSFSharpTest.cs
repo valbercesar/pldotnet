@@ -19,7 +19,7 @@ settings.CompileFSharpWithFCS
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "compileFSharpWithFCS",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "boolean",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,

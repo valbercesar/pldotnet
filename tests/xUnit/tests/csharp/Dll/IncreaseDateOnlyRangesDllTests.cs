@@ -25,7 +25,7 @@ public abstract class BaseIncreaseDateOnlyRangesDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-daterange-null-1array-dll", "IncreaseDateonlyRangesDLL1", "ARRAY['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-04)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]", "= ARRAY['[2021-01-02, 2021-01-02)'::DATERANGE, '(, 2021-04-05)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]"}, };
+        return new object[][] { new object[] { "c#-daterange-null-1array-dll", "IncreaseDateonlyRangesDLL1", "ARRAY['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-04)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]", "= ARRAY['[2021-01-02, 2021-01-02)'::DATERANGE, '(, 2021-04-05)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]" }, };
     }
 
     [Theory]

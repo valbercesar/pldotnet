@@ -12,12 +12,12 @@ public abstract class BaseSpiModifyDateRangeTests : PlDotNetTest
 
     public BaseSpiModifyDateRangeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiModifyDateRange", Arguments = new List<FunctionArgument>{new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("days", "INTEGER"), new FunctionArgument("months", "INTEGER"), new FunctionArgument("years", "INTEGER")}, ReturnType = "DATERANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiModifyDateRange", Arguments = new List<FunctionArgument> { new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("days", "INTEGER"), new FunctionArgument("months", "INTEGER"), new FunctionArgument("years", "INTEGER") }, ReturnType = "DATERANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-daterange-spi", "SPIModifyDateRange1", "true, 10, 5, 0", "= '[2020-06-11,2021-01-01)'::DATERANGE"}, new object[]{"c#-daterange-spi", "SPIModifyDateRange2", "false, 15, 14, 2", "= '[2020-01-01,2024-03-16)'::DATERANGE"}, };
+        return new object[][] { new object[] { "c#-daterange-spi", "SPIModifyDateRange1", "true, 10, 5, 0", "= '[2020-06-11,2021-01-01)'::DATERANGE" }, new object[] { "c#-daterange-spi", "SPIModifyDateRange2", "false, 15, 14, 2", "= '[2020-01-01,2024-03-16)'::DATERANGE" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseIncreasePathTests : PlDotNetTest
 
     public BaseIncreasePathTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePath", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreasePath", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_value", "PATH") }, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-path-null", "increasePath1", "NULL::PATH", "= '((1,1),(101,101),(201,201))'::PATH"}, };
+        return new object[][] { new object[] { "c#-path-null", "increasePath1", "NULL::PATH", "= '((1,1),(101,101),(201,201))'::PATH" }, };
     }
 
     [Theory]

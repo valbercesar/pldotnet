@@ -12,12 +12,12 @@ public abstract class BaseCreateTimestampTzMultidimensionalArrayFsharpTests : Pl
 
     public BaseCreateTimestampTzMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampTzMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTimestampTzMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-timestamptz-3array", "CreateTimestamptzMultidimensionalArrayFSharp", "", "= ARRAY[[[TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00']]]"}, };
+        return new object[][] { new object[] { "f#-timestamptz-3array", "CreateTimestamptzMultidimensionalArrayFSharp", "", "= ARRAY[[[TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00']]]" }, };
     }
 
     [Theory]

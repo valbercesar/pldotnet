@@ -12,12 +12,12 @@ public abstract class BaseModifyVarBitFsharpTests : PlDotNetTest
 
     public BaseModifyVarBitFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyVarBitFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a BIT", "VARYING")}, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyVarBitFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a BIT", "VARYING") }, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-varbit", "modifyvarbitfsharp1", "'1001110001000'::BIT VARYING", "= '0001110001001'::BIT VARYING"}, new object[]{"f#-varbit-null", "modifyvarbitfsharp2", "NULL::BIT VARYING", "IS NULL"}, };
+        return new object[][] { new object[] { "f#-varbit", "modifyvarbitfsharp1", "'1001110001000'::BIT VARYING", "= '0001110001001'::BIT VARYING" }, new object[] { "f#-varbit-null", "modifyvarbitfsharp2", "NULL::BIT VARYING", "IS NULL" }, };
     }
 
     [Theory]

@@ -19,7 +19,7 @@ settings.PathToSaveSourceCode
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "pathToSaveSourceCodeFSharp",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "text",
             Body = FunctionBody,
             Language = LanguageType.PlfSharp,

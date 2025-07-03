@@ -12,12 +12,12 @@ public abstract class BaseCreateBoxMultidimensionalArrayFsharpTests : PlDotNetTe
 
     public BaseCreateBoxMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateBoxMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT"};
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateBoxMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "BOX[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT" };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-box-null-3array-arraynull", "CreateBoxMultidimensionalArrayFSharp1", "", "= '{{{(3,4.75),(1.5,2.75)};{(0,0),(0,0)};{(0,0),(0,0)}};{{(0,0),(0,0)};{(3,4.75),(1.5,2.75)};{(0,0),(0,0)}};{{(0,0),(0,0)};{(0,0),(0,0)};{(3,4.75),(1.5,2.75)}}}'"}, };
+        return new object[][] { new object[] { "f#-box-null-3array-arraynull", "CreateBoxMultidimensionalArrayFSharp1", "", "= '{{{(3,4.75),(1.5,2.75)};{(0,0),(0,0)};{(0,0),(0,0)}};{{(0,0),(0,0)};{(3,4.75),(1.5,2.75)};{(0,0),(0,0)}};{{(0,0),(0,0)};{(0,0),(0,0)};{(3,4.75),(1.5,2.75)}}}'" }, };
     }
 
     [Theory]

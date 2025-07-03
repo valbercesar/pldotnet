@@ -12,12 +12,12 @@ public abstract class BaseReturnMacAddressArrayFsharpTests : PlDotNetTest
 
     public BaseReturnMacAddressArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMacAddressArrayFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("addresses", "MACADDR[]")}, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnMacAddressArrayFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("addresses", "MACADDR[]") }, ReturnType = "MACADDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-macaddr-null-2array-arraynull", "returnMacAddressArrayFSharp1", "ARRAY[[null::macaddr, null::macaddr], [null::macaddr, MACADDR 'a8-00-2b-01-02-03']]", "= ARRAY[[null::macaddr, null::macaddr], [null::macaddr, MACADDR 'a8-00-2b-01-02-03']]"}, };
+        return new object[][] { new object[] { "f#-macaddr-null-2array-arraynull", "returnMacAddressArrayFSharp1", "ARRAY[[null::macaddr, null::macaddr], [null::macaddr, MACADDR 'a8-00-2b-01-02-03']]", "= ARRAY[[null::macaddr, null::macaddr], [null::macaddr, MACADDR 'a8-00-2b-01-02-03']]" }, };
     }
 
     [Theory]

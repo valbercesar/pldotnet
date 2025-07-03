@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayBooleanIndexTests : PlDotNetTest
 
     public BaseUpdateArrayBooleanIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBooleanIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean"), new FunctionArgument("index", "integer[]")}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayBooleanIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("booleans", "boolean[]"), new FunctionArgument("desired", "boolean"), new FunctionArgument("index", "integer[]") }, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bool-1array", "updateArrayBooleanIndex1", "ARRAY[true, false, true], true, ARRAY[1]", "= ARRAY[true, true, true]"}, new object[]{"c#-bool-2array", "updateArrayBooleanIndex2", "ARRAY[[true, false], [true, false]], false, ARRAY[1, 0]", "= ARRAY[[true, false], [false, false]]"}, };
+        return new object[][] { new object[] { "c#-bool-1array", "updateArrayBooleanIndex1", "ARRAY[true, false, true], true, ARRAY[1]", "= ARRAY[true, true, true]" }, new object[] { "c#-bool-2array", "updateArrayBooleanIndex2", "ARRAY[[true, false], [true, false]], false, ARRAY[1, 0]", "= ARRAY[[true, false], [false, false]]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseCreateCharMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateCharMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateCharMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateCharMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bpchar-null-3array-arraynull", "CreateCharMultidimensionalArray1", "", "= ARRAY[[['Multiple dimensions'::BPCHAR, 'Multiple dimensions'::BPCHAR], [null::BPCHAR, null::BPCHAR]], [['Multiple dimensions'::BPCHAR, null::BPCHAR], ['Multiple dimensions'::BPCHAR, 'Multiple dimensions'::BPCHAR]]]"}, };
+        return new object[][] { new object[] { "c#-bpchar-null-3array-arraynull", "CreateCharMultidimensionalArray1", "", "= ARRAY[[['Multiple dimensions'::BPCHAR, 'Multiple dimensions'::BPCHAR], [null::BPCHAR, null::BPCHAR]], [['Multiple dimensions'::BPCHAR, null::BPCHAR], ['Multiple dimensions'::BPCHAR, 'Multiple dimensions'::BPCHAR]]]" }, };
     }
 
     [Theory]

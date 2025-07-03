@@ -12,12 +12,12 @@ public abstract class BaseSumIntegerArrayTests : PlDotNetTest
 
     public BaseSumIntegerArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumIntegerArray", Arguments = new List<FunctionArgument>{new FunctionArgument("integers", "integer[]")}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SumIntegerArray", Arguments = new List<FunctionArgument> { new FunctionArgument("integers", "integer[]") }, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4-null-1array", "sumIntegerArray1", "ARRAY[2047483647::integer, null::integer, 304325::integer, 4356::integer]", "= '2047792328'"}, new object[]{"c#-int4-null-2array-arraynull", "sumIntegerArray2", "ARRAY[[null::integer, null::integer], [2047483647::integer, 304325::integer]]", "= '2047787972'"}, new object[]{"c#-int4-null-3array-arraynull", "sumIntegerArray3", "ARRAY[[[null::integer, null::integer], [null::integer, null::integer]], [[2047483647::integer, 304325::integer], [706524::integer, 4356::integer]]]", "= '2048498852'"}, };
+        return new object[][] { new object[] { "c#-int4-null-1array", "sumIntegerArray1", "ARRAY[2047483647::integer, null::integer, 304325::integer, 4356::integer]", "= '2047792328'" }, new object[] { "c#-int4-null-2array-arraynull", "sumIntegerArray2", "ARRAY[[null::integer, null::integer], [2047483647::integer, 304325::integer]]", "= '2047787972'" }, new object[] { "c#-int4-null-3array-arraynull", "sumIntegerArray3", "ARRAY[[[null::integer, null::integer], [null::integer, null::integer]], [[2047483647::integer, 304325::integer], [706524::integer, 4356::integer]]]", "= '2048498852'" }, };
     }
 
     [Theory]

@@ -25,7 +25,7 @@ public abstract class BaseModifyVarBitDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varbit-dll", "modifyVarbitDLL1", "'1001110001000'::BIT VARYING", "= '0001110001001'::BIT VARYING"}, new object[]{"c#-varbit-null-dll", "modifyVarbitDLL2", "NULL::BIT VARYING", "IS NULL"}, };
+        return new object[][] { new object[] { "c#-varbit-dll", "modifyVarbitDLL1", "'1001110001000'::BIT VARYING", "= '0001110001001'::BIT VARYING" }, new object[] { "c#-varbit-null-dll", "modifyVarbitDLL2", "NULL::BIT VARYING", "IS NULL" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseModifyXmlTests : PlDotNetTest
 
     public BaseModifyXmlTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyXml", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "XML")}, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = false, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyXml", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "XML") }, ReturnType = "XML", Body = FunctionBody, Language = Language, IsStrict = false, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-xml", "modifyXml1", "'<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World!</title>'::XML::text"}, new object[]{"c#-xml-null", "modifyXml2", "NULL::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text"}, };
+        return new object[][] { new object[] { "c#-xml", "modifyXml1", "'<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Hello, World!</title>'::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World!</title>'::XML::text" }, new object[] { "c#-xml-null", "modifyXml2", "NULL::XML", " = '<?xml version=\"1.0\" encoding=\"utf-8\"?><title>Goodbye, beautiful World, it was null!</title>'::XML::text" }, };
     }
 
     [Theory]

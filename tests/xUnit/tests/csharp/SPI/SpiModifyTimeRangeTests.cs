@@ -12,12 +12,12 @@ public abstract class BaseSpiModifyTimeRangeTests : PlDotNetTest
 
     public BaseSpiModifyTimeRangeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiModifyTimeRange", Arguments = new List<FunctionArgument>{new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("days_to_add", "INT"), new FunctionArgument("minutes_do_add", "INT")}, ReturnType = "TSRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiModifyTimeRange", Arguments = new List<FunctionArgument> { new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("days_to_add", "INT"), new FunctionArgument("minutes_do_add", "INT") }, ReturnType = "TSRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-tsrange-spi", "SPIModifyTimeRange1", "true, 0, 15", "= '[2010-01-01 14:45, 2010-01-01 15:30)'::TSRANGE"}, new object[]{"c#-tsrange-spi", "SPIModifyTimeRange2", "false, 10, 25", "= '[2010-01-01 14:30, 2010-01-11 15:55)'::TSRANGE"}, };
+        return new object[][] { new object[] { "c#-tsrange-spi", "SPIModifyTimeRange1", "true, 0, 15", "= '[2010-01-01 14:45, 2010-01-01 15:30)'::TSRANGE" }, new object[] { "c#-tsrange-spi", "SPIModifyTimeRange2", "false, 10, 25", "= '[2010-01-01 14:30, 2010-01-11 15:55)'::TSRANGE" }, };
     }
 
     [Theory]

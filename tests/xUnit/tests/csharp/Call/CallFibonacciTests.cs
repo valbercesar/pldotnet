@@ -12,12 +12,12 @@ public abstract class BaseCallFibonacciTests : PlDotNetTest
 
     public BaseCallFibonacciTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "fibonacci", Arguments = new List<FunctionArgument>{new FunctionArgument("n", "integer")}, ReturnType = "BIGINT", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "fibonacci", Arguments = new List<FunctionArgument> { new FunctionArgument("n", "integer") }, ReturnType = "BIGINT", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8", "fibonacci1", "5", "= BIGINT '5'"}, new object[]{"c#-int8", "fibonacci2", "15", "= BIGINT '610'"}, new object[]{"c#-int8", "fibonacci3", "20", "= BIGINT '6765'"}, new object[]{"c#-int8", "fibonacci4", "30", "= BIGINT '832040'"}, };
+        return new object[][] { new object[] { "c#-int8", "fibonacci1", "5", "= BIGINT '5'" }, new object[] { "c#-int8", "fibonacci2", "15", "= BIGINT '610'" }, new object[] { "c#-int8", "fibonacci3", "20", "= BIGINT '6765'" }, new object[] { "c#-int8", "fibonacci4", "30", "= BIGINT '832040'" }, };
     }
 
     [Theory]

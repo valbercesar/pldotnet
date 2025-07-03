@@ -12,12 +12,12 @@ public abstract class BaseSpiModifyInT8RangeTests : PlDotNetTest
 
     public BaseSpiModifyInT8RangeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiModifyInT8Range", Arguments = new List<FunctionArgument>{new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("value", "INT8")}, ReturnType = "INT8RANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiModifyInT8Range", Arguments = new List<FunctionArgument> { new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("value", "INT8") }, ReturnType = "INT8RANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8range-spi", "SPIModifyInt8Range1", "true, 2147483657", "= '(2147483657,9223372036854775804)'::INT8RANGE"}, new object[]{"c#-int8range-spi", "SPIModifyInt8Range2", "false, -10", "= '[,9223372036854775794)'::INT8RANGE"}, };
+        return new object[][] { new object[] { "c#-int8range-spi", "SPIModifyInt8Range1", "true, 2147483657", "= '(2147483657,9223372036854775804)'::INT8RANGE" }, new object[] { "c#-int8range-spi", "SPIModifyInt8Range2", "false, -10", "= '[,9223372036854775794)'::INT8RANGE" }, };
     }
 
     [Theory]

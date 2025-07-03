@@ -25,7 +25,7 @@ public abstract class BaseModifyBitDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bit-dll", "modifyBitDLL1", "'10101'::BIT(10)", "= '0010100001'::BIT(10)"}, new object[]{"c#-bit-null-dll", "modifyBitDLL2", "NULL::BIT(10)", "IS NULL"}, };
+        return new object[][] { new object[] { "c#-bit-dll", "modifyBitDLL1", "'10101'::BIT(10)", "= '0010100001'::BIT(10)" }, new object[] { "c#-bit-null-dll", "modifyBitDLL2", "NULL::BIT(10)", "IS NULL" }, };
     }
 
     [Theory]

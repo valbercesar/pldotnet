@@ -12,12 +12,12 @@ public abstract class BaseGetJsonMultiDimensionArrayTests : PlDotNetTest
 
     public BaseGetJsonMultiDimensionArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetJsonMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "JSON[][][]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "GetJsonMultiDimensionArray", Arguments = new List<FunctionArgument> { }, ReturnType = "JSON[][][]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-json-null-3array-arraynull", "GetJsonMultidimensionArray1", "", "= ARRAY[[['{\"type\": \"json\", \"action\": \"multidimensional test\"}', '{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON], [null::JSON, null::JSON]], [['{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON, null::JSON], ['{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON, '{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON]]]"}};
+        return new object[][] { new object[] { "c#-json-null-3array-arraynull", "GetJsonMultidimensionArray1", "", "= ARRAY[[['{\"type\": \"json\", \"action\": \"multidimensional test\"}', '{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON], [null::JSON, null::JSON]], [['{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON, null::JSON], ['{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON, '{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON]]]" } };
     }
 
     [Theory]

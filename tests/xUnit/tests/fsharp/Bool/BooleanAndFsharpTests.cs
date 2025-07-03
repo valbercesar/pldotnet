@@ -12,12 +12,12 @@ public abstract class BaseBooleanAndFsharpTests : PlDotNetTest
 
     public BaseBooleanAndFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "BooleanAndFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "boolean"), new FunctionArgument("b", "boolean")}, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "BooleanAndFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "boolean"), new FunctionArgument("b", "boolean") }, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bool", "BooleanAndFSharp1", "true, true", "is true"}, new object[]{"f#-bool-null", "BooleanAndFSharp2", "NULL::BOOLEAN, true", "is false"}};
+        return new object[][] { new object[] { "f#-bool", "BooleanAndFSharp1", "true, true", "is true" }, new object[] { "f#-bool-null", "BooleanAndFSharp2", "NULL::BOOLEAN, true", "is false" } };
     }
 
     [Theory]

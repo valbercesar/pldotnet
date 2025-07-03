@@ -12,12 +12,12 @@ public abstract class BaseSpinUllMac8Tests : PlDotNetTest
 
     public BaseSpinUllMac8Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpinUllMac8", Arguments = new List<FunctionArgument>{}, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpinUllMac8", Arguments = new List<FunctionArgument> { }, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr8-null-spi", "SPINullMac8", "", "= ARRAY['ab:01:2b:31:41:fa:ab:ac'::MACADDR8, NULL::MACADDR8]"}, };
+        return new object[][] { new object[] { "c#-macaddr8-null-spi", "SPINullMac8", "", "= ARRAY['ab:01:2b:31:41:fa:ab:ac'::MACADDR8, NULL::MACADDR8]" }, };
     }
 
     [Theory]

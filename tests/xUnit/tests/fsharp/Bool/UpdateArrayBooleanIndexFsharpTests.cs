@@ -12,12 +12,12 @@ public abstract class BaseUpdateArrayBooleanIndexFsharpTests : PlDotNetTest
 
     public BaseUpdateArrayBooleanIndexFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateArrayBooleanIndexFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "boolean[]"), new FunctionArgument("b", "boolean")}, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateArrayBooleanIndexFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "boolean[]"), new FunctionArgument("b", "boolean") }, ReturnType = "boolean[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bool-1array", "updateArrayBooleanIndexFSharp1", "ARRAY[true, false, true], false", "= ARRAY[false, false, true]"}, new object[]{"f#-bool-2array", "updateArrayBooleanIndexFSharp2", "ARRAY[[true, false], [true, false]], false", "= ARRAY[[false, false], [true, false]]"}, new object[]{"f#-bool-2array", "updateArrayBooleanIndexFSharp3", "ARRAY[[[true, false], [true, false]]], false", "= ARRAY[[[false, false], [true, false]]]"}, new object[]{"f#-bool-null-1array", "updateArrayBooleanIndexFSharp4", "ARRAY[null::boolean, false, true], true", "= ARRAY[true, false, true]"}, new object[]{"f#-bool-null-2array", "updateArrayBooleanIndexFSharp5", "ARRAY[[null::boolean, false], [null::boolean, false]], false", "= ARRAY[[false, false], [null::boolean, false]]"}, new object[]{"f#-bool-null-2array", "updateArrayBooleanIndexFSharp6", "ARRAY[[[null::boolean, false], [null::boolean, false]]], false", "= ARRAY[[[false, false], [null::boolean, false]]]"}, };
+        return new object[][] { new object[] { "f#-bool-1array", "updateArrayBooleanIndexFSharp1", "ARRAY[true, false, true], false", "= ARRAY[false, false, true]" }, new object[] { "f#-bool-2array", "updateArrayBooleanIndexFSharp2", "ARRAY[[true, false], [true, false]], false", "= ARRAY[[false, false], [true, false]]" }, new object[] { "f#-bool-2array", "updateArrayBooleanIndexFSharp3", "ARRAY[[[true, false], [true, false]]], false", "= ARRAY[[[false, false], [true, false]]]" }, new object[] { "f#-bool-null-1array", "updateArrayBooleanIndexFSharp4", "ARRAY[null::boolean, false, true], true", "= ARRAY[true, false, true]" }, new object[] { "f#-bool-null-2array", "updateArrayBooleanIndexFSharp5", "ARRAY[[null::boolean, false], [null::boolean, false]], false", "= ARRAY[[false, false], [null::boolean, false]]" }, new object[] { "f#-bool-null-2array", "updateArrayBooleanIndexFSharp6", "ARRAY[[[null::boolean, false], [null::boolean, false]]], false", "= ARRAY[[[false, false], [null::boolean, false]]]" }, };
     }
 
     [Theory]

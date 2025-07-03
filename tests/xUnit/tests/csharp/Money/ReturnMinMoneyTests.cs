@@ -12,12 +12,12 @@ public abstract class BaseReturnMinMoneyTests : PlDotNetTest
 
     public BaseReturnMinMoneyTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnMinMoney", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnMinMoney", Arguments = new List<FunctionArgument> { }, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-money", "returnMinMoney", "", "= '-92233720368547758.08'::MONEY"}, };
+        return new object[][] { new object[] { "c#-money", "returnMinMoney", "", "= '-92233720368547758.08'::MONEY" }, };
     }
 
     [Theory]

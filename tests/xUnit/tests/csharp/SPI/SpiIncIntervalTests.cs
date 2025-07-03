@@ -12,12 +12,12 @@ public abstract class BaseSpiIncIntervalTests : PlDotNetTest
 
     public BaseSpiIncIntervalTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncInterval", Arguments = new List<FunctionArgument>{new FunctionArgument("days", "INTEGER"), new FunctionArgument("months", "INTEGER")}, ReturnType = "INTERVAL", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncInterval", Arguments = new List<FunctionArgument> { new FunctionArgument("days", "INTEGER"), new FunctionArgument("months", "INTEGER") }, ReturnType = "INTERVAL", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-interval-spi", "SPIIncInterval", "60, 1", "= '1 month 3589 days 07:18:16'::INTERVAL"}, };
+        return new object[][] { new object[] { "c#-interval-spi", "SPIIncInterval", "60, 1", "= '1 month 3589 days 07:18:16'::INTERVAL" }, };
     }
 
     [Theory]

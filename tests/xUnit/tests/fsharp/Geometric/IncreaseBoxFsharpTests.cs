@@ -12,12 +12,12 @@ public abstract class BaseIncreaseBoxFsharpTests : PlDotNetTest
 
     public BaseIncreaseBoxFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseBoxFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "BOX")}, ReturnType = "BOX", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseBoxFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_value", "BOX") }, ReturnType = "BOX", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-box", "increaseBoxFSharp1", "BOX(POINT(100,100),POINT(1,1))", "= BOX(POINT(101,101),POINT(2,2))"}, new object[]{"f#-box-null", "increaseBoxFSharp1", "NULL::BOX", "= BOX(POINT(101,101),POINT(1,1))"}, };
+        return new object[][] { new object[] { "f#-box", "increaseBoxFSharp1", "BOX(POINT(100,100),POINT(1,1))", "= BOX(POINT(101,101),POINT(2,2))" }, new object[] { "f#-box-null", "increaseBoxFSharp1", "NULL::BOX", "= BOX(POINT(101,101),POINT(1,1))" }, };
     }
 
     [Theory]

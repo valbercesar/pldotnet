@@ -12,12 +12,12 @@ public abstract class BaseMaxIntegerTests : PlDotNetTest
 
     public BaseMaxIntegerTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxInteger", Arguments = new List<FunctionArgument>{}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MaxInteger", Arguments = new List<FunctionArgument> { }, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4", "maxInteger", "", "= integer '2147483647'"}, };
+        return new object[][] { new object[] { "c#-int4", "maxInteger", "", "= integer '2147483647'" }, };
     }
 
     [Theory]

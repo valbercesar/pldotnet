@@ -12,12 +12,12 @@ public abstract class BaseIncreaseDateOnlyRangesTests : PlDotNetTest
 
     public BaseIncreaseDateOnlyRangesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseDateOnlyRanges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "DATERANGE[]")}, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseDateOnlyRanges", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "DATERANGE[]") }, ReturnType = "DATERANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-daterange-null-1array", "IncreaseDateonlyRanges1", "ARRAY['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-04)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]", "= ARRAY['[2021-01-02, 2021-01-02)'::DATERANGE, '(, 2021-04-05)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]"}, };
+        return new object[][] { new object[] { "c#-daterange-null-1array", "IncreaseDateonlyRanges1", "ARRAY['[2021-01-01, 2021-01-01)'::DATERANGE, '(, 2021-04-04)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]", "= ARRAY['[2021-01-02, 2021-01-02)'::DATERANGE, '(, 2021-04-05)'::DATERANGE, null::DATERANGE, '[,)'::DATERANGE]" }, };
     }
 
     [Theory]

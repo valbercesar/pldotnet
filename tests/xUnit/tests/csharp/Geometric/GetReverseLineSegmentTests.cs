@@ -12,12 +12,12 @@ public abstract class BaseGetReverseLineSegmentTests : PlDotNetTest
 
     public BaseGetReverseLineSegmentTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetReverseLineSegment", Arguments = new List<FunctionArgument>{new FunctionArgument("my_line", "LSEG")}, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "GetReverseLineSegment", Arguments = new List<FunctionArgument> { new FunctionArgument("my_line", "LSEG") }, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-lseg", "getReverseLineSegment1", "LSEG(POINT(0.0,1.0),POINT(5.0,3.0))", "= LSEG '[(5.0,3.0),(0.0,1.0)]'"}, new object[]{"c#-lseg-null", "getReverseLineSegment2", "NULL::LSEG", "= LSEG '[(100.0,100.0),(0.0,0.0)]'"}, };
+        return new object[][] { new object[] { "c#-lseg", "getReverseLineSegment1", "LSEG(POINT(0.0,1.0),POINT(5.0,3.0))", "= LSEG '[(5.0,3.0),(0.0,1.0)]'" }, new object[] { "c#-lseg-null", "getReverseLineSegment2", "NULL::LSEG", "= LSEG '[(100.0,100.0),(0.0,0.0)]'" }, };
     }
 
     [Theory]

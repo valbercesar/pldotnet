@@ -12,12 +12,12 @@ public abstract class BaseSpinUllBooLTests : PlDotNetTest
 
     public BaseSpinUllBooLTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpinUllBooL", Arguments = new List<FunctionArgument>{}, ReturnType = "BOOLEAN[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpinUllBooL", Arguments = new List<FunctionArgument> { }, ReturnType = "BOOLEAN[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bool-null-spi", "SPINullBool", "", "= ARRAY[NULL::BOOLEAN, TRUE]"}, };
+        return new object[][] { new object[] { "c#-bool-null-spi", "SPINullBool", "", "= ARRAY[NULL::BOOLEAN, TRUE]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseCreateTimestampTzMultidimensionalArrayTests : PlDotNet
 
     public BaseCreateTimestampTzMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampTzMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTimestampTzMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "TIMESTAMP WITH TIME ZONE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-timestamptz-3array", "CreateTimestamptzMultidimensionalArray", "", "= ARRAY[[[TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00', TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00'], [null::timestamp, null::timestamp]], [[TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00', null::timestamp], [TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00', TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00']]]"}, };
+        return new object[][] { new object[] { "c#-timestamptz-3array", "CreateTimestamptzMultidimensionalArray", "", "= ARRAY[[[TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00', TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00'], [null::timestamp, null::timestamp]], [[TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00', null::timestamp], [TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00', TIMESTAMP WITH TIME ZONE '2022-11-15 13:23:45 +00']]]" }, };
     }
 
     [Theory]

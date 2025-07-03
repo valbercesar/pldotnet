@@ -12,12 +12,12 @@ public abstract class BaseIncreaseTimestampTzRangeFsharpTests : PlDotNetTest
 
     public BaseIncreaseTimestampTzRangeFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimestampTzRangeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TSTZRANGE"), new FunctionArgument("b", "INTEGER")}, ReturnType = "TSTZRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseTimestampTzRangeFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "TSTZRANGE"), new FunctionArgument("b", "INTEGER") }, ReturnType = "TSTZRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-tstzrange", "IncreaseTimestampTzRangeFSharp1", "'[2021-01-01 14:30 -03, 2021-01-04 15:30 +05)'::TSTZRANGE, 1", "= '[2021-01-02 14:30 -03, 2021-01-05 15:30 +05)'::TSTZRANGE"}, new object[]{"f#-tstzrange", "IncreaseTimestampTzRangeFSharp2", "'[, 2021-01-01 15:30 -03)'::TSTZRANGE, 3", "= '[, 2021-01-04 15:30 -03)'::TSTZRANGE"}, new object[]{"f#-tstzrange", "IncreaseTimestampTzRangeFSharp3", "'[,)'::TSTZRANGE, 3", "= '(,)'::TSTZRANGE"}, new object[]{"f#-tstzrange", "IncreaseTimestampTzRangeFSharp4", "'(2021-01-01 14:30 -03, 2021-01-04 15:30 +05]'::TSTZRANGE, 3", "= '(2021-01-04 14:30 -03, 2021-01-07 15:30 +05]'::TSTZRANGE"}, new object[]{"f#-tstzrange-null", "IncreaseTimestampTzRangeFSharp5", "NULL::TSTZRANGE, 3", @"= '[""2022-01-04 12:30:30+00"",""2022-12-28 17:30:30+00"")'::TSTZRANGE"}, };
+        return new object[][] { new object[] { "f#-tstzrange", "IncreaseTimestampTzRangeFSharp1", "'[2021-01-01 14:30 -03, 2021-01-04 15:30 +05)'::TSTZRANGE, 1", "= '[2021-01-02 14:30 -03, 2021-01-05 15:30 +05)'::TSTZRANGE" }, new object[] { "f#-tstzrange", "IncreaseTimestampTzRangeFSharp2", "'[, 2021-01-01 15:30 -03)'::TSTZRANGE, 3", "= '[, 2021-01-04 15:30 -03)'::TSTZRANGE" }, new object[] { "f#-tstzrange", "IncreaseTimestampTzRangeFSharp3", "'[,)'::TSTZRANGE, 3", "= '(,)'::TSTZRANGE" }, new object[] { "f#-tstzrange", "IncreaseTimestampTzRangeFSharp4", "'(2021-01-01 14:30 -03, 2021-01-04 15:30 +05]'::TSTZRANGE, 3", "= '(2021-01-04 14:30 -03, 2021-01-07 15:30 +05]'::TSTZRANGE" }, new object[] { "f#-tstzrange-null", "IncreaseTimestampTzRangeFSharp5", "NULL::TSTZRANGE, 3", @"= '[""2022-01-04 12:30:30+00"",""2022-12-28 17:30:30+00"")'::TSTZRANGE" }, };
     }
 
     [Theory]

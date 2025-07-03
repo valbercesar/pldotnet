@@ -12,12 +12,12 @@ public abstract class BaseCreateTextMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateTextMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTextMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "text[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTextMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "text[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-text-null-3array-arraynull", "CreateTextMultidimensionalArray", "", "= ARRAY[[['text 1'::text, 'text 2'::text], [null::text, null::text]], [['text 3'::text, null::text], ['text 4'::text, 'text5'::text]]]"}, };
+        return new object[][] { new object[] { "c#-text-null-3array-arraynull", "CreateTextMultidimensionalArray", "", "= ARRAY[[['text 1'::text, 'text 2'::text], [null::text, null::text]], [['text 3'::text, null::text], ['text 4'::text, 'text5'::text]]]" }, };
     }
 
     [Theory]

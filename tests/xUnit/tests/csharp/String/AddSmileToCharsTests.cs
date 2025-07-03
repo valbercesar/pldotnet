@@ -12,12 +12,12 @@ public abstract class BaseAddSmileToCharsTests : PlDotNetTest
 
     public BaseAddSmileToCharsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddSmileToChars", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BPCHAR[]")}, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddSmileToChars", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "BPCHAR[]") }, ReturnType = "BPCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bpchar-null-1array", "AddSmileToChars1", "ARRAY['hello'::BPCHAR, 'hi'::BPCHAR, null::BPCHAR, 'bye'::BPCHAR]", "= ARRAY['hello :)'::BPCHAR, 'hi :)'::BPCHAR, null::BPCHAR, 'bye :)'::BPCHAR]"}, };
+        return new object[][] { new object[] { "c#-bpchar-null-1array", "AddSmileToChars1", "ARRAY['hello'::BPCHAR, 'hi'::BPCHAR, null::BPCHAR, 'bye'::BPCHAR]", "= ARRAY['hello :)'::BPCHAR, 'hi :)'::BPCHAR, null::BPCHAR, 'bye :)'::BPCHAR]" }, };
     }
 
     [Theory]

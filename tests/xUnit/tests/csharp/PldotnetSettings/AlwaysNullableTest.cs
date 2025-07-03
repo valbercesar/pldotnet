@@ -19,7 +19,7 @@ public class AlwaysNullableTest : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "alwaysNullable",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "boolean",
             Body = FunctionBody,
             Language = LanguageType.PlcSharp,

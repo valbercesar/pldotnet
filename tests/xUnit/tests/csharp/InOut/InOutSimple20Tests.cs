@@ -12,12 +12,12 @@ public abstract class BaseInOutSimple20Tests : PlDotNetTest
 
     public BaseInOutSimple20Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutSimple20", Arguments = new List<FunctionArgument>{new FunctionArgument("INOUT address", "INET"), new FunctionArgument("IN pos", "INT"), new FunctionArgument("IN delta", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "InOutSimple20", Arguments = new List<FunctionArgument> { new FunctionArgument("INOUT address", "INET"), new FunctionArgument("IN pos", "INT"), new FunctionArgument("IN delta", "INT") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-inout-simple-20", "inout_simple_20", "CIDR '192.168/24', 2, 3", "= INET '192.168.3.0/24'"}, };
+        return new object[][] { new object[] { "c#-inout-simple-20", "inout_simple_20", "CIDR '192.168/24', 2, 3", "= INET '192.168.3.0/24'" }, };
     }
 
     [Theory]

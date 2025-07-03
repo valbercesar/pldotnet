@@ -12,12 +12,12 @@ public abstract class BaseCreateTimestampMultidimensionalArrayFsharpTests : PlDo
 
     public BaseCreateTimestampMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTimestampMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "TIMESTAMP[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-timestamp-3array", "CreateTimestampMultidimensionalArrayFSharp", "", "= ARRAY[[[TIMESTAMP '2022-11-15 13:23:45']]]"}, };
+        return new object[][] { new object[] { "f#-timestamp-3array", "CreateTimestampMultidimensionalArrayFSharp", "", "= ARRAY[[[TIMESTAMP '2022-11-15 13:23:45']]]" }, };
     }
 
     [Theory]

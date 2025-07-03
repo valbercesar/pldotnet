@@ -25,7 +25,7 @@ public abstract class BaseIncreaseMoneyDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-money-null-1array-dll", "IncreaseMoneyDLL1", "ARRAY['32500.0'::MONEY, '-500.4'::MONEY, null::MONEY, '900540.2'::MONEY]", "= ARRAY['32501.0'::MONEY, '-499.4'::MONEY, null::MONEY, '900541.2'::MONEY]"}, };
+        return new object[][] { new object[] { "c#-money-null-1array-dll", "IncreaseMoneyDLL1", "ARRAY['32500.0'::MONEY, '-500.4'::MONEY, null::MONEY, '900540.2'::MONEY]", "= ARRAY['32501.0'::MONEY, '-499.4'::MONEY, null::MONEY, '900541.2'::MONEY]" }, };
     }
 
     [Theory]

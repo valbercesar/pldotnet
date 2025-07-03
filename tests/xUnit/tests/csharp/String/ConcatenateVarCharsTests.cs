@@ -12,12 +12,12 @@ public abstract class BaseConcatenateVarCharsTests : PlDotNetTest
 
     public BaseConcatenateVarCharsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateVarChars", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "VARCHAR"), new FunctionArgument("b", "VARCHAR"), new FunctionArgument("c", "BPCHAR")}, ReturnType = "VARCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ConcatenateVarChars", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "VARCHAR"), new FunctionArgument("b", "VARCHAR"), new FunctionArgument("c", "BPCHAR") }, ReturnType = "VARCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varchar", "concatenateVarChars1", "'hello'::VARCHAR, 'beautiful'::VARCHAR, 'world!'::BPCHAR", "= 'HELLO BEAUTIFUL WORLD!'::VARCHAR"}, new object[]{"c#-varchar-null", "concatenateVarChars2", "NULL::VARCHAR, 'beautiful'::VARCHAR, NULL::BPCHAR", "= ' BEAUTIFUL '::VARCHAR"}, };
+        return new object[][] { new object[] { "c#-varchar", "concatenateVarChars1", "'hello'::VARCHAR, 'beautiful'::VARCHAR, 'world!'::BPCHAR", "= 'HELLO BEAUTIFUL WORLD!'::VARCHAR" }, new object[] { "c#-varchar-null", "concatenateVarChars2", "NULL::VARCHAR, 'beautiful'::VARCHAR, NULL::BPCHAR", "= ' BEAUTIFUL '::VARCHAR" }, };
     }
 
     [Theory]

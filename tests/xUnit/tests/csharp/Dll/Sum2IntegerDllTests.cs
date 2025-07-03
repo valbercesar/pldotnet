@@ -25,7 +25,7 @@ public abstract class BaseSum2IntegerDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4-dll", "sum2IntegerDLL1", "32770, 100", "= INTEGER '32870'"}, new object[]{"c#-int4-null-dll", "sum2IntegerDLL2", "NULL::INTEGER, 100::INTEGER", "= INTEGER '100'"}, };
+        return new object[][] { new object[] { "c#-int4-dll", "sum2IntegerDLL1", "32770, 100", "= INTEGER '32870'" }, new object[] { "c#-int4-null-dll", "sum2IntegerDLL2", "NULL::INTEGER, 100::INTEGER", "= INTEGER '100'" }, };
     }
 
     [Theory]

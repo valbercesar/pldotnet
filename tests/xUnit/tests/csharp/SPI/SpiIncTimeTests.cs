@@ -12,12 +12,12 @@ public abstract class BaseSpiIncTimeTests : PlDotNetTest
 
     public BaseSpiIncTimeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncTime", Arguments = new List<FunctionArgument>{new FunctionArgument("m", "INTEGER"), new FunctionArgument("h", "INTEGER")}, ReturnType = "TIME", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncTime", Arguments = new List<FunctionArgument> { new FunctionArgument("m", "INTEGER"), new FunctionArgument("h", "INTEGER") }, ReturnType = "TIME", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-time-spi", "SPIIncTime", "24, 2", "= '14:24:01'::TIME"}, };
+        return new object[][] { new object[] { "c#-time-spi", "SPIIncTime", "24, 2", "= '14:24:01'::TIME" }, };
     }
 
     [Theory]

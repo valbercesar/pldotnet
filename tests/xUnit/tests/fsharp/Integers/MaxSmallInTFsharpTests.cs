@@ -12,12 +12,12 @@ public abstract class BaseMaxSmallInTFsharpTests : PlDotNetTest
 
     public BaseMaxSmallInTFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxSmallInTFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "int2", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MaxSmallInTFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "int2", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int2", "maxSmallIntFSharp", "", "= int2 '32767'"}, };
+        return new object[][] { new object[] { "f#-int2", "maxSmallIntFSharp", "", "= int2 '32767'" }, };
     }
 
     [Theory]

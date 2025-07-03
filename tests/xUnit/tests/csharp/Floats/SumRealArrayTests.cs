@@ -12,12 +12,12 @@ public abstract class BaseSumRealArrayTests : PlDotNetTest
 
     public BaseSumRealArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumRealArray", Arguments = new List<FunctionArgument>{new FunctionArgument("floats", "real[]")}, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SumRealArray", Arguments = new List<FunctionArgument> { new FunctionArgument("floats", "real[]") }, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float4-null-1array", "sumRealArray1", "ARRAY[1.50055::real, 2.30300::real, 4.52123::real, 7.41234::real, null::real]", "= '15.737121'"}, new object[]{"c#-float4-null-2array-arraynull", "sumRealArray2", "ARRAY[[1.50055::real, 2.30300::real], [4.52123::real, 7.41234::real], [null::real, null::real]]", "= '15.737121'"}, new object[]{"c#-float4-null-3array-arraynull", "sumRealArray3", "ARRAY[[[1.50055::real, 2.30300::real], [4.52123::real, 7.41234::real], [null::real, null::real]], [[7.50055::real, 8.30300::real], [null::real, null::real], [9.52123::real, 11.41234::real]]]", "= '52.474243'"}, };
+        return new object[][] { new object[] { "c#-float4-null-1array", "sumRealArray1", "ARRAY[1.50055::real, 2.30300::real, 4.52123::real, 7.41234::real, null::real]", "= '15.737121'" }, new object[] { "c#-float4-null-2array-arraynull", "sumRealArray2", "ARRAY[[1.50055::real, 2.30300::real], [4.52123::real, 7.41234::real], [null::real, null::real]]", "= '15.737121'" }, new object[] { "c#-float4-null-3array-arraynull", "sumRealArray3", "ARRAY[[[1.50055::real, 2.30300::real], [4.52123::real, 7.41234::real], [null::real, null::real]], [[7.50055::real, 8.30300::real], [null::real, null::real], [9.52123::real, 11.41234::real]]]", "= '52.474243'" }, };
     }
 
     [Theory]

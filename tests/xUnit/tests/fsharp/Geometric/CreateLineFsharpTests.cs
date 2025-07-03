@@ -12,12 +12,12 @@ public abstract class BaseCreateLineFsharpTests : PlDotNetTest
 
     public BaseCreateLineFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "float8"), new FunctionArgument("b", "float8"), new FunctionArgument("c", "float8")}, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateLineFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "float8"), new FunctionArgument("b", "float8"), new FunctionArgument("c", "float8") }, ReturnType = "LINE", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-line", "createLineFSharp", "1.50,-2.750,3.25", "= LINE '{1.50,-2.750,3.25}'"}, };
+        return new object[][] { new object[] { "f#-line", "createLineFSharp", "1.50,-2.750,3.25", "= LINE '{1.50,-2.750,3.25}'" }, };
     }
 
     [Theory]

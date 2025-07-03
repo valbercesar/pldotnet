@@ -12,12 +12,12 @@ public abstract class BaseConvertByTeaArrayTests : PlDotNetTest
 
     public BaseConvertByTeaArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConvertByTeaArray", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "BYTEA[]")}, ReturnType = "BYTEA[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ConvertByTeaArray", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "BYTEA[]") }, ReturnType = "BYTEA[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bytea-null-1array", "ConvertByteaArray1", "ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, null::BYTEA, '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]", "= ARRAY['\\x427269636b2041626f6465206973206e69636521'::BYTEA, '\\x54657374203121'::BYTEA, null::BYTEA, '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]"}, };
+        return new object[][] { new object[] { "c#-bytea-null-1array", "ConvertByteaArray1", "ARRAY['Brick Abode is nice!'::BYTEA, 'Test 1!'::BYTEA, null::BYTEA, '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]", "= ARRAY['\\x427269636b2041626f6465206973206e69636521'::BYTEA, '\\x54657374203121'::BYTEA, null::BYTEA, '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA]" }, };
     }
 
     [Theory]

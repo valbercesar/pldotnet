@@ -12,12 +12,12 @@ public abstract class BaseFsInOutAllThreeSTests : PlDotNetTest
 
     public BaseFsInOutAllThreeSTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "FsInOutAllThreeS", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "INT"), new FunctionArgument("INOUT b", "INT"), new FunctionArgument("OUT c", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "FsInOutAllThreeS", Arguments = new List<FunctionArgument> { new FunctionArgument("IN a", "INT"), new FunctionArgument("INOUT b", "INT"), new FunctionArgument("OUT c", "INT") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inout-allthree-S", "fs_inout_allthreeS", "3, 8", "= ROW(9, 11)"}, };
+        return new object[][] { new object[] { "f#-inout-allthree-S", "fs_inout_allthreeS", "3, 8", "= ROW(9, 11)" }, };
     }
 
     [Theory]

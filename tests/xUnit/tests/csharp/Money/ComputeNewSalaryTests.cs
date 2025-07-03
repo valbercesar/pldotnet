@@ -12,12 +12,12 @@ public abstract class BaseComputeNewSalaryTests : PlDotNetTest
 
     public BaseComputeNewSalaryTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ComputeNewSalary", Arguments = new List<FunctionArgument>{new FunctionArgument("salary", "MONEY"), new FunctionArgument("rate", "FLOAT8")}, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ComputeNewSalary", Arguments = new List<FunctionArgument> { new FunctionArgument("salary", "MONEY"), new FunctionArgument("rate", "FLOAT8") }, ReturnType = "MONEY", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-money", "computeNewSalary", "'32500'::MONEY, 0.059875", "= '34445.9375'::MONEY"}, };
+        return new object[][] { new object[] { "c#-money", "computeNewSalary", "'32500'::MONEY, 0.059875", "= '34445.9375'::MONEY" }, };
     }
 
     [Theory]

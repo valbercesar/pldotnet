@@ -25,7 +25,7 @@ public abstract class BaseByTeaConversionsDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bytea-dll", "byteaConversionsDLL1", "'Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA", "= '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA"}, new object[]{"c#-bytea-null-dll", "byteaConversionsDLL2", "NULL::BYTEA, 'Thank you very much...'::BYTEA", "= 'Thank you very much...'::BYTEA"}, };
+        return new object[][] { new object[] { "c#-bytea-dll", "byteaConversionsDLL1", "'Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA", "= '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA" }, new object[] { "c#-bytea-null-dll", "byteaConversionsDLL2", "NULL::BYTEA, 'Thank you very much...'::BYTEA", "= 'Thank you very much...'::BYTEA" }, };
     }
 
     [Theory]

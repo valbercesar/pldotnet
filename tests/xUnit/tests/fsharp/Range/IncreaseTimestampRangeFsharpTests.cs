@@ -12,12 +12,12 @@ public abstract class BaseIncreaseTimestampRangeFsharpTests : PlDotNetTest
 
     public BaseIncreaseTimestampRangeFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimestampRangeFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "TSRANGE"), new FunctionArgument("b", "INTEGER")}, ReturnType = "TSRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseTimestampRangeFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "TSRANGE"), new FunctionArgument("b", "INTEGER") }, ReturnType = "TSRANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-tsrange", "IncreaseTimestampRangeFSharp1", "'[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, 1", "= '[2021-01-02 14:30, 2021-01-02 15:30)'::TSRANGE"}, new object[]{"f#-tsrange", "IncreaseTimestampRangeFSharp2", "'[, 2021-01-01 15:30)'::TSRANGE, 3", "= '[, 2021-01-04 15:30)'::TSRANGE"}, new object[]{"f#-tsrange", "IncreaseTimestampRangeFSharp3", "'[,)'::TSRANGE, 3", "= '(,)'::TSRANGE"}, new object[]{"f#-tsrange", "IncreaseTimestampRangeFSharp4", "'(2021-01-01 14:30, 2021-01-01 15:30]'::TSRANGE, 3", "= '(2021-01-04 14:30, 2021-01-04 15:30]'::TSRANGE"}, new object[]{"f#-tsrange-null", "IncreaseTimestampRangeFSharp5", "NULL::TSRANGE, 3", @"= '[""2022-01-04 12:30:30"",""2022-12-28 17:30:30"")'::TSRANGE"}, };
+        return new object[][] { new object[] { "f#-tsrange", "IncreaseTimestampRangeFSharp1", "'[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, 1", "= '[2021-01-02 14:30, 2021-01-02 15:30)'::TSRANGE" }, new object[] { "f#-tsrange", "IncreaseTimestampRangeFSharp2", "'[, 2021-01-01 15:30)'::TSRANGE, 3", "= '[, 2021-01-04 15:30)'::TSRANGE" }, new object[] { "f#-tsrange", "IncreaseTimestampRangeFSharp3", "'[,)'::TSRANGE, 3", "= '(,)'::TSRANGE" }, new object[] { "f#-tsrange", "IncreaseTimestampRangeFSharp4", "'(2021-01-01 14:30, 2021-01-01 15:30]'::TSRANGE, 3", "= '(2021-01-04 14:30, 2021-01-04 15:30]'::TSRANGE" }, new object[] { "f#-tsrange-null", "IncreaseTimestampRangeFSharp5", "NULL::TSRANGE, 3", @"= '[""2022-01-04 12:30:30"",""2022-12-28 17:30:30"")'::TSRANGE" }, };
     }
 
     [Theory]

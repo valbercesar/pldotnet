@@ -12,12 +12,12 @@ public abstract class BaseCreateTimestampRangeArrayTests : PlDotNetTest
 
     public BaseCreateTimestampRangeArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimestampRangeArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTimestampRangeArray", Arguments = new List<FunctionArgument> { }, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-tsrange-null-3array-arraynull", "CreateTimestampRangeArray1", "", "= ARRAY[[['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE,'[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE], [null::TSRANGE, null::TSRANGE]], [['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE, null::TSRANGE], ['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE, '[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE]]]"}, };
+        return new object[][] { new object[] { "c#-tsrange-null-3array-arraynull", "CreateTimestampRangeArray1", "", "= ARRAY[[['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE,'[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE], [null::TSRANGE, null::TSRANGE]], [['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE, null::TSRANGE], ['[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE, '[2022-04-14 12:30:25, 2022-04-15 17:30:25)'::TSRANGE]]]" }, };
     }
 
     [Theory]

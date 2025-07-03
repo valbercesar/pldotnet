@@ -12,12 +12,12 @@ public abstract class BaseSpinUllFloat8Tests : PlDotNetTest
 
     public BaseSpinUllFloat8Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpinUllFloat8", Arguments = new List<FunctionArgument>{}, ReturnType = "FLOAT8[]", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpinUllFloat8", Arguments = new List<FunctionArgument> { }, ReturnType = "FLOAT8[]", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float8-null-spi", "SPINullFloat8", "", "= ARRAY[NULL::FLOAT8, '3.141592653'::FLOAT8]"}, };
+        return new object[][] { new object[] { "c#-float8-null-spi", "SPINullFloat8", "", "= ARRAY[NULL::FLOAT8, '3.141592653'::FLOAT8]" }, };
     }
 
     [Theory]

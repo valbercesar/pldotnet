@@ -12,12 +12,12 @@ public abstract class BaseAddDaysTests : PlDotNetTest
 
     public BaseAddDaysTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddDays", Arguments = new List<FunctionArgument>{new FunctionArgument("my_timestamp TIMESTAMP WITH TIME", "ZONE"), new FunctionArgument("days_to_add", "INT")}, ReturnType = "TIMESTAMP WITH TIME ZONE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddDays", Arguments = new List<FunctionArgument> { new FunctionArgument("my_timestamp TIMESTAMP WITH TIME", "ZONE"), new FunctionArgument("days_to_add", "INT") }, ReturnType = "TIMESTAMP WITH TIME ZONE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-timestamptz", "addDays1", "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', 2", "= TIMESTAMP WITH TIME ZONE '2004-10-21 22:23:54 +02'"}, new object[]{"c#-timestamptz-null", "addDays2", "NULL::TIMESTAMP WITH TIME ZONE, 2", "= TIMESTAMP WITH TIME ZONE '2022-01-03 08:30:20 +00'"}, };
+        return new object[][] { new object[] { "c#-timestamptz", "addDays1", "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54 PM +02', 2", "= TIMESTAMP WITH TIME ZONE '2004-10-21 22:23:54 +02'" }, new object[] { "c#-timestamptz-null", "addDays2", "NULL::TIMESTAMP WITH TIME ZONE, 2", "= TIMESTAMP WITH TIME ZONE '2022-01-03 08:30:20 +00'" }, };
     }
 
     [Theory]

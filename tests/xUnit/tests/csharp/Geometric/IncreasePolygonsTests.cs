@@ -12,12 +12,12 @@ public abstract class BaseIncreasePolygonsTests : PlDotNetTest
 
     public BaseIncreasePolygonsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePolygons", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "POLYGON[]")}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreasePolygons", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "POLYGON[]") }, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-polygon-null-1array", "IncreasePolygons1", "ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]", "= CAST(ARRAY['((2.5,3.75),(4.0,5.75),(6.0,6.0))'::POLYGON, '((2.5,3.75),(4.0,5.75),(6.0,6.0))'::POLYGON, null::POLYGON, '((2.5,3.75),(4.0,5.75),(6.0,6.0))'::POLYGON] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-polygon-null-1array", "IncreasePolygons1", "ARRAY['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]", "= CAST(ARRAY['((2.5,3.75),(4.0,5.75),(6.0,6.0))'::POLYGON, '((2.5,3.75),(4.0,5.75),(6.0,6.0))'::POLYGON, null::POLYGON, '((2.5,3.75),(4.0,5.75),(6.0,6.0))'::POLYGON] AS TEXT)" }, };
     }
 
     [Theory]

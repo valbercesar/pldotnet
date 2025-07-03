@@ -12,12 +12,12 @@ public abstract class BaseCreateMacAddress8MultidimensionalArrayTests : PlDotNet
 
     public BaseCreateMacAddress8MultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateMacAddress8MultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateMacAddress8MultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "MACADDR8[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr8-3array", "CreateMacAddress8MultidimensionalArray", "", "= ARRAY[[[MACADDR8 'ab-01-2b-31-41-fa-ab-ac', MACADDR8 'ab-01-2b-31-41-fa-ab-ac'], [null::MACADDR8, null::MACADDR8]], [[MACADDR8 'ab-01-2b-31-41-fa-ab-ac', null::MACADDR8], [MACADDR8 'ab-01-2b-31-41-fa-ab-ac', MACADDR8 'ab-01-2b-31-41-fa-ab-ac']]]"}, };
+        return new object[][] { new object[] { "c#-macaddr8-3array", "CreateMacAddress8MultidimensionalArray", "", "= ARRAY[[[MACADDR8 'ab-01-2b-31-41-fa-ab-ac', MACADDR8 'ab-01-2b-31-41-fa-ab-ac'], [null::MACADDR8, null::MACADDR8]], [[MACADDR8 'ab-01-2b-31-41-fa-ab-ac', null::MACADDR8], [MACADDR8 'ab-01-2b-31-41-fa-ab-ac', MACADDR8 'ab-01-2b-31-41-fa-ab-ac']]]" }, };
     }
 
     [Theory]

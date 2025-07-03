@@ -12,12 +12,12 @@ public abstract class BaseStringTwoDimensionalArrayTests : PlDotNetTest
 
     public BaseStringTwoDimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "StringTwoDimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TEXT", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "StringTwoDimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "TEXT", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-text-spi-array", "StringTwoDimensionalArray", "", "= 'abcdefghijkl abcdefghijkl'::TEXT"}, };
+        return new object[][] { new object[] { "c#-text-spi-array", "StringTwoDimensionalArray", "", "= 'abcdefghijkl abcdefghijkl'::TEXT" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseModifyInputDateTests : PlDotNetTest
 
     public BaseModifyInputDateTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ModifyInputDate", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_date", "DATE")}, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ModifyInputDate", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_date", "DATE") }, ReturnType = "DATE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-date", "modifyInputDate1", "DATE 'Oct-14-2022'", "= DATE 'Nov-20-2025'"}, new object[]{"c#-date-null", "modifyInputDate2", "NULL::DATE", "= DATE 'Feb-07-2025'"}, };
+        return new object[][] { new object[] { "c#-date", "modifyInputDate1", "DATE 'Oct-14-2022'", "= DATE 'Nov-20-2025'" }, new object[] { "c#-date-null", "modifyInputDate2", "NULL::DATE", "= DATE 'Feb-07-2025'" }, };
     }
 
     [Theory]

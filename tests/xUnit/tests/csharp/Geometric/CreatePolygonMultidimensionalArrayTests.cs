@@ -12,12 +12,12 @@ public abstract class BaseCreatePolygonMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreatePolygonMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreatePolygonMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreatePolygonMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "POLYGON[]", Body = FunctionBody, Language = Language, IsStrict = true, CastFunctionAs = "TEXT", };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-polygon-null-3array-arraynull", "CreatePolygonMultidimensionalArray1", "", "= CAST(ARRAY[[['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON], [null::POLYGON, null::POLYGON]], [['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]]] AS TEXT)"}, };
+        return new object[][] { new object[] { "c#-polygon-null-3array-arraynull", "CreatePolygonMultidimensionalArray1", "", "= CAST(ARRAY[[['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON], [null::POLYGON, null::POLYGON]], [['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, null::POLYGON], ['((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON, '((1.5,2.75),(3.0,4.75),(5.0,5.0))'::POLYGON]]] AS TEXT)" }, };
     }
 
     [Theory]

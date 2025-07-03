@@ -12,12 +12,12 @@ public abstract class BaseByTeaConversionsFsharpTests : PlDotNetTest
 
     public BaseByTeaConversionsFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ByTeaConversionsFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "BYTEA")}, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ByTeaConversionsFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BYTEA"), new FunctionArgument("b", "BYTEA") }, ReturnType = "BYTEA", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bytea", "byteaConversionsFSharp1", "'Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA", "= '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA"}, new object[]{"f#-bytea-null", "byteaConversionsFSharp2", "NULL::BYTEA, 'Thank you very much...'::BYTEA", "= 'Thank you very much...'::BYTEA"}, };
+        return new object[][] { new object[] { "f#-bytea", "byteaConversionsFSharp1", "'Brick Abode is nice!'::BYTEA, 'Thank you very much...'::BYTEA", "= '\\x427269636b2041626f6465206973206e69636521205468616e6b20796f752076657279206d7563682e2e2e'::BYTEA" }, new object[] { "f#-bytea-null", "byteaConversionsFSharp2", "NULL::BYTEA, 'Thank you very much...'::BYTEA", "= 'Thank you very much...'::BYTEA" }, };
     }
 
     [Theory]

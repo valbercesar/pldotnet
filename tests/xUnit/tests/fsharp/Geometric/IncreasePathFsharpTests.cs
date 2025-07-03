@@ -12,12 +12,12 @@ public abstract class BaseIncreasePathFsharpTests : PlDotNetTest
 
     public BaseIncreasePathFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreasePathFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_value", "PATH")}, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreasePathFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_value", "PATH") }, ReturnType = "PATH", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-path", "increasePathFSharp1", "'((1,1),(101,101),(201,201))'::PATH", "= '((2,2),(102,102),(202,202))'::PATH"}, new object[]{"f#-path-null", "increasePathFSharp2", "NULL::PATH", "= '((1,1),(101,101),(201,201))'::PATH"}, };
+        return new object[][] { new object[] { "f#-path", "increasePathFSharp1", "'((1,1),(101,101),(201,201))'::PATH", "= '((2,2),(102,102),(202,202))'::PATH" }, new object[] { "f#-path-null", "increasePathFSharp2", "NULL::PATH", "= '((1,1),(101,101),(201,201))'::PATH" }, };
     }
 
     [Theory]

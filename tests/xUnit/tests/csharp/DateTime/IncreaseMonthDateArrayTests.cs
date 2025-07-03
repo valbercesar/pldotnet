@@ -12,12 +12,12 @@ public abstract class BaseIncreaseMonthDateArrayTests : PlDotNetTest
 
     public BaseIncreaseMonthDateArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseMonthDateArray", Arguments = new List<FunctionArgument>{new FunctionArgument("dates", "DATE[]")}, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseMonthDateArray", Arguments = new List<FunctionArgument> { new FunctionArgument("dates", "DATE[]") }, ReturnType = "DATE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-date-1array", "IncreaseMonthDateArray1", "ARRAY[DATE 'Oct-14-2022', DATE 'Oct-15-2022', null::date, DATE 'Oct-16-2022']", "= ARRAY[DATE 'Nov-14-2022', DATE 'Nov-15-2022', null::date, DATE 'Nov-16-2022']"}, new object[]{"c#-date-2array", "IncreaseMonthDateArray2", "ARRAY[[DATE 'Oct-14-2022', DATE 'Jan-15-2022'], [DATE 'Nov-18-2022', null::date]]", "= ARRAY[DATE 'Nov-14-2022', DATE 'Feb-15-2022', DATE 'Dec-18-2022', null::date]"}, };
+        return new object[][] { new object[] { "c#-date-1array", "IncreaseMonthDateArray1", "ARRAY[DATE 'Oct-14-2022', DATE 'Oct-15-2022', null::date, DATE 'Oct-16-2022']", "= ARRAY[DATE 'Nov-14-2022', DATE 'Nov-15-2022', null::date, DATE 'Nov-16-2022']" }, new object[] { "c#-date-2array", "IncreaseMonthDateArray2", "ARRAY[[DATE 'Oct-14-2022', DATE 'Jan-15-2022'], [DATE 'Nov-18-2022', null::date]]", "= ARRAY[DATE 'Nov-14-2022', DATE 'Feb-15-2022', DATE 'Dec-18-2022', null::date]" }, };
     }
 
     [Theory]

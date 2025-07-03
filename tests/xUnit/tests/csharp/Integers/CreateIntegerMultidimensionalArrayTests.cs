@@ -12,12 +12,12 @@ public abstract class BaseCreateIntegerMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateIntegerMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateIntegerMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "integer[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateIntegerMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "integer[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4-null-3array-arraynull", "CreateIntegerMultidimensionalArray", "", "= ARRAY[[[2047483647::integer, 304325::integer], [null::integer, null::integer]], [[706524::integer, 9652345::integer], [943::integer, 4134677::integer]]]"}, };
+        return new object[][] { new object[] { "c#-int4-null-3array-arraynull", "CreateIntegerMultidimensionalArray", "", "= ARRAY[[[2047483647::integer, 304325::integer], [null::integer, null::integer]], [[706524::integer, 9652345::integer], [943::integer, 4134677::integer]]]" }, };
     }
 
     [Theory]

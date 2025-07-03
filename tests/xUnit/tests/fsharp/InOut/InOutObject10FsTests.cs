@@ -12,12 +12,12 @@ public abstract class BaseInOutObject10FsTests : PlDotNetTest
 
     public BaseInOutObject10FsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutObject10Fs", Arguments = new List<FunctionArgument>{new FunctionArgument("IN a", "text"), new FunctionArgument("INOUT b", "text")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "InOutObject10Fs", Arguments = new List<FunctionArgument> { new FunctionArgument("IN a", "text"), new FunctionArgument("INOUT b", "text") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inout-object-10", "inout_object_10_fs", "'red', 'blue'", "= 'red blue'"}, new object[]{"f#-inout-object-11", "inout_object_10_fs", "'red', NULL", "= 'red '"}, new object[]{"f#-inout-object-12", "inout_object_10_fs", "NULL, 'blue'", "= ' blue'"}, };
+        return new object[][] { new object[] { "f#-inout-object-10", "inout_object_10_fs", "'red', 'blue'", "= 'red blue'" }, new object[] { "f#-inout-object-11", "inout_object_10_fs", "'red', NULL", "= 'red '" }, new object[] { "f#-inout-object-12", "inout_object_10_fs", "NULL, 'blue'", "= ' blue'" }, };
     }
 
     [Theory]

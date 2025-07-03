@@ -12,12 +12,12 @@ public abstract class BaseStringArrayWithNullTests : PlDotNetTest
 
     public BaseStringArrayWithNullTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "StringArrayWithNull", Arguments = new List<FunctionArgument>{}, ReturnType = "INTEGER", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "StringArrayWithNull", Arguments = new List<FunctionArgument> { }, ReturnType = "INTEGER", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-text-spi-array-null", "StringArrayWithNull", "", "= 6"}, };
+        return new object[][] { new object[] { "c#-text-spi-array-null", "StringArrayWithNull", "", "= 6" }, };
     }
 
     [Theory]

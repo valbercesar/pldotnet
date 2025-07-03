@@ -12,12 +12,12 @@ public abstract class BaseAddMinutesTests : PlDotNetTest
 
     public BaseAddMinutesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddMinutes", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_time", "TIME"), new FunctionArgument("min_to_add", "INT")}, ReturnType = "TIME", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddMinutes", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_time", "TIME"), new FunctionArgument("min_to_add", "INT") }, ReturnType = "TIME", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-time", "addMinutes1", "TIME '05:30 PM', 75", "= TIME '06:45 PM'"}, new object[]{"c#-time-null", "addMinutes2", "NULL::TIME, 75", "= TIME '01:45:20'"}, };
+        return new object[][] { new object[] { "c#-time", "addMinutes1", "TIME '05:30 PM', 75", "= TIME '06:45 PM'" }, new object[] { "c#-time-null", "addMinutes2", "NULL::TIME, 75", "= TIME '01:45:20'" }, };
     }
 
     [Theory]

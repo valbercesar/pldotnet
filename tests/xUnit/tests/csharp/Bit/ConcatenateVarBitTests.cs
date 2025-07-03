@@ -12,12 +12,12 @@ public abstract class BaseConcatenateVarBitTests : PlDotNetTest
 
     public BaseConcatenateVarBitTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateVarBit", Arguments = new List<FunctionArgument>{new FunctionArgument("a BIT", "VARYING"), new FunctionArgument("b BIT", "VARYING")}, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ConcatenateVarBit", Arguments = new List<FunctionArgument> { new FunctionArgument("a BIT", "VARYING"), new FunctionArgument("b BIT", "VARYING") }, ReturnType = "BIT VARYING", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varbit", "concatenatevarbit1", "'1001110001000'::BIT VARYING, '111010111101111000'::BIT VARYING", "= '1001110001000111010111101111000'::BIT VARYING"}, new object[]{"c#-varbit", "concatenatevarbit2", "'1001110001000'::BIT(10), '111010111101111000'::BIT VARYING", "= '1001110001111010111101111000'::BIT VARYING"}, };
+        return new object[][] { new object[] { "c#-varbit", "concatenatevarbit1", "'1001110001000'::BIT VARYING, '111010111101111000'::BIT VARYING", "= '1001110001000111010111101111000'::BIT VARYING" }, new object[] { "c#-varbit", "concatenatevarbit2", "'1001110001000'::BIT(10), '111010111101111000'::BIT VARYING", "= '1001110001111010111101111000'::BIT VARYING" }, };
     }
 
     [Theory]

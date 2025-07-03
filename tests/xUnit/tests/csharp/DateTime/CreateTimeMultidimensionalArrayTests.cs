@@ -12,12 +12,12 @@ public abstract class BaseCreateTimeMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateTimeMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateTimeMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "TIME[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateTimeMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "TIME[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-time-3array", "CreateTimeMultidimensionalArray", "", "= ARRAY[[[TIME '10:33:55 AM', TIME '10:33:55 AM'], [null::time, null::time]], [[TIME '10:33:55 AM', null::time], [TIME '10:33:55 AM', TIME '10:33:55 AM']]]"}, };
+        return new object[][] { new object[] { "c#-time-3array", "CreateTimeMultidimensionalArray", "", "= ARRAY[[[TIME '10:33:55 AM', TIME '10:33:55 AM'], [null::time, null::time]], [[TIME '10:33:55 AM', null::time], [TIME '10:33:55 AM', TIME '10:33:55 AM']]]" }, };
     }
 
     [Theory]

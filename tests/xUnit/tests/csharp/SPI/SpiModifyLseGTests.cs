@@ -12,12 +12,12 @@ public abstract class BaseSpiModifyLseGTests : PlDotNetTest
 
     public BaseSpiModifyLseGTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiModifyLseG", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "POINT")}, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiModifyLseG", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "POINT") }, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-lseg-spi", "SPIModifyLSeg", "'(3.0,3.0)'::POINT", "= '((1.0,1.0),(3.0,3.0))'::LSEG"}, };
+        return new object[][] { new object[] { "c#-lseg-spi", "SPIModifyLSeg", "'(3.0,3.0)'::POINT", "= '((1.0,1.0),(3.0,3.0))'::LSEG" }, };
     }
 
     [Theory]

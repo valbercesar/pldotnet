@@ -12,12 +12,12 @@ public abstract class BaseGetJsonMultiDimensionArrayFsharpTests : PlDotNetTest
 
     public BaseGetJsonMultiDimensionArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetJsonMultiDimensionArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "JSON[][][]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "GetJsonMultiDimensionArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "JSON[][][]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-json-null-3array-arraynull", "GetJsonMultidimensionArrayFsharp1", "", "= ARRAY[[['{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON]]]"}};
+        return new object[][] { new object[] { "f#-json-null-3array-arraynull", "GetJsonMultidimensionArrayFsharp1", "", "= ARRAY[[['{\"type\": \"json\", \"action\": \"multidimensional test\"}'::JSON]]]" } };
     }
 
     [Theory]

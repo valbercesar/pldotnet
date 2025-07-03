@@ -12,12 +12,12 @@ public abstract class BaseReturnDoubleTests : PlDotNetTest
 
     public BaseReturnDoubleTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnDouble", Arguments = new List<FunctionArgument>{}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnDouble", Arguments = new List<FunctionArgument> { }, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float8", "returnDouble", "", "= double precision '11.0050000000005'"}, };
+        return new object[][] { new object[] { "c#-float8", "returnDouble", "", "= double precision '11.0050000000005'" }, };
     }
 
     [Theory]

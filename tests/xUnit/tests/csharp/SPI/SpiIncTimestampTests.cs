@@ -12,12 +12,12 @@ public abstract class BaseSpiIncTimestampTests : PlDotNetTest
 
     public BaseSpiIncTimestampTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncTimestamp", Arguments = new List<FunctionArgument>{new FunctionArgument("days", "INTEGER"), new FunctionArgument("hours", "INTEGER"), new FunctionArgument("minutes", "INTEGER")}, ReturnType = "TIMESTAMP", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncTimestamp", Arguments = new List<FunctionArgument> { new FunctionArgument("days", "INTEGER"), new FunctionArgument("hours", "INTEGER"), new FunctionArgument("minutes", "INTEGER") }, ReturnType = "TIMESTAMP", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-timestamp-spi", "SPIIncTimestamp", "2, 6, 25", "= '1989-07-27 18:25:01'::TIMESTAMP"}, };
+        return new object[][] { new object[] { "c#-timestamp-spi", "SPIIncTimestamp", "2, 6, 25", "= '1989-07-27 18:25:01'::TIMESTAMP" }, };
     }
 
     [Theory]

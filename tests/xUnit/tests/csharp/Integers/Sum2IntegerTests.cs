@@ -12,12 +12,12 @@ public abstract class BaseSum2IntegerTests : PlDotNetTest
 
     public BaseSum2IntegerTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "Sum2Integer", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer")}, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "Sum2Integer", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "integer"), new FunctionArgument("b", "integer") }, ReturnType = "integer", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4", "sum2Integer1", "32770, 100", "= INTEGER '32870'"}, new object[]{"c#-int4-null", "sum2Integer2", "NULL::INTEGER, 100::INTEGER", "= INTEGER '100'"}, };
+        return new object[][] { new object[] { "c#-int4", "sum2Integer1", "32770, 100", "= INTEGER '32870'" }, new object[] { "c#-int4-null", "sum2Integer2", "NULL::INTEGER, 100::INTEGER", "= INTEGER '100'" }, };
     }
 
     [Theory]

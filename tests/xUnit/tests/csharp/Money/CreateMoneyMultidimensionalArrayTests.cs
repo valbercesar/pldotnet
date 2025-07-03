@@ -12,12 +12,12 @@ public abstract class BaseCreateMoneyMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateMoneyMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateMoneyMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "MONEY[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateMoneyMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "MONEY[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-money-null-3array-arraynull", "CreateMoneyMultidimensionalArray1", "", "= ARRAY[[[3720368547758.08::MONEY, 3720368547758.08::MONEY], [null::MONEY, null::MONEY]], [[3720368547758.08::MONEY, null::MONEY], [3720368547758.08::MONEY, 3720368547758.08::MONEY]]]"}, };
+        return new object[][] { new object[] { "c#-money-null-3array-arraynull", "CreateMoneyMultidimensionalArray1", "", "= ARRAY[[[3720368547758.08::MONEY, 3720368547758.08::MONEY], [null::MONEY, null::MONEY]], [[3720368547758.08::MONEY, null::MONEY], [3720368547758.08::MONEY, 3720368547758.08::MONEY]]]" }, };
     }
 
     [Theory]

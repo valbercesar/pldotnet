@@ -12,12 +12,12 @@ public abstract class BaseSpiUpperTextTests : PlDotNetTest
 
     public BaseSpiUpperTextTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiUpperText", Arguments = new List<FunctionArgument>{}, ReturnType = "TEXT", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiUpperText", Arguments = new List<FunctionArgument> { }, ReturnType = "TEXT", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-text-spi", "SPIUpperText", "", "= 'HELLO'::TEXT"}, };
+        return new object[][] { new object[] { "c#-text-spi", "SPIUpperText", "", "= 'HELLO'::TEXT" }, };
     }
 
     [Theory]

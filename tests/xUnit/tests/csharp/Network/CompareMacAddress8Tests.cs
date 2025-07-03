@@ -12,12 +12,12 @@ public abstract class BaseCompareMacAddress8Tests : PlDotNetTest
 
     public BaseCompareMacAddress8Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CompareMacAddress8", Arguments = new List<FunctionArgument>{new FunctionArgument("address1", "MACADDR8"), new FunctionArgument("address2", "MACADDR8")}, ReturnType = "BOOLEAN", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CompareMacAddress8", Arguments = new List<FunctionArgument> { new FunctionArgument("address1", "MACADDR8"), new FunctionArgument("address2", "MACADDR8") }, ReturnType = "BOOLEAN", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-macaddr8", "compareMacAddress81", "MACADDR8 '08:00:2b:01:02:03:04:06', MACADDR8 '08-00-2b-01-02-03-04-06'", "is true"}, new object[]{"c#-macaddr8-null", "compareMacAddress82", "NULL::MACADDR8, MACADDR8 'ab-01-2b-31-41-fa-ab-ac'", "is true"}};
+        return new object[][] { new object[] { "c#-macaddr8", "compareMacAddress81", "MACADDR8 '08:00:2b:01:02:03:04:06', MACADDR8 '08-00-2b-01-02-03-04-06'", "is true" }, new object[] { "c#-macaddr8-null", "compareMacAddress82", "NULL::MACADDR8, MACADDR8 'ab-01-2b-31-41-fa-ab-ac'", "is true" } };
     }
 
     [Theory]

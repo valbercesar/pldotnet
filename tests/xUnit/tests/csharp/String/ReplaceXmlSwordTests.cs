@@ -12,12 +12,12 @@ public abstract class BaseReplaceXmlSwordTests : PlDotNetTest
 
     public BaseReplaceXmlSwordTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReplaceXmlSword", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "XML[]")}, ReturnType = "XML[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReplaceXmlSword", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "XML[]") }, ReturnType = "XML[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-xml-null-1array", "ReplaceXMLsWord1", "ARRAY['Hello Mikael'::XML, 'Hello Rosicley'::XML, null::XML, 'Hello Todd'::XML]", "= ARRAY['Goodbye Mikael'::XML, 'Goodbye Rosicley'::XML, null::XML, 'Goodbye Todd'::XML]::TEXT"}};
+        return new object[][] { new object[] { "c#-xml-null-1array", "ReplaceXMLsWord1", "ARRAY['Hello Mikael'::XML, 'Hello Rosicley'::XML, null::XML, 'Hello Todd'::XML]", "= ARRAY['Goodbye Mikael'::XML, 'Goodbye Rosicley'::XML, null::XML, 'Goodbye Todd'::XML]::TEXT" } };
     }
 
     [Theory]

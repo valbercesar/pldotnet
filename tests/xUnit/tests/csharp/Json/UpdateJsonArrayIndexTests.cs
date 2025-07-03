@@ -12,12 +12,12 @@ public abstract class BaseUpdateJsonArrayIndexTests : PlDotNetTest
 
     public BaseUpdateJsonArrayIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateJsonArrayIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "JSON[]"), new FunctionArgument("desired", "JSON"), new FunctionArgument("index", "integer[]")}, ReturnType = "JSON[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateJsonArrayIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "JSON[]"), new FunctionArgument("desired", "JSON"), new FunctionArgument("index", "integer[]") }, ReturnType = "JSON[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-json-null-1array", "updateJsonArrayIndex1", "ARRAY['{\"age\": 20, \"name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"name\": \"Rosicley\"}'::JSON, null::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON], '{\"age\": 40, \"name\": \"John Doe\"}'::JSON, ARRAY[2]", "= ARRAY['{\"age\": 20, \"name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"name\": \"Rosicley\"}'::JSON, '{\"age\": 40, \"name\": \"John Doe\"}'::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]::TEXT"}, new object[]{"c#-json-null-2array-arraynull", "updateJsonArrayIndex2", "ARRAY[[null::JSON, null::JSON], [null::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]], '{\"age\": 40, \"name\": \"John Doe\"}'::JSON, ARRAY[1,0]", "= ARRAY[[null::JSON, null::JSON], ['{\"age\": 40, \"name\": \"John Doe\"}'::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]]::TEXT"}, };
+        return new object[][] { new object[] { "c#-json-null-1array", "updateJsonArrayIndex1", "ARRAY['{\"age\": 20, \"name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"name\": \"Rosicley\"}'::JSON, null::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON], '{\"age\": 40, \"name\": \"John Doe\"}'::JSON, ARRAY[2]", "= ARRAY['{\"age\": 20, \"name\": \"Mikael\"}'::JSON, '{\"age\": 25, \"name\": \"Rosicley\"}'::JSON, '{\"age\": 40, \"name\": \"John Doe\"}'::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]::TEXT" }, new object[] { "c#-json-null-2array-arraynull", "updateJsonArrayIndex2", "ARRAY[[null::JSON, null::JSON], [null::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]], '{\"age\": 40, \"name\": \"John Doe\"}'::JSON, ARRAY[1,0]", "= ARRAY[[null::JSON, null::JSON], ['{\"age\": 40, \"name\": \"John Doe\"}'::JSON, '{\"age\": 30, \"name\": \"Todd\"}'::JSON]]::TEXT" }, };
     }
 
     [Theory]

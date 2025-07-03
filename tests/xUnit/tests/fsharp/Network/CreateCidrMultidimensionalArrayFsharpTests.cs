@@ -12,12 +12,12 @@ public abstract class BaseCreateCidrMultidimensionalArrayFsharpTests : PlDotNetT
 
     public BaseCreateCidrMultidimensionalArrayFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateCidrMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateCidrMultidimensionalArrayFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "CIDR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-cidr-3array", "CreateCIDRMultidimensionalArrayFSharp", "", "= ARRAY[[[CIDR '127.123.54.0/24']]]"}, };
+        return new object[][] { new object[] { "f#-cidr-3array", "CreateCIDRMultidimensionalArrayFSharp", "", "= ARRAY[[[CIDR '127.123.54.0/24']]]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseSumDoubleArrayTests : PlDotNetTest
 
     public BaseSumDoubleArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumDoubleArray", Arguments = new List<FunctionArgument>{new FunctionArgument("doubles double", "precision[]")}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SumDoubleArray", Arguments = new List<FunctionArgument> { new FunctionArgument("doubles double", "precision[]") }, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float8-null-1array", "sumDoubleArray1", "ARRAY[21.0000000000109::double precision, null::double precision, 4.521234313421::double precision, 7.412344328978::double precision]", "= '32.9335786424099'"}, new object[]{"c#-float8-null-2array", "sumDoubleArray2", "ARRAY[[21.0000000000109::double precision, null::double precision], [4.521234313421::double precision, 7.412344328978::double precision]]", "= '32.9335786424099'"}, };
+        return new object[][] { new object[] { "c#-float8-null-1array", "sumDoubleArray1", "ARRAY[21.0000000000109::double precision, null::double precision, 4.521234313421::double precision, 7.412344328978::double precision]", "= '32.9335786424099'" }, new object[] { "c#-float8-null-2array", "sumDoubleArray2", "ARRAY[[21.0000000000109::double precision, null::double precision], [4.521234313421::double precision, 7.412344328978::double precision]]", "= '32.9335786424099'" }, };
     }
 
     [Theory]

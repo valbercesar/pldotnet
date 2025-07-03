@@ -19,7 +19,7 @@ public class PathToSaveSourceCodeTest : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "pathToSaveSourceCode",
-            Arguments = new List<FunctionArgument> {  },
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "text",
             Body = FunctionBody,
             Language = LanguageType.PlcSharp,

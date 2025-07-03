@@ -11,12 +11,12 @@ public abstract class BasePrintSmallestValueProcedureTests : PlDotNetTest
 
     public BasePrintSmallestValueProcedureTests()
     {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.Procedure, Name = "findSmallestValueProcedure", Arguments = new List<FunctionArgument>{new FunctionArgument("doublevalues", "double precision[]")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { TestType = SqlTestType.Procedure, Name = "findSmallestValueProcedure", Arguments = new List<FunctionArgument> { new FunctionArgument("doublevalues", "double precision[]") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-min", "findSmallestValueProcedure1", "ARRAY[2.25698, 2.85956, 2.85456, 0.00128, 0.00127, 2.36875]", "= 0.00127"}, new object[]{"c#-min", "findSmallestValueProcedure2", "ARRAY[2.25698, -2.85956, 2.85456, -0.00128, 0.00127, 12.36875, -23.2354]", "= -23.2354"}, };
+        return new object[][] { new object[] { "c#-min", "findSmallestValueProcedure1", "ARRAY[2.25698, 2.85956, 2.85456, 0.00128, 0.00127, 2.36875]", "= 0.00127" }, new object[] { "c#-min", "findSmallestValueProcedure2", "ARRAY[2.25698, -2.85956, 2.85456, -0.00128, 0.00127, 12.36875, -23.2354]", "= -23.2354" }, };
     }
 
     [Theory]

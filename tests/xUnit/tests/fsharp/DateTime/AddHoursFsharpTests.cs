@@ -12,12 +12,12 @@ public abstract class BaseAddHoursFsharpTests : PlDotNetTest
 
     public BaseAddHoursFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "AddHoursFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_time", "TIMETZ"), new FunctionArgument("hours_to_add", "FLOAT")}, ReturnType = "TIMETZ", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "AddHoursFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_time", "TIMETZ"), new FunctionArgument("hours_to_add", "FLOAT") }, ReturnType = "TIMETZ", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-timetz", "addHoursFSharp1", "TIMETZ '04:05:06-08:00',1.5", "= TIMETZ '05:35:06-08:00'"}, new object[]{"f#-timetz-null", "addHoursFSharp2", "NULL::TIMETZ,1.5", "= TIMETZ '10:00:20+02:00'"}, };
+        return new object[][] { new object[] { "f#-timetz", "addHoursFSharp1", "TIMETZ '04:05:06-08:00',1.5", "= TIMETZ '05:35:06-08:00'" }, new object[] { "f#-timetz-null", "addHoursFSharp2", "NULL::TIMETZ,1.5", "= TIMETZ '10:00:20+02:00'" }, };
     }
 
     [Theory]

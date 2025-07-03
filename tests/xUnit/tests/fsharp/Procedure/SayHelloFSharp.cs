@@ -11,12 +11,12 @@ public abstract class BaseSayHelloFsharpTests : PlDotNetTest
 
     public BaseSayHelloFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.Procedure, Name = "sayHelloFsharp", Arguments = new List<FunctionArgument>{new FunctionArgument("name", "TEXT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { TestType = SqlTestType.Procedure, Name = "sayHelloFsharp", Arguments = new List<FunctionArgument> { new FunctionArgument("name", "TEXT") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-sayHello", "sayHelloFsharp1", "'Mikael'::TEXT", "= Mikael"}, new object[]{"f#-sayHello", "sayHelloFsharp2", "'Rosicley'::TEXT", "= Rosicley"}, new object[]{"f#-sayHello", "sayHelloFsharp3", "'Todd'::TEXT", "= Todd"}, };
+        return new object[][] { new object[] { "f#-sayHello", "sayHelloFsharp1", "'Mikael'::TEXT", "= Mikael" }, new object[] { "f#-sayHello", "sayHelloFsharp2", "'Rosicley'::TEXT", "= Rosicley" }, new object[] { "f#-sayHello", "sayHelloFsharp3", "'Todd'::TEXT", "= Todd" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseToggleFirstVarBitsTests : PlDotNetTest
 
     public BaseToggleFirstVarBitsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ToggleFirstVarBits", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array BIT", "VARYING[]")}, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ToggleFirstVarBits", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array BIT", "VARYING[]") }, ReturnType = "BIT VARYING[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varbit-null-1array", "ToggleFirstVarbits1", "ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, null::BIT VARYING, '001001'::BIT VARYING]", "= ARRAY['0010101101101'::BIT VARYING, '001011101'::BIT VARYING, null::BIT VARYING, '101001'::BIT VARYING]"}, };
+        return new object[][] { new object[] { "c#-varbit-null-1array", "ToggleFirstVarbits1", "ARRAY['1010101101101'::BIT VARYING, '101011101'::BIT VARYING, null::BIT VARYING, '001001'::BIT VARYING]", "= ARRAY['0010101101101'::BIT VARYING, '001011101'::BIT VARYING, null::BIT VARYING, '101001'::BIT VARYING]" }, };
     }
 
     [Theory]

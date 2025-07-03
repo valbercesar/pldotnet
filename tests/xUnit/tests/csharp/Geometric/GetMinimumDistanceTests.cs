@@ -12,12 +12,12 @@ public abstract class BaseGetMinimumDistanceTests : PlDotNetTest
 
     public BaseGetMinimumDistanceTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetMinimumDistance", Arguments = new List<FunctionArgument>{new FunctionArgument("orig_line", "LINE"), new FunctionArgument("orig_point", "POINT")}, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "GetMinimumDistance", Arguments = new List<FunctionArgument> { new FunctionArgument("orig_line", "LINE"), new FunctionArgument("orig_point", "POINT") }, ReturnType = "double precision", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-line", "getMinimumDistance", "LINE '{4.0, 6.0, 2.0}', POINT(3.0,-6.0)", "= double precision '3.05085107923876'"}, };
+        return new object[][] { new object[] { "c#-line", "getMinimumDistance", "LINE '{4.0, 6.0, 2.0}', POINT(3.0,-6.0)", "= double precision '3.05085107923876'" }, };
     }
 
     [Theory]

@@ -25,7 +25,7 @@ public abstract class BaseSum2BigInTdLlTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8-dll", "sum2BigIntDLL1", "9223372036854775707, 100", "= bigint '9223372036854775807'"}, new object[]{"c#-int8-null-dll", "sum2BigIntDLL2", "9223372036854775707::BIGINT, NULL::BIGINT", "= bigint '9223372036854775707'"}, };
+        return new object[][] { new object[] { "c#-int8-dll", "sum2BigIntDLL1", "9223372036854775707, 100", "= bigint '9223372036854775807'" }, new object[] { "c#-int8-null-dll", "sum2BigIntDLL2", "9223372036854775707::BIGINT, NULL::BIGINT", "= bigint '9223372036854775707'" }, };
     }
 
     [Theory]

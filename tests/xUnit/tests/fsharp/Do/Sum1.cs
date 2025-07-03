@@ -11,7 +11,7 @@ public abstract class BaseDoSum1FsharpTests : PlDotNetTest
 
     public BaseDoSum1FsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{TestType = SqlTestType.DoBlock, };
+        FunctionInfo = new SqlFunctionInfo { TestType = SqlTestType.DoBlock, };
     }
 }
 

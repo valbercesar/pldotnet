@@ -12,12 +12,12 @@ public abstract class BaseConcatenateCharsTests : PlDotNetTest
 
     public BaseConcatenateCharsTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ConcatenateChars", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "BPCHAR"), new FunctionArgument("b", "BPCHAR"), new FunctionArgument("c", "BPCHAR")}, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ConcatenateChars", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "BPCHAR"), new FunctionArgument("b", "BPCHAR"), new FunctionArgument("c", "BPCHAR") }, ReturnType = "BPCHAR", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bpchar", "concatenateChars1", "'hello'::BPCHAR, 'beautiful'::BPCHAR, 'world!'::BPCHAR", "= 'HELLO BEAUTIFUL WORLD!'::BPCHAR"}, new object[]{"c#-bpchar-null", "concatenateChars2", "NULL::BPCHAR, 'beautiful'::BPCHAR, NULL::BPCHAR", "= ' BEAUTIFUL '::BPCHAR"}, };
+        return new object[][] { new object[] { "c#-bpchar", "concatenateChars1", "'hello'::BPCHAR, 'beautiful'::BPCHAR, 'world!'::BPCHAR", "= 'HELLO BEAUTIFUL WORLD!'::BPCHAR" }, new object[] { "c#-bpchar-null", "concatenateChars2", "NULL::BPCHAR, 'beautiful'::BPCHAR, NULL::BPCHAR", "= ' BEAUTIFUL '::BPCHAR" }, };
     }
 
     [Theory]

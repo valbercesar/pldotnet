@@ -25,7 +25,7 @@ public abstract class BaseSumDoubleArrayDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float8-null-1array-dll", "sumDoubleArrayDLL1", "ARRAY[21.0000000000109::double precision, null::double precision, 4.521234313421::double precision, 7.412344328978::double precision]", "= '32.9335786424099'"}, new object[]{"c#-float8-null-2array-dll", "sumDoubleArrayDLL2", "ARRAY[[21.0000000000109::double precision, null::double precision], [4.521234313421::double precision, 7.412344328978::double precision]]", "= '32.9335786424099'"}, };
+        return new object[][] { new object[] { "c#-float8-null-1array-dll", "sumDoubleArrayDLL1", "ARRAY[21.0000000000109::double precision, null::double precision, 4.521234313421::double precision, 7.412344328978::double precision]", "= '32.9335786424099'" }, new object[] { "c#-float8-null-2array-dll", "sumDoubleArrayDLL2", "ARRAY[[21.0000000000109::double precision, null::double precision], [4.521234313421::double precision, 7.412344328978::double precision]]", "= '32.9335786424099'" }, };
     }
 
     [Theory]

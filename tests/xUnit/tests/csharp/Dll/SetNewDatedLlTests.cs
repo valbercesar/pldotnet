@@ -25,7 +25,7 @@ public abstract class BaseSetNewDatedLlTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-timestamp-dll", "setNewDateDLL1", "TIMESTAMP '2004-10-19 10:23:54 PM', DATE '2022-10-17'", "= TIMESTAMP '2022-10-17 10:23:54 PM'"}, new object[]{"c#-timestamp-null-dll", "setNewDateDLL2", "NULL::TIMESTAMP, NULL::DATE", "= TIMESTAMP '2023-12-25 08:30:20'"}, };
+        return new object[][] { new object[] { "c#-timestamp-dll", "setNewDateDLL1", "TIMESTAMP '2004-10-19 10:23:54 PM', DATE '2022-10-17'", "= TIMESTAMP '2022-10-17 10:23:54 PM'" }, new object[] { "c#-timestamp-null-dll", "setNewDateDLL2", "NULL::TIMESTAMP, NULL::DATE", "= TIMESTAMP '2023-12-25 08:30:20'" }, };
     }
 
     [Theory]

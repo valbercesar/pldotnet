@@ -25,7 +25,7 @@ public abstract class BaseConcatenateStringFsharpDllTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-text-dll", "concatenateStringFSharpDLL1", "'Neymar'::TEXT, 'Jr.'::TEXT", "= 'Neymar Jr.'::TEXT"}, new object[]{"f#-text-null-dll", "concatenateStringFSharpDLL2", "'Brasil'::TEXT, NULL::TEXT", "= 'Brasil'::TEXT"}, new object[]{"f#-text-null-dll", "concatenateStringFSharpDLL3", "NULL::TEXT, 'Hello World!'::TEXT", "= 'Hello World!'::TEXT"}, new object[]{"f#-text-null-dll", "concatenateStringFSharpDLL4", "NULL::TEXT, NULL::TEXT", "IS NULL"}, };
+        return new object[][] { new object[] { "f#-text-dll", "concatenateStringFSharpDLL1", "'Neymar'::TEXT, 'Jr.'::TEXT", "= 'Neymar Jr.'::TEXT" }, new object[] { "f#-text-null-dll", "concatenateStringFSharpDLL2", "'Brasil'::TEXT, NULL::TEXT", "= 'Brasil'::TEXT" }, new object[] { "f#-text-null-dll", "concatenateStringFSharpDLL3", "NULL::TEXT, 'Hello World!'::TEXT", "= 'Hello World!'::TEXT" }, new object[] { "f#-text-null-dll", "concatenateStringFSharpDLL4", "NULL::TEXT, NULL::TEXT", "IS NULL" }, };
     }
 
     [Theory]

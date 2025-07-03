@@ -25,7 +25,7 @@ public abstract class BaseSum2SmallInTdLlTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int2-dll", "sum2SmallIntDLL1", "CAST(100 AS smallint), CAST(101 AS smallint)", "= smallint '201'"}, new object[]{"c#-int2-null-dll", "sum2SmallIntDLL2", "NULL::SMALLINT, 30::SMALLINT", "= smallint '30'"}, };
+        return new object[][] { new object[] { "c#-int2-dll", "sum2SmallIntDLL1", "CAST(100 AS smallint), CAST(101 AS smallint)", "= smallint '201'" }, new object[] { "c#-int2-null-dll", "sum2SmallIntDLL2", "NULL::SMALLINT, 30::SMALLINT", "= smallint '30'" }, };
     }
 
     [Theory]

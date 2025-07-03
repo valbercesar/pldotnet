@@ -12,12 +12,12 @@ public abstract class BaseSpiConcatenateBitTests : PlDotNetTest
 
     public BaseSpiConcatenateBitTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiConcatenateBit", Arguments = new List<FunctionArgument>{new FunctionArgument("b", "BIT(10)")}, ReturnType = "BIT", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiConcatenateBit", Arguments = new List<FunctionArgument> { new FunctionArgument("b", "BIT(10)") }, ReturnType = "BIT", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-bit-spi", "SPIConcatenateBit", "'1110101'::BIT(10)", "= '100110011110101000'::BIT(18)"}, };
+        return new object[][] { new object[] { "c#-bit-spi", "SPIConcatenateBit", "'1110101'::BIT(10)", "= '100110011110101000'::BIT(18)" }, };
     }
 
     [Theory]

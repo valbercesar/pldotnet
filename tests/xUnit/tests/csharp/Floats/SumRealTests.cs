@@ -12,12 +12,12 @@ public abstract class BaseSumRealTests : PlDotNetTest
 
     public BaseSumRealTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SumReal", Arguments = new List<FunctionArgument>{new FunctionArgument("a", "real"), new FunctionArgument("b", "real")}, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SumReal", Arguments = new List<FunctionArgument> { new FunctionArgument("a", "real"), new FunctionArgument("b", "real") }, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float4", "sumReal1", "1.50055, 1.50054", "= real '3.00109'"}, new object[]{"c#-float4-null", "sumReal2", "NULL, 1.50054", "= real '1.50054'"}, };
+        return new object[][] { new object[] { "c#-float4", "sumReal1", "1.50055, 1.50054", "= real '3.00109'" }, new object[] { "c#-float4-null", "sumReal2", "NULL, 1.50054", "= real '1.50054'" }, };
     }
 
     [Theory]

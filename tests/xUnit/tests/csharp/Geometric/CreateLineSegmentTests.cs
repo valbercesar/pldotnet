@@ -12,12 +12,12 @@ public abstract class BaseCreateLineSegmentTests : PlDotNetTest
 
     public BaseCreateLineSegmentTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateLineSegment", Arguments = new List<FunctionArgument>{new FunctionArgument("start_point", "POINT"), new FunctionArgument("end_point", "POINT")}, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateLineSegment", Arguments = new List<FunctionArgument> { new FunctionArgument("start_point", "POINT"), new FunctionArgument("end_point", "POINT") }, ReturnType = "LSEG", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-lseg", "createLineSegment", "POINT(0.088997,1.258456),POINT(5.456102,3.04561)", "= LSEG '[(0.088997,1.258456),(5.456102,3.04561)]'"}, };
+        return new object[][] { new object[] { "c#-lseg", "createLineSegment", "POINT(0.088997,1.258456),POINT(5.456102,3.04561)", "= LSEG '[(0.088997,1.258456),(5.456102,3.04561)]'" }, };
     }
 
     [Theory]

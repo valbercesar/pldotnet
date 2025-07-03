@@ -12,12 +12,12 @@ public abstract class BaseCreateInEtMultidimensionalArrayTests : PlDotNetTest
 
     public BaseCreateInEtMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateInEtMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateInEtMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "INET[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-inet-3array", "CreateInetMultidimensionalArray", "", "= ARRAY[[[INET '127.0.0.1/21', INET '127.0.0.1/21'], [null::INET, null::INET]], [[INET '127.0.0.1/21', null::INET], [INET '127.0.0.1/21', INET '127.0.0.1/21']]]"}, };
+        return new object[][] { new object[] { "c#-inet-3array", "CreateInetMultidimensionalArray", "", "= ARRAY[[[INET '127.0.0.1/21', INET '127.0.0.1/21'], [null::INET, null::INET]], [[INET '127.0.0.1/21', null::INET], [INET '127.0.0.1/21', INET '127.0.0.1/21']]]" }, };
     }
 
     [Theory]

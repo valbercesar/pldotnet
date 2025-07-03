@@ -12,12 +12,12 @@ public abstract class BaseReturnRealTests : PlDotNetTest
 
     public BaseReturnRealTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnReal", Arguments = new List<FunctionArgument>{}, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnReal", Arguments = new List<FunctionArgument> { }, ReturnType = "real", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-float4", "returnReal", "", "= real '1.50055'"}, };
+        return new object[][] { new object[] { "c#-float4", "returnReal", "", "= real '1.50055'" }, };
     }
 
     [Theory]

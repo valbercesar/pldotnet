@@ -12,12 +12,12 @@ public abstract class BaseSpiIncCidrTests : PlDotNetTest
 
     public BaseSpiIncCidrTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiIncCidr", Arguments = new List<FunctionArgument>{new FunctionArgument("incip", "INTEGER")}, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiIncCidr", Arguments = new List<FunctionArgument> { new FunctionArgument("incip", "INTEGER") }, ReturnType = "CIDR", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-cidr-spi", "SPIIncCIDR", "45", "= '207.69.188.230/32'::CIDR"}, };
+        return new object[][] { new object[] { "c#-cidr-spi", "SPIIncCIDR", "45", "= '207.69.188.230/32'::CIDR" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseMaxIntegerFsharpTests : PlDotNetTest
 
     public BaseMaxIntegerFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "MaxIntegerFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "int4", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "MaxIntegerFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "int4", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-int4", "maxIntegerFSharp", "", "= int4 '2147483647'"}, };
+        return new object[][] { new object[] { "f#-int4", "maxIntegerFSharp", "", "= int4 '2147483647'" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseIncreaseTimestampRangesTests : PlDotNetTest
 
     public BaseIncreaseTimestampRangesTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "IncreaseTimestampRanges", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "TSRANGE[]")}, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "IncreaseTimestampRanges", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "TSRANGE[]") }, ReturnType = "TSRANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-tsrange-null-1array", "IncreaseTimestampRanges1", "ARRAY['[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, '(, 2021-04-01 15:30)'::TSRANGE, null::TSRANGE, '[,)'::TSRANGE]", "= ARRAY['[2021-01-02 14:30, 2021-01-02 15:30)'::TSRANGE, '(, 2021-04-02 15:30)'::TSRANGE, null::TSRANGE, '[,)'::TSRANGE]"}, };
+        return new object[][] { new object[] { "c#-tsrange-null-1array", "IncreaseTimestampRanges1", "ARRAY['[2021-01-01 14:30, 2021-01-01 15:30)'::TSRANGE, '(, 2021-04-01 15:30)'::TSRANGE, null::TSRANGE, '[,)'::TSRANGE]", "= ARRAY['[2021-01-02 14:30, 2021-01-02 15:30)'::TSRANGE, '(, 2021-04-02 15:30)'::TSRANGE, null::TSRANGE, '[,)'::TSRANGE]" }, };
     }
 
     [Theory]

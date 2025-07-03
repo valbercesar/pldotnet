@@ -12,12 +12,12 @@ public abstract class BaseCreateIntervalMultidimensionalArrayTests : PlDotNetTes
 
     public BaseCreateIntervalMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateIntervalMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateIntervalMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "INTERVAL[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-interval-3array", "CreateIntervalMultidimensionalArray", "", "= ARRAY[[[INTERVAL '10 months 33 days 2 hours 30 minutes', INTERVAL '10 months 33 days 2 hours 30 minutes'], [null::interval, null::interval]], [[INTERVAL '10 months 33 days 2 hours 30 minutes', null::interval], [INTERVAL '10 months 33 days 2 hours 30 minutes', INTERVAL '10 months 33 days 2 hours 30 minutes']]]"}, };
+        return new object[][] { new object[] { "c#-interval-3array", "CreateIntervalMultidimensionalArray", "", "= ARRAY[[[INTERVAL '10 months 33 days 2 hours 30 minutes', INTERVAL '10 months 33 days 2 hours 30 minutes'], [null::interval, null::interval]], [[INTERVAL '10 months 33 days 2 hours 30 minutes', null::interval], [INTERVAL '10 months 33 days 2 hours 30 minutes', INTERVAL '10 months 33 days 2 hours 30 minutes']]]" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseSpiModifyInT4RangeTests : PlDotNetTest
 
     public BaseSpiModifyInT4RangeTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "SpiModifyInT4Range", Arguments = new List<FunctionArgument>{new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("value", "INT4")}, ReturnType = "INT4RANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
+        FunctionInfo = new SqlFunctionInfo { Name = "SpiModifyInT4Range", Arguments = new List<FunctionArgument> { new FunctionArgument("lower", "BOOLEAN"), new FunctionArgument("value", "INT4") }, ReturnType = "INT4RANGE", Body = FunctionBody, Language = Language, IsStrict = false, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int4range-spi", "SPIModifyInt4Range1", "true, 48", "= '(-2147483600,2147483644)'::INT4RANGE"}, new object[]{"c#-int4range-spi", "SPIModifyInt4Range2", "false, -10", "= '(-2147483648,2147483634)'::INT4RANGE"}, };
+        return new object[][] { new object[] { "c#-int4range-spi", "SPIModifyInt4Range1", "true, 48", "= '(-2147483600,2147483644)'::INT4RANGE" }, new object[] { "c#-int4range-spi", "SPIModifyInt4Range2", "false, -10", "= '(-2147483648,2147483634)'::INT4RANGE" }, };
     }
 
     [Theory]

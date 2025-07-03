@@ -25,7 +25,7 @@ public abstract class BaseMiddlePointStrictCallStrictTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-point-dll", "middlePointStrictCallStrict", "POINT(10.0,20.0), POINT(20.0,40.0)", "~= POINT(15.0,30.0)"}, };
+        return new object[][] { new object[] { "c#-point-dll", "middlePointStrictCallStrict", "POINT(10.0,20.0), POINT(20.0,40.0)", "~= POINT(15.0,30.0)" }, };
     }
 
     [Theory]

@@ -12,12 +12,12 @@ public abstract class BaseCreateSmallInTMultidimensionalArrayTests : PlDotNetTes
 
     public BaseCreateSmallInTMultidimensionalArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "CreateSmallInTMultidimensionalArray", Arguments = new List<FunctionArgument>{}, ReturnType = "smallint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "CreateSmallInTMultidimensionalArray", Arguments = new List<FunctionArgument> { }, ReturnType = "smallint[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int2-null-3array-arraynull", "CreateSmallIntMultidimensionalArray", "", "= ARRAY[[[423::smallint, 536::smallint], [null::smallint, null::smallint]], [[8763::smallint, 15::smallint], [943::smallint, 1003::smallint]]]"}, };
+        return new object[][] { new object[] { "c#-int2-null-3array-arraynull", "CreateSmallIntMultidimensionalArray", "", "= ARRAY[[[423::smallint, 536::smallint], [null::smallint, null::smallint]], [[8763::smallint, 15::smallint], [943::smallint, 1003::smallint]]]" }, };
     }
 
     [Theory]

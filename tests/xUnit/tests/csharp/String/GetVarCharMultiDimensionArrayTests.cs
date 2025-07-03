@@ -12,12 +12,12 @@ public abstract class BaseGetVarCharMultiDimensionArrayTests : PlDotNetTest
 
     public BaseGetVarCharMultiDimensionArrayTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "GetVarCharMultiDimensionArray", Arguments = new List<FunctionArgument>{}, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "GetVarCharMultiDimensionArray", Arguments = new List<FunctionArgument> { }, ReturnType = "VARCHAR[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-varchar-null-3array-arraynull", "GetVarcharMultidimensionArray", "", "= ARRAY[[['Multiple dimensions'::VARCHAR, 'Multiple dimensions'::VARCHAR], [null::VARCHAR, null::VARCHAR]], [['Multiple dimensions'::VARCHAR, null::VARCHAR], ['Multiple dimensions'::VARCHAR, 'Multiple dimensions'::VARCHAR]]]"}, };
+        return new object[][] { new object[] { "c#-varchar-null-3array-arraynull", "GetVarcharMultidimensionArray", "", "= ARRAY[[['Multiple dimensions'::VARCHAR, 'Multiple dimensions'::VARCHAR], [null::VARCHAR, null::VARCHAR]], [['Multiple dimensions'::VARCHAR, null::VARCHAR], ['Multiple dimensions'::VARCHAR, 'Multiple dimensions'::VARCHAR]]]" }, };
     }
 
     [Theory]

@@ -12,16 +12,16 @@ public abstract class BaseInOutArray10FsSTests : PlDotNetTest
 
     public BaseInOutArray10FsSTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutArray10FsS", Arguments = new List<FunctionArgument>{new FunctionArgument("OUT output_array", "MACADDR[]"), new FunctionArgument("IN input_array", "MACADDR[]")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "InOutArray10FsS", Arguments = new List<FunctionArgument> { new FunctionArgument("OUT output_array", "MACADDR[]"), new FunctionArgument("IN input_array", "MACADDR[]") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-inout-array-10", "inout_array_10_fsS", "ARRAY[ MACADDR '08-00-2b-01-02-03', NULL, MACADDR '08-00-2b-01-02-03' ]", @"= ARRAY[
+        return new object[][] { new object[] { "f#-inout-array-10", "inout_array_10_fsS", "ARRAY[ MACADDR '08-00-2b-01-02-03', NULL, MACADDR '08-00-2b-01-02-03' ]", @"= ARRAY[
                     MACADDR '08-00-2b-01-02-03',
                     NULL,
                     MACADDR '08-00-2b-01-02-03'
-                ]"}, };
+                ]" }, };
     }
 
     [Theory]

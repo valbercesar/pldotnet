@@ -12,12 +12,12 @@ public abstract class BaseReturnBooLFsharpTests : PlDotNetTest
 
     public BaseReturnBooLFsharpTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "ReturnBooLFsharp", Arguments = new List<FunctionArgument>{}, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "ReturnBooLFsharp", Arguments = new List<FunctionArgument> { }, ReturnType = "boolean", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"f#-bool", "returnBoolFSharp", "", "is false"}};
+        return new object[][] { new object[] { "f#-bool", "returnBoolFSharp", "", "is false" } };
     }
 
     [Theory]

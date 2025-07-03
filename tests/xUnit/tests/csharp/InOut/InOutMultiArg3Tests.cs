@@ -12,12 +12,12 @@ public abstract class BaseInOutMultiArg3Tests : PlDotNetTest
 
     public BaseInOutMultiArg3Tests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "InOutMultiArg3", Arguments = new List<FunctionArgument>{new FunctionArgument("OUT argument_0", "INT"), new FunctionArgument("IN argument_1", "INT"), new FunctionArgument("IN argument_2", "INT"), new FunctionArgument("OUT argument_3", "INT"), new FunctionArgument("INOUT argument_4", "INT"), new FunctionArgument("OUT argument_5", "INT"), new FunctionArgument("IN argument_6", "INT"), new FunctionArgument("INOUT argument_7", "INT")}, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "InOutMultiArg3", Arguments = new List<FunctionArgument> { new FunctionArgument("OUT argument_0", "INT"), new FunctionArgument("IN argument_1", "INT"), new FunctionArgument("IN argument_2", "INT"), new FunctionArgument("OUT argument_3", "INT"), new FunctionArgument("INOUT argument_4", "INT"), new FunctionArgument("OUT argument_5", "INT"), new FunctionArgument("IN argument_6", "INT"), new FunctionArgument("INOUT argument_7", "INT") }, ReturnType = "", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-inout-multiarg-3", "inout_multiarg_3", "1, 2, 4, 6, 7", "= ROW(NULL::INT, 4, 5, 6, 8)"}, };
+        return new object[][] { new object[] { "c#-inout-multiarg-3", "inout_multiarg_3", "1, 2, 4, 6, 7", "= ROW(NULL::INT, 4, 5, 6, 8)" }, };
     }
 
     [Theory]

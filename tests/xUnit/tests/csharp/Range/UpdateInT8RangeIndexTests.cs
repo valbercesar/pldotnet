@@ -12,12 +12,12 @@ public abstract class BaseUpdateInT8RangeIndexTests : PlDotNetTest
 
     public BaseUpdateInT8RangeIndexTests()
     {
-        FunctionInfo = new SqlFunctionInfo{Name = "UpdateInT8RangeIndex", Arguments = new List<FunctionArgument>{new FunctionArgument("values_array", "INT8RANGE[]"), new FunctionArgument("desired", "INT8RANGE"), new FunctionArgument("index", "integer[]")}, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
+        FunctionInfo = new SqlFunctionInfo { Name = "UpdateInT8RangeIndex", Arguments = new List<FunctionArgument> { new FunctionArgument("values_array", "INT8RANGE[]"), new FunctionArgument("desired", "INT8RANGE"), new FunctionArgument("index", "integer[]") }, ReturnType = "INT8RANGE[]", Body = FunctionBody, Language = Language, IsStrict = true, };
     }
 
     public static object[][] TestCases()
     {
-        return new object[][]{new object[]{"c#-int8range-null-1array", "updateInt8RangeIndex1", "ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE], '[6,)'::INT8RANGE, ARRAY[2]", "= ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, '[6,)'::INT8RANGE, '[,)'::INT8RANGE]"}, new object[]{"c#-int8range-null-2array", "updateInt8RangeIndex2", "ARRAY[['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE], [null::INT8RANGE, '[,)'::INT8RANGE]], '[6,)'::INT8RANGE, ARRAY[1, 0]", "= ARRAY[['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE], ['[6,)'::INT8RANGE, '[,)'::INT8RANGE]]"}, new object[]{"c#-int8range-null-2array-arraynull", "updateInt8RangeIndex3", "ARRAY[[null::INT8RANGE, null::INT8RANGE], [null::INT8RANGE, '[,)'::INT8RANGE]], '[6,)'::INT8RANGE, ARRAY[1, 0]", "= ARRAY[[null::INT8RANGE, null::INT8RANGE], ['[6,)'::INT8RANGE, '[,)'::INT8RANGE]]"}, };
+        return new object[][] { new object[] { "c#-int8range-null-1array", "updateInt8RangeIndex1", "ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, null::INT8RANGE, '[,)'::INT8RANGE], '[6,)'::INT8RANGE, ARRAY[2]", "= ARRAY['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE, '[6,)'::INT8RANGE, '[,)'::INT8RANGE]" }, new object[] { "c#-int8range-null-2array", "updateInt8RangeIndex2", "ARRAY[['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE], [null::INT8RANGE, '[,)'::INT8RANGE]], '[6,)'::INT8RANGE, ARRAY[1, 0]", "= ARRAY[['[2,6)'::INT8RANGE, '(,6)'::INT8RANGE], ['[6,)'::INT8RANGE, '[,)'::INT8RANGE]]" }, new object[] { "c#-int8range-null-2array-arraynull", "updateInt8RangeIndex3", "ARRAY[[null::INT8RANGE, null::INT8RANGE], [null::INT8RANGE, '[,)'::INT8RANGE]], '[6,)'::INT8RANGE, ARRAY[1, 0]", "= ARRAY[[null::INT8RANGE, null::INT8RANGE], ['[6,)'::INT8RANGE, '[,)'::INT8RANGE]]" }, };
     }
 
     [Theory]
