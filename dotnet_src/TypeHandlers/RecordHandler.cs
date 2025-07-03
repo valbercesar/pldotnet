@@ -95,9 +95,23 @@ namespace PlDotNET.Handler
         }
 
         /// <summary>
+        /// Sets the field value in the pldotnet_Result pointer at the specified offset.
+        /// </summary>
+        /// <param name="value">The value to set.</param>
+        /// <param name="output">The pldotnet_Result pointer.</param>
+        /// <param name="offset">The offset at which to set the field value.</param>
+        public bool OutputSetField(object value, IntPtr output, int offset)
+        {
+            var (datum, oid) = SingleValueOutput(value);
+
+            OutputResult.SetDatumResult(datum, false, output, offset, (uint)oid);
+            return true;
+        }
+
+        /// <summary>
         /// Convert a C `pldotnet_Result*` into a C# `object[]`.
         /// </summary>
-        public static object[] InputGetValue(IntPtr result)
+        public object[] InputGetValue(IntPtr result)
         {
             // Return an empty array if the pointer is Null
             if (result == IntPtr.Zero)
@@ -123,23 +137,9 @@ namespace PlDotNET.Handler
         }
 
         /// <summary>
-        /// Sets the field value in the pldotnet_Result pointer at the specified offset.
-        /// </summary>
-        /// <param name="value">The value to set.</param>
-        /// <param name="output">The pldotnet_Result pointer.</param>
-        /// <param name="offset">The offset at which to set the field value.</param>
-        public static bool OutputSetField(object value, IntPtr output, int offset)
-        {
-            var (datum, oid) = SingleValueOutput(value);
-
-            OutputResult.SetDatumResult(datum, false, output, offset, (uint)oid);
-            return true;
-        }
-
-        /// <summary>
         /// Convert a C# `object[]` into a C `pldotnet_Result*`.
         /// </summary>
-        public static bool OutputSetValue(object[] values, IntPtr output)
+        public bool OutputSetValue(object[] values, IntPtr output)
         {
             if (values == null)
             {
@@ -177,7 +177,7 @@ namespace PlDotNET.Handler
             return true;
         }
 
-                /// <inheritdoc />
+        /// <inheritdoc />
         public override object[] InputValue(IntPtr recordDatum)
         {
             // Return an empty array if the pointer is Null
