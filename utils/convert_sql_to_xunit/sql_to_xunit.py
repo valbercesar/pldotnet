@@ -106,11 +106,11 @@ public abstract class Base{class_name} : PlDotNetTest
             Arguments = new List<FunctionArgument> {{ {arguments_str} }},
             ReturnType = "{return_type}",
             Body = FunctionBody,
-            Language = Language, 
+            Language = Language,
             IsStrict = {str(is_strict).lower()},
         }};
     }}
-    
+
      protected void SetupTest(string cteStatement)
     {{
         this.cteStatement = cteStatement;
@@ -122,7 +122,7 @@ public abstract class Base{class_name} : PlDotNetTest
 {test_cases_method_content}
     }}
 
- 
+
     [Theory]
     [MemberData(nameof(TestCases))]
     public void Test{class_name}(
