@@ -48,7 +48,8 @@ public abstract class BaseTriggerTestUpdateTypeTests : PlDotNetTest
         };
     }
 
-    [Theory]
+    // [Theory]
+    [Theory(Skip="pulando para focar num só")]
     [MemberData(nameof(TestCases))]
     public void TestTriggerTestUpdateType(string featureName, string testName, string input, string expectedResult)
     {

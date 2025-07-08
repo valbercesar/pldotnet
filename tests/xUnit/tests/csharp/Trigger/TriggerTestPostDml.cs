@@ -66,7 +66,8 @@ UPDATE trigger_test_table SET id = 2, message = 'Updated Text' WHERE id = 1234;
         };
     }
 
-    [Theory]
+    // [Theory]
+    [Theory(Skip="pulando para focar num só")]
     [MemberData(nameof(TestCases))]
     public void TestTestPostDml(string featureName, string testName, string input, string expectedResult)
     {

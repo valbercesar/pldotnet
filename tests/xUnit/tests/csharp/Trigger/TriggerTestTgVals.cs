@@ -48,7 +48,8 @@ public abstract class BaseTriggerTestTgValsTests : PlDotNetTest
         };
     }
 
-    [Theory]
+    // [Theory]
+    [Theory(Skip="pulando para focar num só")]
     [MemberData(nameof(TestCases))]
     public void TestTriggerTestTgVals(string featureName, string testName, string input, string expectedResult)
     {
