@@ -12,7 +12,6 @@ using Xunit;
 public class PlDotNetTest
 {
     protected SqlFunctionInfo? FunctionInfo;
-    private Exception lastException;
 
     string DatabaseConnectionString =
         Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") + ";Include Error Detail=true"
@@ -392,7 +391,6 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
         catch (Exception ex)
         {
             exception = ex;
-            lastException = ex;
             return null;
         }
         finally
@@ -497,7 +495,6 @@ WHERE id = {functionInfo.TestId.Value};";
         catch (Exception ex)
         {
             exception = ex;
-            lastException = ex;
             return false;
         }
         finally
@@ -587,13 +584,6 @@ WHERE id = {functionInfo.TestId.Value};";
         FunctionInfo.CustomAssertion = customAssertion;
         FunctionInfo.QuerySuffix = querySuffix;
 
-        // DEBUG: imprime estado interno antes de gerar SQL
-        Console.WriteLine("=== DEBUG FUNCTION INFO ===");
-        Console.WriteLine($"Name      : {FunctionInfo.Name}");
-        Console.WriteLine($"Arguments : {string.Join(", ", FunctionInfo.Arguments.Select(a => $"{a.Name}:{a.Type}"))}");
-        Console.WriteLine($"ReturnType: {FunctionInfo.ReturnType}");
-        Console.WriteLine($"Body      : {FunctionInfo.Body.Trim()}\n");
-
         // Combine pieces of FunctionInfo to create SQL codes
         FunctionInfo.SqlFunctionDefinition = GetFunctionDefinition(FunctionInfo);
         FunctionInfo.SqlFunctionCall = GetFunctionCall(FunctionInfo, forceCte);
@@ -625,14 +615,6 @@ WHERE id = {functionInfo.TestId.Value};";
         // Call test and insert the test result into the PostgreSQL table
         FunctionInfo.TestId = ExecuteSqlReturnId(FunctionInfo.SqlFunctionCall);
 
-        // DEBUG: se TestId for null, imprime SQL e exceção capturada
-        if (!FunctionInfo.TestId.HasValue)
-        {
-            Console.WriteLine("=== DEBUG SQL CALL ===");
-            Console.WriteLine(FunctionInfo.SqlFunctionCall);
-            Console.WriteLine("=== DEBUG EXCEPTION DETAILS ===");
-            Console.WriteLine(lastException?.ToString());
-        }
         Assert.True(
             FunctionInfo.TestId.HasValue,
             $"[EXECUTION ERROR] Test {TestCount} failed to execute test and insert test result into table."
@@ -646,7 +628,7 @@ WHERE id = {functionInfo.TestId.Value};";
         );
         Assert.True(
             testResult.Value,
-            $"[ASSERTION ERROR] Test {TestCount} returned unexpected result."
+            $"[ASSERTION ERROR] Test {TestCount} returned unexpected result. testResult.Value: {testResult.Value}"
         );
 
         Console.WriteLine($"[END TEST {TestCount}] Test {testName} executed successfully.\n");

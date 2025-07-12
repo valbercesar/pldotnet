@@ -22,38 +22,68 @@ public abstract class BaseTriggerTestTgValsTests : PlDotNetTest
         };
     }
 
-    private static string TriggerSetup => @"
-    CREATE OR REPLACE TRIGGER test_trigger_BIR_3
-        BEFORE INSERT ON trigger_test_table
-        FOR EACH ROW
-        WHEN (new.id = 6)
-        EXECUTE FUNCTION trigger_test_tg_vals('BEFORE/INSERT/ROW', 3);
-    ";
-
     public static object[][] TestCases()
     {
-        var sql = SqlHelperScript.CommonTriggerTableSetup
-                    + TriggerSetup
-                    + @"INSERT INTO trigger_test_table VALUES (6, 'Inserted Sixth Text (for values check modify)');";
-
         return new[]
         {
             new object[]
             {
                 "c#-trigger",
                 "tgValuesCorrect",
-                sql,
-                "EXISTS (SELECT 1 FROM trigger_test_table WHERE id = 6 and message = 'TG value assertions passed')"
+                "message = 'TG value assertions passed'",
+                "WHERE id = 6"
             }
         };
     }
 
-    // [Theory]
-    [Theory(Skip="pulando para focar num só")]
+    [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTriggerTestTgVals(string featureName, string testName, string input, string expectedResult)
+    public void TestTriggerTestTgVals(
+        string featureName,
+        string testName,
+        string customAssertion,
+        string querySuffix
+    )
     {
-        RunGenericTest(featureName, testName, input, expectedResult);
+        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_3 ON trigger_test_table;");
+
+        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
+
+        ExecuteSql(@"
+            CREATE TABLE trigger_test_table(
+                id      INT,
+                message TEXT
+            );
+        ");
+
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        ExecuteSql(createFunctionSql);
+
+        var triggerSql = @"
+CREATE OR REPLACE TRIGGER test_trigger_BIR_3
+    BEFORE INSERT ON trigger_test_table
+    FOR EACH ROW
+    WHEN (new.id = 6)
+    EXECUTE FUNCTION trigger_test_tg_vals('BEFORE/INSERT/ROW', '3');
+";
+        ExecuteSql(triggerSql);
+
+        var cte = @"
+WITH cte AS (
+    INSERT INTO trigger_test_table
+    VALUES (6, 'Inserted Sixth Text (for values check modify)')
+    RETURNING id, message
+)
+";
+
+        RunTestWithSuffix(
+            featureName:     featureName,
+            testName:        testName,
+            cteStatement:    cte,
+            customAssertion: customAssertion,
+            querySuffix:     querySuffix,
+            forceCte:        true
+        );
     }
 }
 

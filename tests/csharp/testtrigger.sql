@@ -101,7 +101,7 @@ CREATE OR REPLACE TRIGGER test_trigger_BIR_1
 BEFORE INSERT ON trigger_test_table
 FOR EACH ROW
 WHEN (new.id = 2)
-EXECUTE FUNCTION trigger_test_function_modify('BEFORE/INSERT/ROW', 1);
+EXECUTE FUNCTION trigger_test_function_modify('BEFORE/INSERT/ROW', '1');
 
 CREATE OR REPLACE TRIGGER test_trigger_BIR_2
 BEFORE INSERT ON trigger_test_table
@@ -113,7 +113,7 @@ CREATE OR REPLACE TRIGGER test_trigger_BIR_3
 BEFORE INSERT ON trigger_test_table
 FOR EACH ROW
 WHEN (new.id = 6)
-EXECUTE FUNCTION trigger_test_tg_vals('BEFORE/INSERT/ROW', 3);
+EXECUTE FUNCTION trigger_test_tg_vals('BEFORE/INSERT/ROW', '3');
 
 CREATE OR REPLACE TRIGGER test_trigger_BIR_4
 BEFORE INSERT ON trigger_test_table

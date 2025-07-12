@@ -43,6 +43,7 @@ WITH aggregated AS (
 )
 ",
             "encode(digest(concatenated_items, 'sha256'), 'hex') = '94091910bae126a50dfb041cd9e9a44efd716c77185628b3bce7a5965a207555'",
+            null
         };
     }
 

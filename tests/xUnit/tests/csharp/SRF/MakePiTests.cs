@@ -15,7 +15,7 @@ public abstract class BaseMakePiTests : PlDotNetTest
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "MakePi",
+            Name = "make_pi",
             Arguments = new List<FunctionArgument>(),
             ReturnType = "SETOF float8",
             Language = Language,

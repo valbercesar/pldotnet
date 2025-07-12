@@ -6,7 +6,6 @@ using Xunit;
 public abstract class BaseTriggerTestFunctionModifyTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
-
     protected abstract LanguageType Language { get; }
 
     public BaseTriggerTestFunctionModifyTests()
@@ -14,7 +13,7 @@ public abstract class BaseTriggerTestFunctionModifyTests : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "trigger_test_function_modify",
-            Arguments = new List<FunctionArgument>(),
+            Arguments = new List<FunctionArgument> { },
             ReturnType = "TRIGGER",
             Body = FunctionBody,
             Language = Language,
@@ -22,37 +21,68 @@ public abstract class BaseTriggerTestFunctionModifyTests : PlDotNetTest
         };
     }
 
-    private static string TriggerSetup => @"
-    CREATE TRIGGER test_trigger_BIR_1
-        BEFORE INSERT ON trigger_test_table
-        FOR EACH ROW
-        WHEN (NEW.id = 2)
-        EXECUTE FUNCTION trigger_test_function_modify('BEFORE/INSERT/ROW', '1');
-    ";
-
     public static object[][] TestCases()
     {
-        var sql = SqlHelperScript.CommonTriggerTableSetup
-                    + TriggerSetup
-                    + @"INSERT INTO trigger_test_table VALUES (2, 'Inserted Second Text');";
-
         return new[]
         {
             new object[]
             {
                 "c#-trigger",
                 "rowModifiedByTrigger",
-                sql,
-                "(SELECT message = 'MODIFIED Text!!!' FROM trigger_test_table WHERE id = 2)"
+                "message = 'MODIFIED Text!!!'",
+                "WHERE id = 2"
             }
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTriggerTestFunctionModify(string featureName, string testName, string input, string expectedResult)
+    public void TestTriggerTestFunctionModify(
+        string featureName,
+        string testName,
+        string customAssertion,
+        string querySuffix
+    )
     {
-        RunGenericTest(featureName, testName, input, expectedResult);
+        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_1 ON trigger_test_table;");
+
+        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
+
+        ExecuteSql(@"
+            CREATE TABLE trigger_test_table(
+                id      INT,
+                message TEXT
+            );
+        ");
+
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        ExecuteSql(createFunctionSql);
+
+        var triggerSql = @"
+CREATE TRIGGER test_trigger_BIR_1
+  BEFORE INSERT ON trigger_test_table
+  FOR EACH ROW
+  WHEN (NEW.id = 2)
+  EXECUTE FUNCTION trigger_test_function_modify('BEFORE/INSERT/ROW','1');
+";
+        ExecuteSql(triggerSql);
+
+        var cte = @"
+WITH cte AS (
+    INSERT INTO trigger_test_table (id, message)
+    VALUES (2, 'Inserted Second Text')
+    RETURNING *
+)
+";
+
+        RunTestWithSuffix(
+            featureName:     featureName,
+            testName:        testName,
+            cteStatement:    cte,
+            customAssertion: customAssertion,
+            querySuffix:     querySuffix,
+            forceCte:        true
+        );
     }
 }
 
