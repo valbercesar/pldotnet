@@ -178,8 +178,8 @@ post-tests-script:
 	cd $(CURRENT_DIR)/tests/csharp/DotNetTestProject/ && rm -rf bin obj
 	cd $(CURRENT_DIR)/tests/fsharp/DotNetTestProject/ && rm -rf bin obj
 	cd $(CURRENT_DIR)/
-#	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (runuser -u $(DBUSER) psql 2>&1) | tee automated_test_results/automated_test_results.out
-#	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (runuser -u $(DBUSER) psql)
+	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (runuser -u $(DBUSER) psql 2>&1) | tee automated_test_results/automated_test_results.out
+	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (runuser -u $(DBUSER) psql)
 
 # Runs tests in a running Docker container
 # Assumes that the container is running and named pldotnet-runtime,

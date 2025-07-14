@@ -1,4 +1,3 @@
-using PlDotNET.Tests.Helper;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -13,7 +12,7 @@ public abstract class BaseTriggerTestFunctionModifyTests : PlDotNetTest
         FunctionInfo = new SqlFunctionInfo
         {
             Name = "trigger_test_function_modify",
-            Arguments = new List<FunctionArgument> { },
+            Arguments = new List<FunctionArgument>(),
             ReturnType = "TRIGGER",
             Body = FunctionBody,
             Language = Language,
