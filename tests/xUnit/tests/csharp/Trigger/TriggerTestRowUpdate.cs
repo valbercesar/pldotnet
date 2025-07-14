@@ -3,19 +3,18 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-public abstract class BaseTriggerTestUpdateTypeTests : PlDotNetTest
+public abstract class BaseTriggerTestRowUpdateTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
-
     protected abstract LanguageType Language { get; }
 
-    public BaseTriggerTestUpdateTypeTests()
+    public BaseTriggerTestRowUpdateTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "trigger_test_update_type",
+            Name = "noop",
             Arguments = new List<FunctionArgument>(),
-            ReturnType = "TRIGGER",
+            ReturnType = "VOID",
             Body = FunctionBody,
             Language = Language,
             IsStrict = false
@@ -29,23 +28,30 @@ public abstract class BaseTriggerTestUpdateTypeTests : PlDotNetTest
             new object[]
             {
                 "c#-trigger",
-                "tgTypeMismatchHandling",
-                "message = 'This should be a string'",
-                "WHERE id = 7"
+                "rowUpdated",
+                "message = 'Updated Text'",
+                "WHERE id = 1"
+            },
+            new object[]
+            {
+                "c#-trigger",
+                "rowUpdated-2",
+                "message = 'Updated Third Text'",
+                "WHERE id = 13"
             }
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTriggerTestUpdateType(
+    public void TestRowUpdate(
         string featureName,
         string testName,
         string customAssertion,
         string querySuffix
     )
     {
-        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_4 ON trigger_test_table;");
+        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_1 ON trigger_test_table;");
 
         ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
 
@@ -59,20 +65,24 @@ public abstract class BaseTriggerTestUpdateTypeTests : PlDotNetTest
         var createFunctionSql = GetFunctionDefinition(FunctionInfo);
         ExecuteSql(createFunctionSql);
 
-        var triggerSql = @"
-CREATE OR REPLACE TRIGGER test_trigger_BIR_4
-    BEFORE INSERT ON trigger_test_table
-    FOR EACH ROW
-    WHEN (new.id = 7)
-    EXECUTE FUNCTION trigger_test_update_type('BEFORE/INSERT/ROW', '4');
-";
-        ExecuteSql(triggerSql);
+        ExecuteSql(@"
+            INSERT INTO trigger_test_table(id, message) VALUES
+                (1, 'Inserted Text'),
+                (3, 'Inserted Third Text (for updating)');
+
+            UPDATE trigger_test_table
+               SET message = 'Updated Text'
+             WHERE id = 1;
+
+            UPDATE trigger_test_table
+               SET id = 13, message = 'Updated Third Text'
+             WHERE id = 3;
+        ");
 
         var cte = @"
 WITH cte AS (
-    INSERT INTO trigger_test_table (id, message)
-    VALUES (7, 'This should be a string')
-    RETURNING id, message
+    SELECT id, message
+      FROM trigger_test_table
 )
 ";
 
@@ -88,12 +98,9 @@ WITH cte AS (
 }
 
 [Trait("Language", "CSharp")]
-[Trait("Category", "Trigger")]
-public class TriggerTestUpdateTypeTestsCSharp : BaseTriggerTestUpdateTypeTests
+[Trait("Category", "TriggerDml")]
+public class TriggerTestRowUpdateTestsCSharp : BaseTriggerTestRowUpdateTests
 {
-    protected override string FunctionBody => @"
-    tg.NewRow[1] = 1;
-    return ReturnMode.TriggerModify;
-    ";
+    protected override string FunctionBody => string.Empty;
     protected override LanguageType Language => LanguageType.PlcSharp;
 }

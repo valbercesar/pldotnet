@@ -22,38 +22,70 @@ public abstract class BaseTriggerTestSkipTests : PlDotNetTest
         };
     }
 
-    private static string TriggerSetup => @"
-    CREATE OR REPLACE TRIGGER test_trigger_BIR_2
-        BEFORE INSERT ON trigger_test_table
-        FOR EACH ROW
-        WHEN (new.id = 5)
-        EXECUTE FUNCTION trigger_test_skip('BEFORE/INSERT/ROW', 2);
-    ";
-
     public static object[][] TestCases()
     {
-        var sql = SqlHelperScript.CommonTriggerTableSetup
-                    + TriggerSetup
-                    + @"INSERT INTO trigger_test_table VALUES (5, 'Inserted Fifth Text (for simple skip)');";
-
         return new[]
         {
             new object[]
             {
                 "c#-trigger",
                 "skipWorks",
-                sql,
-                "NOT EXISTS (SELECT 1 FROM trigger_test_table WHERE id = 5)"
+                "NOT EXISTS (SELECT 1 FROM trigger_test_table WHERE id = 5)",
+                null
             }
         };
     }
 
-    // [Theory]
-    [Theory(Skip="pulando para focar num só")]
+    [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTriggerTestSkip(string featureName, string testName, string input, string expectedResult)
+    public void TestTriggerTestSkip(
+        string featureName,
+        string testName,
+        string customAssertion,
+        string querySuffix)
     {
-        RunGenericTest(featureName, testName, input, expectedResult);
+        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_2 ON trigger_test_table;");
+
+        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
+
+        ExecuteSql(@"
+            CREATE TABLE trigger_test_table(
+                id      INT,
+                message TEXT
+            );
+        ");
+
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        ExecuteSql(createFunctionSql);
+
+        var triggerSql = @"
+CREATE OR REPLACE TRIGGER test_trigger_BIR_2
+    BEFORE INSERT ON trigger_test_table
+    FOR EACH ROW
+    WHEN (new.id = 5)
+    EXECUTE FUNCTION trigger_test_skip('BEFORE/INSERT/ROW', '2');
+";
+        ExecuteSql(triggerSql);
+
+        ExecuteSql(@"
+            INSERT INTO trigger_test_table (id, message)
+            VALUES (5, 'Inserted Fifth Text (for simple skip)');
+        ");
+
+        var cte = @"
+WITH cte AS (
+    SELECT 1
+)
+";
+
+        RunTestWithSuffix(
+            featureName:     featureName,
+            testName:        testName,
+            cteStatement:    cte,
+            customAssertion: customAssertion,
+            querySuffix:     querySuffix,
+            forceCte:        true
+        );
     }
 }
 

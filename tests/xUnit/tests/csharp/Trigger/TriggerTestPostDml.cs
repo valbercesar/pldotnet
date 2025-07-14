@@ -23,55 +23,80 @@ public abstract class BaseTriggerTestPostDmlTests : PlDotNetTest
 
     public static object[][] TestCases()
     {
-        var sql = SqlHelperScript.CommonTriggerTableSetup
-                + @"
-INSERT INTO trigger_test_table(id, message) VALUES
- (1, 'Inserted Text'),
- (2, 'Inserted Second Text'),
- (3, 'Inserted Third Text (for updating)'),
- (4, 'Inserted Fourth Text (for deletion)'),
- (5, 'Inserted Fifth Text (for simple skip)'),
- (6, 'Inserted Sixth Text (for values check modify)'),
- (7, 'This should be a string');
-
-UPDATE trigger_test_table SET message = 'Updated Text' WHERE id = 1;
-UPDATE trigger_test_table SET id = 13, message = 'Updated Third Text' WHERE id = 3;
-DELETE FROM trigger_test_table WHERE id = 4;
-UPDATE trigger_test_table SET id = 2, message = 'Updated Text' WHERE id = 1234;
-";
-
         return new[]
         {
             new object[]
             {
                 "c#-trigger",
                 "validRows",
-                sql,
-                "NOT EXISTS (SELECT 1 FROM trigger_test_table WHERE id NOT IN (1,2,6,7,13))"
+                "NOT EXISTS (SELECT 1 FROM trigger_test_table WHERE id NOT IN (1,2,6,7,13))",
+                null
             },
-            new object[]
-            {
-                "c#-trigger",
-                "rowUpdated",
-                sql,
-                "(SELECT message = 'Updated Text' FROM trigger_test_table WHERE id = 1)"
-            },
-            new object[]
-            {
-                "c#-trigger",
-                "rowUpdated-2",
-                sql,
-                "(SELECT message = 'Updated Third Text' FROM trigger_test_table WHERE id = 13)"
-            }
         };
     }
 
-    // [Theory]
-    [Theory(Skip="pulando para focar num só")]
+    [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTestPostDml(string featureName, string testName, string input, string expectedResult)
+    public void TestTestPostDml(
+        string featureName,
+        string testName,
+        string customAssertion,
+        string querySuffix
+    )
     {
-        RunGenericTest(featureName, testName, input, expectedResult);
+        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_1 ON trigger_test_table;");
+
+        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
+
+        ExecuteSql(@"
+            CREATE TABLE trigger_test_table(
+                id      INT,
+                message TEXT
+            );
+        ");
+
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        ExecuteSql(createFunctionSql);
+
+        ExecuteSql(@"
+            INSERT INTO trigger_test_table(id, message) VALUES
+                (1, 'Inserted Text'),
+                (2, 'Inserted Second Text'),
+                (3, 'Inserted Third Text (for updating)'),
+                (4, 'Inserted Fourth Text (for deletion)'),
+                (5, 'Inserted Fifth Text (for simple skip)'),
+                (6, 'Inserted Sixth Text (for values check modify)'),
+                (7, 'This should be a string');
+
+            UPDATE trigger_test_table
+               SET message = 'Updated Text'
+             WHERE id = 1;
+
+            UPDATE trigger_test_table
+               SET id = 13, message = 'Updated Third Text'
+             WHERE id = 3;
+
+            DELETE FROM trigger_test_table
+                WHERE id = 4;
+
+            DELETE FROM trigger_test_table
+                WHERE id = 5;
+        ");
+
+        var cte = @"
+WITH cte AS (
+    SELECT 1
+)
+";
+
+        RunTestWithSuffix(
+            featureName:     featureName,
+            testName:        testName,
+            cteStatement:    cte,
+            customAssertion: customAssertion,
+            querySuffix:     querySuffix,
+            forceCte:        true
+        );
     }
 }
 

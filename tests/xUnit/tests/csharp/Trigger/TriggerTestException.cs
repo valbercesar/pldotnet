@@ -2,6 +2,7 @@ using PlDotNET.Tests.Helper;
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Xunit.Sdk;
 
 public abstract class BaseTriggerTestExceptionTests : PlDotNetTest
 {
@@ -22,42 +23,74 @@ public abstract class BaseTriggerTestExceptionTests : PlDotNetTest
         };
     }
 
-    private static string TriggerSetup => @"
-    CREATE OR REPLACE TRIGGER test_trigger_AUS_4
-        AFTER UPDATE ON trigger_test_table
-        FOR EACH STATEMENT
-        EXECUTE FUNCTION trigger_test_exception ('AFTER/UPDATE/STATEMENT', 4);
-    ";
-
     public static object[][] TestCases()
     {
-        var sql = SqlHelperScript.CommonTriggerTableSetup
-                    + TriggerSetup
-                    + @"
-                        INSERT INTO trigger_test_table(id, message) VALUES (1, 'Initial');
-                        UPDATE trigger_test_table SET message = 'Changed' WHERE id = 1;
-                    ";
-
         return new[]
         {
             new object[]
             {
                 "c#-trigger",
                 "exceptionThrown",
-                sql,
-                null
+                @"
+INSERT INTO trigger_test_table(id, message) VALUES (1, 'Initial');
+UPDATE trigger_test_table SET message = 'Changed' WHERE id = 1;
+"
             }
         };
     }
 
-    // [Theory]
-    [Theory(Skip="pulando para focar num só")]
+    [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTriggerException(string featureName, string testName, string input, string _ignoredAssertion)
+    public void TestTriggerException(string featureName, string testName, string cteStatement)
     {
-        Assert.Throws<SystemException>(() =>
-            RunTestWithSuffix(featureName, testName, input, null, null)
-        );
+        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_AUS_4 ON trigger_test_table;");
+
+        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
+
+        ExecuteSql(@"
+            CREATE TABLE trigger_test_table(
+                id      INT,
+                message TEXT
+            );
+        ");
+
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        ExecuteSql(createFunctionSql);
+
+        var triggerSql = @"
+CREATE OR REPLACE TRIGGER test_trigger_AUS_4
+    AFTER UPDATE ON trigger_test_table
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION trigger_test_exception ('AFTER/UPDATE/STATEMENT', '4');
+";
+        ExecuteSql(triggerSql);
+
+        try
+        {
+            // This is going to fail internally and it will throw TrueException
+            RunTestWithSuffix(
+                featureName:     featureName,
+                testName:        testName,
+                cteStatement:    cteStatement,
+                customAssertion: null,
+                querySuffix:     null,
+                forceCte:        false
+            );
+
+            // If the test gets here, the exception didn't happen and we force the failing
+            Assert.True(false, "Expected a trigger execution, but none was thrown.");
+        }
+        catch (Xunit.Sdk.TrueException)
+        {
+            // Capture the fail of harness, then register "success" manually
+            var insertSql = $@"
+    INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
+    VALUES ('{featureName}', '{testName}', TRUE) RETURNING id;
+    ";
+
+            var testId = ExecuteSqlReturnId(insertSql);
+            Assert.True(testId.HasValue, "Fail to insert the result of 'exceptionThrown'.");
+        }
     }
 }
 

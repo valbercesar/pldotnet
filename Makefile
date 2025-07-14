@@ -149,7 +149,7 @@ down:
 # xUnit test directory
 XUNIT_TEST_DIR := $(CURRENT_DIR)/tests/xUnit
 # Default filter for xUnit tests
-XUNIT_FILTER ?= CSharp
+XUNIT_FILTER ?=
 # Command to run xUnit tests
 RUN_XUNIT_TESTS = cd $(XUNIT_TEST_DIR) && dotnet test $(if $(XUNIT_FILTER),--filter "$(XUNIT_FILTER)")
 # Where to put the test files
@@ -178,8 +178,8 @@ post-tests-script:
 	cd $(CURRENT_DIR)/tests/csharp/DotNetTestProject/ && rm -rf bin obj
 	cd $(CURRENT_DIR)/tests/fsharp/DotNetTestProject/ && rm -rf bin obj
 	cd $(CURRENT_DIR)/
-	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (runuser -u $(DBUSER) psql 2>&1) | tee automated_test_results/automated_test_results.out
-	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (runuser -u $(DBUSER) psql)
+#	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (runuser -u $(DBUSER) psql 2>&1) | tee automated_test_results/automated_test_results.out
+#	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (runuser -u $(DBUSER) psql)
 
 # Runs tests in a running Docker container
 # Assumes that the container is running and named pldotnet-runtime,
