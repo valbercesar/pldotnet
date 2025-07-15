@@ -2,17 +2,16 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-public abstract class BaseTriggerTestSkipTests : PlDotNetTest
+public abstract class BaseTriggerTestFunctionModifyFsharpTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
-
     protected abstract LanguageType Language { get; }
 
-    public BaseTriggerTestSkipTests()
+    public BaseTriggerTestFunctionModifyFsharpTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "trigger_test_skip",
+            Name = "trigger_test_function_modify_fsharp",
             Arguments = new List<FunctionArgument>(),
             ReturnType = "TRIGGER",
             Body = FunctionBody,
@@ -27,23 +26,24 @@ public abstract class BaseTriggerTestSkipTests : PlDotNetTest
         {
             new object[]
             {
-                "c#-trigger",
-                "skipWorks",
-                "NOT EXISTS (SELECT 1 FROM trigger_test_table WHERE id = 5)",
-                null!
+                "f#-trigger",
+                "rowModifiedByTrigger",
+                "message = 'MODIFIED Text with F#!!!'",
+                "WHERE id = 2"
             }
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTriggerTestSkip(
+    public void TestTriggerTestFunctionModifyFsharp(
         string featureName,
         string testName,
         string customAssertion,
-        string querySuffix)
+        string querySuffix
+    )
     {
-        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_2 ON trigger_test_table;");
+        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_1 ON trigger_test_table;");
 
         ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
 
@@ -58,22 +58,19 @@ public abstract class BaseTriggerTestSkipTests : PlDotNetTest
         ExecuteSql(createFunctionSql);
 
         var triggerSql = @"
-CREATE OR REPLACE TRIGGER test_trigger_BIR_2
+CREATE OR REPLACE TRIGGER test_trigger_BIR_1
     BEFORE INSERT ON trigger_test_table
     FOR EACH ROW
-    WHEN (new.id = 5)
-    EXECUTE FUNCTION trigger_test_skip('BEFORE/INSERT/ROW', '2');
+    WHEN (new.id = 2)
+    EXECUTE FUNCTION trigger_test_function_modify_fsharp('BEFORE/INSERT/ROW', '1');
 ";
         ExecuteSql(triggerSql);
 
-        ExecuteSql(@"
-            INSERT INTO trigger_test_table (id, message)
-            VALUES (5, 'Inserted Fifth Text (for simple skip)');
-        ");
-
         var cte = @"
 WITH cte AS (
-    SELECT 1
+    INSERT INTO trigger_test_table (id, message)
+    VALUES (2, 'Inserted Second Text')
+    RETURNING *
 )
 ";
 
@@ -88,20 +85,18 @@ WITH cte AS (
     }
 }
 
-[Trait("Language", "CSharp")]
+[Trait("Language", "FSharp")]
 [Trait("Category", "Trigger")]
-public class TriggerTestSkipTestsCSharp : BaseTriggerTestSkipTests
+public class TriggerTestFunctionModifyTestsFSharp : BaseTriggerTestFunctionModifyFsharpTests
 {
     protected override string FunctionBody => @"
-    if (tg.Arguments[1] != ""2""){
-        throw new SystemException($""Assertion failed: wrong trigger argument, '{tg.Arguments[1]}' != '2'"");
-    }
+        if tg.Arguments.[1] <> ""1"" then
+            raise (SystemException($""Assertion failed: wrong trigger argument, '{tg.Arguments.[1]}' != '1'""))
+        if (unbox<int> tg.NewRow.[0]) <> 2 then
+            raise (SystemException($""Assertion failed: wrong row value, {tg.NewRow.[1]} != 2""))
 
-    if((int)tg.NewRow[0] == 5) {
-        return ReturnMode.TriggerSkip;
-    }
-
-    return ReturnMode.Normal;
+        tg.NewRow.[1] <- ""MODIFIED Text with F#!!!"";
+        ReturnMode.TriggerModify
     ";
-    protected override LanguageType Language => LanguageType.PlcSharp;
+    protected override LanguageType Language => LanguageType.PlfSharp;
 }

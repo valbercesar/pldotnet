@@ -55,7 +55,7 @@ public abstract class BaseTriggerTestUpdateTypeTests : PlDotNetTest
             );
         ");
 
-        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo!);
         ExecuteSql(createFunctionSql);
 
         var triggerSql = @"

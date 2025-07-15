@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using Xunit;
 using Xunit.Sdk;
 
-public abstract class BaseTriggerTestExceptionTests : PlDotNetTest
+public abstract class BaseTriggerTestExceptionFsharpTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
 
     protected abstract LanguageType Language { get; }
 
-    public BaseTriggerTestExceptionTests()
+    public BaseTriggerTestExceptionFsharpTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "trigger_test_exception",
+            Name = "trigger_test_exception_fsharp",
             Arguments = new List<FunctionArgument>(),
             ReturnType = "TRIGGER",
             Body = FunctionBody,
@@ -28,7 +28,7 @@ public abstract class BaseTriggerTestExceptionTests : PlDotNetTest
         {
             new object[]
             {
-                "c#-trigger",
+                "f#-trigger",
                 "exceptionThrown",
                 @"
 INSERT INTO trigger_test_table(id, message) VALUES (1, 'Initial');
@@ -40,7 +40,7 @@ UPDATE trigger_test_table SET message = 'Changed' WHERE id = 1;
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTriggerException(string featureName, string testName, string cteStatement)
+    public void TestTriggerExceptionFsharp(string featureName, string testName, string cteStatement)
     {
         ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_AUS_4 ON trigger_test_table;");
 
@@ -60,7 +60,7 @@ UPDATE trigger_test_table SET message = 'Changed' WHERE id = 1;
 CREATE OR REPLACE TRIGGER test_trigger_AUS_4
     AFTER UPDATE ON trigger_test_table
     FOR EACH STATEMENT
-    EXECUTE FUNCTION trigger_test_exception ('AFTER/UPDATE/STATEMENT', '4');
+    EXECUTE FUNCTION trigger_test_exception_fsharp ('AFTER/UPDATE/STATEMENT', '4');
 ";
         ExecuteSql(triggerSql);
 
@@ -68,12 +68,12 @@ CREATE OR REPLACE TRIGGER test_trigger_AUS_4
         {
             // This is going to fail internally and it will throw TrueException
             RunTestWithSuffix(
-                featureName:     featureName,
-                testName:        testName,
-                cteStatement:    cteStatement,
+                featureName: featureName,
+                testName: testName,
+                cteStatement: cteStatement,
                 customAssertion: null!,
-                querySuffix:     null!,
-                forceCte:        false
+                querySuffix: null!,
+                forceCte: false
             );
 
             // If the test gets here, the exception didn't happen and we force the failing
@@ -93,12 +93,12 @@ CREATE OR REPLACE TRIGGER test_trigger_AUS_4
     }
 }
 
-[Trait("Language", "CSharp")]
+[Trait("Language", "FSharp")]
 [Trait("Category", "Trigger")]
-public class TriggerTestExceptionTestsCSharp : BaseTriggerTestExceptionTests
+public class TriggerTestExceptionTestsFSharp : BaseTriggerTestExceptionFsharpTests
 {
     protected override string FunctionBody => @"
-    throw new SystemException(""This is a test of exception handling"");
+        raise (SystemException((""This is a test of exception handling"")))
     ";
-    protected override LanguageType Language => LanguageType.PlcSharp;
+    protected override LanguageType Language => LanguageType.PlfSharp;
 }
