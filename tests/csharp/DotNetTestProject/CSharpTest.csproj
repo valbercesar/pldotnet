@@ -20,5 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\dotnet_src\npgsql\src\Npgsql\Npgsql.csproj" />
+    <ProjectReference Include="..\..\..\dotnet_src\efcore.pg\src\EFCore.PG\EFCore.PG.csproj" />
   </ItemGroup>
 </Project>
