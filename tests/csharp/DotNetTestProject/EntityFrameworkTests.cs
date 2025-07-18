@@ -11,20 +11,33 @@ namespace EFCoreTest
     [Table("test_entity_framework", Schema = "public")]
     public class TestEntityFramework
     {
-        [Key, Column("id")] public int Id { get; set; }
-        [Column("name")] public string Name { get; set; } = null!;
-        [Column("category")] public string Category { get; set; } = null!;
+        [Key, Column("id")]
+        public int Id { get; set; }
+
+        [Column("name", TypeName = "varchar(100)")]
+        public string Name { get; set; } = null!;
+
+        [Column("category", TypeName = "varchar(100)")]
+        public string Category { get; set; } = null!;
+
         [Column("price", TypeName = "money")]
         public decimal Price { get; set; }
-        [Column("created_at")] public DateTime CreatedAt { get; set; }
-        [Column("is_active")] public bool IsActive { get; set; }
+
+        [Column("created_at", TypeName = "timestamp without time zone")]
+        public DateTime CreatedAt { get; set; }
+
+        [Column("is_active")]
+        public bool IsActive { get; set; }
     }
 
     [Table("test_categories", Schema = "public")]
     public class TestCategory
     {
-        [Key, Column("category")] public string Category { get; set; } = null!;
-        [Column("sort_order")] public int SortOrder { get; set; }
+        [Key, Column("category")]
+        public string Category { get; set; } = null!;
+
+        [Column("sort_order")]
+        public int SortOrder { get; set; }
     }
 
     public class TestEntitiesContext : DbContext
@@ -122,30 +135,101 @@ namespace EFCoreTest
                     ).Count()
             );
 
-        public static int DeleteEntitiesByIds(Array idsArray)
+        public static void DeleteFirstEntity()
+        {
+            using var ctx = new TestEntitiesContext();
+            ctx.Database.AutoTransactionsEnabled = false;
+            var first = ctx.TestEntities.OrderBy(e => e.Id).FirstOrDefault();
+            if (first != null)
+            {
+                ctx.TestEntities.Remove(first);
+                ctx.SaveChanges();
+            }
+        }
+
+        public static void DeleteEntitiesByIds(Array idsArray)
         {
             var ids = idsArray.Cast<int>().ToArray();
             using var ctx = new TestEntitiesContext();
             ctx.Database.AutoTransactionsEnabled = false;
-            var toDelete = ctx.TestEntities
-                            .Where(e => ids.Contains(e.Id))
-                            .ToList();
-            if (toDelete.Count == 0)
-                return 0;
-            ctx.TestEntities.RemoveRange(toDelete);
-            return ctx.SaveChanges();
+            var toDelete = ctx.TestEntities.Where(e => ids.Contains(e.Id)).ToList();
+            if (toDelete.Count > 0)
+            {
+                ctx.TestEntities.RemoveRange(toDelete);
+                ctx.SaveChanges();
+            }
         }
 
-        public static void ModifyCategory(int? id, string? newCategory)
+        public static void UpdateEntityName(int? id, string newName)
         {
             using var ctx = new TestEntitiesContext();
             ctx.Database.AutoTransactionsEnabled = false;
-            var entity = ctx.TestEntities.FirstOrDefault(e => e.Id == id);
-            if (entity != null)
+            var entity = ctx.TestEntities.SingleOrDefault(e => e.Id == id);
+            if (entity == null) return;
+            entity.Name = newName;
+            ctx.SaveChanges();
+        }
+
+        public static void DoublePriceByCategories(Array categoriesArray)
+        {
+            var categories = categoriesArray.Cast<string>().ToArray();
+            using var ctx = new TestEntitiesContext();
+            ctx.Database.AutoTransactionsEnabled = false;
+            var toUpdate = ctx.TestEntities.Where(e => categories.Contains(e.Category)).ToList();
+            foreach (var e in toUpdate)
+                e.Price *= 2;
+            if (toUpdate.Count > 0)
+                ctx.SaveChanges();
+        }
+
+        public static void InsertEntity(
+           string name, string category, decimal? price, DateTime? createdAt, bool? isActive
+        )
+        {
+            using var ctx = new TestEntitiesContext();
+            ctx.Database.AutoTransactionsEnabled = false;
+            int maxId = ctx.TestEntities.Any() ? ctx.TestEntities.Max(e => e.Id) : 0;
+            var ent = new TestEntityFramework
             {
-                entity.Category = newCategory;
-                ctx.TestEntities.Update(entity);
+                Name = name,
+                Category = category,
+                Price = price ?? 0m,
+                CreatedAt = createdAt ?? DateTime.Now,
+                IsActive = isActive ?? false
+            };
+            ctx.TestEntities.Add(ent);
+            ctx.SaveChanges();
+        }
+
+        public static void InsertEntitiesRange(
+            Array namesArray, Array categoriesArray, Array pricesArray, Array createdAtArray, Array isActiveArray
+        )
+        {
+            var names      = namesArray     .Cast<string>()   .ToArray();
+            var categories = categoriesArray.Cast<string>()   .ToArray();
+            var prices     = pricesArray    .Cast<decimal?>()
+                                            .Select(p => p ?? 0m)
+                                            .ToArray();
+            var createdAts = createdAtArray .Cast<DateTime?>()
+                                            .Select(d => d ?? DateTime.Now)
+                                            .ToArray();
+            var isActives  = isActiveArray  .Cast<bool?>()
+                                            .Select(b => b ?? false)
+                                            .ToArray();
+            var list = new List<TestEntityFramework>();
+            for (int i = 0; i < names.Length; i++)
+            {
+                list.Add(new TestEntityFramework {
+                    Name      = names[i],
+                    Category  = categories[i],
+                    Price     = prices[i],
+                    CreatedAt = createdAts[i],
+                    IsActive  = isActives[i]
+                });
             }
+            using var ctx = new TestEntitiesContext();
+            ctx.Database.AutoTransactionsEnabled = false;
+            ctx.TestEntities.AddRange(list);
             ctx.SaveChanges();
         }
     }

@@ -244,6 +244,73 @@ namespace PlDotNET
         public static Dictionary<uint, CachedTrigger> TrigBuiltCodeDict { get; set; } = [];
 
         /// <summary>
+        /// List of assemblies that PL.NET needs to function correctly.
+        /// </summary>
+        public static readonly List<string> NeededAssemblies = new List<string>
+        {
+            "System.Buffers",
+            "System.Collections",
+            "System.Collections.Generic",
+            "System.ComponentModel.Primitives",
+            "System.ComponentModel.TypeConverter",
+            "System.Console",
+            "System.Core",
+            "System.Data",
+            "System.Data.Common",
+            "System.Data.SqlClient",
+            "System.Diagnostics",
+            "System.Diagnostics.CodeAnalysis",
+            "System.Globalization",
+            "System.Linq",
+            "System.Linq.Expressions",
+            "System.Net.NetworkInformation",
+            "System.Net.Primitives",
+            "System.Private.CoreLib",
+            "System.Runtime",
+            "System.Text",
+            "System.Text.Unicode",
+            "FSharp.Core",
+            "Microsoft.CSharp",
+            "Microsoft.EntityFrameworkCore",
+            "Microsoft.EntityFrameworkCore.Abstractions",
+            "Microsoft.EntityFrameworkCore.Relational",
+            "Microsoft.Extensions.Caching.Abstractions",
+            "Microsoft.Extensions.Caching.Memory",
+            "Microsoft.Extensions.Configuration.Abstractions",
+            "Microsoft.Extensions.DependencyInjection",
+            "Microsoft.Extensions.DependencyInjection.Abstractions",
+            "Microsoft.Extensions.Logging",
+            "Microsoft.Extensions.Logging.Abstractions",
+            "Microsoft.Extensions.Options",
+            "Microsoft.Extensions.Primitives",
+            "Npgsql",
+            "Npgsql.EntityFrameworkCore.PostgreSQL",
+            "Npgsql.Tests",
+            "NpgsqlTypes",
+            "PlDotNET.Common",
+            "PlDotNET.Handlers",
+        };
+
+        /// <summary>
+        /// Gets the paths of the trusted assemblies used by PL.NET.
+        /// </summary>
+        public static readonly List<string> NeededAssemblyPaths = GetTrustedAssembliesPaths()
+            .Where(p => NeededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
+            .ToList();
+
+        /// <summary>
+        /// This function returns the paths of the trusted assemblies. It retrieves the paths from the AppContext data
+        /// and adds the assemblies from the current directory where the Engine assembly is located.
+        /// </summary>
+        public static List<string> GetTrustedAssembliesPaths()
+        {
+            List<string> trustedAssemblyPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator).ToList();
+            trustedAssemblyPaths.AddRange(
+                Directory.EnumerateFiles(Path.GetDirectoryName(typeof(Engine).Assembly.Location), "*.dll", SearchOption.TopDirectoryOnly));
+            return trustedAssemblyPaths;
+        }
+
+        /// <summary>
         /// This function compiles the dynamic code using Roslyn.
         /// </summary>
         /// <param name="sourceCode">The source code to compile.</param>
@@ -256,59 +323,9 @@ namespace PlDotNET
         public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
-
-            var trustedAssembliesPathsArray = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
-            List<string> trustedAssembliesPaths =
-            [
-                .. trustedAssembliesPathsArray,
-                typeof(NpgsqlPoint).Assembly.Location,
-                typeof(Elog).Assembly.Location,
-                typeof(NullLoggerFactory).Assembly.Location,
-                typeof(NpgsqlCommand).Assembly.Location,
-                typeof(CommandTests).Assembly.Location,
-                typeof(DatumConversion).Assembly.Location,
-            ];
-
-#if ENABLE_FCS
-            trustedAssembliesPaths.Add(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location);
-#endif
-
-            var neededAssemblies = new[]
-            {
-                "System.Buffers",
-                "System.Collections",
-                "System.Collections.Generic",
-                "System.ComponentModel.Primitives",
-                "System.ComponentModel.TypeConverter",
-                "System.Console",
-                "System.Core",
-                "System.Data",
-                "System.Data.Common",
-                "System.Data.SqlClient",
-                "System.Diagnostics",
-                "System.Diagnostics.CodeAnalysis",
-                "System.Globalization",
-                "System.Linq",
-                "System.Linq.Expressions",
-                "System.Net.NetworkInformation",
-                "System.Net.Primitives",
-                "System.Private.CoreLib",
-                "System.Runtime",
-                "System.Text",
-                "System.Text.Unicode",
-                "Microsoft.Extensions.Logging.Abstractions",
-                "Microsoft.CSharp",
-                "Npgsql",
-                "Npgsql.Tests",
-                "NpgsqlTypes",
-                "PlDotNET.Common",
-                "PlDotNET.Handlers",
-            };
-
-            List<PortableExecutableReference> references = trustedAssembliesPaths
-                .Where(p => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
-                .Select(p => MetadataReference.CreateFromFile(p))
-                .ToList();
+            List<PortableExecutableReference> references = NeededAssemblyPaths
+                 .Select(p => MetadataReference.CreateFromFile(p))
+                 .ToList();
 
             if (memStreamUserFunction != null)
             {
@@ -410,7 +427,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Warning($"Error encountered when executing CheckDirectoriesAccess(): {e.GetType().Name}: {e.Message}");
+                Elog.Warning($"Error encountered when executing CheckDirectoriesAccess():\n{e}");
                 return 1;
             }
 
@@ -479,15 +496,9 @@ namespace PlDotNET
                 else
                 {
 #if ENABLE_FCS
-                    List<string> extraAssemblies = new ()
-                    {
-                        typeof(NpgsqlPoint).Assembly.Location,
-                        typeof(Elog).Assembly.Location,
-                        typeof(OutputResult).Assembly.Location,
-                        typeof(NpgsqlCommand).Assembly.Location,
-                        typeof(FSharpCompiler).Assembly.Location,
-                        typeof(System.ComponentModel.Component).Assembly.Location,
-                    };
+                    List<string> extraAssemblies = NeededAssemblyPaths
+                        .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
+                        .ToList();
                     userFunctionDll = FSharpCompiler.CompileFSharpSourceCodeAsDLL(functionId, Settings.PathToTemporaryFiles, userFunctionCode, extraAssemblies.ToArray());
 #else
                     throw new SystemException("FSharp Compiler Service is not enabled in this build");
@@ -530,7 +541,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                Elog.Warning($"Error encountered when generating the UserFunction/UserHandler source code:\n{e}");
                 return 1;
             }
 
@@ -570,21 +581,16 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Warning($"Error encountered: {e.GetType().Name}: {e.Message}");
+                Elog.Warning($"Error encountered when compiling the UserFunction/UserHandler source code:\n{e}");
                 return 1;
             }
 
             // Load the assemblies into AssemblyLoadContext
             AssemblyLoadContext userAlc = new($"UserFunction_{functionId}", true);
-            _ = userAlc.LoadFromAssemblyPath(typeof(NpgsqlCommand).Assembly.Location); // Npgsql Assembly
-            _ = userAlc.LoadFromAssemblyPath(typeof(NpgsqlPoint).Assembly.Location); // NpgsqlTypes Assembly
-            _ = userAlc.LoadFromAssemblyPath(typeof(NullLoggerFactory).Assembly.Location); // Logging Abstractions Assembly
-            _ = userAlc.LoadFromAssemblyPath(typeof(Elog).Assembly.Location); // PlDotNET.Common Assembly
-            _ = userAlc.LoadFromAssemblyPath(typeof(OutputResult).Assembly.Location); // PlDotNET.Handlers Assembly
-            _ = userAlc.LoadFromAssemblyPath(typeof(CommandTests).Assembly.Location); // Npgsql.Tests Assembly
-            _ = userAlc.LoadFromAssemblyPath(typeof(NUnitAttribute).Assembly.Location); // MonoTouch.NUnitLite Assembly
-            _ = dotnetLanguage == DotNETLanguage.FSharp ?
-                userAlc.LoadFromAssemblyPath(typeof(Microsoft.FSharp.Core.FSharpOption<>).Assembly.Location) : null; // FSharp.Core
+            _ = NeededAssemblyPaths
+                .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
+                .Select(p => userAlc.LoadFromAssemblyPath(p))
+                .ToList();
             _ = userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer())); // UserFunction Assembly
             Assembly userHandlerAssembly = userAlc.LoadFromStream(new MemoryStream(memUserHandler.GetBuffer())); // UserHandler Assembly
 
@@ -681,15 +687,9 @@ namespace PlDotNET
 #if ENABLE_FCS
             if (language == DotNETLanguage.FSharp)
             {
-                List<string> extraAssemblies = new ()
-                {
-                    typeof(NpgsqlPoint).Assembly.Location,
-                    typeof(Elog).Assembly.Location,
-                    typeof(OutputResult).Assembly.Location,
-                    typeof(NpgsqlCommand).Assembly.Location,
-                    typeof(FSharpCompiler).Assembly.Location,
-                    typeof(System.ComponentModel.Component).Assembly.Location,
-                };
+                List<string> extraAssemblies = NeededAssemblyPaths
+                    .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
+                    .ToList();
                 return FSharpCompiler.CompileFSharpSourceCode(functionId, Settings.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
             }
 #else
@@ -846,7 +846,7 @@ namespace PlDotNET
             }
             catch (Exception e)
             {
-                Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                Elog.Warning($"Error when calling user function:\n{e}");
                 return (int)ReturnMode.Error;
             }
         }
@@ -895,7 +895,7 @@ namespace PlDotNET
                 }
                 catch (Exception e)
                 {
-                    Elog.Warning($"{e.GetType().Name}: {e.Message}");
+                    Elog.Warning($"Error when calling user function:\n{e}");
                     return (int)ReturnMode.Error;
                 }
             }

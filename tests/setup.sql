@@ -218,8 +218,56 @@ LANGUAGE plcsharp STRICT;
 
 -- Creating auxiliary table for trigger tests (C# and F#)
 DROP TABLE IF EXISTS trigger_test_table;
-
 CREATE TABLE trigger_test_table(
     id      INT,
     message TEXT
 );
+
+-- Creating auxiliary tables and functions for Entity Framework tests
+DROP TABLE IF EXISTS public.test_entity_framework CASCADE;
+CREATE TABLE public.test_entity_framework (
+  id          SERIAL PRIMARY KEY,
+  name        VARCHAR(100)  NOT NULL,
+  category    VARCHAR(50)   NOT NULL,
+  price       MONEY NOT NULL,
+  created_at  TIMESTAMP     NOT NULL DEFAULT now(),
+  is_active   BOOLEAN       NOT NULL DEFAULT true
+);
+INSERT INTO public.test_entity_framework (name, category, price, created_at, is_active)
+VALUES
+  ('Entity 1','Category 1',  '10.00'::MONEY, '2025-07-10 10:00:00', TRUE),
+  ('Entity 2','Category 2',  '20.50'::MONEY, '2025-07-09 11:30:00', FALSE),
+  ('Entity 3','Category 1',  '30.75'::MONEY, '2025-07-08 09:45:00', TRUE),
+  ('Entity 4','Category 3',  '40.25'::MONEY, '2025-07-07 14:15:00', FALSE),
+  ('Entity 5','Category 2',  '50.00'::MONEY, '2025-07-06 13:00:00', TRUE);
+
+DROP TABLE IF EXISTS public.test_categories CASCADE;
+CREATE TABLE public.test_categories (
+  category   VARCHAR(50) PRIMARY KEY,
+  sort_order INT         NOT NULL
+);
+INSERT INTO public.test_categories(category, sort_order)
+VALUES
+  ('Category 1', 1),
+  ('Category 2', 2);
+
+CREATE OR REPLACE PROCEDURE CopyTable(source_table TEXT, dest_table TEXT) AS $$
+DECLARE
+    seqreg  regclass;
+    seqname TEXT;
+BEGIN
+    seqreg := pg_get_serial_sequence(source_table, 'id')::regclass;
+    EXECUTE format('DROP TABLE IF EXISTS %I CASCADE', dest_table);
+    EXECUTE format('CREATE TABLE %I (LIKE %I INCLUDING ALL)', dest_table, source_table);
+    IF seqreg IS NOT NULL THEN
+        seqname := dest_table || '_id_seq';
+        EXECUTE format('CREATE SEQUENCE %I OWNED BY %I.id', seqname, dest_table);
+        EXECUTE format('ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(%L)', dest_table, seqname);
+    END IF;
+    EXECUTE format('INSERT INTO %I SELECT * FROM %I', dest_table, source_table);
+    IF seqreg IS NOT NULL THEN
+        EXECUTE format('SELECT setval(%L, (SELECT COALESCE(MAX(id),0) FROM %I))', seqname, dest_table);
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+CALL CopyTable('test_entity_framework', 'bkp_test_entity_framework');
