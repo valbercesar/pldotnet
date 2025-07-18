@@ -27,7 +27,7 @@ public abstract class BaseTenItemsTests : PlDotNetTest
     protected void SetupTest(string cteStatement)
     {
         this.cteStatement = cteStatement;
-        FunctionInfo.CteStatement = cteStatement;
+        FunctionInfo!.CteStatement = cteStatement;
     }
 
     public static IEnumerable<object[]> TestCases()
@@ -43,6 +43,7 @@ WITH aggregated AS (
 )
 ",
             "encode(digest(concatenated_items, 'sha256'), 'hex') = '94091910bae126a50dfb041cd9e9a44efd716c77185628b3bce7a5965a207555'",
+            null!
         };
     }
 
@@ -53,7 +54,7 @@ WITH aggregated AS (
         string testName,
         string cteStatement,
         string customAssertion,
-        string querySuffix = null
+        string querySuffix = null!
     )
     {
         SetupTest(cteStatement);

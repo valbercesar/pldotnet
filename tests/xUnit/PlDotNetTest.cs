@@ -60,11 +60,11 @@ public class PlDotNetTest
         public string Body { get; set; } = string.Empty;
         public LanguageType Language { get; set; }
         public bool IsStrict { get; set; }
-        public string FunctionName { get; set; }
-        public string TestName { get; set; }
-        public string FeatureName { get; set; }
-        public string InputStr { get; set; }
-        public string ExpectedResult { get; set; }
+        public string FunctionName { get; set; } = string.Empty;
+        public string TestName { get; set; } = string.Empty;
+        public string FeatureName { get; set; } = string.Empty;
+        public string InputStr { get; set; } = string.Empty;
+        public string ExpectedResult { get; set; } = string.Empty;
         public string CastFunctionAs { get; set; } = string.Empty;
 
         public int? TestId { get; set; }
@@ -116,10 +116,10 @@ public class PlDotNetTest
     {
         public List<(string Name, string Query)> Ctes { get; set; } =
             new List<(string Name, string Query)>();
-        public string TestCategory { get; set; }
-        public string TestName { get; set; }
-        public string Assertion { get; set; }
-        public string FinalSelect { get; set; }
+        public string TestCategory { get; set; } = string.Empty;
+        public string TestName { get; set; } = string.Empty;
+        public string Assertion { get; set; } = string.Empty;
+        public string FinalSelect { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -244,7 +244,7 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         public string BuildInsertSql(SqlFunctionInfo functionInfo)
         {
             // Extracts the name of the CTE from its SQL statement to use in the final query.
-            string cteName = ExtractCteName(functionInfo.CteStatement);
+            string cteName = ExtractCteName(functionInfo.CteStatement)!;
 
             // Constructs an SQL statement that includes the CTE statement and an INSERT INTO operation.
             // The INSERT operation adds a new row into the automated_test_results table with details from the functionInfo parameter
@@ -370,7 +370,7 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
     protected int? ExecuteSqlReturnId(string sqlCode)
     {
         StringBuilder messages = new StringBuilder();
-        Exception exception = null;
+        Exception exception = null!;
 
         try
         {
@@ -462,7 +462,7 @@ WHERE id = {functionInfo.TestId.Value};";
     protected bool ExecuteSql(string sqlCode)
     {
         StringBuilder messages = new StringBuilder();
-        Exception exception = null;
+        Exception exception = null!;
 
         try
         {
@@ -541,7 +541,7 @@ WHERE id = {functionInfo.TestId.Value};";
         string testName,
         string cteStatement,
         string customAssertion,
-        string querySuffix = null,
+        string querySuffix = null!,
         bool forceCte = false
     )
     {
@@ -616,6 +616,7 @@ WHERE id = {functionInfo.TestId.Value};";
 
         // Call test and insert the test result into the PostgreSQL table
         FunctionInfo.TestId = ExecuteSqlReturnId(FunctionInfo.SqlFunctionCall);
+
         Assert.True(
             FunctionInfo.TestId.HasValue,
             $"[EXECUTION ERROR] Test {TestCount} failed to execute test and insert test result into table."

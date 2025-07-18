@@ -15,7 +15,7 @@ public abstract class BaseMakePiTests : PlDotNetTest
     {
         FunctionInfo = new SqlFunctionInfo
         {
-            Name = "MakePi",
+            Name = "make_pi",
             Arguments = new List<FunctionArgument>(),
             ReturnType = "SETOF float8",
             Language = Language,
@@ -27,10 +27,10 @@ public abstract class BaseMakePiTests : PlDotNetTest
     protected void SetupTest(string cteStatement)
     {
         this.cteStatement = cteStatement;
-        FunctionInfo.CteStatement = cteStatement;
+        FunctionInfo!.CteStatement = cteStatement;
     }
 
-    public static new IEnumerable<object[]> TestCases()
+    public static IEnumerable<object[]> TestCases()
     {
         yield return new object[]
         {

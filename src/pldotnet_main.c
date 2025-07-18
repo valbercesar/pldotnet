@@ -651,11 +651,10 @@ static Datum result_to_record(TupleDesc desc, pldotnet_Result *result,
     tuple = heap_form_tuple(desc, result->values, result->nulls);
     if (do_copy) {
         output_datum = heap_copy_tuple_as_datum(tuple, desc);
-    } else {
-        output_datum = PointerGetDatum(tuple);
+        heap_freetuple(tuple);
+        return output_datum;
     }
-    heap_freetuple(tuple);
-    return output_datum;
+    return PointerGetDatum(tuple);
 }
 
 static void result_FromTuple(pldotnet_Result *result, HeapTuple tuple,

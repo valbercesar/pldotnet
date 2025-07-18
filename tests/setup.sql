@@ -164,3 +164,62 @@ VALUES (
     NULL::TEXT,
     NULL::MACADDR8
 );
+
+CREATE OR REPLACE FUNCTION numbers(count int4)
+RETURNS SETOF int4 AS
+$$
+	if(count == null){ for(int i=0;;i++) { yield return i; } }
+	else { for(int i=0;i<count;i++) { yield return i; } }
+$$
+LANGUAGE plcsharp;
+
+CREATE OR REPLACE FUNCTION numbers(count int8)
+RETURNS SETOF int8 AS
+$$
+	if(count == null){ for(long i=0;;i++) { yield return i; } }
+	else { for(long i=0;i<count;i++) { yield return i; } }
+$$
+LANGUAGE plcsharp;
+
+CREATE OR REPLACE FUNCTION numbers()
+RETURNS SETOF int8 AS
+$$
+	for(long i=0;;i++){ yield return i;}
+$$
+LANGUAGE plcsharp;
+
+CREATE OR REPLACE FUNCTION string_to_integer_array_plsql(strings text[])
+RETURNS SETOF integer AS
+$$
+    DECLARE
+      value text;
+    BEGIN
+      FOREACH value IN ARRAY strings
+      LOOP
+        IF value IS NULL THEN
+          RETURN NEXT 0;
+        ELSE
+          RETURN NEXT value::integer;
+        END IF;
+      END LOOP;
+      RETURN;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE OR REPLACE FUNCTION ten_items(arg text)
+RETURNS SETOF text AS
+$$
+        for(int i=1; i<=10; i++){ yield return $"{i} {arg}"; }
+$$
+LANGUAGE plcsharp STRICT;
+
+-- Creating auxiliary table for trigger tests (C# and F#)
+DROP TABLE IF EXISTS trigger_test_table;
+
+CREATE TABLE trigger_test_table(
+    id      INT,
+    message TEXT
+);

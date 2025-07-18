@@ -164,8 +164,6 @@ pre-tests-script:
 	dotnet build $(CURRENT_DIR)/tests/fsharp/DotNetTestProject -c Release
 	mkdir -p automated_test_results
 	find automated_test_results -mindepth 1 -delete
-	runuser -u $(DBUSER) -- psql -v ON_ERROR_STOP=1 -f tests/csharp/testrecord.sql
-	runuser -u $(DBUSER) -- psql -v ON_ERROR_STOP=1 -f tests/csharp/testsrf.sql
 	runuser -u $(DBUSER) -- psql -f tests/setup.sql
 
 # Runs tests locally, on the current machine
