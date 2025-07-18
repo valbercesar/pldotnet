@@ -44,17 +44,6 @@ public abstract class BaseTriggerTestTgValsFsharpTests : PlDotNetTest
         string querySuffix
     )
     {
-        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_3 ON trigger_test_table;");
-
-        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
-
-        ExecuteSql(@"
-            CREATE TABLE trigger_test_table(
-                id      INT,
-                message TEXT
-            );
-        ");
-
         var createFunctionSql = GetFunctionDefinition(FunctionInfo!);
         ExecuteSql(createFunctionSql);
 

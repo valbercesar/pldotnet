@@ -215,3 +215,10 @@ $$
         for(int i=1; i<=10; i++){ yield return $"{i} {arg}"; }
 $$
 LANGUAGE plcsharp STRICT;
+
+DROP TABLE IF EXISTS trigger_test_table;
+
+CREATE TABLE trigger_test_table(
+    id      INT,
+    message TEXT
+);
