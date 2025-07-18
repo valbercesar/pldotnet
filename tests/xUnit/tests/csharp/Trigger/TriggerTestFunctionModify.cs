@@ -43,22 +43,11 @@ public abstract class BaseTriggerTestFunctionModifyTests : PlDotNetTest
         string querySuffix
     )
     {
-        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_1 ON trigger_test_table;");
-
-        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
-
-        ExecuteSql(@"
-            CREATE TABLE trigger_test_table(
-                id      INT,
-                message TEXT
-            );
-        ");
-
         var createFunctionSql = GetFunctionDefinition(FunctionInfo);
         ExecuteSql(createFunctionSql);
 
         var triggerSql = @"
-CREATE TRIGGER test_trigger_BIR_1
+CREATE OR REPLACE TRIGGER test_trigger_BIR_1
   BEFORE INSERT ON trigger_test_table
   FOR EACH ROW
   WHEN (NEW.id = 2)

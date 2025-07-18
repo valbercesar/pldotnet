@@ -42,17 +42,6 @@ UPDATE trigger_test_table SET message = 'Changed' WHERE id = 1;
     [MemberData(nameof(TestCases))]
     public void TestTriggerException(string featureName, string testName, string cteStatement)
     {
-        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_AUS_4 ON trigger_test_table;");
-
-        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
-
-        ExecuteSql(@"
-            CREATE TABLE trigger_test_table(
-                id      INT,
-                message TEXT
-            );
-        ");
-
         var createFunctionSql = GetFunctionDefinition(FunctionInfo);
         ExecuteSql(createFunctionSql);
 
@@ -77,7 +66,7 @@ CREATE OR REPLACE TRIGGER test_trigger_AUS_4
             );
 
             // If the test gets here, the exception didn't happen and we force the failing
-            Assert.True(false, "Expected a trigger execution, but none was thrown.");
+            Assert.Fail("Expected a trigger execution, but none was thrown.");
         }
         catch (Xunit.Sdk.TrueException)
         {

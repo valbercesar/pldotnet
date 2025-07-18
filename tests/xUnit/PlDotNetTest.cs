@@ -628,7 +628,7 @@ WHERE id = {functionInfo.TestId.Value};";
         );
         Assert.True(
             testResult.Value,
-            $"[ASSERTION ERROR] Test {TestCount} returned unexpected result. testResult.Value: {testResult.Value}"
+            $"[ASSERTION ERROR] Test {TestCount} returned unexpected result."
         );
 
         Console.WriteLine($"[END TEST {TestCount}] Test {testName} executed successfully.\n");

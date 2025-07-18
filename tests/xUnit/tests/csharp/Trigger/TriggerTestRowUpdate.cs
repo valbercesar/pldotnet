@@ -50,17 +50,6 @@ public abstract class BaseTriggerTestRowUpdateTests : PlDotNetTest
         string querySuffix
     )
     {
-        ExecuteSql("DROP TRIGGER IF EXISTS test_trigger_BIR_1 ON trigger_test_table;");
-
-        ExecuteSql("DROP TABLE IF EXISTS trigger_test_table;");
-
-        ExecuteSql(@"
-            CREATE TABLE trigger_test_table(
-                id      INT,
-                message TEXT
-            );
-        ");
-
         var createFunctionSql = GetFunctionDefinition(FunctionInfo);
         ExecuteSql(createFunctionSql);
 
@@ -97,7 +86,7 @@ WITH cte AS (
 }
 
 [Trait("Language", "CSharp")]
-[Trait("Category", "TriggerDml")]
+[Trait("Category", "Trigger")]
 public class TriggerTestRowUpdateTestsCSharp : BaseTriggerTestRowUpdateTests
 {
     protected override string FunctionBody => string.Empty;
