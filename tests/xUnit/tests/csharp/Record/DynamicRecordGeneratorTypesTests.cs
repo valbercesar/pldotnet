@@ -27,7 +27,7 @@ public abstract class BaseDynamicRecordGeneratorTypesTests : PlDotNetTest
     protected void SetupTest(string cteStatement)
     {
         this.cteStatement = cteStatement;
-        FunctionInfo.CteStatement = cteStatement;
+        FunctionInfo!.CteStatement = cteStatement;
     }
 
     public static IEnumerable<object[]> TestCases()
@@ -161,7 +161,7 @@ public abstract class BaseDynamicRecordGeneratorTypesTests : PlDotNetTest
         string testName,
         string cteStatement,
         string customAssertion,
-        string querySuffix = null
+        string querySuffix = null!
     )
     {
         SetupTest(cteStatement);

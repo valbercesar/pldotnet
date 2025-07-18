@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-public abstract class BaseTriggerTestPostDmlTests : PlDotNetTest
+public abstract class BaseTriggerTestPostDmlFsharpTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
     protected abstract LanguageType Language { get; }
 
-    public BaseTriggerTestPostDmlTests()
+    public BaseTriggerTestPostDmlFsharpTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
@@ -26,7 +26,7 @@ public abstract class BaseTriggerTestPostDmlTests : PlDotNetTest
         {
             new object[]
             {
-                "c#-trigger",
+                "f#-trigger",
                 "validRows",
                 "NOT EXISTS (SELECT 1 FROM trigger_test_table WHERE id NOT IN (1,2,6,7,13))",
                 null!
@@ -36,14 +36,14 @@ public abstract class BaseTriggerTestPostDmlTests : PlDotNetTest
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTestPostDml(
+    public void TestTestPostDmlFsharp(
         string featureName,
         string testName,
         string customAssertion,
         string querySuffix
     )
     {
-        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo!);
         ExecuteSql(createFunctionSql);
 
         ExecuteSql(@"
@@ -88,10 +88,10 @@ WITH cte AS (
     }
 }
 
-[Trait("Language", "CSharp")]
-[Trait("Category", "TriggerDml")]
-public class TriggerTestPostDmlTestsCSharp : BaseTriggerTestPostDmlTests
+[Trait("Language", "FSharp")]
+[Trait("Category", "Trigger")]
+public class TriggerTestPostDmlTestsFSharp : BaseTriggerTestPostDmlFsharpTests
 {
-    protected override string FunctionBody => string.Empty;
-    protected override LanguageType Language => LanguageType.PlcSharp;
+    protected override string FunctionBody => "()";
+    protected override LanguageType Language => LanguageType.PlfSharp;
 }

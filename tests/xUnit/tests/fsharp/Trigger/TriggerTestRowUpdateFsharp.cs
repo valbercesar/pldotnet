@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-public abstract class BaseTriggerTestPostDmlTests : PlDotNetTest
+public abstract class BaseTriggerTestRowUpdateFsharpTests : PlDotNetTest
 {
     protected abstract string FunctionBody { get; }
     protected abstract LanguageType Language { get; }
 
-    public BaseTriggerTestPostDmlTests()
+    public BaseTriggerTestRowUpdateFsharpTests()
     {
         FunctionInfo = new SqlFunctionInfo
         {
@@ -26,35 +26,37 @@ public abstract class BaseTriggerTestPostDmlTests : PlDotNetTest
         {
             new object[]
             {
-                "c#-trigger",
-                "validRows",
-                "NOT EXISTS (SELECT 1 FROM trigger_test_table WHERE id NOT IN (1,2,6,7,13))",
-                null!
+                "f#-trigger",
+                "rowUpdated",
+                "message = 'Updated Text'",
+                "WHERE id = 1"
             },
+            new object[]
+            {
+                "f#-trigger",
+                "rowUpdated-2",
+                "message = 'Updated Third Text'",
+                "WHERE id = 13"
+            }
         };
     }
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public void TestTestPostDml(
+    public void TestRowUpdateFsharp(
         string featureName,
         string testName,
         string customAssertion,
         string querySuffix
     )
     {
-        var createFunctionSql = GetFunctionDefinition(FunctionInfo);
+        var createFunctionSql = GetFunctionDefinition(FunctionInfo!);
         ExecuteSql(createFunctionSql);
 
         ExecuteSql(@"
             INSERT INTO trigger_test_table(id, message) VALUES
                 (1, 'Inserted Text'),
-                (2, 'Inserted Second Text'),
-                (3, 'Inserted Third Text (for updating)'),
-                (4, 'Inserted Fourth Text (for deletion)'),
-                (5, 'Inserted Fifth Text (for simple skip)'),
-                (6, 'Inserted Sixth Text (for values check modify)'),
-                (7, 'This should be a string');
+                (3, 'Inserted Third Text (for updating)');
 
             UPDATE trigger_test_table
                SET message = 'Updated Text'
@@ -63,17 +65,12 @@ public abstract class BaseTriggerTestPostDmlTests : PlDotNetTest
             UPDATE trigger_test_table
                SET id = 13, message = 'Updated Third Text'
              WHERE id = 3;
-
-            DELETE FROM trigger_test_table
-                WHERE id = 4;
-
-            DELETE FROM trigger_test_table
-                WHERE id = 5;
         ");
 
         var cte = @"
 WITH cte AS (
-    SELECT 1
+    SELECT id, message
+      FROM trigger_test_table
 )
 ";
 
@@ -88,10 +85,10 @@ WITH cte AS (
     }
 }
 
-[Trait("Language", "CSharp")]
-[Trait("Category", "TriggerDml")]
-public class TriggerTestPostDmlTestsCSharp : BaseTriggerTestPostDmlTests
+[Trait("Language", "FSharp")]
+[Trait("Category", "Trigger")]
+public class TriggerTestRowUpdateTestsFSharp : BaseTriggerTestRowUpdateFsharpTests
 {
-    protected override string FunctionBody => string.Empty;
-    protected override LanguageType Language => LanguageType.PlcSharp;
+    protected override string FunctionBody => "()";
+    protected override LanguageType Language => LanguageType.PlfSharp;
 }
