@@ -106,15 +106,8 @@ namespace PlDotNET.Common
                 return cachedUserAssemblyPaths;
             }
 
-            // Build the assembly paths list
+            // Build the assembly paths list and cache it
             cachedUserAssemblyPaths = BuildUserAssemblyPaths();
-
-            Elog.Info($"Found {cachedUserAssemblyPaths.Count} user assembly DLL paths.");
-            // Log the paths for debugging
-            foreach (var path in cachedUserAssemblyPaths)
-            {
-                Elog.Info($"User assembly DLL path: {path}");
-            }
 
             return cachedUserAssemblyPaths;
         }
@@ -180,7 +173,6 @@ namespace PlDotNET.Common
         private void AddAssembliesFromDirectory(List<string> assemblyPaths)
         {
             var userAssembliesDir = UserAssembliesDirectory;
-            Elog.Info($"Loading user assemblies from directory: {userAssembliesDir}");
             if (string.IsNullOrEmpty(userAssembliesDir) || !System.IO.Directory.Exists(userAssembliesDir))
             {
                 return;
