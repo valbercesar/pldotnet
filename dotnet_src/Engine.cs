@@ -294,7 +294,7 @@ namespace PlDotNET
         /// <summary>
         /// Gets the paths of the trusted assemblies used by PL.NET.
         /// </summary>
-        public static readonly List<string> NeededAssemblyPaths = GetTrustedAssembliesPaths()
+        public static readonly List<string> DefaultNeededAssemblyPaths = GetTrustedAssembliesPaths()
             .Where(p => NeededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
             .ToList();
 
@@ -323,7 +323,7 @@ namespace PlDotNET
         public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
-            List<PortableExecutableReference> references = NeededAssemblyPaths
+            List<PortableExecutableReference> references = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
                  .Select(p => MetadataReference.CreateFromFile(p))
                  .ToList();
 
@@ -496,7 +496,7 @@ namespace PlDotNET
                 else
                 {
 #if ENABLE_FCS
-                    List<string> extraAssemblies = NeededAssemblyPaths
+                    List<string> extraAssemblies = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
                         .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
                         .ToList();
                     userFunctionDll = FSharpCompiler.CompileFSharpSourceCodeAsDLL(functionId, Settings.PathToTemporaryFiles, userFunctionCode, extraAssemblies.ToArray());
@@ -587,7 +587,7 @@ namespace PlDotNET
 
             // Load the assemblies into AssemblyLoadContext
             AssemblyLoadContext userAlc = new($"UserFunction_{functionId}", true);
-            _ = NeededAssemblyPaths
+            _ = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
                 .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
                 .Select(p => userAlc.LoadFromAssemblyPath(p))
                 .ToList();
@@ -687,7 +687,7 @@ namespace PlDotNET
 #if ENABLE_FCS
             if (language == DotNETLanguage.FSharp)
             {
-                List<string> extraAssemblies = NeededAssemblyPaths
+                List<string> extraAssemblies = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
                     .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
                     .ToList();
                 return FSharpCompiler.CompileFSharpSourceCode(functionId, Settings.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());

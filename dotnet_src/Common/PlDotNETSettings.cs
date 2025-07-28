@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace PlDotNET.Common
@@ -14,6 +16,11 @@ namespace PlDotNET.Common
         /// Stores lazy-loaded PostgreSQL configuration settings by key.
         /// </summary>
         private readonly Dictionary<string, Lazy<string>> settings;
+
+        /// <summary>
+        /// Cached list of user assembly DLL paths to avoid repeated file system operations.
+        /// </summary>
+        private List<string> cachedUserAssemblyPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlDotNETSettings"/> class.
@@ -32,6 +39,8 @@ namespace PlDotNET.Common
                 "pldotnet.verbose_level",
                 "pldotnet.path_to_save_source_code",
                 "pldotnet.path_to_temporary_files",
+                "pldotnet.user_assemblies_directory",
+                "pldotnet.user_assembly_paths",
             };
 
             foreach (var key in settingsKeys)
@@ -76,6 +85,41 @@ namespace PlDotNET.Common
         public string PathToTemporaryFiles => settings["pldotnet.path_to_temporary_files"].Value;
 
         /// <summary>
+        /// Gets the directory path where user assemblies are located.
+        /// </summary>
+        public string UserAssembliesDirectory => settings["pldotnet.user_assemblies_directory"].Value;
+
+        /// <summary>
+        /// Gets the comma-separated list of user assembly paths.
+        /// </summary>
+        public string UserAssemblyPaths => settings["pldotnet.user_assembly_paths"].Value;
+
+        /// <summary>
+        /// Gets a list of all user assembly DLL paths, combining paths from both the user assemblies directory
+        /// and explicitly specified assembly paths. Results are cached for performance.
+        /// </summary>
+        public List<string> GetUserAssemblyDllPaths()
+        {
+            // Return cached results if available
+            if (cachedUserAssemblyPaths != null)
+            {
+                return cachedUserAssemblyPaths;
+            }
+
+            // Build the assembly paths list
+            cachedUserAssemblyPaths = BuildUserAssemblyPaths();
+
+            Elog.Info($"Found {cachedUserAssemblyPaths.Count} user assembly DLL paths.");
+            // Log the paths for debugging
+            foreach (var path in cachedUserAssemblyPaths)
+            {
+                Elog.Info($"User assembly DLL path: {path}");
+            }
+
+            return cachedUserAssemblyPaths;
+        }
+
+        /// <summary>
         /// Calls the PostgreSQL backend to retrieve the value of a server configuration setting by name.
         /// </summary>
         /// <param name="settingName">The name of the PostgreSQL configuration setting to retrieve.</param>
@@ -111,6 +155,74 @@ namespace PlDotNET.Common
             }
 
             return Marshal.PtrToStringAnsi(resultPtr);
+        }
+
+        /// <summary>
+        /// Builds the list of user assembly DLL paths from configuration settings.
+        /// </summary>
+        private List<string> BuildUserAssemblyPaths()
+        {
+            var assemblyPaths = new List<string>();
+
+            // Add DLL files from the user assemblies directory
+            AddAssembliesFromDirectory(assemblyPaths);
+
+            // Add explicitly specified assembly paths (comma-separated)
+            AddExplicitAssemblyPaths(assemblyPaths);
+
+            // Remove duplicates and return
+            return assemblyPaths.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Adds DLL files from the user assemblies directory to the assembly paths list.
+        /// </summary>
+        private void AddAssembliesFromDirectory(List<string> assemblyPaths)
+        {
+            var userAssembliesDir = UserAssembliesDirectory;
+            Elog.Info($"Loading user assemblies from directory: {userAssembliesDir}");
+            if (string.IsNullOrEmpty(userAssembliesDir) || !System.IO.Directory.Exists(userAssembliesDir))
+            {
+                return;
+            }
+
+            try
+            {
+                assemblyPaths.AddRange(System.IO.Directory.GetFiles(userAssembliesDir, "*.dll", System.IO.SearchOption.TopDirectoryOnly));
+            }
+            catch (System.IO.DirectoryNotFoundException)
+            {
+                Elog.Warning($"User assemblies directory '{userAssembliesDir}' not found. No user assemblies will be loaded.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Elog.Warning($"Access denied to user assemblies directory '{userAssembliesDir}'. No user assemblies will be loaded.");
+            }
+            catch (Exception ex)
+            {
+                Elog.Error($"Error accessing user assemblies directory '{userAssembliesDir}': {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Adds explicitly specified assembly paths from the comma-separated setting to the assembly paths list.
+        /// </summary>
+        private void AddExplicitAssemblyPaths(List<string> assemblyPaths)
+        {
+            var userAssemblyPathsSetting = UserAssemblyPaths;
+            if (string.IsNullOrEmpty(userAssemblyPathsSetting))
+            {
+                return;
+            }
+
+            foreach (var path in userAssemblyPathsSetting.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmedPath = path.Trim();
+                if (!string.IsNullOrEmpty(trimmedPath) && System.IO.File.Exists(trimmedPath))
+                {
+                    assemblyPaths.Add(trimmedPath);
+                }
+            }
         }
     }
 }
