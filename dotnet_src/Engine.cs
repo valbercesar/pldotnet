@@ -229,21 +229,6 @@ namespace PlDotNET
         public delegate void DelUnloadAssemblies(uint functionId);
 
         /// <summary>
-        /// Gets or sets the PL.NET settings for the current session.
-        /// </summary>
-        public static PlDotNETSettings Settings { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the dictionary that contains compiled user-defined functions.
-        /// </summary>
-        public static Dictionary<uint, CachedFunction> FuncBuiltCodeDict { get; set; } = [];
-
-        /// <summary>
-        /// Gets or sets the dictionary that contains compiled user-defined triggers.
-        /// </summary>
-        public static Dictionary<uint, CachedTrigger> TrigBuiltCodeDict { get; set; } = [];
-
-        /// <summary>
         /// List of assemblies that PL.NET needs to function correctly.
         /// </summary>
         public static readonly List<string> NeededAssemblies = new List<string>
@@ -297,6 +282,21 @@ namespace PlDotNET
         public static readonly List<string> DefaultNeededAssemblyPaths = GetTrustedAssembliesPaths()
             .Where(p => NeededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
             .ToList();
+
+        /// <summary>
+        /// Gets or sets the PL.NET settings for the current session.
+        /// </summary>
+        public static PlDotNETSettings Settings { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the dictionary that contains compiled user-defined functions.
+        /// </summary>
+        public static Dictionary<uint, CachedFunction> FuncBuiltCodeDict { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the dictionary that contains compiled user-defined triggers.
+        /// </summary>
+        public static Dictionary<uint, CachedTrigger> TrigBuiltCodeDict { get; set; } = [];
 
         /// <summary>
         /// This function returns the paths of the trusted assemblies. It retrieves the paths from the AppContext data
