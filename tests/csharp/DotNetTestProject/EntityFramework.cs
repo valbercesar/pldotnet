@@ -1,7 +1,7 @@
 using System;
-using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PlDotNET.Common;
@@ -17,7 +17,8 @@ namespace EFCoreTest
         /// <summary>
         /// Gets or sets the unique identifier for the entity.
         /// </summary>
-        [Key, Column("id")]
+        [Key]
+        [Column("id")]
         public int Id { get; set; }
 
         /// <summary>
@@ -60,7 +61,8 @@ namespace EFCoreTest
         /// <summary>
         /// Gets or sets the category name, which serves as the primary key.
         /// </summary>
-        [Key, Column("category")]
+        [Key]
+        [Column("category")]
         public string Category { get; set; } = null!;
 
         /// <summary>
@@ -91,6 +93,6 @@ namespace EFCoreTest
         /// </summary>
         /// <param name="options">The options builder for configuring the context.</param>
         protected override void OnConfiguring(DbContextOptionsBuilder options) =>
-        options.UseNpgsql("");
+        options.UseNpgsql(string.Empty);
     }
 }
