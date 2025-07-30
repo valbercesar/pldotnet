@@ -47,7 +47,8 @@ public abstract class BaseTriggerTestSkipTests : PlDotNetTest
         ExecuteSql(createFunctionSql);
 
         var triggerSql = @"
-CREATE OR REPLACE TRIGGER test_trigger_BIR_2
+DROP TRIGGER IF EXISTS test_trigger_BIR_2 ON trigger_test_table;
+CREATE TRIGGER test_trigger_BIR_2
     BEFORE INSERT ON trigger_test_table
     FOR EACH ROW
     WHEN (new.id = 5)

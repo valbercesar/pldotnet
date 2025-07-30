@@ -186,7 +186,7 @@ post-tests-script:
 # as defined in the docker-compose.yml file.
 .PHONY: test-docker
 test-docker:
-	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make $(if $(XUNIT_FILTER),XUNIT_FILTER="Language=$(XUNIT_FILTER)") test-local
+	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make $(if $(XUNIT_FILTER),XUNIT_FILTER="$(XUNIT_FILTER)") test-local
 
 .PHONY: test-docker-sql
 test-docker-sql:
