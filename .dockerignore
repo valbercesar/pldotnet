@@ -5,3 +5,4 @@ docker-compose-dev.yml
 *.txt
 *.log
 *.png
+automated_test_results
