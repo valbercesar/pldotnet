@@ -46,7 +46,8 @@ UPDATE trigger_test_table SET message = 'Changed' WHERE id = 1;
         ExecuteSql(createFunctionSql);
 
         var triggerSql = @"
-CREATE OR REPLACE TRIGGER test_trigger_AUS_4
+DROP TRIGGER IF EXISTS test_trigger_AUS_4 ON trigger_test_table;
+CREATE TRIGGER test_trigger_AUS_4
     AFTER UPDATE ON trigger_test_table
     FOR EACH STATEMENT
     EXECUTE FUNCTION trigger_test_exception ('AFTER/UPDATE/STATEMENT', '4');
