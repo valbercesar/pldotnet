@@ -34,9 +34,6 @@ $$;
 
 -- Tests
 
-DROP TABLE IF EXISTS automated_test_results;
-CREATE TABLE automated_test_results(ID SERIAL PRIMARY KEY, FEATURE TEXT, TEST_NAME TEXT, RESULT boolean);
-
 WITH cte AS (
     SELECT * FROM dynamic_record_generator(1)
         AS (a int4, b text)
@@ -236,4 +233,3 @@ WITH cte AS (
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT 'c#-drec-types', 'null-is-not-present', (a IS NOT NULL AND b IS NOT NULL)
 FROM cte;
-
