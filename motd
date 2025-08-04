@@ -1,0 +1,14 @@
+██████╗ ██╗         ██╗███╗   ██╗███████╗████████╗
+██╔══██╗██║        ██╔╝████╗  ██║██╔════╝╚══██╔══╝
+██████╔╝██║       ██╔╝ ██╔██╗ ██║█████╗     ██║   
+██╔═══╝ ██║      ██╔╝  ██║╚██╗██║██╔══╝     ██║   
+██║     ███████╗██╔╝██╗██║ ╚████║███████╗   ██║   
+╚═╝     ╚══════╝╚═╝ ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   
+
+PL/.NET v1.0.0
+
+Usage instructions:
+- If you are running this through a `docker run` command overriding the default command, you need to simply start PostgreSQL with:
+    `pg_ctlcluster 17 main start`
+- To play around with PL/.NET, you can use `psql`:
+    `runuser -u postgres psql`
