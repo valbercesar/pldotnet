@@ -88,6 +88,7 @@ CMD ["/bin/bash", "-c", "cat /motd && pg_ctlcluster $POSTGRES_VERSION main start
 FROM runtime AS dev
 
 COPY . /app/pldotnet
+WORKDIR /app/pldotnet
 
 COPY motd.dev /motd.dev
 RUN cat /motd.dev >> /motd
