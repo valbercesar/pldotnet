@@ -166,13 +166,6 @@ pre-tests-script:
 	find automated_test_results -mindepth 1 -delete
 	runuser -u $(DBUSER) -- psql -f tests/setup.sql
 
-# Runs tests locally, on the current machine
-.PHONY: test-local
-test-local:
-	$(MAKE) pre-tests-script
-	$(RUN_XUNIT_TESTS)
-	$(MAKE) post-tests-script
-
 .PHONY: post-tests-script
 post-tests-script:
 	cd $(CURRENT_DIR)/tests/csharp/DotNetTestProject/ && rm -rf bin obj
@@ -181,6 +174,41 @@ post-tests-script:
 	echo 'SELECT FEATURE, TEST_NAME, RESULT from automated_test_results;' | (runuser -u $(DBUSER) psql 2>&1) | tee automated_test_results/automated_test_results.out
 	echo 'SELECT RESULT, COUNT(1) FROM automated_test_results GROUP BY RESULT;' | (runuser -u $(DBUSER) psql)
 
+# Runs tests locally, on the current machine
+.PHONY: test-local
+test-local:
+	$(MAKE) pre-tests-script
+	$(RUN_XUNIT_TESTS)
+	$(MAKE) post-tests-script
+
+.PHONY: sql-test-local
+sql-test-local:
+	$(MAKE) pre-tests-script
+	@if [ -n "$(SQL_FILE)" ]; then \
+		if [ -f "$(SQL_FILE)" ]; then \
+			echo "Running SQL test: $(SQL_FILE)"; \
+			output_file="automated_test_results/$$(basename "$(SQL_FILE)" .sql).out"; \
+			runuser -u postgres -- psql -f "$(SQL_FILE)" 2>&1 | tee "$$output_file"; \
+		else \
+			echo "Error: File '$(SQL_FILE)' does not exist."; \
+			exit 1; \
+		fi \
+	else \
+		echo "Running all SQL tests for C#..." ; \
+		for file in $$(ls tests/csharp/*.sql | sort); do \
+			echo "Running SQL test: $$file"; \
+			output_file="automated_test_results/csharp_$$(basename "$$file" .sql).out"; \
+			runuser -u postgres -- psql -f "$$file" 2>&1 | tee "$$output_file"; \
+		done ; \
+		echo "Running all SQL tests for F#..." ; \
+		for file in $$(ls tests/fsharp/*.sql | sort); do \
+			echo "Running SQL test: $$file"; \
+			output_file="automated_test_results/fsharp_$$(basename "$$file" .sql).out"; \
+			runuser -u postgres -- psql -f "$$file" 2>&1 | tee "$$output_file"; \
+		done ; \
+	fi
+	$(MAKE) post-tests-script
+
 # Runs tests in a running Docker container
 # Assumes that the container is running and named pldotnet-runtime,
 # as defined in the docker-compose.yml file.
@@ -188,8 +216,13 @@ post-tests-script:
 test-docker:
 	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make $(if $(XUNIT_FILTER),XUNIT_FILTER="$(XUNIT_FILTER)") test-local
 
-.PHONY: test-docker-sql
-test-docker-sql:
+.PHONY: sql-test-docker
+sql-test-docker:
+	@echo "Running SQL tests in Docker container..."
+	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} make sql-test-local $(if $(SQL_FILE),SQL_FILE=$(SQL_FILE))
+
+.PHONY: npgsql-test-docker
+npgsql-test-docker:
 	docker exec -w "${APP_DIR}" -it ${PLDOTNET_CONTAINER} ./tests/npgsql/run_tests.sh
 
 ########
