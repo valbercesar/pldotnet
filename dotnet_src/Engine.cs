@@ -126,6 +126,61 @@ namespace PlDotNET
     public static partial class Engine
     {
         /// <summary>
+        /// List of assemblies that PL.NET needs to function correctly.
+        /// </summary>
+        public static readonly List<string> NeededAssemblies = new List<string>
+        {
+            "System.Buffers",
+            "System.Collections",
+            "System.Collections.Generic",
+            "System.ComponentModel.Primitives",
+            "System.ComponentModel.TypeConverter",
+            "System.Console",
+            "System.Core",
+            "System.Data",
+            "System.Data.Common",
+            "System.Data.SqlClient",
+            "System.Diagnostics",
+            "System.Diagnostics.CodeAnalysis",
+            "System.Globalization",
+            "System.Linq",
+            "System.Linq.Expressions",
+            "System.Net.NetworkInformation",
+            "System.Net.Primitives",
+            "System.Private.CoreLib",
+            "System.Runtime",
+            "System.Text",
+            "System.Text.Unicode",
+            "FSharp.Core",
+            "Microsoft.CSharp",
+            "Microsoft.EntityFrameworkCore",
+            "Microsoft.EntityFrameworkCore.Abstractions",
+            "Microsoft.EntityFrameworkCore.Relational",
+            "Microsoft.Extensions.Caching.Abstractions",
+            "Microsoft.Extensions.Caching.Memory",
+            "Microsoft.Extensions.Configuration.Abstractions",
+            "Microsoft.Extensions.DependencyInjection",
+            "Microsoft.Extensions.DependencyInjection.Abstractions",
+            "Microsoft.Extensions.Logging",
+            "Microsoft.Extensions.Logging.Abstractions",
+            "Microsoft.Extensions.Options",
+            "Microsoft.Extensions.Primitives",
+            "Npgsql",
+            "Npgsql.EntityFrameworkCore.PostgreSQL",
+            "Npgsql.Tests",
+            "NpgsqlTypes",
+            "PlDotNET.Common",
+            "PlDotNET.Handlers",
+        };
+
+        /// <summary>
+        /// Gets the paths of the trusted assemblies used by PL.NET.
+        /// </summary>
+        public static readonly List<string> DefaultNeededAssemblyPaths = GetTrustedAssembliesPaths()
+            .Where(p => NeededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
+            .ToList();
+
+        /// <summary>
         /// A delegate that compiles the user function code using Roslyn.
         /// </summary>
         /// <param name="functionId">The ID of the function to compile.</param>
@@ -229,61 +284,6 @@ namespace PlDotNET
         public delegate void DelUnloadAssemblies(uint functionId);
 
         /// <summary>
-        /// List of assemblies that PL.NET needs to function correctly.
-        /// </summary>
-        public static readonly List<string> NeededAssemblies = new List<string>
-        {
-            "System.Buffers",
-            "System.Collections",
-            "System.Collections.Generic",
-            "System.ComponentModel.Primitives",
-            "System.ComponentModel.TypeConverter",
-            "System.Console",
-            "System.Core",
-            "System.Data",
-            "System.Data.Common",
-            "System.Data.SqlClient",
-            "System.Diagnostics",
-            "System.Diagnostics.CodeAnalysis",
-            "System.Globalization",
-            "System.Linq",
-            "System.Linq.Expressions",
-            "System.Net.NetworkInformation",
-            "System.Net.Primitives",
-            "System.Private.CoreLib",
-            "System.Runtime",
-            "System.Text",
-            "System.Text.Unicode",
-            "FSharp.Core",
-            "Microsoft.CSharp",
-            "Microsoft.EntityFrameworkCore",
-            "Microsoft.EntityFrameworkCore.Abstractions",
-            "Microsoft.EntityFrameworkCore.Relational",
-            "Microsoft.Extensions.Caching.Abstractions",
-            "Microsoft.Extensions.Caching.Memory",
-            "Microsoft.Extensions.Configuration.Abstractions",
-            "Microsoft.Extensions.DependencyInjection",
-            "Microsoft.Extensions.DependencyInjection.Abstractions",
-            "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Abstractions",
-            "Microsoft.Extensions.Options",
-            "Microsoft.Extensions.Primitives",
-            "Npgsql",
-            "Npgsql.EntityFrameworkCore.PostgreSQL",
-            "Npgsql.Tests",
-            "NpgsqlTypes",
-            "PlDotNET.Common",
-            "PlDotNET.Handlers",
-        };
-
-        /// <summary>
-        /// Gets the paths of the trusted assemblies used by PL.NET.
-        /// </summary>
-        public static readonly List<string> DefaultNeededAssemblyPaths = GetTrustedAssembliesPaths()
-            .Where(p => NeededAssemblies.Contains(Path.GetFileNameWithoutExtension(p)))
-            .ToList();
-
-        /// <summary>
         /// Gets or sets the PL.NET settings for the current session.
         /// </summary>
         public static PlDotNETSettings Settings { get; set; } = new();
@@ -311,6 +311,26 @@ namespace PlDotNET
         }
 
         /// <summary>
+        /// This function returns a list of all the assembly paths that PL.NET needs to function correctly.
+        /// It combines the default needed assembly paths with user-defined assembly paths from the settings.
+        /// </summary>
+        public static List<string> GetAllNeededAssemblyPaths()
+        {
+            return DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths()).ToList();
+        }
+
+        /// <summary>
+        /// This function returns a list of all the external assembly paths that PL.NET needs to function correctly.
+        /// It excludes the System.* assemblies from the list of needed assembly paths.
+        /// </summary>
+        public static List<string> GetAllExternalNeededAssemblyPaths()
+        {
+            return GetAllNeededAssemblyPaths()
+                .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
+                .ToList();
+        }
+
+        /// <summary>
         /// This function compiles the dynamic code using Roslyn.
         /// </summary>
         /// <param name="sourceCode">The source code to compile.</param>
@@ -323,7 +343,7 @@ namespace PlDotNET
         public static Microsoft.CodeAnalysis.Emit.EmitResult CompileSourceCode(string sourceCode, MemoryStream memStream, string assemblyName, MemoryStream memStreamUserFunction = null)
         {
             SyntaxTree userTree = SyntaxFactory.ParseSyntaxTree(sourceCode);
-            List<PortableExecutableReference> references = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
+            List<PortableExecutableReference> references = GetAllNeededAssemblyPaths()
                  .Select(p => MetadataReference.CreateFromFile(p))
                  .ToList();
 
@@ -496,10 +516,9 @@ namespace PlDotNET
                 else
                 {
 #if ENABLE_FCS
-                    List<string> extraAssemblies = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
-                        .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
-                        .ToList();
-                    userFunctionDll = FSharpCompiler.CompileFSharpSourceCodeAsDLL(functionId, Settings.PathToTemporaryFiles, userFunctionCode, extraAssemblies.ToArray());
+                    userFunctionDll = FSharpCompiler.CompileFSharpSourceCodeAsDLL(
+                        functionId, Settings.PathToTemporaryFiles, userFunctionCode, GetAllExternalNeededAssemblyPaths().ToArray()
+                    );
 #else
                     throw new SystemException("FSharp Compiler Service is not enabled in this build");
 #endif
@@ -587,8 +606,7 @@ namespace PlDotNET
 
             // Load the assemblies into AssemblyLoadContext
             AssemblyLoadContext userAlc = new($"UserFunction_{functionId}", true);
-            _ = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
-                .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
+            _ = GetAllExternalNeededAssemblyPaths()
                 .Select(p => userAlc.LoadFromAssemblyPath(p))
                 .ToList();
             _ = userAlc.LoadFromStream(new MemoryStream(memUserFunction.GetBuffer())); // UserFunction Assembly
@@ -681,16 +699,16 @@ namespace PlDotNET
         /// <returns>
         /// Returns a memory stream object with the compiled UserHandler code.
         /// </returns>
-        public static MemoryStream CreateMemoryStreamForUserHandlerCode(DotNETLanguage language, uint functionId, string functionName, string userHandlerCode, MemoryStream assemblyToInclude)
+        public static MemoryStream CreateMemoryStreamForUserHandlerCode(
+            DotNETLanguage language, uint functionId, string functionName, string userHandlerCode, MemoryStream assemblyToInclude)
         {
             MemoryStream memUserHandler = new();
 #if ENABLE_FCS
             if (language == DotNETLanguage.FSharp)
             {
-                List<string> extraAssemblies = DefaultNeededAssemblyPaths.Concat(Settings.GetUserAssemblyDllPaths())
-                    .Where(p => !Path.GetFileNameWithoutExtension(p).StartsWith("System"))
-                    .ToList();
-                return FSharpCompiler.CompileFSharpSourceCode(functionId, Settings.PathToTemporaryFiles, userHandlerCode, extraAssemblies.ToArray());
+                return FSharpCompiler.CompileFSharpSourceCode(
+                    functionId, Settings.PathToTemporaryFiles, userHandlerCode, GetAllExternalNeededAssemblyPaths().ToArray()
+                );
             }
 #else
             if (language == DotNETLanguage.FSharp)

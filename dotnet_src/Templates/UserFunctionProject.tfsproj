@@ -10,17 +10,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="PlDotNET.Common">
-      <HintPath>$PlDotNET.Common.dll$</HintPath>
-    </Reference>
-    <Reference Include="Npgsql">
-      <HintPath>$Npgsql.dll$</HintPath>
-    </Reference>
-    <Reference Include="NpgsqlTypes">
-      <HintPath>$NpgsqlTypes.dll$</HintPath>
-    </Reference>
-  </ItemGroup>
+  <!-- ExternalDLLs -->
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
