@@ -26,6 +26,25 @@ with examples and information on the supported PostgreSQL data types.
 
 Feel free to open an issue or a discussion topic on our GitHub repository.
 
+## Pre-built Docker Images
+
+We provide ready-to-use Docker images to make running PL/.NET fast and simple.
+Two variants are available:
+
+- `brickabode/pldotnet:latest` – Lean and production-ready image.
+- `brickabode/pldotnet:dev` – Development image with testing tools and examples.
+
+Example: pull and start the development image for quick experimentation:
+```bash
+docker pull brickabode/pldotnet:dev
+docker run --rm -it \
+  --name pldotnet-test \
+  -p 5432:5432 \
+  brickabode/pldotnet:dev bash
+```
+
+Use `latest` in production deployments, and `dev` when you want a fully equipped environment for building, testing, or exploring PL/.NET features.
+
 ## Usage examples
 
 Here is an example that returns a set of records in C#:

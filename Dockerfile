@@ -84,5 +84,17 @@ RUN pg_ctlcluster $POSTGRES_VERSION main start \
 # Remove the deb package after installation
 RUN rm -rf /app/pldotnet
 
+# Add a message of the day
+COPY motd /motd
+RUN echo "cat /motd" >> /etc/bash.bashrc
+
 # Start the PostgreSQL service and tail the log file
-CMD ["/bin/bash", "-c", "pg_ctlcluster $POSTGRES_VERSION main start && tail -f /var/log/postgresql/postgresql-$POSTGRES_VERSION-main.log"]
+CMD ["/bin/bash", "-c", "cat /motd && pg_ctlcluster $POSTGRES_VERSION main start && tail -f /var/log/postgresql/postgresql-$POSTGRES_VERSION-main.log"]
+
+FROM runtime AS dev
+
+COPY . /app/pldotnet
+WORKDIR /app/pldotnet
+
+COPY motd.dev /motd.dev
+RUN cat /motd.dev >> /motd
