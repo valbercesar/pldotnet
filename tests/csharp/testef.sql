@@ -232,7 +232,7 @@ SELECT
   'DeleteEntitiesByIds',
   (SELECT COUNT(*) FROM test_entity_framework) = (SELECT COUNT(*) FROM bkp_test_entity_framework WHERE id NOT IN (2, 4));
 
--- 18. UPDATE
+-- 19. UPDATE
 CREATE OR REPLACE PROCEDURE UpdateEntityName(id INT, new_name TEXT) AS $$
   using var ctx = new EFCoreTest.TestEntitiesContext();
   ctx.Database.AutoTransactionsEnabled = false;
@@ -255,7 +255,7 @@ SELECT
       = 'Renamed Entity 3'
   );
 
--- 19. UPDATE RANGE
+-- 20. UPDATE RANGE
 CREATE OR REPLACE PROCEDURE DoublePriceByCategories(categories TEXT[]) AS $$
   using var ctx = new EFCoreTest.TestEntitiesContext();
   ctx.Database.AutoTransactionsEnabled = false;
@@ -280,7 +280,7 @@ SELECT
     )
   );
 
--- 19. INSERT
+-- 21. INSERT
 CREATE OR REPLACE PROCEDURE InsertEntity(name TEXT, category TEXT, price MONEY, created_at TIMESTAMP, is_active BOOLEAN) AS $$
   using var ctx = new EFCoreTest.TestEntitiesContext();
   ctx.Database.AutoTransactionsEnabled = false;
@@ -318,7 +318,7 @@ SELECT
     SELECT id + 1 FROM bkp_test_entity_framework ORDER BY id DESC LIMIT 1
   );
 
--- 20. INSERT RANGE
+-- 22. INSERT RANGE
 CREATE OR REPLACE PROCEDURE InsertEntitiesRange(
   names_array TEXT[], categories_array TEXT[], prices_array MONEY[], created_at_array TIMESTAMP[], is_active_array BOOLEAN[]
 ) AS $$

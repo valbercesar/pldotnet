@@ -13,7 +13,7 @@ public class PlDotNetTest
 {
     protected SqlFunctionInfo? FunctionInfo;
 
-    string DatabaseConnectionString =
+    readonly string DatabaseConnectionString =
         Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") + ";Include Error Detail=true"
         ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
 
@@ -39,7 +39,7 @@ public class PlDotNetTest
         DoBlock
     }
 
-    public Dictionary<SqlTestType, string> TestTypeMap = new Dictionary<SqlTestType, string>
+    public Dictionary<SqlTestType, string> TestTypeMap = new()
     {
         { SqlTestType.Function, "FUNCTION" },
         { SqlTestType.Procedure, "PROCEDURE" },
@@ -55,7 +55,7 @@ public class PlDotNetTest
         public string QuerySuffix { get; set; } = string.Empty; // For additional WHERE, LIMIT, etc.
         public SqlTestType TestType { get; set; } = SqlTestType.Function;
         public string Name { get; set; } = string.Empty;
-        public List<FunctionArgument> Arguments { get; set; } = new List<FunctionArgument>();
+        public List<FunctionArgument> Arguments { get; set; } = [];
         public string ReturnType { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
         public LanguageType Language { get; set; }
@@ -76,6 +76,8 @@ public class PlDotNetTest
         public string SqlFunctionDefinition { get; set; } = string.Empty;
 
         public string SqlFunctionCall { get; set; } = string.Empty;
+
+        public List<string> SqlSettings { get; set; } = [];
 
         public string LanguageString
         {
@@ -100,22 +102,16 @@ public class PlDotNetTest
         public SqlFunctionInfo() { }
     }
 
-    public class FunctionArgument
+    public class FunctionArgument(string name, string type)
     {
-        public string Name { get; set; }
-        public string Type { get; set; }
-
-        public FunctionArgument(string name, string type)
-        {
-            Name = name;
-            Type = type;
-        }
+        public string Name { get; set; } = name;
+        public string Type { get; set; } = type;
     }
 
     public class TestQueryParameters
     {
         public List<(string Name, string Query)> Ctes { get; set; } =
-            new List<(string Name, string Query)>();
+            [];
         public string TestCategory { get; set; } = string.Empty;
         public string TestName { get; set; } = string.Empty;
         public string Assertion { get; set; } = string.Empty;
@@ -143,6 +139,10 @@ public class PlDotNetTest
 
         string strictKeyword = functionInfo.IsStrict ? "STRICT" : "";
 
+        string settings = functionInfo.SqlSettings != null && functionInfo.SqlSettings.Count != 0
+            ? Environment.NewLine + string.Join(Environment.NewLine, functionInfo.SqlSettings.Select(s => $"SET {s}"))
+            : string.Empty;
+
         // Conditionally build the returnTypeString
         string returnTypeString = string.IsNullOrEmpty(functionInfo.ReturnType)
             ? string.Empty
@@ -151,17 +151,36 @@ public class PlDotNetTest
         return $@"CREATE OR REPLACE {methodKeyword} {functionInfo.Name}({arguments})
 {returnTypeString} AS $$
     {functionInfo.Body}
-$$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
+$$ LANGUAGE {functionInfo.LanguageString} {strictKeyword}{settings};";
     }
 
     public virtual string GetFunctionCall(SqlFunctionInfo functionInfo, bool forceCte = false)
     {
-        if (functionInfo.TestType == SqlTestType.Procedure)
+        bool isProcedure = functionInfo.TestType == SqlTestType.Procedure;
+
+        // Build the CALL statement for procedures
+        string callSql = isProcedure
+            ? $"CALL {functionInfo.Name}({functionInfo.InputStr});"
+            : string.Empty;
+
+        if (isProcedure && !forceCte)
         {
-            return $"CALL {functionInfo.Name}({functionInfo.InputStr});";
+            // In case the procedure doesn't use a CTE to validate the assertion, returning the simple CALL statement
+            return callSql;
         }
 
-        return TestResultStrategyFactory.GetStrategy(functionInfo, forceCte).BuildInsertSql(functionInfo);
+        // Build the SQL statement to check the test result
+        string verificationSql = (!isProcedure || forceCte)
+            ? TestResultStrategyFactory.GetStrategy(functionInfo, forceCte).BuildInsertSql(functionInfo)
+            : string.Empty;
+
+        if (!isProcedure)
+        {
+            return verificationSql;
+        }
+
+        // Create the SQL statement to call procedures and verify an assertion using CTE
+        return $"{callSql}\n{verificationSql}".Trim();
     }
 
     public interface ITestResultStrategy
@@ -260,14 +279,11 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
         }
 
         // A private helper method to extract the name of the CTE from its SQL statement.
-        private string? ExtractCteName(string cteStatement)
+        private static string? ExtractCteName(string cteStatement)
         {
             // Uses a regular expression to find the CTE name in the CTE statement by looking for the pattern
             // that follows "WITH" and precedes "AS". Assumes the CTE name is a single word (\w+).
-            var match = System.Text.RegularExpressions.Regex.Match(
-                cteStatement,
-                @"WITH\s+(\w+)\s+AS"
-            );
+            var match = MyRegex().Match(cteStatement);
             // If the pattern is found, the CTE name is returned.
             if (match.Success)
             {
@@ -276,6 +292,10 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
             // If the pattern is not found, returns null indicating no CTE name could be extracted.
             return null;
         }
+
+        [System.Text.RegularExpressions.GeneratedRegex(@"WITH\s+(\w+)\s+AS"
+        )]
+        private static partial System.Text.RegularExpressions.Regex MyRegex();
     }
 
     //     public class CteTestResultStrategy : ITestResultStrategy
@@ -306,20 +326,15 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
             return (
                     functionInfo.ReturnType != null
                     && (
-                        functionInfo.ReturnType.IndexOf("JSON", StringComparison.OrdinalIgnoreCase)
-                            >= 0
-                        || functionInfo.ReturnType.IndexOf(
-                            "XML",
-                            StringComparison.OrdinalIgnoreCase
-                        ) >= 0
+                        functionInfo.ReturnType.Contains("JSON", StringComparison.OrdinalIgnoreCase)
+                        || functionInfo.ReturnType.Contains("XML", StringComparison.OrdinalIgnoreCase
+)
                     )
                 )
                 || (
                     functionInfo.ExpectedResult != null
-                    && functionInfo.ExpectedResult.IndexOf(
-                        "::JSON::TEXT",
-                        StringComparison.OrdinalIgnoreCase
-                    ) >= 0
+                    && functionInfo.ExpectedResult.Contains("::JSON::TEXT", StringComparison.OrdinalIgnoreCase
+)
                 );
         }
 
@@ -338,12 +353,12 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
 
     public class TestResultStrategyFactory
     {
-        private static readonly List<ITestResultStrategy> Strategies = new List<ITestResultStrategy>
-        {
+        private static readonly List<ITestResultStrategy> Strategies =
+        [
             new CteTestResultStrategy(),
             new JsonOrXmlTestResultStrategy(),
             new DefaultTestResultStrategy()
-        };
+        ];
 
         public static ITestResultStrategy GetStrategy(
             SqlFunctionInfo functionInfo,
@@ -369,7 +384,7 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
     /// null otherwise.</returns>
     protected int? ExecuteSqlReturnId(string sqlCode)
     {
-        StringBuilder messages = new StringBuilder();
+        StringBuilder messages = new();
         Exception exception = null!;
 
         try
@@ -461,7 +476,7 @@ WHERE id = {functionInfo.TestId.Value};";
     /// and false otherwise.</returns>
     protected bool ExecuteSql(string sqlCode)
     {
-        StringBuilder messages = new StringBuilder();
+        StringBuilder messages = new();
         Exception exception = null!;
 
         try
@@ -542,7 +557,8 @@ WHERE id = {functionInfo.TestId.Value};";
         string cteStatement,
         string customAssertion,
         string querySuffix = null!,
-        bool forceCte = false
+        bool forceCte = false,
+        string input = ""
     )
     {
         RunTest(
@@ -551,7 +567,8 @@ WHERE id = {functionInfo.TestId.Value};";
             cteStatement: cteStatement,
             customAssertion: customAssertion,
             querySuffix: querySuffix,
-            forceCte: forceCte
+            forceCte: forceCte,
+            input: input
         );
     }
 
