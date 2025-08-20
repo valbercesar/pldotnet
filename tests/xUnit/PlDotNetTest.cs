@@ -99,6 +99,19 @@ public partial class PlDotNetTest
             }
         }
 
+        public static readonly Dictionary<LanguageType, string> LanguagePrefixes = new()
+        {
+            { LanguageType.PlcSharp, "c#" },
+            { LanguageType.PlfSharp, "f#" },
+            { LanguageType.PlPython, "py" },
+            { LanguageType.PlR, "r" },
+            { LanguageType.PlPgSQL, "pgsql" },
+            { LanguageType.PlV8, "v8" },
+            { LanguageType.PlTCL, "tcl" },
+            { LanguageType.PlLua, "lua" },
+            { LanguageType.PlPerl, "perl" }
+        };
+
         public SqlFunctionInfo() { }
     }
 
@@ -619,6 +632,8 @@ WHERE id = {functionInfo.TestId.Value};";
         bool forceCte = false
     )
     {
+        // Sanitize the feature name for consistency
+        featureName = getSanitizedFeatureName(featureName);
         TestCount++;
         Console.WriteLine(
             $"[START TEST {TestCount}] Running test {testName} for feature {featureName}."
@@ -687,5 +702,59 @@ WHERE id = {functionInfo.TestId.Value};";
         );
 
         Console.WriteLine($"[END TEST {TestCount}] Test {testName} executed successfully.\n");
+    }
+
+
+    /// <summary>
+    /// Sanitizes a feature name by ensuring it has the correct language prefix based on the current FunctionInfo.Language.
+    /// </summary>
+    /// <param name="name">The feature name to sanitize.</param>
+    /// <returns>A sanitized feature name with the appropriate language prefix.</returns>
+    /// <remarks>
+    /// This method performs the following operations:
+    /// 1. If the name already starts with the correct language prefix, it returns the name unchanged.
+    /// 2. If the name starts with a different language prefix, it replaces the incorrect prefix with the correct one.
+    /// 3. If the name has no language prefix, it prepends the correct language prefix.
+    /// The language prefix is determined by the current FunctionInfo.Language property using the SqlFunctionInfo.LanguagePrefixes dictionary.
+    /// </remarks>
+    /// <exception cref="ArgumentException">Thrown when the name parameter is null, empty, or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when FunctionInfo is null or when the language is not found in LanguagePrefixes.</exception>
+    public string getSanitizedFeatureName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Feature name cannot be null or empty.", nameof(name));
+        }
+
+        if (FunctionInfo == null)
+        {
+            throw new InvalidOperationException("FunctionInfo cannot be null when sanitizing feature names.");
+        }
+
+        // Get the expected prefix for the current language
+        if (!SqlFunctionInfo.LanguagePrefixes.TryGetValue(FunctionInfo.Language, out string? expectedPrefix))
+        {
+            throw new InvalidOperationException($"Language prefix not found for language: {FunctionInfo.Language}");
+        }
+
+        // Check if the name already starts with the correct prefix
+        if (name.StartsWith(expectedPrefix + "-", StringComparison.OrdinalIgnoreCase))
+        {
+            return name;
+        }
+
+        // Check if the name starts with any other language prefix and replace it
+        foreach (var kvp in SqlFunctionInfo.LanguagePrefixes)
+        {
+            string prefix = kvp.Value + "-";
+            if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                // Replace the incorrect prefix with the correct one
+                return expectedPrefix + "-" + name.Substring(prefix.Length);
+            }
+        }
+
+        // If no prefix was found, prepend the correct prefix
+        return expectedPrefix + "-" + name;
     }
 }
