@@ -2,3 +2,6 @@
 	path = dotnet_src/npgsql
 	url = git@git.brickabode.com:DotNetInPostgreSQL/npgsql.git
 	branch = pldotnet-dev
+[submodule "dotnet_src/efcore.pg"]
+	path = dotnet_src/efcore.pg
+	url = git@git.brickabode.com:DotNetInPostgreSQL/efcore.pg.git

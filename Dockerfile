@@ -31,18 +31,24 @@ RUN apt install -y libglib2.0-dev
 # Install .NET SDK
 RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
 
+##############
+# BUILD DEPS #
+##############
+# This image is used to install the build dependencies required for building the application
+FROM base AS build_deps
+
+# Install additional dependencies for building the application
+RUN apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all
+
+# Copy application source code
+WORKDIR /app/pldotnet
+COPY . .
+
 #########
 # BUILD #
 #########
 # This image is used to build the application
-FROM base AS build
-
-## Install build dependencies
-RUN apt install -y devscripts build-essential lintian debhelper postgresql-server-dev-all
-
-# Copy application source code
-WORKDIR /app
-COPY . .
+FROM build_deps AS build
 
 # Replace the content of debian/pgversions with the PostgreSQL version
 RUN echo $POSTGRES_VERSION > debian/pgversions
@@ -58,7 +64,7 @@ RUN make build-local
 FROM scratch AS artifacts
 
 # Copy the built application from the build stage
-COPY --from=build /app/debian/packages /
+COPY --from=build /app/pldotnet/debian/packages /
 
 ###########
 # RUNTIME #
@@ -67,16 +73,16 @@ COPY --from=build /app/debian/packages /
 FROM base AS runtime
 
 # Copy the built application from the build stage
-COPY --from=build /app/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb /app/debian/packages/
+COPY --from=build /app/pldotnet/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb /app/pldotnet/debian/packages/
 
 # Initialize PostgreSQL, install the pldotnet extension, and configure the database
 RUN pg_ctlcluster $POSTGRES_VERSION main start \
-&& dpkg -i /app/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb \
+&& dpkg -i /app/pldotnet/debian/packages/dotnet-$DOTNET_VERSION-postgresql-$POSTGRES_VERSION-pldotnet_0.99-rc1_amd64.deb \
 && runuser -u postgres -- psql -c 'CREATE EXTENSION pldotnet;' \
 && runuser -u postgres -- psql -c "ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';"
 
 # Remove the deb package after installation
-RUN rm -rf /app
+RUN rm -rf /app/pldotnet
 
 # Add a message of the day
 COPY motd /motd

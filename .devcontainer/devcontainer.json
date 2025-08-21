@@ -1,0 +1,14 @@
+{
+  "name": "pldotnet-dev",
+  "dockerComposeFile": ["../docker-compose.yml", "../docker-compose-dev.yml"],
+  "service": "pldotnet-dev",
+  "runServices": ["pldotnet-dev"],
+  "workspaceFolder": "/app/pldotnet",
+  "forwardPorts": [8432],
+  "remoteUser": "root",
+  "shutdownAction": "stopCompose",
+  "containerEnv": {
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  }
+}

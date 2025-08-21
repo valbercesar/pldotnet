@@ -123,7 +123,6 @@ SPITupleTable *pldotnet_SPIExecutePlan(SPIPlanPtr plan, Datum *paramValues,
     PG_END_TRY();
 
     return SPI_tuptable;
-    return SPI_tuptable;
 }
 
 void pldotnet_SPICommit(ErrorData **errorData) {

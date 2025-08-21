@@ -9,11 +9,11 @@ using System.Text;
 using Xunit;
 
 [Collection("Sequential")]
-public class PlDotNetTest
+public partial class PlDotNetTest
 {
     protected SqlFunctionInfo? FunctionInfo;
 
-    string DatabaseConnectionString =
+    readonly string DatabaseConnectionString =
         Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") + ";Include Error Detail=true"
         ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING not set.");
 
@@ -39,7 +39,7 @@ public class PlDotNetTest
         DoBlock
     }
 
-    public Dictionary<SqlTestType, string> TestTypeMap = new Dictionary<SqlTestType, string>
+    public Dictionary<SqlTestType, string> TestTypeMap = new()
     {
         { SqlTestType.Function, "FUNCTION" },
         { SqlTestType.Procedure, "PROCEDURE" },
@@ -55,7 +55,7 @@ public class PlDotNetTest
         public string QuerySuffix { get; set; } = string.Empty; // For additional WHERE, LIMIT, etc.
         public SqlTestType TestType { get; set; } = SqlTestType.Function;
         public string Name { get; set; } = string.Empty;
-        public List<FunctionArgument> Arguments { get; set; } = new List<FunctionArgument>();
+        public List<FunctionArgument> Arguments { get; set; } = [];
         public string ReturnType { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
         public LanguageType Language { get; set; }
@@ -77,6 +77,8 @@ public class PlDotNetTest
 
         public string SqlFunctionCall { get; set; } = string.Empty;
 
+        public List<string> SqlSettings { get; set; } = [];
+
         public string LanguageString
         {
             get
@@ -97,25 +99,32 @@ public class PlDotNetTest
             }
         }
 
+        public static readonly Dictionary<LanguageType, string> LanguagePrefixes = new()
+        {
+            { LanguageType.PlcSharp, "c#" },
+            { LanguageType.PlfSharp, "f#" },
+            { LanguageType.PlPython, "py" },
+            { LanguageType.PlR, "r" },
+            { LanguageType.PlPgSQL, "pgsql" },
+            { LanguageType.PlV8, "v8" },
+            { LanguageType.PlTCL, "tcl" },
+            { LanguageType.PlLua, "lua" },
+            { LanguageType.PlPerl, "perl" }
+        };
+
         public SqlFunctionInfo() { }
     }
 
-    public class FunctionArgument
+    public class FunctionArgument(string name, string type)
     {
-        public string Name { get; set; }
-        public string Type { get; set; }
-
-        public FunctionArgument(string name, string type)
-        {
-            Name = name;
-            Type = type;
-        }
+        public string Name { get; set; } = name;
+        public string Type { get; set; } = type;
     }
 
     public class TestQueryParameters
     {
         public List<(string Name, string Query)> Ctes { get; set; } =
-            new List<(string Name, string Query)>();
+            [];
         public string TestCategory { get; set; } = string.Empty;
         public string TestName { get; set; } = string.Empty;
         public string Assertion { get; set; } = string.Empty;
@@ -143,6 +152,10 @@ public class PlDotNetTest
 
         string strictKeyword = functionInfo.IsStrict ? "STRICT" : "";
 
+        string settings = functionInfo.SqlSettings != null && functionInfo.SqlSettings.Count != 0
+            ? Environment.NewLine + string.Join(Environment.NewLine, functionInfo.SqlSettings.Select(s => $"SET {s}"))
+            : string.Empty;
+
         // Conditionally build the returnTypeString
         string returnTypeString = string.IsNullOrEmpty(functionInfo.ReturnType)
             ? string.Empty
@@ -151,35 +164,85 @@ public class PlDotNetTest
         return $@"CREATE OR REPLACE {methodKeyword} {functionInfo.Name}({arguments})
 {returnTypeString} AS $$
     {functionInfo.Body}
-$$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
+$$ LANGUAGE {functionInfo.LanguageString} {strictKeyword}{settings};";
     }
 
+    /// <summary>
+    /// Constructs and returns the SQL call statement for a function or procedure based on the provided SqlFunctionInfo.
+    /// </summary>
+    /// <param name="functionInfo">The information about the SQL function or procedure.</param>
+    /// <param name="forceCte">Whether to force the use of CTE strategy for result validation.</param>
+    /// <returns>A string representing the SQL call statement for the function or procedure.</returns>
     public virtual string GetFunctionCall(SqlFunctionInfo functionInfo, bool forceCte = false)
     {
-        if (functionInfo.TestType == SqlTestType.Procedure)
+        bool isProcedure = functionInfo.TestType == SqlTestType.Procedure;
+
+        // Build the CALL statement for procedures
+        string callSql = isProcedure
+            ? $"CALL {functionInfo.Name}({functionInfo.InputStr});"
+            : string.Empty;
+
+        if (isProcedure && !forceCte)
         {
-            return $"CALL {functionInfo.Name}({functionInfo.InputStr});";
+            // In case the procedure doesn't use a CTE to validate the assertion, returning the simple CALL statement
+            return callSql;
         }
 
-        return TestResultStrategyFactory.GetStrategy(functionInfo, forceCte).BuildInsertSql(functionInfo);
+        // Build the SQL statement to check the test result
+        string verificationSql = (!isProcedure || forceCte)
+            ? TestResultStrategyFactory.GetStrategy(functionInfo, forceCte).BuildInsertSql(functionInfo)
+            : string.Empty;
+
+        if (!isProcedure)
+        {
+            return verificationSql;
+        }
+
+        // Create the SQL statement to call procedures and verify an assertion using CTE
+        return $"{callSql}\n{verificationSql}".Trim();
     }
 
+    /// <summary>
+    /// Defines the contract for test result strategies that determine how to build SQL insert statements for test results.
+    /// </summary>
     public interface ITestResultStrategy
     {
-        // AppliesTo determines if the strategy should be used for the given functionInfo
+        /// <summary>
+        /// Determines if the strategy should be used for the given function information.
+        /// </summary>
+        /// <param name="functionInfo">The function information to evaluate.</param>
+        /// <returns>True if this strategy applies to the given function; otherwise, false.</returns>
         bool AppliesTo(SqlFunctionInfo functionInfo);
 
-        // BuildInsertSql returns the SQL code to insert the test result
+        /// <summary>
+        /// Returns the SQL code to insert the test result.
+        /// </summary>
+        /// <param name="functionInfo">The function information to build the SQL for.</param>
+        /// <returns>A string containing the SQL INSERT statement.</returns>
         string BuildInsertSql(SqlFunctionInfo functionInfo);
     }
 
+    /// <summary>
+    /// Default implementation of ITestResultStrategy that handles standard function test result insertion.
+    /// </summary>
     public class DefaultTestResultStrategy : ITestResultStrategy
     {
+        /// <summary>
+        /// Determines if this strategy applies to the given function information.
+        /// This default strategy applies to all functions.
+        /// </summary>
+        /// <param name="functionInfo">The function information to evaluate.</param>
+        /// <returns>Always returns true as this is the default strategy.</returns>
         public bool AppliesTo(SqlFunctionInfo functionInfo)
         {
             return true;
         }
 
+        /// <summary>
+        /// Builds an SQL INSERT statement for inserting test results using standard function call validation.
+        /// </summary>
+        /// <param name="functionInfo">The function information to build the SQL for.</param>
+        /// <returns>A string containing the SQL INSERT statement with result validation.</returns>
         public string BuildInsertSql(SqlFunctionInfo functionInfo)
         {
             string functionCall = $"{functionInfo.Name}({functionInfo.InputStr})";
@@ -207,122 +270,94 @@ $$ LANGUAGE {functionInfo.LanguageString} {strictKeyword};";
         }
     }
 
-    //     public class CteTestResultStrategy : ITestResultStrategy
-    //     {
-    //         public bool AppliesTo(SqlFunctionInfo functionInfo)
-    //         {
-    //             // This strategy applies if a CTE statement is defined
-    //             return !string.IsNullOrWhiteSpace(functionInfo.CteStatement);
-    //         }
-
-    //         public string BuildInsertSql(SqlFunctionInfo functionInfo)
-    //         {
-    //             // Use the provided CTE statement directly in the SQL command construction
-    //             string sqlCode =
-    //                 $@"
-    // {functionInfo.CteStatement}
-    // INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-    // SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.CustomAssertion} FROM cte {functionInfo.QuerySuffix} RETURNING id;";
-
-    //             return sqlCode;
-    //         }
-    //     }
-
-    // Defines a class CteTestResultStrategy that implements the ITestResultStrategy interface.
-    public class CteTestResultStrategy : ITestResultStrategy
+    /// <summary>
+    /// Implementation of ITestResultStrategy that handles test result insertion using Common Table Expressions (CTEs).
+    /// </summary>
+    public partial class CteTestResultStrategy : ITestResultStrategy
     {
-        // Determines if the strategy applies to the given SQL function based on the presence of a CTE statement.
-
+        /// <summary>
+        /// Determines if the strategy applies to the given SQL function based on the presence of a CTE statement.
+        /// </summary>
+        /// <param name="functionInfo">The function information to evaluate.</param>
+        /// <returns>True if the CteStatement property is not null or whitespace; otherwise, false.</returns>
         public bool AppliesTo(SqlFunctionInfo functionInfo)
         {
-            // Returns true if the CteStatement property of functionInfo is not null or whitespace, indicating
-            // this strategy should be used for functions with CTEs.
             return !string.IsNullOrWhiteSpace(functionInfo.CteStatement);
         }
 
-        // Builds an SQL INSERT statement using the information provided in the SqlFunctionInfo parameter.
+        /// <summary>
+        /// Builds an SQL INSERT statement using the information provided in the SqlFunctionInfo parameter.
+        /// </summary>
+        /// <param name="functionInfo">The function information to build the SQL for.</param>
+        /// <returns>A string containing the SQL statement with CTE and INSERT operation.</returns>
         public string BuildInsertSql(SqlFunctionInfo functionInfo)
         {
-            // Extracts the name of the CTE from its SQL statement to use in the final query.
+            // Extract the name of the CTE from its SQL statement to use in the final query
             string cteName = ExtractCteName(functionInfo.CteStatement)!;
 
-            // Constructs an SQL statement that includes the CTE statement and an INSERT INTO operation.
-            // The INSERT operation adds a new row into the automated_test_results table with details from the functionInfo parameter
-            // and selects values from the CTE defined earlier, applying any specified query suffix. Finally, it returns the id of the inserted row.
+            // Construct an SQL statement that includes the CTE statement and an INSERT INTO operation
             string sqlCode =
                 $@"
 {functionInfo.CteStatement}
 INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
 SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.CustomAssertion} FROM {cteName} {functionInfo.QuerySuffix} RETURNING id;";
 
-            // Returns the constructed SQL code.
             return sqlCode;
         }
 
-        // A private helper method to extract the name of the CTE from its SQL statement.
-        private string? ExtractCteName(string cteStatement)
+        /// <summary>
+        /// A private helper method to extract the name of the CTE from its SQL statement.
+        /// </summary>
+        /// <param name="cteStatement">The CTE statement to parse.</param>
+        /// <returns>The CTE name if found; otherwise, null.</returns>
+        private static string? ExtractCteName(string cteStatement)
         {
-            // Uses a regular expression to find the CTE name in the CTE statement by looking for the pattern
-            // that follows "WITH" and precedes "AS". Assumes the CTE name is a single word (\w+).
-            var match = System.Text.RegularExpressions.Regex.Match(
-                cteStatement,
-                @"WITH\s+(\w+)\s+AS"
-            );
-            // If the pattern is found, the CTE name is returned.
+            // Use a regular expression to find the CTE name in the statement
+            var match = MyRegex().Match(cteStatement);
             if (match.Success)
             {
                 return match.Groups[1].Value;
             }
-            // If the pattern is not found, returns null indicating no CTE name could be extracted.
             return null;
         }
+
+        [System.Text.RegularExpressions.GeneratedRegex(@"WITH\s+(\w+)\s+AS"
+        )]
+        private static partial System.Text.RegularExpressions.Regex MyRegex();
     }
 
-    //     public class CteTestResultStrategy : ITestResultStrategy
-    //     {
-    //         public bool AppliesTo(SqlFunctionInfo functionInfo)
-    //         {
-    //             // This strategy applies if a CTE statement is defined and not empty.
-    //             return !string.IsNullOrWhiteSpace(functionInfo.CteStatement);
-    //         }
-
-    //         public string BuildInsertSql(SqlFunctionInfo functionInfo)
-    //         {
-    //             // Directly prepend the CTE statement to the SQL command
-    //             string sqlCode =
-    //                 $@"
-    // {functionInfo.cteStatement}
-    // INSERT INTO automated_test_results (FEATURE, TEST_NAME, RESULT)
-    // SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.CustomAssertion} RETURNING id;";
-
-    //             return sqlCode;
-    //         }
-    //     }
-
+    /// <summary>
+    /// Implementation of ITestResultStrategy that handles test result insertion for JSON and XML data types.
+    /// </summary>
     public class JsonOrXmlTestResultStrategy : ITestResultStrategy
     {
+        /// <summary>
+        /// Determines if the strategy applies to functions that return JSON or XML data types.
+        /// </summary>
+        /// <param name="functionInfo">The function information to evaluate.</param>
+        /// <returns>True if the function returns JSON or XML types; otherwise, false.</returns>
         public bool AppliesTo(SqlFunctionInfo functionInfo)
         {
             return (
                     functionInfo.ReturnType != null
                     && (
-                        functionInfo.ReturnType.IndexOf("JSON", StringComparison.OrdinalIgnoreCase)
-                            >= 0
-                        || functionInfo.ReturnType.IndexOf(
-                            "XML",
-                            StringComparison.OrdinalIgnoreCase
-                        ) >= 0
+                        functionInfo.ReturnType.Contains("JSON", StringComparison.OrdinalIgnoreCase)
+                        || functionInfo.ReturnType.Contains("XML", StringComparison.OrdinalIgnoreCase
+)
                     )
                 )
                 || (
                     functionInfo.ExpectedResult != null
-                    && functionInfo.ExpectedResult.IndexOf(
-                        "::JSON::TEXT",
-                        StringComparison.OrdinalIgnoreCase
-                    ) >= 0
+                    && functionInfo.ExpectedResult.Contains("::JSON::TEXT", StringComparison.OrdinalIgnoreCase
+)
                 );
         }
 
+        /// <summary>
+        /// Builds an SQL INSERT statement for JSON or XML test result validation.
+        /// </summary>
+        /// <param name="functionInfo">The function information to build the SQL for.</param>
+        /// <returns>A string containing the SQL INSERT statement with TEXT casting for comparison.</returns>
         public string BuildInsertSql(SqlFunctionInfo functionInfo)
         {
             string functionCall = $"{functionInfo.Name}({functionInfo.InputStr})::TEXT";
@@ -336,15 +371,24 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
         }
     }
 
+    /// <summary>
+    /// Factory class for selecting the appropriate test result strategy based on function characteristics.
+    /// </summary>
     public class TestResultStrategyFactory
     {
-        private static readonly List<ITestResultStrategy> Strategies = new List<ITestResultStrategy>
-        {
+        private static readonly List<ITestResultStrategy> Strategies =
+        [
             new CteTestResultStrategy(),
             new JsonOrXmlTestResultStrategy(),
             new DefaultTestResultStrategy()
-        };
+        ];
 
+        /// <summary>
+        /// Gets the appropriate test result strategy for the given function information.
+        /// </summary>
+        /// <param name="functionInfo">The function information to evaluate.</param>
+        /// <param name="forceCte">Whether to force the use of CTE strategy.</param>
+        /// <returns>The most appropriate test result strategy for the given function.</returns>
         public static ITestResultStrategy GetStrategy(
             SqlFunctionInfo functionInfo,
             bool forceCte = false
@@ -369,7 +413,7 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
     /// null otherwise.</returns>
     protected int? ExecuteSqlReturnId(string sqlCode)
     {
-        StringBuilder messages = new StringBuilder();
+        StringBuilder messages = new();
         Exception exception = null!;
 
         try
@@ -409,7 +453,6 @@ SELECT '{functionInfo.FeatureName}', '{functionInfo.TestName}', {functionInfo.Cu
     {
         if (!functionInfo.TestId.HasValue)
         {
-            // Console.WriteLine("TestId is not set.");
             return null;
         }
 
@@ -461,7 +504,7 @@ WHERE id = {functionInfo.TestId.Value};";
     /// and false otherwise.</returns>
     protected bool ExecuteSql(string sqlCode)
     {
-        StringBuilder messages = new StringBuilder();
+        StringBuilder messages = new();
         Exception exception = null!;
 
         try
@@ -474,7 +517,6 @@ WHERE id = {functionInfo.TestId.Value};";
             };
 
             using var command = new NpgsqlCommand(sqlCode, connection);
-            // command.CommandType = CommandType.Text;
             if (sqlCode.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
             {
                 using var reader = command.ExecuteReader();
@@ -517,8 +559,8 @@ WHERE id = {functionInfo.TestId.Value};";
     /// <para>7. Validates (via assertion) that a test result was retrieved.</para>
     /// <para>8. Validates (via assertion) that the retrieved test result matches the expected result.</para>
     /// </summary>
-    /// <param name="functionName">Name of the SQL function to test.</param>
-    /// <param name="featureName">Feature associated with the test.</param>
+    /// <param name="featureName">The feature name associated with the test.</param>
+    /// <param name="testName">The name of the SQL function to test.</param>
     /// <param name="input">Input string for the SQL function.</param>
     /// <param name="expectedResult">Expected result string for the SQL function.</param>
     public void RunGenericTest(
@@ -536,13 +578,24 @@ WHERE id = {functionInfo.TestId.Value};";
         );
     }
 
+    /// <summary>
+    /// Executes a test with CTE statement and custom assertion logic.
+    /// </summary>
+    /// <param name="featureName">The feature name associated with the test.</param>
+    /// <param name="testName">The name of the test being executed.</param>
+    /// <param name="cteStatement">The Common Table Expression statement to use.</param>
+    /// <param name="customAssertion">The custom assertion logic for the test.</param>
+    /// <param name="querySuffix">Additional query suffix (WHERE, LIMIT, etc.).</param>
+    /// <param name="forceCte">Whether to force the use of CTE strategy.</param>
+    /// <param name="input">Input parameters for the function call.</param>
     public void RunTestWithSuffix(
         string featureName,
         string testName,
         string cteStatement,
         string customAssertion,
         string querySuffix = null!,
-        bool forceCte = false
+        bool forceCte = false,
+        string input = ""
     )
     {
         RunTest(
@@ -551,10 +604,23 @@ WHERE id = {functionInfo.TestId.Value};";
             cteStatement: cteStatement,
             customAssertion: customAssertion,
             querySuffix: querySuffix,
-            forceCte: forceCte
+            forceCte: forceCte,
+            input: input
         );
     }
 
+    /// <summary>
+    /// Executes a comprehensive test for the provided SQL function, including function creation,
+    /// execution, result validation, and assertion verification.
+    /// </summary>
+    /// <param name="featureName">The feature name associated with the test.</param>
+    /// <param name="testName">The name of the test being executed.</param>
+    /// <param name="input">Input parameters for the function call.</param>
+    /// <param name="expectedResult">The expected result for comparison.</param>
+    /// <param name="cteStatement">The Common Table Expression statement to use.</param>
+    /// <param name="customAssertion">The custom assertion logic for the test.</param>
+    /// <param name="querySuffix">Additional query suffix (WHERE, LIMIT, etc.).</param>
+    /// <param name="forceCte">Whether to force the use of CTE strategy.</param>
     public void RunTest(
         string featureName,
         string testName,
@@ -566,6 +632,8 @@ WHERE id = {functionInfo.TestId.Value};";
         bool forceCte = false
     )
     {
+        // Sanitize the feature name for consistency
+        featureName = getSanitizedFeatureName(featureName);
         TestCount++;
         Console.WriteLine(
             $"[START TEST {TestCount}] Running test {testName} for feature {featureName}."
@@ -634,5 +702,59 @@ WHERE id = {functionInfo.TestId.Value};";
         );
 
         Console.WriteLine($"[END TEST {TestCount}] Test {testName} executed successfully.\n");
+    }
+
+
+    /// <summary>
+    /// Sanitizes a feature name by ensuring it has the correct language prefix based on the current FunctionInfo.Language.
+    /// </summary>
+    /// <param name="name">The feature name to sanitize.</param>
+    /// <returns>A sanitized feature name with the appropriate language prefix.</returns>
+    /// <remarks>
+    /// This method performs the following operations:
+    /// 1. If the name already starts with the correct language prefix, it returns the name unchanged.
+    /// 2. If the name starts with a different language prefix, it replaces the incorrect prefix with the correct one.
+    /// 3. If the name has no language prefix, it prepends the correct language prefix.
+    /// The language prefix is determined by the current FunctionInfo.Language property using the SqlFunctionInfo.LanguagePrefixes dictionary.
+    /// </remarks>
+    /// <exception cref="ArgumentException">Thrown when the name parameter is null, empty, or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when FunctionInfo is null or when the language is not found in LanguagePrefixes.</exception>
+    public string getSanitizedFeatureName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Feature name cannot be null or empty.", nameof(name));
+        }
+
+        if (FunctionInfo == null)
+        {
+            throw new InvalidOperationException("FunctionInfo cannot be null when sanitizing feature names.");
+        }
+
+        // Get the expected prefix for the current language
+        if (!SqlFunctionInfo.LanguagePrefixes.TryGetValue(FunctionInfo.Language, out string? expectedPrefix))
+        {
+            throw new InvalidOperationException($"Language prefix not found for language: {FunctionInfo.Language}");
+        }
+
+        // Check if the name already starts with the correct prefix
+        if (name.StartsWith(expectedPrefix + "-", StringComparison.OrdinalIgnoreCase))
+        {
+            return name;
+        }
+
+        // Check if the name starts with any other language prefix and replace it
+        foreach (var kvp in SqlFunctionInfo.LanguagePrefixes)
+        {
+            string prefix = kvp.Value + "-";
+            if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                // Replace the incorrect prefix with the correct one
+                return expectedPrefix + "-" + name.Substring(prefix.Length);
+            }
+        }
+
+        // If no prefix was found, prepend the correct prefix
+        return expectedPrefix + "-" + name;
     }
 }

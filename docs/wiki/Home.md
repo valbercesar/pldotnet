@@ -32,6 +32,9 @@ database while taking advantage of the latest technologies.
   along with their arrays. All data types are nullable.
 - You can enter code directly through the `CREATE FUNCTION` command or
   load it from a pre-compiled assembly.
+- External assemblies can be loaded via configuration settings for advanced
+  scenarios like Entity Framework integration.
+- Entity Framework Core integration with Npgsql provider for database operations.
 - Our benchmarks show that performance is very good, surpassing all
   other external PL implementations.
 - We have more than 1k unit tests that cover all types, plus their arrays and

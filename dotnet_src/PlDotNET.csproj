@@ -21,6 +21,10 @@
     <Compile Remove="npgsql\**" />
     <EmbeddedResource Remove="npgsql\**" />
     <None Remove="npgsql\**" />
+    <Content Remove="efcore.pg\**" />
+    <Compile Remove="efcore.pg\**" />
+    <EmbeddedResource Remove="efcore.pg\**" />
+    <None Remove="efcore.pg\**" />
     <Content Remove="TypeHandlers\**" />
     <Compile Remove="TypeHandlers\**" />
     <EmbeddedResource Remove="TypeHandlers\**" />
@@ -44,6 +48,7 @@
   <ItemGroup>
     <ProjectReference Include="npgsql\src\Npgsql\Npgsql.csproj" />
     <ProjectReference Include="npgsql\test\Npgsql.Tests\Npgsql.Tests.csproj" />
+    <ProjectReference Include="efcore.pg\src\EFCore.PG\EFCore.PG.csproj" />
   </ItemGroup>
 
   <ItemGroup>

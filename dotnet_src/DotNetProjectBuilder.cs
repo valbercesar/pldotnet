@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Npgsql;
 using NpgsqlTypes;
@@ -162,16 +163,16 @@ namespace PlDotNET
                 throw new SystemException($"Template file '{this.ProjectTemplatePath}' not found");
             }
 
+            var additionalDlls = new StringBuilder();
+            foreach (var dll in Engine.GetAllExternalNeededAssemblyPaths())
+            {
+                additionalDlls.AppendLine($"    <Reference Include=\"{dll}\" />");
+            }
+
             // Read the project template file and replace the placeholders with the actual DLL paths
             string templateProject = File.ReadAllText(this.ProjectTemplatePath);
-            templateProject = templateProject.Replace(
-                "$PlDotNET.Common.dll$", typeof(Elog).Assembly.Location.Replace("/", "\\"));
-            templateProject = templateProject.Replace(
-                "$NpgsqlTypes.dll$", typeof(NpgsqlPoint).Assembly.Location.Replace("/", "\\"));
-            templateProject = templateProject.Replace(
-                "$Npgsql.dll$", typeof(NpgsqlCommand).Assembly.Location.Replace("/", "\\"));
-            templateProject = templateProject.Replace(
-                "$TargetFramework$", this.TargetFramework);
+            templateProject = templateProject.Replace("<!-- ExternalDLLs -->", $"<ItemGroup>\n{additionalDlls.ToString()}  </ItemGroup>");
+            templateProject = templateProject.Replace("$TargetFramework$", this.TargetFramework);
 
             // Save the project file to the destination path
             string formatFile = Language == DotNETLanguage.CSharp ? "csproj" : "fsproj";

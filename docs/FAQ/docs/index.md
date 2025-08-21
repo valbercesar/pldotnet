@@ -125,6 +125,10 @@ Database access within stored procedures, via SPI, is fully Npgsql-compatible in
 
 We still have some minor Npgsql features, like subtransactions, which have not been mapped yet; it is our intention to reach full support in time.
 
+### Does PL/.NET support Entity Framework?
+
+Yes, PL/.NET supports Entity Framework Core. While the implementation is functional, it is not yet fully complete—features such as transactions and migrations are currently not supported. We are actively working on adding these capabilities and plan to include them in a future release.
+
 ### How complete is your F# support compared to C#?
 
 Very complete. We have complete unit testing for all supported features in both C# and F#.
