@@ -31,6 +31,12 @@ RUN apt install -y libglib2.0-dev
 # Install .NET SDK
 RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
 
+#Install git
+RUN apt install git
+
+#Install ligh editor
+RUN apt install nano
+
 ##############
 # BUILD DEPS #
 ##############
