@@ -1,4 +1,57 @@
-# Makefile for PL/.NET
+# Makefile for PL/.NET and PostgreSQL 
+
+#####################
+#    PostgreSQL     #
+#####################
+
+# Conn macros
+DB_NAME=postgres
+DB_USER=postgres
+DB_PORT=5432
+PG_VERSION=17
+
+# Start postgres servicestart:
+pg_start:
+        systemctl start postgresql
+        @echo "PostgreSQL - started."
+
+# Stop postgres service
+pg_stop:
+        systemctl stop postgresql
+        @echo "PostgreSQL - stopped."
+
+# If using Docker
+pg_cluster:
+        pg_ctlcluster $(PG_VERSION) main start
+
+# Restart postgreSQL service
+pg_restart:
+        systemctl restart postgresql
+        @echo "PostgreSQL - restarted."
+
+# Verify status
+pg_status:
+        systemctl status postgresql --no-pager
+
+# Open psql CLI
+psql:
+        #psql -U $(DB_USER) -d $(DB_NAME) -p $(DB_PORT)
+        runuser -u postgres psql
+        @echo "PostgreSQL CLI - started."
+
+# Test db connection
+pg_test-conn:
+        @pg_isready -h localhost -p $(DB_PORT) -U $(DB_USER)
+
+# CLean leftovers
+pg_clean:
+        @echo "Nothing to clean now!"
+
+
+#####################
+#      PL/.NET      #
+#####################
+
 UNAME = $(shell uname)
 PYTHON ?= python3
 SED ?= sed
