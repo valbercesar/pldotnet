@@ -34,7 +34,7 @@ RUN apt install -y dotnet-sdk-$DOTNET_VERSION dotnet-runtime-$DOTNET_VERSION
 #Install git
 RUN apt install git
 
-#Install ligh editor
+#Install light editor
 RUN apt install nano
 
 ##############
